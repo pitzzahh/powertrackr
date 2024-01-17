@@ -4,15 +4,15 @@ import cryptoRandomString from 'crypto-random-string';
 /**
  * Generates sample billing data.
  * @param {number} count - The number of billing entries to generate.
- * @returns {BillingInfo[]} - An array of generated billing information.
+ * @returns {BillingInfoPreview[]} - An array of generated billing information.
  */
 export const generateSampleData = (count: number) => {
-    const sampleData = [];
+    const sampleData: BillingInfoPreview[] = [];
 
     for (let i = 1; i <= count; i++) {
-        const billingEntry = {
+        const billingEntry: BillingInfoPreview = {
             id: cryptoRandomString({ length: 10 }),
-            date: randomDate(new Date(2022, 0, 1), new Date()),
+            date: formatDate(randomDate(new Date(2020, 0, 1), new Date())),
             totalKwh: Math.floor(Math.random() * 200) + 100,
             subKwh: Math.floor(Math.random() * 50) + 30,
             balance: Math.floor(Math.random() * 2000) + 1000,

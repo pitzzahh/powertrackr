@@ -60,9 +60,7 @@
 		table.column({
 			accessor: 'date',
 			header: 'Date',
-			cell: ({ value }: { value: Date }) => {
-				return formatDate(value);
-			},
+			cell: ({ value }: { value: string }) => value,
 			plugins: {
 				sort: {
 					disable: false
