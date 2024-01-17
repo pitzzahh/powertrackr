@@ -21,3 +21,13 @@ type BillingInfo = {
     payment: number;
     status: "pending" | "paid";
 };
+
+type BillingInfoPreview = {
+    id: string;
+    date: string;
+    totalKwh: number;
+    subKwh: number;
+    balance: number;
+    payment: number;
+    status: "pending" | "paid";
+};
