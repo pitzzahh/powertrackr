@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { MoreHorizontal } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { formatDate } from '$lib';
+	import { goto } from '$app/navigation';
 	export let id: string;
 </script>
 
@@ -20,10 +20,20 @@
 			<DropdownMenu.Item
 				on:click={() => {
 					toast.success('Payment ID copied to clipboard', {
-						description: formatDate(new Date()),
+						description: new Date().toLocaleDateString('en-us', {
+							weekday: 'long',
+							year: 'numeric',
+							month: 'long',
+							day: 'numeric',
+							timeZone: 'UTC',
+							timeZoneName: 'short'
+						}),
 						action: {
 							label: 'Undo',
-							onClick: () => console.log('Undo')
+							onClick: () => {
+                navigator.clipboard.writeText('')
+                console.log('Undo')
+              }
 						}
 					});
 					navigator.clipboard.writeText(id);
@@ -33,7 +43,7 @@
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item>View customer</DropdownMenu.Item>
-		<DropdownMenu.Item>View payment details</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => goto(`user/testUser`)}>View customer</DropdownMenu.Item>
+		<DropdownMenu.Item on:click={() => goto(`history/${id}`)}>View payment details</DropdownMenu.Item>
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
