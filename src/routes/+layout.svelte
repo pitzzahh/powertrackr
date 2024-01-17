@@ -6,6 +6,7 @@
 	import { onNavigate } from '$app/navigation';
 	import { dev } from '$app/environment';
 	import { inject } from '@vercel/analytics';
+	import { Toaster } from "$lib/components/ui/sonner";
 
 	onNavigate((navigation) => {
 		// @ts-ignore
@@ -24,6 +25,7 @@
 	injectSpeedInsights();
 </script>
 
+<Toaster />
 <ModeWatcher />
 <Header />
 <slot />
