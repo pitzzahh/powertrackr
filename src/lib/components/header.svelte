@@ -5,7 +5,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
 	import { Sun, Moon, Menu, Settings, Palette } from 'lucide-svelte';
-	import { setMode, resetMode } from 'mode-watcher';
+	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
 	import { store } from '$lib';
 	import User from '$lib/config/icons/user.svelte';
@@ -106,6 +106,15 @@
 				<span>Login</span>
 			</Button>
 		{/if}
+		<Button on:click={toggleMode} variant="outline" size="icon">
+			<Sun
+				class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"
+			/>
+			<Moon
+				class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100"
+			/>
+			<span class="sr-only">Toggle theme</span>
+		</Button>
 	</div>
 </header>
 
