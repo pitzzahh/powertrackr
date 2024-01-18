@@ -4,18 +4,17 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
-	import { Sun, Moon, Menu, Settings, Palette, LogOut } from 'lucide-svelte';
+	import { Sun, Moon, Menu, Settings, Palette, LogOut, User, UserPlus } from 'lucide-svelte';
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
-	import { store } from '$lib';
-	import User from '$lib/config/icons/user.svelte';
 	import { Icons } from '$lib/config/icons';
 	import { goto } from '$app/navigation';
 
-	const logout = () => {
-		$store.isLoggingOut = true;
-		goto('/');
-	};
+	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
+
+	let isLoggingOut = false;
+
+	export let hasUser: boolean = false;
 </script>
 
 <header
@@ -26,7 +25,7 @@
 	</div>
 
 	<div class="flex h-14 items-center justify-between gap-1">
-		{#if $store.isLoggedIn}
+		{#if hasUser}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="ghost" class="h-8 w-8 rounded-full ">
@@ -42,12 +41,12 @@
 						<DropdownMenu.Separator />
 						{#each siteConfig.profileLinks as pf}
 							<DropdownMenu.Item on:click={() => goto(pf.href)}>
-								<svelte:component this={pf.icon} class="mr-2 h-4 w-4"/>
+								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />
 								{pf.text}
 							</DropdownMenu.Item>
 						{/each}
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item on:click={logout}>
+						<DropdownMenu.Item on:click={() => (isLoggingOut = true)}>
 							<svelte:component this={LogOut} class="mr-2 h-4 w-4" />
 							Logout</DropdownMenu.Item
 						>
@@ -106,15 +105,16 @@
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</div>
-		{:else}
+		{:else} 
 			<Button
-				on:click={() => {
-					$store.isLoggedIn = true;
-					$store.isLoggingOut = false;
-				}}
+				href="{$page.url.protocol}//{$page.url.host}/auth/{isLoginPage ? 'register' : 'login'}"
 			>
-				<User class="mr-1 h-4 w-4" />
-				<span>Login</span>
+				{#if isLoginPage}
+					<UserPlus class="mr-1 h-4 w-4" />
+				{:else}
+					<User class="mr-1 h-4 w-4" />
+				{/if}
+				<span>{isLoginPage ? 'Register' : 'Login'}</span>
 			</Button>
 		{/if}
 		<Button on:click={toggleMode} variant="outline" size="icon">
@@ -129,14 +129,20 @@
 	</div>
 </header>
 
-<AlertDialog.Root bind:open={$store.isLoggingOut}>
+<AlertDialog.Root bind:open={isLoggingOut}>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
 			<AlertDialog.Title>Are you sure you want to logout?</AlertDialog.Title>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action on:click={() => ($store.isLoggedIn = false)}>Logout</AlertDialog.Action>
+			<AlertDialog.Action
+				on:click={() => {
+					goto('user/logout');
+					isLoggingOut = false;
+					hasUser = false;
+				}}>Logout</AlertDialog.Action
+			>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
