@@ -4,7 +4,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
-	import { Sun, Moon, Menu, Settings, Palette } from 'lucide-svelte';
+	import { Sun, Moon, Menu, Settings, Palette, LogOut } from 'lucide-svelte';
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
 	import { store } from '$lib';
@@ -12,11 +12,9 @@
 	import { Icons } from '$lib/config/icons';
 	import { goto } from '$app/navigation';
 
-	let position = 'bottom';
-	let isLoggingOut = false;
-
 	const logout = () => {
-		isLoggingOut = true;
+		$store.isLoggingOut = true;
+		goto('/');
 	};
 </script>
 
@@ -42,10 +40,17 @@
 					<DropdownMenu.Group>
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item>Profile</DropdownMenu.Item>
-						<DropdownMenu.Item>Settings</DropdownMenu.Item>
-						<DropdownMenu.Item on:click={logout}>Logout</DropdownMenu.Item>
+						{#each siteConfig.profileLinks as pf}
+							<DropdownMenu.Item on:click={() => goto(pf.href)}>
+								<svelte:component this={pf.icon} class="mr-2 h-4 w-4"/>
+								{pf.text}
+							</DropdownMenu.Item>
+						{/each}
 						<DropdownMenu.Separator />
+						<DropdownMenu.Item on:click={logout}>
+							<svelte:component this={LogOut} class="mr-2 h-4 w-4" />
+							Logout</DropdownMenu.Item
+						>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
@@ -60,7 +65,7 @@
 						<DropdownMenu.Label>Menu</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						{#each siteConfig.navLinks as link}
-							<DropdownMenu.RadioGroup bind:value={position}>
+							<DropdownMenu.RadioGroup>
 								<div class="gap-2 transition-all">
 									<DropdownMenu.RadioItem
 										on:click={() => goto(link.href)}
@@ -101,7 +106,12 @@
 				</DropdownMenu.Root>
 			</div>
 		{:else}
-			<Button on:click={() => ($store.isLoggedIn = true)}>
+			<Button
+				on:click={() => {
+					$store.isLoggedIn = true;
+					$store.isLoggingOut = false;
+				}}
+			>
 				<User class="mr-1 h-4 w-4" />
 				<span>Login</span>
 			</Button>
@@ -118,7 +128,7 @@
 	</div>
 </header>
 
-<AlertDialog.Root bind:open={isLoggingOut}>
+<AlertDialog.Root bind:open={$store.isLoggingOut}>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
 			<AlertDialog.Title>Are you sure you want to logout?</AlertDialog.Title>
