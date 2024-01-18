@@ -38,7 +38,7 @@ export const actions: Actions = {
             })
 		} catch (e: any) {
 			// check for unique constraint error in user table
-            console.log(`e: ${JSON.stringify(e)}`)
+            console.error(`e: ${JSON.stringify(e)}`)
 			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
 				return fail(400, {
 					message: 'Username already taken',
