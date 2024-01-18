@@ -1,4 +1,4 @@
-import { FolderClock, Home } from 'lucide-svelte';
+import { FolderClock, Home, User, Settings } from 'lucide-svelte';
 export const siteConfig = {
     name: "powertrackr",
     url: "https://powertrackr.vercel.app",
@@ -9,5 +9,9 @@ export const siteConfig = {
         { text: 'HOME', href: '/', icon: Home },
         { text: 'HISTORY', href: '/history', icon: FolderClock },
     ] as NavItem[],
+    profileLinks: [
+        {text: 'Profile', href: '/user', icon: User},
+        {text: 'Settings', href: '/user/settings', icon: Settings}
+    ]
 };
 export type SiteConfig = typeof siteConfig;

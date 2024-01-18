@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "prisma generate && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -12,7 +12,7 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-vercel": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/eslint": "8.56.0",
@@ -28,7 +28,7 @@
 		"prettier-plugin-svelte": "^3.1.2",
 		"prettier-plugin-tailwindcss": "^0.5.9",
 		"prisma": "^5.8.1",
-		"svelte": "^4.2.7",
+		"svelte": "^4.2.8",
 		"svelte-check": "^3.6.0",
 		"svelte-headless-table": "^0.18.1",
 		"tailwindcss": "^3.3.6",
@@ -40,19 +40,22 @@
 	"dependencies": {
 		"@lucia-auth/adapter-prisma": "^3.0.2",
 		"@lucia-auth/oauth": "^3.5.1",
+		"@prisma/client": "5.8.1",
 		"@vercel/analytics": "^1.1.1",
 		"@vercel/speed-insights": "^1.0.2",
 		"bits-ui": "^0.11.8",
 		"clsx": "^2.0.0",
 		"cmdk-sv": "^0.0.12",
 		"crypto-random-string": "^5.0.0",
+		"formsnap": "^0.4.2",
 		"lucia": "^2.7.6",
-		"lucia-auth": "^1.8.0",
 		"lucide-svelte": "^0.303.0",
 		"mode-watcher": "^0.1.2",
 		"radix-icons-svelte": "^1.2.1",
 		"svelte-sonner": "^0.3.11",
+		"sveltekit-superforms": "^1.13.3",
 		"tailwind-merge": "^2.2.0",
-		"tailwind-variants": "^0.1.19"
+		"tailwind-variants": "^0.1.19",
+		"zod": "^3.22.4"
 	}
 }
