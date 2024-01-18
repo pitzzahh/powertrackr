@@ -7,6 +7,7 @@
 	import { dev } from '$app/environment';
 	import { inject } from '@vercel/analytics';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import PageProgress from '$lib/components/page-progress.svelte';
 
 	onNavigate((navigation) => {
 		// @ts-ignore
@@ -26,6 +27,7 @@
 </script>
 
 <Toaster richColors />
+<PageProgress />
 <ModeWatcher />
 <Header />
 <slot />
