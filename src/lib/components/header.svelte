@@ -82,6 +82,7 @@
 								</div>
 							</DropdownMenu.RadioGroup>
 						{/each}
+						<DropdownMenu.Separator />
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>
 								<Palette class="mr-2 h-4 w-4" />
