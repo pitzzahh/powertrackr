@@ -40,5 +40,6 @@ export const filteredDataFields = ["date", "totalKwh", "subKwh", "balance", "pay
 
 export const store = writable({
     filteredField: '',
+    isLoggingOut: false,
     isLoggedIn: false
 })
