@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client/edge'
+import { PrismaClient } from '@prisma/client'
 declare global {
 	namespace App {
 		// interface Error {}
@@ -16,10 +16,11 @@ declare global {
 
 	declare namespace Lucia {
 		type Auth = import("$lib/server/lucia").Auth
-		type UserAttributes = {
+		type DatabaseUserAttributes = {
 			username: string,
 			name: string
-		}
+		};
+		type DatabaseSessionAttributes = Record<string, never>;
 	}
 }
 
