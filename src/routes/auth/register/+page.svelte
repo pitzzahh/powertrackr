@@ -53,7 +53,6 @@
 			<Form.Item>
 				<Form.Label>Password</Form.Label>
 				<Form.Input />
-				<Form.Description>This is your public display name.</Form.Description>
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
@@ -61,7 +60,6 @@
 			<Form.Item>
 				<Form.Label>ConfirmPassword</Form.Label>
 				<Form.Input />
-				<Form.Description>This is your public display name.</Form.Description>
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>

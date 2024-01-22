@@ -40,8 +40,8 @@ model Key {
 }
 
 model BillingInfo {
-  id       String   @id @unique
-  user_id  String
+  id       String   @id @unique @default(uuid())
+  user_id  String 
   date     DateTime
   totalKwh Int
   subKwh   Int

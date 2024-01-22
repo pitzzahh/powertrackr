@@ -4,7 +4,9 @@ node_modules
 /.svelte-kit
 /package
 .env
+.vercel
 .env.*
+prisma/dev.sqlite
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*

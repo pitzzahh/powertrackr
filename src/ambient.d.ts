@@ -12,17 +12,7 @@ type Payment = {
     email: string | null;
 };
 
-type BillingInfo = {
-    id: string;
-    date: Date;
-    totalKwh: number;
-    subKwh: number;
-    balance: number;
-    payment: number;
-    status: "pending" | "paid";
-};
-
-type BillingInfoPreview = {
+type BillingInfoDTO = {
     id: string;
     date: string;
     totalKwh: number;

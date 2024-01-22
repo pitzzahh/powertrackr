@@ -4,6 +4,7 @@ import { fail } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms/server";
 import { registerFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export const load = (async ({ locals }) => {
     const session = await locals.auth.validate();
@@ -33,13 +34,14 @@ export const actions: Actions = {
                 },
                 attributes: {
                     name,
-                    username
+                    username,
+                    picture: null
                 }
             })
 		} catch (e: any) {
 			// check for unique constraint error in user table
             console.error(`e: ${JSON.stringify(e)}`)
-			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
 				return fail(400, {
 					message: 'Username already taken',
                     form: registrationForm
