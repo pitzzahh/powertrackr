@@ -3,10 +3,7 @@ declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			auth: import("lucia").AuthRequest,
-			validate: import("@lucia-auth/sveltekit").Validate,
-			validateUser: import("@lucia-auth/sveltekit").ValidateUser,
-			setSession: import("@lucia-auth/sveltekit").SetSession
+			auth: import('lucia').AuthRequest;
 		}
 		// interface PageData {}
 		// interface PageState {}
@@ -18,7 +15,8 @@ declare global {
 		type Auth = import("$lib/server/lucia").Auth
 		type DatabaseUserAttributes = {
 			username: string,
-			name: string
+			name: string,
+			picture: string | null
 		};
 		type DatabaseSessionAttributes = Record<string, never>;
 	}
