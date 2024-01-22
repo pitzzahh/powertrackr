@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { sampleData, store, formatDate, filteredDataFields } from '$lib';
+	import { sampleData, store, filteredDataFields } from '$lib';
 	import {
 		addPagination,
 		addSortBy,
