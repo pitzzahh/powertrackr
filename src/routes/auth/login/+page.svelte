@@ -10,7 +10,7 @@
 			toast.info('Logging in...');
 		},
 		onResult({ result }) {
-			if (result.status === 302) toast.success('LoggedIn Successfully!');
+			if (result.status === 302) toast.success('Logged-in successfully!');
 			if (result.status === 400 || result.status === 500) {
 				{
 					toast.error(result.data?.message || 'Please enter valid credentials', {
@@ -48,7 +48,6 @@
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
-
 		<Form.Button>Login</Form.Button>
 	</Form.Root>
     <p>Don't have an account? <a href="register" class="hover:text-primary hover:underline hover:underline-offset-4">register</a></p>
