@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { sampleData, store, filteredDataFields } from '$lib';
+	import { store, filteredDataFields } from '$lib';
 	import {
 		addPagination,
 		addSortBy,
@@ -18,7 +18,9 @@
 	import DataTableCheckbox from './data-table-checkbox.svelte';
 	import DataTableComboBox from './data-table-combobox.svelte';
 
-	const table = createTable(readable(sampleData), {
+	export let history: BillingInfoDTO[];
+
+	const table = createTable(readable(history), {
 		page: addPagination(),
 		sort: addSortBy({ disableMultiSort: true }),
 		filter: addTableFilter({
@@ -207,7 +209,7 @@
 	</div>
 	<div class="rounded-md border">
 		<Table.Root {...$tableAttrs}>
-			<Table.Caption>A list of your invoices.</Table.Caption>
+			<Table.Caption>{history.length > 0 ? 'A list of your invoices.' : 'No invoices'}</Table.Caption>
 			<Table.Header>
 				{#each $headerRows as headerRow}
 					<Subscribe rowAttrs={headerRow.attrs()}>
