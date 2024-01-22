@@ -5,6 +5,7 @@ import { superValidate } from "sveltekit-superforms/server";
 import { loginFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { LuciaError } from 'lucia';
+import prismaClient from '$lib/server/prisma';
 
 export const load = (async ({ locals }) => {
     const session = await locals.auth.validate();
@@ -27,11 +28,10 @@ export const actions: Actions = {
 
         try {
             const key = await auth.useKey('username', username.toLowerCase(), password);
-            const session = await auth.createSession({
+            event.locals.auth.setSession(await auth.createSession({
                 userId: key.userId,
                 attributes: {}
-            });
-            event.locals.auth.setSession(session);
+            }));
         } catch (e: any) {
             if (
                 e instanceof LuciaError &&
