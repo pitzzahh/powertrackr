@@ -5,7 +5,6 @@ import { superValidate } from "sveltekit-superforms/server";
 import { registerFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { LuciaError } from 'lucia';
 
 export const load = (async ({ locals }) => {
     const session = await locals.auth.validate();
