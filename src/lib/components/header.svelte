@@ -4,17 +4,29 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
-	import { Sun, Moon, Menu, Settings, Palette, LogOut, User, UserPlus } from 'lucide-svelte';
+	import {
+		Sun,
+		Moon,
+		Menu,
+		Settings,
+		Palette,
+		LogOut,
+		User as UserIcon,
+		UserPlus
+	} from 'lucide-svelte';
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
 	import { Icons } from '$lib/config/icons';
 	import { goto } from '$app/navigation';
+	import type { User } from '@prisma/client';
 
-	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
+	export let user: User | null | undefined;
 
+	let route = '';
 	let isLoggingOut = false;
 
-	export let hasUser: boolean = false;
+	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
+	$: hasUser = !!user;
 </script>
 
 <header
@@ -30,8 +42,11 @@
 				<DropdownMenu.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="ghost" class="h-8 w-8 rounded-full ">
 						<Avatar.Root class="h-8 w-8">
-							<Avatar.Image src="https://github.com/pitzzahh.png" alt="@pitzzahh" />
-							<Avatar.Fallback>User</Avatar.Fallback>
+							<Avatar.Image
+								src={user?.picture || `${$page.url.protocol}//${$page.url.host}/default-user.png`}
+								alt="@{user?.username}"
+							/>
+							<Avatar.Fallback>{user?.username}</Avatar.Fallback>
 						</Avatar.Root>
 					</Button>
 				</DropdownMenu.Trigger>
@@ -40,7 +55,11 @@
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						{#each siteConfig.profileLinks as pf}
-							<DropdownMenu.Item on:click={() => goto(pf.href)}>
+							<DropdownMenu.Item
+								on:click={() => {
+									if (user) goto(pf.href.replace('user', user.username));
+								}}
+							>
 								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />
 								{pf.text}
 							</DropdownMenu.Item>
@@ -64,13 +83,13 @@
 						<DropdownMenu.Label>Menu</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						{#each siteConfig.navLinks as link}
-							<DropdownMenu.RadioGroup>
-								<div class="gap-2 transition-all">
+							<DropdownMenu.RadioGroup bind:value={route}>
+								<div class="gap-2">
 									<DropdownMenu.RadioItem
 										on:click={() => goto(link.href)}
-										value={link.href}
+										value={link.text}
 										class={$page.route && link.href === $page.route.id
-											? 'font-bold text-primary transition-all'
+											? 'font-bold text-primary'
 											: 'transition-all'}
 									>
 										<svelte:component this={link.icon} class="mr-2 h-4 w-4">
@@ -105,14 +124,14 @@
 					</DropdownMenu.Content>
 				</DropdownMenu.Root>
 			</div>
-		{:else} 
+		{:else}
 			<Button
 				href="{$page.url.protocol}//{$page.url.host}/auth/{isLoginPage ? 'register' : 'login'}"
 			>
 				{#if isLoginPage}
 					<UserPlus class="mr-1 h-4 w-4" />
 				{:else}
-					<User class="mr-1 h-4 w-4" />
+					<UserIcon class="mr-1 h-4 w-4" />
 				{/if}
 				<span>{isLoginPage ? 'Register' : 'Login'}</span>
 			</Button>
@@ -138,7 +157,7 @@
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
 				on:click={() => {
-					goto('user/logout');
+					goto(`${$page.url.protocol}//${$page.url.host}/${user?.username}/logout`);
 					isLoggingOut = false;
 					hasUser = false;
 				}}>Logout</AlertDialog.Action

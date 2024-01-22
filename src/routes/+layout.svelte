@@ -31,5 +31,5 @@
 <Toaster richColors closeButton />
 <PageProgress />
 <ModeWatcher />
-<Header hasUser={data?.user}/>
+<Header user={data?.user}/>
 <slot />
