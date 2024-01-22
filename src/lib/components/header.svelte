@@ -22,7 +22,7 @@
 
 	export let user: User | null | undefined;
 
-	let route = ""
+	let route = '';
 	let isLoggingOut = false;
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
@@ -55,7 +55,11 @@
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						{#each siteConfig.profileLinks as pf}
-							<DropdownMenu.Item on:click={() => {if(user) goto(pf.href.replace('user', user.username))}}>
+							<DropdownMenu.Item
+								on:click={() => {
+									if (user) goto(pf.href.replace('user', user.username));
+								}}
+							>
 								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />
 								{pf.text}
 							</DropdownMenu.Item>
