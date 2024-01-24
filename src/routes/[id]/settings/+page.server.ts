@@ -13,6 +13,7 @@ export const load = (async ({ locals, params }) => {
     });
 
     if (!user || user.id !== session.user.userId) {
+        console.error('User not found or not logged in as user');
         throw error(403, 'You do not have permission to access that page');
     }
 
