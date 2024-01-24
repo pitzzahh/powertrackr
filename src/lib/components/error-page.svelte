@@ -6,7 +6,7 @@
 	<title>{$page.status}: {$page.error?.message}</title>
 </svelte:head>
 
-<div class="flex h-[90vh] flex-col items-center justify-center gap-2 text-center">
+<div class="flex h-[85vh] flex-col items-center justify-center gap-2 text-center">
 	{#if $page.status === 404}
 		<svg
 			fill="currentColor"
