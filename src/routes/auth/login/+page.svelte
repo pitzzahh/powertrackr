@@ -31,6 +31,11 @@
 	export let data: PageData;
 </script>
 
+
+<svelte:head>
+	<title>PowerTrackr Login</title>
+</svelte:head>
+
 <div class="container md:w-1/2">
 	<h2>Login</h2>
 	<Form.Root method="POST" form={data.form} {options} schema={loginFormSchema} let:config>

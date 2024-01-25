@@ -5,7 +5,6 @@ import { superValidate } from "sveltekit-superforms/server";
 import { loginFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { LuciaError } from 'lucia';
-import prismaClient from '$lib/server/prisma';
 
 export const load = (async ({ locals }) => {
     const session = await locals.auth.validate();
@@ -33,15 +32,26 @@ export const actions: Actions = {
                 attributes: {}
             }));
         } catch (e: any) {
-            if (
-                e instanceof LuciaError &&
-                (e.message === 'AUTH_INVALID_KEY_ID' || e.message === 'AUTH_INVALID_PASSWORD')
-            ) {
-                return fail(400, {
-                    message: 'Incorrect username or password',
-                    form: loginForm
-                });
+            if (e instanceof LuciaError) {
+                if(e.message === 'AUTH_INVALID_KEY_ID') {
+                    return fail(400, {
+                        message: 'Username not found',
+                        form: loginForm
+                    });
+                }
+                else if(e.message === 'AUTH_INVALID_PASSWORD') {
+                    return fail(400, {
+                        message: 'Incorrect password',
+                        form: loginForm
+                    });
+                } else {
+                    return fail(500, {
+                        message: e.message,
+                        form: loginForm
+                    });
+                }
             }
+            console.error(`Login Error: ${JSON.stringify(e)}`)
             return fail(500, {
                 message: 'An unknown error occurred',
                 form: loginForm

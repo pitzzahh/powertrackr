@@ -3,3 +3,7 @@
     
     export let data: PageData;
 </script>
+
+<svelte:head>
+	<title>Settings</title>
+</svelte:head>

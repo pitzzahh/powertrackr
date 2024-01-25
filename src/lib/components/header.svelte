@@ -22,7 +22,7 @@
 
 	export let user: User | null | undefined;
 
-	let route = '';
+	let route = '/';
 	let isLoggingOut = false;
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
@@ -33,7 +33,10 @@
 	class="shadown-sm container sticky top-0 z-50 flex items-center justify-between backdrop-blur-[10px]"
 >
 	<div class="flex items-center justify-start gap-1">
-		<Icons.logo on:click={() => goto('/')} />
+		<Icons.logo on:click={() => {
+			route = '/'
+			goto(route)
+		}} />
 	</div>
 
 	<div class="flex h-14 items-center justify-between gap-1">
@@ -87,7 +90,7 @@
 								<div class="gap-2">
 									<DropdownMenu.RadioItem
 										on:click={() => goto(link.href)}
-										value={link.text}
+										value={link.href}
 										class={$page.route && link.href === $page.route.id
 											? 'font-bold text-primary'
 											: 'transition-all'}
