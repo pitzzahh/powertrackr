@@ -52,16 +52,16 @@ const config = {
 					DEFAULT: "hsl(var(--card) / <alpha-value>)",
 					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
 				},
-				'special': {
-					100: '#10C55E',
-					200: '#92C55E',
-					300: '#82C55E',
-					400: '#72C55E',
-					500: '#62C55E',
-					600: '#52C55E',
-					700: '#42C55E',
-					800: '#32C55E',
-					900: '#22C55E',
+				green: {
+					100: '#4EF18A',
+					200: '#3BEA7A',
+					300: '#2EE56B',
+					400: '#25D95F',
+					500: '#1FC953',
+					600: '#1ABD49',
+					700: '#16B23F',
+					800: '#11A635',
+					900: '#0D9B2B'
 				}
 			},
 			borderRadius: {

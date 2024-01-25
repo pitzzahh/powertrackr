@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BillForm from '$lib/components/bill-form.svelte';
 	import { scaleTime } from 'd3-scale';
 	import {
 		Chart,
@@ -6,26 +7,20 @@
 		Area,
 		LinearGradient,
 		Tooltip,
-		ChartClipPath,
+		RectClipPath,
 		Highlight,
 		Axis
 	} from 'layerchart';
-	import { cubicInOut } from 'svelte/easing';
 	import { format, PeriodType } from 'svelte-ux';
 	import type { PageData } from './$types';
 	import type { BillingInfo } from '@prisma/client';
-	import { onMount } from 'svelte';
 	import { generateSampleData } from '$lib';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Drawer from '$lib/components/ui/drawer';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import { mediaQuery } from 'svelte-legos';
 
 	export let data: PageData;
-
-	let open = false;
 
 	$: balanceHistory = data.user
 		? data.user.billing_info?.length > 0
@@ -33,97 +28,77 @@
 					date: new Date(billing.date),
 					value: billing.balance
 				}))
-			: generateSampleData((Math.random() * 100) + 1)
+			: generateSampleData(Math.random() * 100 + 1)
 		: [];
 
-	$: noData = false;
-	$: show = false;
+	$: show = balanceHistory?.length > 0 && balanceHistory !== undefined;
+	$: oldestDate = balanceHistory?.length > 0 ? balanceHistory[0].date : new Date();
+	$: latestDate =
+		balanceHistory?.length > 0 ? balanceHistory[balanceHistory.length - 1].date : new Date();
 
-	const notMobile = mediaQuery('(min-width: 768px)')
-
-	onMount(() => {
-		setTimeout(() => {
-			show = (balanceHistory?.length ?? 0) !== 0;
-			noData = !show;
-		}, 1000);
-	});
+	const largeScreen = mediaQuery('(min-width: 768px)');
 </script>
 
 <svelte:head>
-	<title
-		>PowerTrackr: Combining "power" with "track," indicating the ability to monitor and track
-		electricity consumption.</title
-	>
+	<title>PowerTrackr: Monitor and track electricity consumption.</title>
 </svelte:head>
 
-<div class="container">
-	<div class="flex items-center justify-between gap-2">
-		<h1 class="ali">Monthly Balance History</h1>
-		<div class="flex flex-col md:flex-row items-right justify-center gap-2">
-			{#if $notMobile}
-				<Dialog.Root bind:open>
+<div class="container md:mt-12">
+	<div class="flex items-end md:items-center justify-between gap-2">
+		<div class="flex flex-col items-start justify-start">
+			<h1>Monthly Balance History</h1>
+			{#if show}
+				<p class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2">
+					From {format(oldestDate, PeriodType.Day)} to {format(latestDate, PeriodType.Day)}
+				</p>
+			{/if}
+		</div>
+		{#if show}
+			{#if $largeScreen}
+				<Dialog.Root>
 					<Dialog.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Dialog.Trigger>
 					<Dialog.Content class="sm:max-w-[425px]">
 						<Dialog.Header>
-							<Dialog.Title>Edit profile</Dialog.Title>
+							<Dialog.Title>Billing Info</Dialog.Title>
 							<Dialog.Description>
-								Make changes to your profile here. Click save when you're done.
+								Enter the billing info for the month. Click Add when you're done.
 							</Dialog.Description>
 						</Dialog.Header>
-						<form class="grid items-start gap-4">
-							<div class="grid gap-2">
-								<Label for="email">Email</Label>
-								<Input type="email" id="email" value="shadcn@example.com" />
-							</div>
-							<div class="grid gap-2">
-								<Label for="username">Username</Label>
-								<Input id="username" value="@shadcn" />
-							</div>
-							<Button type="submit">Save changes</Button>
-						</form>
+						<BillForm {data} />
 					</Dialog.Content>
 				</Dialog.Root>
 			{:else}
-				<Drawer.Root bind:open>
+				<Drawer.Root>
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
 					<Drawer.Content>
-						<Drawer.Header class="text-left">
-							<Drawer.Title>Edit profile</Drawer.Title>
-							<Drawer.Description>
-								Make changes to your profile here. Click save when you're done.
-							</Drawer.Description>
-						</Drawer.Header>
-						<form class="grid items-start gap-4 px-4">
-							<div class="grid gap-2">
-								<Label for="email">Email</Label>
-								<Input type="email" id="email" value="shadcn@example.com" />
+						<div class="mx-auto w-full max-w-sm">
+							<Drawer.Header class="text-left">
+								<Drawer.Title>Billing Info</Drawer.Title>
+								<Drawer.Description
+									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
+								>
+							</Drawer.Header>
+							<div class="mx-[0.9rem]">
+								<BillForm {data} />
 							</div>
-							<div class="grid gap-2">
-								<Label for="username">Username</Label>
-								<Input id="username" value="@shadcn" />
-							</div>
-							<Button type="submit">Save changes</Button>
-						</form>
-						<Drawer.Footer class="pt-2">
-							<Drawer.Close asChild let:builder>
-								<Button variant="outline" builders={[builder]}>Cancel</Button>
-							</Drawer.Close>
-						</Drawer.Footer>
+							<Drawer.Footer class="pt-2">
+								<Drawer.Close asChild let:builder>
+									<Button variant="outline" builders={[builder]}>Cancel</Button>
+								</Drawer.Close>
+							</Drawer.Footer>
+						</div>
 					</Drawer.Content>
 				</Drawer.Root>
 			{/if}
-			<Button href="/history" variant="secondary">View History</Button>
-		</div>
+		{/if}
 	</div>
 	{#if show}
-		<div class="h-80">
+		<div class="mt-2 h-80">
 			<Chart
-				aria-role="Chart"
-				aria-label="Monthly Balance History Chart"
 				data={balanceHistory}
 				x="date"
 				xScale={scaleTime()}
@@ -137,80 +112,44 @@
 				let:tooltip
 			>
 				<Svg>
-					<LinearGradient
-						aria-role="LinearGradient"
-						aria-label="Monthly balance history gradient"
-						class="from-special-500/50 to-special-500/0"
-						vertical
-						let:url
-					>
-						{#if show}
-							<Area
-								aria-role="Area"
-								aria-label="Path of the monthly balance history"
-								line={{ class: 'stroke-2 stroke-special-500 opacity-20' }}
-								draw={{ easing: cubicInOut, delay: 700 }}
-								fill={url}
-							/>
-							<ChartClipPath
+					<LinearGradient class="from-green-500/50 to-green-500/0" vertical let:url>
+							<Area line={{ class: 'stroke-2 stroke-green-500 opacity-20' }} fill={url} />
+							<RectClipPath
 								x={0}
 								y={0}
-								initialWidth={0}
 								width={tooltip.data ? tooltip.x : width}
 								{height}
+								initialWidth={0}
 								spring
-								tweened={{
-									y: { duration: 1000, easing: cubicInOut, delay: 500 },
-									height: { duration: 1000, easing: cubicInOut, delay: 500 }
-								}}
 							>
-								<Area line={{ class: 'stroke-2 stroke-special-500' }} fill={url} />
-							</ChartClipPath>
-						{/if}
+								<Area initialHeight={0} line={{ class: 'stroke-2 stroke-green-500' }} fill={url} />
+							</RectClipPath>
 					</LinearGradient>
-					<Highlight points lines={{ class: 'stroke-special-500 [stroke-dasharray:unset]' }} />
+					<Highlight points lines={{ class: 'stroke-green-500 [stroke-dasharray:unset]' }} />
 					<Axis placement="bottom" />
 				</Svg>
 
-				<Tooltip
-					aria-role="Tooltip"
-					aria-label="Monthly balance history tooltip containing the current balance"
-					y={48}
-					xOffset={4}
-					variant="none"
-					class="text-sm font-semibold leading-3 text-special-700"
-					let:data
-				>
+				<Tooltip y={48} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
 					{format(data.value, 'currency', { currency: 'PHP' })}
 				</Tooltip>
 
-				<Tooltip
-					aria-role="Tooltip"
-					aria-label="Monthly balance history tooltip containing the current date"
-					x={4}
-					y={4}
-					variant="none"
-					class="text-sm font-semibold leading-3"
-					let:data
-				>
+				<Tooltip x={4} y={1} variant="none" class="text-sm font-semibold leading-3" let:data>
 					{format(data.date, PeriodType.Day)}
 				</Tooltip>
 
 				<Tooltip
-					aria-role="Tooltip"
-					aria-label="Monthly balance history tooltip containing the current date"
 					x="data"
 					y={height + padding.top + 2}
 					anchor="top"
 					variant="none"
-					class="whitespace-nowrap rounded bg-special-500 px-2 py-1 text-sm font-semibold leading-3 text-white"
+					class="whitespace-nowrap rounded bg-green-500 px-2 py-1 text-sm font-semibold leading-3"
 					let:data
 				>
 					{format(data.date, PeriodType.Day)}
 				</Tooltip>
 			</Chart>
 		</div>
-	{:else if noData}
+	{:else}
 		<div class="flex flex-col items-center justify-center text-center">
 			<svg
 				fill="currentColor"

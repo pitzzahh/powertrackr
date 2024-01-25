@@ -23,7 +23,7 @@ export const generateSampleData = (count: number) => {
     let trendDuration = 0;
 
     for (let i = 0; i < count; i++) {
-        const date = randomDate(new Date(2018, 0, 1), new Date());
+        const date = randomDate(new Date(2002, 0, 1), new Date());
         while (sampleData.some((x) => x.date.getTime() === date.getTime())) {
             date.setDate(randomDate(new Date(2002, 0, 1), new Date()).getDate());
         }
@@ -44,4 +44,8 @@ export const generateSampleData = (count: number) => {
         sampleData.push({ date, value });
     }
     return sampleData.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+export const calculatePayPerKwh = (balance: number, totalKwh: number) => {
+    return Number((balance / totalKwh).toFixed(2));
 }

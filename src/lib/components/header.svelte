@@ -17,7 +17,7 @@
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
 	import { Icons } from '$lib/config/icons';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import type { User } from '@prisma/client';
 
 	export let user: User | null | undefined;
@@ -33,10 +33,12 @@
 	class="shadown-sm container sticky top-0 z-50 flex items-center justify-between backdrop-blur-[10px]"
 >
 	<div class="flex items-center justify-start gap-1">
-		<Icons.logo on:click={() => {
-			route = '/'
-			goto(route)
-		}} />
+		<Icons.logo
+			on:click={() => {
+				route = '/';
+				goto(route);
+			}}
+		/>
 	</div>
 
 	<div class="flex h-14 items-center justify-between gap-1">
@@ -159,10 +161,11 @@
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
 			<AlertDialog.Action
-				on:click={() => {
-					goto(`${$page.url.protocol}//${$page.url.host}/${user?.username}/logout`);
+				on:click={async () => {
 					isLoggingOut = false;
 					hasUser = false;
+					await invalidateAll()
+					goto(`${$page.url.protocol}//${$page.url.host}/${user?.username}/logout`);
 				}}>Logout</AlertDialog.Action
 			>
 		</AlertDialog.Footer>
