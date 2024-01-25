@@ -6,7 +6,7 @@
 </script>
 
 <svelte:head>
-	<title>History</title>
+	<title>PowerTrackr History</title>
 </svelte:head>
 
 <div class="container mx-auto">
