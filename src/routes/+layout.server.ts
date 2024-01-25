@@ -1,6 +1,6 @@
 import type { Session } from 'lucia';
 import type { LayoutServerLoad } from './$types';
-import prismaClient from '$lib/server/prisma';
+import { prismaClient } from '$lib/server/prisma';
 
 export const load = (async ({ locals }) => {
     const session: Session = await locals.auth.validate()
