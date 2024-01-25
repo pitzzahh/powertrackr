@@ -1,13 +1,17 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { Loader2 } from 'lucide-svelte';
 	import * as Form from '$lib/components/ui/form';
 	import { loginFormSchema, type LoginFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
 
+	$: processing = false;
+
 	const options: FormOptions<LoginFormSchema> = {
 		onSubmit() {
 			toast.info('Logging in...');
+			processing = true;
 		},
 		onResult({ result }) {
 			if (result.status === 302) toast.success('Logged-in successfully!');
@@ -25,12 +29,12 @@
 					});
 				}
 			}
+			processing = false;
 		}
 	};
 
 	export let data: PageData;
 </script>
-
 
 <svelte:head>
 	<title>PowerTrackr Login</title>
@@ -53,7 +57,21 @@
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
-		<Form.Button>Login</Form.Button>
+		<Form.Button disabled={processing}>
+			{#if processing}
+				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+			{/if}
+			{processing ? 'Please wait' : 'Login'}</Form.Button
+		>
 	</Form.Root>
-    <p>Don't have an account? <a href="register" class="hover:text-primary hover:underline hover:underline-offset-4">register</a></p>
+	<p>
+		Don't have an account?
+		{#if processing}
+			<span class="text-muted-foreground">register</span>
+		{:else}
+			<a href="register" class="hover:text-primary hover:underline hover:underline-offset-4"
+				>register</a
+			>
+		{/if}
+	</p>
 </div>
