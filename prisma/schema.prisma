@@ -37,15 +37,19 @@ model Key {
 }
 
 model BillingInfo {
-  id       String   @id @unique @default(uuid())
-  user_id  String 
-  date     DateTime
-  totalKwh Int
-  subKwh   Int
-  balance  Float
-  payment  Float
-  status   String
-  user     User     @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  id               String   @id @unique @default(uuid())
+  user_id          String
+  date             DateTime
+  totalKwh         Int
+  balance          Float
+  payment          Float?
+  payPerKwh        Float
+  subReadingLatest Int?
+  subReadingOld    Int?
+  subKwh           Int?
+  subPayment Float?
+  status     String
+  user       User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
 
   @@index([user_id])
 }

@@ -1,13 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import * as Form from '$lib/components/ui/form';
+	import { Loader2 } from 'lucide-svelte';
 	import { registerFormSchema, type RegisterFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
 
+	$: processing = false;
 	const options: FormOptions<RegisterFormSchema> = {
 		onSubmit() {
 			toast.info('Submitting...');
+			processing;
 		},
 		onResult({ result }) {
 			if (result.status === 302) toast.success('Registered Successfully!');
@@ -25,6 +28,7 @@
 					});
 				}
 			}
+			processing = false;
 		}
 	};
 	export let data: PageData;
@@ -67,12 +71,21 @@
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
-		<Form.Button>Register</Form.Button>
+		<Form.Button disabled={processing}>
+			{#if processing}
+				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+			{/if}
+			{processing ? 'Please wait' : 'Register'}</Form.Button
+		>
 	</Form.Root>
 	<p>
-		Already have an account? <a
-			href="login"
-			class="hover:text-primary hover:underline hover:underline-offset-4">login</a
-		>
+		Don't have an account?
+		{#if processing}
+			<span class="text-muted-foreground">login</span>
+		{:else}
+			<a href="login" class="hover:text-primary hover:underline hover:underline-offset-4"
+				>login</a
+			>
+		{/if}
 	</p>
 </div>
