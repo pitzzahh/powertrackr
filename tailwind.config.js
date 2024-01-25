@@ -3,8 +3,12 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 /** @type {import('tailwindcss').Config} */
 const config = {
 	darkMode: ["class"],
-	content: ["./src/**/*.{html,js,svelte,ts}"],
-  safelist: ["dark"],
+	content: [
+		'./src/**/*.{html,svelte,js,ts}',
+		'./node_modules/svelte-ux/**/*.{svelte,js}',
+		'./node_modules/layerchart/**/*.{svelte,js}',
+	],
+	safelist: ["dark"],
 	theme: {
 		container: {
 			center: true,
@@ -47,6 +51,17 @@ const config = {
 				card: {
 					DEFAULT: "hsl(var(--card) / <alpha-value>)",
 					foreground: "hsl(var(--card-foreground) / <alpha-value>)"
+				},
+				'special': {
+					100: '#10C55E',
+					200: '#92C55E',
+					300: '#82C55E',
+					400: '#72C55E',
+					500: '#62C55E',
+					600: '#52C55E',
+					700: '#42C55E',
+					800: '#32C55E',
+					900: '#22C55E',
 				}
 			},
 			borderRadius: {
@@ -59,6 +74,7 @@ const config = {
 			}
 		}
 	},
+	plugins: [require('svelte-ux/plugins/tailwind.cjs')],
 };
 
 export default config;
