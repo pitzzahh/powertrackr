@@ -45,3 +45,7 @@ export const generateSampleData = (count: number) => {
     }
     return sampleData.sort((a, b) => a.date.getTime() - b.date.getTime());
 }
+
+export const calculatePayPerKwh = (balance: number, totalKwh: number) => {
+    return Number((balance / totalKwh).toFixed(2));
+}
