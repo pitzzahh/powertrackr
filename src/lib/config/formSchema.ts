@@ -54,5 +54,42 @@ export const loginFormSchema = z.object({
         })
 })
 
+export const billFormSchema = z.object({
+    balance: z.preprocess(
+        (input) => {
+            const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+            return processed.success ? processed.data : input;
+        },
+        z.number().min(0, { message: "Balance must be greater than 0" }),
+    ),
+    totalKwh: z.preprocess(
+        (input) => {
+            const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+            return processed.success ? processed.data : input;
+        },
+        z.number().min(0, { message: "Total kWh must be greater than 0" }),
+    ),
+    subReading: z.preprocess(
+        (input) => {
+            const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+            return processed.success ? processed.data : input;
+        },
+        z.number()
+            .min(0, { message: "Sub-reading must be greater than 0" })
+            .or(z.literal(null)),
+    ),
+    payment: z.preprocess(
+        (input) => {
+            const processed = z.string().regex(/^\d+$/).transform(Number).safeParse(input);
+            return processed.success ? processed.data : input;
+        },
+        z.number()
+            .min(0, { message: "Payment must be greater than 0" })
+            .or(z.literal(null)),
+    ),
+    status: z.boolean()
+})
+
 export type RegisterFormSchema = typeof registerFormSchema;
 export type LoginFormSchema = typeof loginFormSchema;
+export type BillFormSchema = typeof billFormSchema;
