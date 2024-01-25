@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import prismaClient from '$lib/server/prisma';
+import { prismaClient } from '$lib/server/prisma';
 import { formatDate } from '$lib';
 
 export const load = (async ({ locals }) => {
