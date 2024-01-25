@@ -19,7 +19,6 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
 	import { mediaQuery } from 'svelte-legos';
-	import { cn } from '$lib/utils';
 
 	export let data: PageData;
 
@@ -44,16 +43,12 @@
 	<title>PowerTrackr: Monitor and track electricity consumption.</title>
 </svelte:head>
 
-<div class="container">
+<div class="container md:mt-12">
 	<div class="flex items-end md:items-center justify-between gap-2">
-		<div class={cn('flex flex-col items-start justify-start')}>
+		<div class="flex flex-col items-start justify-start">
 			<h1>Monthly Balance History</h1>
 			{#if show}
-				<p
-					class={cn(
-						'text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2'
-					)}
-				>
+				<p class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2">
 					From {format(oldestDate, PeriodType.Day)} to {format(latestDate, PeriodType.Day)}
 				</p>
 			{/if}
