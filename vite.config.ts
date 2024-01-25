@@ -1,8 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
-export default defineConfig({ssr:{
-	noExternal:['chart.js'],
-	},
+export default defineConfig({
 	plugins: [sveltekit()]
 });
