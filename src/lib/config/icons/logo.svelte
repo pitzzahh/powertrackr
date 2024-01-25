@@ -24,6 +24,6 @@
 			d="M21 5V8"
 		/><path d="M21 12L18 17H22L19 22" /><path d="M3 12A9 3 0 0 0 14.59 14.87" /></svg
 	>
-	<span class="mr-1 translate-y-[-0.1rem] text-2xl font-bold text-slate-100">{siteConfig.name}</span
+	<span class="mr-1 translate-y-[-0.2rem] text-2xl font-bold text-slate-100">{siteConfig.name}</span
 	>
 </button>

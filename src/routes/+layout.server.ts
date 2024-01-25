@@ -13,10 +13,9 @@ export const load = (async ({ locals }) => {
                 billing_info: true
             }
         });
-        console.log(`User: ${JSON.stringify(user)}`);
+        console.info(`User: ${JSON.stringify(user)}`);
         return {
             user
         }
-
     }
 }) satisfies LayoutServerLoad;

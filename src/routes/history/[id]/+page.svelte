@@ -3,3 +3,8 @@
     
     export let data: PageData;
 </script>
+
+
+<svelte:head>
+	<title>PowerTrackr History</title>
+</svelte:head>
