@@ -17,7 +17,11 @@ type BillingInfoDTO = {
     date: string;
     totalKwh: number;
     subKwh: number;
+    payPerKwh: number;
+    subReadingOld: number;
+    subReadingLatest: number;
     balance: number;
     payment: number;
+    subPayment: number;
     status: "pending" | "paid";
 };
