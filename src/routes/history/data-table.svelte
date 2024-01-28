@@ -24,10 +24,12 @@
 		page: addPagination(),
 		sort: addSortBy({ disableMultiSort: true }),
 		filter: addTableFilter({
-			fn: ({ filterValue, value }: { filterValue: string; value: string }) =>
-				{
-					return value.toLowerCase().includes(filterValue.toLowerCase()) || value.toLowerCase() === filterValue.toLowerCase();
-				}
+			fn: ({ filterValue, value }: { filterValue: string; value: string }) => {
+				return (
+					value.toLowerCase().includes(filterValue.toLowerCase()) ||
+					value.toLowerCase() === filterValue.toLowerCase()
+				);
+			}
 		}),
 		hide: addHiddenColumns(),
 		select: addSelectedRows()
@@ -89,9 +91,9 @@
 		}),
 		table.column({
 			accessor: 'subKwh',
-			header: 'Used kwh',
+			header: 'Sub Kwh',
 			cell: ({ value }: { value: number }) => {
-				return `${value} kwh`;
+				return value ? `${value} kwh` : 'N/A';
 			},
 			plugins: {
 				sort: {
@@ -124,10 +126,32 @@
 			accessor: 'payment',
 			header: 'Payment',
 			cell: ({ value }: { value: number }) => {
-				return new Intl.NumberFormat('en-US', {
-					style: 'currency',
-					currency: 'PHP'
-				}).format(value);
+				return value
+					? new Intl.NumberFormat('en-US', {
+							style: 'currency',
+							currency: 'PHP'
+						}).format(value)
+					: 'N/A';
+			},
+			plugins: {
+				sort: {
+					disable: false
+				},
+				filter: {
+					exclude: false
+				}
+			}
+		}),
+		table.column({
+			accessor: 'subPayment',
+			header: 'SubPayment',
+			cell: ({ value }: { value: number }) => {
+				return value
+					? new Intl.NumberFormat('en-US', {
+							style: 'currency',
+							currency: 'PHP'
+						}).format(value)
+					: 'N/A';
 			},
 			plugins: {
 				sort: {
@@ -188,7 +212,7 @@
 				type="text"
 				bind:value={$filterValue}
 			/>
-			<DataTableComboBox disabled={true}/>
+			<DataTableComboBox disabled={true} />
 		</div>
 		<DropdownMenu.Root>
 			<DropdownMenu.Trigger asChild let:builder>
@@ -209,7 +233,9 @@
 	</div>
 	<div class="rounded-md border">
 		<Table.Root {...$tableAttrs}>
-			<Table.Caption>{history.length > 0 ? 'A list of your invoices.' : 'No invoices'}</Table.Caption>
+			<Table.Caption
+				>{history.length > 0 ? 'A list of your invoices.' : 'No invoices'}</Table.Caption
+			>
 			<Table.Header>
 				{#each $headerRows as headerRow}
 					<Subscribe rowAttrs={headerRow.attrs()}>
