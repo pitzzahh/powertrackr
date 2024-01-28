@@ -1,83 +1,99 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
-import { fail } from "@sveltejs/kit";
-import { superValidate } from "sveltekit-superforms/server";
+import { fail } from '@sveltejs/kit';
+import { superValidate } from 'sveltekit-superforms/server';
 import { billFormSchema } from '$lib/config/formSchema';
 import { prismaClient } from '$lib/server/prisma';
 import { calculatePayPerKwh } from '$lib';
 
 export const load = (async () => {
-    return {
-        form: await superValidate(billFormSchema)
-    }
+	return {
+		form: await superValidate(billFormSchema)
+	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-    default: async (event) => {
-        const billForm = await superValidate(event, billFormSchema);
-        if (!billForm.valid) {
-            return fail(400, {
-                form: billForm
-            });
-        }
-        const session = await event.locals.auth.validate();
+	default: async (event) => {
+		const billForm = await superValidate(event, billFormSchema);
+		if (!billForm.valid) {
+			return fail(400, {
+				form: billForm
+			});
+		}
+		const session = await event.locals.auth.validate();
 
-        if (!session) {
-            redirect(302, '/auth/login');
-        }
+		if (!session) {
+			redirect(302, '/auth/login');
+		}
 
-        const user = await prismaClient.user.findUnique({
-            where: {
-                id: session.user.userId
-            }
-        });
+		const user = await prismaClient.user.findUnique({
+			where: {
+				id: session.user.userId
+			}
+		});
 
-        if (!user) {
-            return fail(401, {
-                message: 'Unauthorized'
-            });
-        }
+		if (!user) {
+			return fail(401, {
+				message: 'Unauthorized'
+			});
+		}
 
-        const { balance, totalKwh, subReading, payment, status } = billForm.data;
+		let { balance, totalKwh, subReading, status } = billForm.data;
 
-        const latestBill = await prismaClient.billingInfo.findFirst({
-            orderBy: {
-                date: 'desc'
-            }
-        });
+		console.log(`Bill Form Data: ${JSON.stringify(billForm.data, null, 2)}`);
 
-        console.log(`latestBill: ${JSON.stringify(latestBill)}`);
+		if (!balance || !totalKwh) {
+			return fail(400, {
+				form: billForm
+			});
+		}
 
-        const subReadingLatest = latestBill?.subReadingLatest ?? null;
-        const subKwh = subReadingLatest ? subReading ? subReadingLatest - subReading : null : null;
-        const subPayment = subReadingLatest ? subKwh ? subKwh * calculatePayPerKwh(balance, totalKwh) : null : null;
+		const latestBill = await prismaClient.billingInfo.findFirst({
+			orderBy: {
+				date: 'desc'
+			},
+			where: {
+				user_id: user?.id
+			}
+		});
 
-        const bill = await prismaClient.billingInfo.create({
-            data: {
-                date: new Date(),
-                totalKwh,
-                balance,
-                payment,
-                payPerKwh: calculatePayPerKwh(balance, totalKwh),
-                subReadingLatest,
-                subReadingOld: subReadingLatest,
-                subKwh,
-                subPayment,
-                status: status ? "Paid" : "Pending",
-                user: {
-                    connect: {
-                        id: user?.id
-                    }
-                }
-            }
-        });
+		console.log(`LatestBill: ${JSON.stringify(latestBill, null, 2)}`);
 
-        console.log(`bill: ${JSON.stringify(bill)}`);
+		const subReadingOld = latestBill?.subReadingLatest ?? null;
+		const subKwh = subReadingOld ? (subReading ? Number(subReading) - subReadingOld : null) : null;
+		const subPayment: number | null = subReadingOld
+			? subKwh
+				? subKwh * calculatePayPerKwh(Number(balance), Number(totalKwh))
+				: null
+			: null;
 
-        return fail(500, {
-            message: 'An unknown error occurred',
-            form: billForm
-        });
+		console.log(`subPayment: ${subPayment}`);
 
-    }
+		const bill = await prismaClient.billingInfo.create({
+			data: {
+				totalKwh: Number(totalKwh),
+				balance: Number(balance),
+				payment: subPayment
+					? { create: { amount: subPayment ? Number(balance) - subPayment : Number(balance) } }
+					: undefined,
+				payPerKwh: calculatePayPerKwh(Number(balance), Number(totalKwh)),
+				subReadingLatest: subReading ? Number(subReading) : undefined,
+				subReadingOld: subReadingOld,
+				subKwh,
+				subPayment: subPayment ? { create: { amount: subPayment } } : undefined,
+				status: status ? 'Paid' : 'Pending',
+				user: {
+					connect: {
+						id: user?.id
+					}
+				}
+			}
+		});
+
+		console.log(`Added bill: ${JSON.stringify(bill, null, 2)}`);
+
+		return {
+			form: billForm
+		};
+	}
 };

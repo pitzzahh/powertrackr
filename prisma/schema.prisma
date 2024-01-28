@@ -39,17 +39,27 @@ model Key {
 model BillingInfo {
   id               String   @id @unique @default(uuid())
   user_id          String
-  date             DateTime
+  date             DateTime @default(now())
   totalKwh         Int
   balance          Float
-  payment          Float?
   payPerKwh        Float
   subReadingLatest Int?
   subReadingOld    Int?
   subKwh           Int?
-  subPayment Float?
-  status     String
-  user       User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  status           String
+  paymentId        String?
+  subPaymentId     String?
+
+  user       User     @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  payment    Payment? @relation(name: "MainPayment", fields: [paymentId], references: [id], onDelete: Cascade)
+  subPayment Payment? @relation(name: "SubPayment", fields: [subPaymentId], references: [id], onDelete: Cascade)
 
   @@index([user_id])
+}
+
+model Payment {
+  id          String        @id @unique @default(uuid())
+  amount      Float?
+  mainPayment BillingInfo[] @relation(name: "MainPayment")
+  subPayment  BillingInfo[] @relation(name: "SubPayment")
 }
