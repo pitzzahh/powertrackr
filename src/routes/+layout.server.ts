@@ -3,19 +3,23 @@ import type { LayoutServerLoad } from './$types';
 import { prismaClient } from '$lib/server/prisma';
 
 export const load = (async ({ locals }) => {
-    const session: Session = await locals.auth.validate()
-    if (session) {
-        const user = await prismaClient.user.findUnique({
-            where: {
-                id: session.user.userId
-            },
-            include: {
-                billing_info: true
-            }
-        });
-        console.info(`User: ${JSON.stringify(user)}`);
-        return {
-            user
-        }
-    }
+	const session: Session = await locals.auth.validate();
+	if (session) {
+		const user = await prismaClient.user.findUnique({
+			where: {
+				id: session.user.userId
+			},
+			include: {
+				billing_info: {
+					include: {
+						payment: true,
+						subPayment: true
+					}
+				}
+			}
+		});
+		return {
+			user
+		};
+	}
 }) satisfies LayoutServerLoad;
