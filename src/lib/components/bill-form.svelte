@@ -7,21 +7,23 @@
 	import { billFormSchema, type BillFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
+	import { getState } from '$lib/state';
 
 	export let data: PageData;
 
-	let paid = false
-
-	$: processing = false;
+	const state = getState();
+	let paid = false;
 
 	const options: FormOptions<BillFormSchema> = {
 		onSubmit() {
 			toast.info('Adding billing info...');
-			processing = true;
 		},
 		onResult({ result }) {
 			console.log(JSON.stringify(result));
-			if (result.status === 200) toast.success('Billing info added successfully!');
+			if (result.status === 200) {
+				toast.success('Billing info added successfully!');
+				$state.isAddingBill = false;
+			}
 			if (result.status === 400 || result.status === 500) {
 				{
 					toast.error(result.data?.message || 'Please enter valid data', {
@@ -36,7 +38,6 @@
 					});
 				}
 			}
-			processing = false;
 		}
 	};
 
@@ -52,7 +53,7 @@
 	$: show = false;
 	$: noData = false;
 
-	$: status = paid ? "Paid" : "Pending"
+	$: status = paid ? 'Paid' : 'Pending';
 
 	onMount(() => {
 		setTimeout(() => {
@@ -62,35 +63,35 @@
 	});
 </script>
 
-<Form.Root method="POST" form={data.form} {options} schema={billFormSchema} let:config>
-	<Form.Field {config} name="balance">
-		<Form.Item>
-			<Form.Label>Balance</Form.Label>
-			<Form.Input />
-			<Form.Validation />
-		</Form.Item>
-	</Form.Field>
-	<Form.Field {config} name="totalKwh">
-		<Form.Item>
-			<Form.Label>Total Kwh</Form.Label>
-			<Form.Input />
-			<Form.Validation />
-		</Form.Item>
-	</Form.Field>
-	<Form.Field {config} name="subReading">
-		<Form.Item>
-			<Form.Label>Sub Meter Reading</Form.Label>
-			<Form.Input />
-			<Form.Validation />
-		</Form.Item>
-	</Form.Field>
-	<Form.Field {config} name="status">
-        <Form.Item
-          class="flex flex-row items-center justify-between rounded-lg border p-2"
-        >
-		<Form.Label>{status}</Form.Label>
-          <Form.Switch onCheckedChange={(e) => paid = e}/>
-        </Form.Item>
-      </Form.Field>
-	<Form.Button class="w-full mt-2">Add</Form.Button>
-</Form.Root>
+<div class="h-1/2 scrollbar-hide">
+	<Form.Root method="POST" form={data.form} {options} schema={billFormSchema} let:config>
+		<Form.Field {config} name="balance">
+			<Form.Item>
+				<Form.Label>Balance</Form.Label>
+				<Form.Input />
+				<Form.Validation />
+			</Form.Item>
+		</Form.Field>
+		<Form.Field {config} name="totalKwh">
+			<Form.Item>
+				<Form.Label>Total Kwh</Form.Label>
+				<Form.Input />
+				<Form.Validation />
+			</Form.Item>
+		</Form.Field>
+		<Form.Field {config} name="subReading">
+			<Form.Item>
+				<Form.Label>Sub Meter Reading</Form.Label>
+				<Form.Input />
+				<Form.Validation />
+			</Form.Item>
+		</Form.Field>
+		<Form.Field {config} name="status">
+			<Form.Item class="flex flex-row items-center justify-between rounded-lg border p-2">
+				<Form.Label>{status}</Form.Label>
+				<Form.Switch onCheckedChange={(e) => (paid = e)} />
+			</Form.Item>
+		</Form.Field>
+		<Form.Button class="mt-2 w-full">Add</Form.Button>
+	</Form.Root>
+</div>

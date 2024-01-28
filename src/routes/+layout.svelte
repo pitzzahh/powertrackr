@@ -9,6 +9,7 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import PageProgress from '$lib/components/page-progress.svelte';
 	import type { LayoutData } from './$types';
+	import { setState } from '$lib/state';
 
 	onNavigate((navigation) => {
 		// @ts-ignore
@@ -25,11 +26,18 @@
 
 	inject({ mode: dev ? 'development' : 'production' });
 	injectSpeedInsights();
+
+	const state: State = {
+		isAddingBill: false
+	};
+
+	setState(state);
+
 	export let data: LayoutData;
 </script>
 
-<Toaster richColors closeButton />
+<Toaster />
 <PageProgress />
 <ModeWatcher />
-<Header user={data?.user}/>
+<Header user={data?.user} />
 <slot />

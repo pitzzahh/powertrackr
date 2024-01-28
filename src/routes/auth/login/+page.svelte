@@ -53,7 +53,7 @@
 		<Form.Field {config} name="password">
 			<Form.Item>
 				<Form.Label>Password</Form.Label>
-				<Form.Input />
+				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
