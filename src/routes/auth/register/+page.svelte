@@ -60,14 +60,14 @@
 		<Form.Field {config} name="password">
 			<Form.Item>
 				<Form.Label>Password</Form.Label>
-				<Form.Input />
+				<Form.Input type="password"/>
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
 		<Form.Field {config} name="confirmPassword">
 			<Form.Item>
 				<Form.Label>ConfirmPassword</Form.Label>
-				<Form.Input />
+				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
