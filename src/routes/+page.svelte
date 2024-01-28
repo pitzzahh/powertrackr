@@ -14,21 +14,24 @@
 	import { format, PeriodType } from 'svelte-ux';
 	import type { PageData } from './$types';
 	import type { BillingInfo } from '@prisma/client';
-	import { generateSampleData } from '$lib';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
 	import { mediaQuery } from 'svelte-legos';
+	import { getState } from '$lib/state';
 
 	export let data: PageData;
 
+	const state = getState();
+
+	$: hasUser = !!data.user;
 	$: balanceHistory = data.user
 		? data.user.billing_info?.length > 0
 			? data.user?.billing_info.map((billing: BillingInfo) => ({
 					date: new Date(billing.date),
 					value: billing.balance
 				}))
-			: generateSampleData(Math.random() * 100 + 1)
+			: []
 		: [];
 
 	$: show = balanceHistory?.length > 0 && balanceHistory !== undefined;
@@ -44,18 +47,22 @@
 </svelte:head>
 
 <div class="container md:mt-12">
-	<div class="flex items-end md:items-center justify-between gap-2">
+	<div class="flex items-end justify-between gap-2 md:items-center">
 		<div class="flex flex-col items-start justify-start">
-			<h1>Monthly Balance History</h1>
+			{#if hasUser}
+				<h1>Monthly Balance History</h1>
+			{/if}
 			{#if show}
-				<p class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2">
+				<p
+					class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2"
+				>
 					From {format(oldestDate, PeriodType.Day)} to {format(latestDate, PeriodType.Day)}
 				</p>
 			{/if}
 		</div>
-		{#if show}
+		{#if hasUser}
 			{#if $largeScreen}
-				<Dialog.Root>
+				<Dialog.Root bind:open={$state.isAddingBill}>
 					<Dialog.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Dialog.Trigger>
@@ -70,12 +77,12 @@
 					</Dialog.Content>
 				</Dialog.Root>
 			{:else}
-				<Drawer.Root>
+				<Drawer.Root bind:open={$state.isAddingBill}>
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
 					<Drawer.Content>
-						<div class="mx-auto w-full max-w-sm">
+						<div class="mx-auto max-w-sm">
 							<Drawer.Header class="text-left">
 								<Drawer.Title>Billing Info</Drawer.Title>
 								<Drawer.Description
@@ -113,17 +120,17 @@
 			>
 				<Svg>
 					<LinearGradient class="from-green-500/50 to-green-500/0" vertical let:url>
-							<Area line={{ class: 'stroke-2 stroke-green-500 opacity-20' }} fill={url} />
-							<RectClipPath
-								x={0}
-								y={0}
-								width={tooltip.data ? tooltip.x : width}
-								{height}
-								initialWidth={0}
-								spring
-							>
-								<Area initialHeight={0} line={{ class: 'stroke-2 stroke-green-500' }} fill={url} />
-							</RectClipPath>
+						<Area line={{ class: 'stroke-2 stroke-green-500 opacity-20' }} fill={url} />
+						<RectClipPath
+							x={0}
+							y={0}
+							width={tooltip.data ? tooltip.x : width}
+							{height}
+							initialWidth={0}
+							spring
+						>
+							<Area initialHeight={0} line={{ class: 'stroke-2 stroke-green-500' }} fill={url} />
+						</RectClipPath>
 					</LinearGradient>
 					<Highlight points lines={{ class: 'stroke-green-500 [stroke-dasharray:unset]' }} />
 					<Axis placement="bottom" />
