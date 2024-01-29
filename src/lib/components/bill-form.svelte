@@ -40,7 +40,13 @@
 	const state = getState();
 	let paid = false;
 
-	const options: FormOptions<BillFormSchema> = {
+	const options: FormOptions<BillFormSchema> = {};
+
+	let placeholder: CalendarDate = today(getLocalTimeZone());
+
+	const theForm = superForm(form, {
+		validators: billFormSchema,
+		taintedMessage: null,
 		onSubmit() {
 			toast.info('Adding billing info...');
 		},
@@ -51,30 +57,26 @@
 				$state.isAddingBill = false;
 			}
 			if (result.status === 400 || result.status === 500) {
-				toast.error(result.data?.message || 'Please enter valid data', {
-					description: new Date().toLocaleDateString('en-us', {
-						weekday: 'long',
-						year: 'numeric',
-						month: 'long',
-						day: 'numeric',
-						timeZone: 'UTC',
-						timeZoneName: 'short'
-					})
+				toast.error('Please enter valid data', {
+					description: 'Close form?',
+					action: {
+						label: 'Close',
+						onClick: () => {
+							$state.isAddingBill = false;
+						}
+					}
 				});
 			}
 		}
-	};
+	});
 
-	let placeholder: CalendarDate = today(getLocalTimeZone());
+	const { form: formStore } = theForm;
 
-	$: value = form.data.date ? parseDate(form.data.date) : undefined;
+	$: value = $formStore.date ? parseDate($formStore.date) : undefined;
 	$: status = paid ? 'Paid' : 'Pending';
-
-	$: console.log(`Selected Data: ${value}`);
-	$: console.log(`Form Data: ${JSON.stringify(form.data, null, 2)}`);
 </script>
 
-<Form.Root method="POST" {form} {options} schema={billFormSchema} let:config>
+<Form.Root method="POST" form={theForm} controlled schema={billFormSchema} let:config>
 	<Form.Field {config} name="date">
 		<Form.Item class="flex flex-col">
 			<Form.Label for="date">Date of Bill</Form.Label>
@@ -104,6 +106,7 @@
 									: value
 										? value.add({ days: v.value })
 										: placeholder;
+							$formStore.date = value.toString();
 						}}
 					>
 						<Select.Trigger>
@@ -124,9 +127,9 @@
 						initialFocus
 						onValueChange={(v) => {
 							if (v) {
-								form.data.date = v.toString();
+								$formStore.date = v.toString();
 							} else {
-								form.data.date = '';
+								$formStore.date = '';
 							}
 						}}
 					/>
