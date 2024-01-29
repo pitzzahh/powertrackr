@@ -39,6 +39,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@internationalized/date": "^3.5.1",
 		"@lucia-auth/adapter-prisma": "^3.0.2",
 		"@lucia-auth/oauth": "^3.5.1",
 		"@prisma/client": "5.8.1",
