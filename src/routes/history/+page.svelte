@@ -18,8 +18,6 @@
 			status: bill.status
 		};
 	}) as BillingInfoDTO[];
-
-	$: console.log(`History Data: ${JSON.stringify(history, null, 2)}`)
 </script>
 
 <svelte:head>

@@ -39,7 +39,7 @@ model Key {
 model BillingInfo {
   id               String   @id @unique @default(uuid())
   user_id          String
-  date             DateTime @default(now())
+  date             DateTime
   totalKwh         Int
   balance          Float
   payPerKwh        Float
@@ -59,6 +59,7 @@ model BillingInfo {
 
 model Payment {
   id          String        @id @unique @default(uuid())
+  date        DateTime      @default(now())
   amount      Float?
   mainPayment BillingInfo[] @relation(name: "MainPayment")
   subPayment  BillingInfo[] @relation(name: "SubPayment")
