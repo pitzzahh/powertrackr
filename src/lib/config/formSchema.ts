@@ -58,43 +58,19 @@ export const loginFormSchema = z.object({
 });
 
 export const billFormSchema = z.object({
-	balance: z.string()
-	.refine(FIELD_VALIDATION.TEST.NUMBER, 'Balance must be a number')
-	.refine(
-		(value) => {
-			if (isNaN(Number(value))) {
-				throw error(400, 'Balance must be a number');
-			}
-			const b = Number(value);
-			return b > 0;
-		},
-		{ message: 'Balance must be greater than 0' }
-	),
-	totalKwh: z.string()
-	.refine(FIELD_VALIDATION.TEST.NUMBER, 'Total Kwh must be a number')
-	.refine(
-		(value) => {
-			if (isNaN(Number(value))) {
-				throw error(400, 'Total Kwh must be a number');
-			}
-			const b = Number(value);
-			return b > 0;
-		},
-		{ message: 'Total Kwh must be greater than 0' }
-	),
+	date: z.string().refine((v) => v, { message: 'A date of bill is required.' }),
+	balance: z
+		.string()
+		.refine(FIELD_VALIDATION.TEST.NUMBER, 'Balance must be a number')
+		.refine((value) => Number(value) > 0, { message: 'Balance must be greater than 0' }),
+	totalKwh: z
+		.string()
+		.refine(FIELD_VALIDATION.TEST.NUMBER, 'Total Kwh must be a number')
+		.refine((value) => Number(value) > 0, { message: 'Total Kwh must be greater than 0' }),
 	subReading: z
 		.string()
 		.refine(FIELD_VALIDATION.TEST.NUMBER, 'SubReading must be a number')
-		.refine(
-			(value) => {
-				if (isNaN(Number(value))) {
-					throw error(400, 'SubReading must be a number');
-				}
-				const b = Number(value);
-				return b > 0;
-			},
-			{ message: 'SubReading must be greater than 0' }
-		)
+		.refine((value) => Number(value) > 0, { message: 'SubReading must be greater than 0' })
 		.optional(),
 	status: z.boolean()
 });
