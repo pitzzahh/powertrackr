@@ -13,7 +13,6 @@
 	} from 'layerchart';
 	import { format, PeriodType } from 'svelte-ux';
 	import type { PageData } from './$types';
-	import type { BillingInfo } from '@prisma/client';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
@@ -27,9 +26,12 @@
 	$: hasUser = !!data.user;
 	$: balanceHistory = data.user
 		? data.user.billing_info?.length > 0
-			? data.user?.billing_info.map((billing: BillingInfo) => ({
+			? data.user?.billing_info.map((billing) => ({
 					date: new Date(billing.date),
-					value: billing.balance
+					value: billing.balance,
+					Kwh: billing.totalKwh,
+					subKwh: billing.subKwh,
+					subValue: billing?.subPayment?.amount ?? null
 				}))
 			: []
 		: [];
@@ -40,6 +42,13 @@
 		balanceHistory?.length > 0 ? balanceHistory[balanceHistory.length - 1].date : new Date();
 
 	const largeScreen = mediaQuery('(min-width: 768px)');
+
+	const onOutsideClick = (event: PointerEvent) => {
+		// @ts-ignore
+		if (event.target && event.target.hasAttribute('data-sonner-toast')) {
+			event.preventDefault();
+		}
+	};
 </script>
 
 <svelte:head>
@@ -73,11 +82,11 @@
 								Enter the billing info for the month. Click Add when you're done.
 							</Dialog.Description>
 						</Dialog.Header>
-						<BillForm {data} />
+						<BillForm />
 					</Dialog.Content>
 				</Dialog.Root>
 			{:else}
-				<Drawer.Root bind:open={$state.isAddingBill}>
+				<Drawer.Root bind:open={$state.isAddingBill} {onOutsideClick}>
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
@@ -90,7 +99,7 @@
 								>
 							</Drawer.Header>
 							<div class="mx-[0.9rem]">
-								<BillForm {data} />
+								<BillForm />
 							</div>
 							<Drawer.Footer class="pt-2">
 								<Drawer.Close asChild let:builder>
@@ -136,8 +145,17 @@
 					<Axis placement="bottom" />
 				</Svg>
 
-				<Tooltip y={48} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
+				<Tooltip y={20} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
 					{format(data.value, 'currency', { currency: 'PHP' })}
+					{data.Kwh}Kwh
+				</Tooltip>
+
+				<Tooltip y={55} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
+					{#if data.subValue}
+						{format(data.subValue, 'currency', { currency: 'PHP' })} {data.subKwh}Kwh
+					{:else}
+						N/A
+					{/if}
 				</Tooltip>
 
 				<Tooltip x={4} y={1} variant="none" class="text-sm font-semibold leading-3" let:data>
@@ -145,6 +163,9 @@
 				</Tooltip>
 
 				<Tooltip
+					onClick={() => {
+						alert('Hello');
+					}}
 					x="data"
 					y={height + padding.top + 2}
 					anchor="top"
