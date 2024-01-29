@@ -78,8 +78,8 @@ dependencies:
     specifier: ^0.1.19
     version: 0.1.19(tailwindcss@3.4.0)
   vaul-svelte:
-    specifier: ^0.1.0
-    version: 0.1.0(svelte@4.2.9)
+    specifier: ^0.2.0
+    version: 0.2.0(svelte@4.2.9)
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -798,8 +798,8 @@ packages:
       svelte: 4.2.9
     dev: false
 
-  /@melt-ui/svelte@0.67.0(svelte@4.2.9):
-    resolution: {integrity: sha512-fd9PsDE6sKbeyExagqH0nOpZEnDqyr2efbkjfmCRRYXVW5vlDEOPaSB+mg4Tjch121102sFH1Od+MlXwmeHy3A==}
+  /@melt-ui/svelte@0.68.0(svelte@4.2.9):
+    resolution: {integrity: sha512-/QvA98hnYEodZtHJ71+ocum/WWp30hVNt3F8uiZKnNYwZDaiQYjlyR9AaGKYcZLCe6R68op1mfCzc0kTzJilyA==}
     peerDependencies:
       svelte: '>=3 <5'
     dependencies:
@@ -808,7 +808,7 @@ packages:
       '@internationalized/date': 3.5.1
       dequal: 2.0.3
       focus-trap: 7.5.4
-      nanoid: 4.0.2
+      nanoid: 5.0.4
       svelte: 4.2.9
     dev: false
 
@@ -1551,13 +1551,13 @@ packages:
       svelte: 4.2.9
     dev: false
 
-  /bits-ui@0.13.6(svelte@4.2.9):
-    resolution: {integrity: sha512-LmbWgtriqfotontFi1lC6tEB56HOLP4YpwVKX3qrHxEMfMAyc/NFQgtGOHizTGMmUUkdVtCE37PA1Wnk6gsUZg==}
+  /bits-ui@0.16.0(svelte@4.2.9):
+    resolution: {integrity: sha512-HEkuVDyUG9dTWtKujKpdDsGOe9GRmuYOEF9yGbjVwNazxMQDQa9deUX8vM3ofGBWaJgr1cEu88p38kP5Z5gQ8w==}
     peerDependencies:
       svelte: ^4.0.0
     dependencies:
       '@internationalized/date': 3.5.1
-      '@melt-ui/svelte': 0.67.0(svelte@4.2.9)
+      '@melt-ui/svelte': 0.68.0(svelte@4.2.9)
       nanoid: 5.0.4
       svelte: 4.2.9
     dev: false
@@ -5047,12 +5047,12 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: false
 
-  /vaul-svelte@0.1.0(svelte@4.2.9):
-    resolution: {integrity: sha512-8Ab5at9QsA/JeJ3M5ltrzE5+vFt3v4cjgZHYeSVbhHXZ7KV1JWNjkQZ1IJv52HirnzhZPzfKt+EjWtsWHeWBoQ==}
+  /vaul-svelte@0.2.0(svelte@4.2.9):
+    resolution: {integrity: sha512-N8Df26xR2z6Ay1JMPGdxAJLGrh5R1Br+E/HRw/uFRp8s7yFE6p3PWa54jnLiim1d2FPtBeNyNMLcZul87adaiQ==}
     peerDependencies:
       svelte: ^4.0.0
     dependencies:
-      bits-ui: 0.13.6(svelte@4.2.9)
+      bits-ui: 0.16.0(svelte@4.2.9)
       svelte: 4.2.9
     dev: false
 
