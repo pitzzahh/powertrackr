@@ -10,6 +10,7 @@
 	import PageProgress from '$lib/components/page-progress.svelte';
 	import type { LayoutData } from './$types';
 	import { setState } from '$lib/state';
+	import { mediaQuery } from 'svelte-legos';
 
 	onNavigate((navigation) => {
 		// @ts-ignore
@@ -30,13 +31,14 @@
 	const state: State = {
 		isAddingBill: false
 	};
+	const largeScreen = mediaQuery('(min-width: 425px)');
 
 	setState(state);
 
 	export let data: LayoutData;
 </script>
 
-<Toaster />
+<Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
 <PageProgress />
 <ModeWatcher />
 <Header user={data?.user} />
