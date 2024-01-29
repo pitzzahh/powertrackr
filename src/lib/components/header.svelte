@@ -4,6 +4,7 @@
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
+	import { getInitials } from '$lib';
 	import {
 		Sun,
 		Moon,
@@ -48,10 +49,10 @@
 					<Button builders={[builder]} variant="ghost" class="h-8 w-8 rounded-full ">
 						<Avatar.Root class="h-8 w-8">
 							<Avatar.Image
-								src={user?.picture || `${$page.url.protocol}//${$page.url.host}/default-user.png`}
+								src={user?.picture}
 								alt="@{user?.username}"
 							/>
-							<Avatar.Fallback>{user?.username}</Avatar.Fallback>
+							<Avatar.Fallback>{getInitials(user?.name)}</Avatar.Fallback>
 						</Avatar.Root>
 					</Button>
 				</DropdownMenu.Trigger>
