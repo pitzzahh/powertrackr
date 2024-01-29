@@ -38,9 +38,7 @@ export const actions: Actions = {
 			});
 		}
 
-		let { balance, totalKwh, subReading, status } = billForm.data;
-
-		console.log(`Bill Form Data: ${JSON.stringify(billForm.data, null, 2)}`);
+		let { date, balance, totalKwh, subReading, status } = billForm.data;
 
 		if (!balance || !totalKwh) {
 			return fail(400, {
@@ -71,6 +69,7 @@ export const actions: Actions = {
 
 		const bill = await prismaClient.billingInfo.create({
 			data: {
+				date: new Date(date),
 				totalKwh: Number(totalKwh),
 				balance: Number(balance),
 				payment: subPayment
