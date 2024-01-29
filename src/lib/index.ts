@@ -1,51 +1,64 @@
-import { writable } from "svelte/store";
+import { writable } from 'svelte/store';
 
 const randomDate = (start: Date, end: Date) => {
-    return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
-}
-
-export const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 };
 
-export const filteredDataFields = ["date", "totalKwh", "subKwh", "balance", "payment", "status"]
+export const formatDate = (date: Date) => {
+	return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+export const filteredDataFields = ['date', 'totalKwh', 'subKwh', 'balance', 'payment', 'status'];
 
 export const store = writable({
-    filteredField: '',
-    isLoggingOut: false,
-    isLoggedIn: false
-})
+	filteredField: '',
+	isLoggingOut: false,
+	isLoggedIn: false
+});
 
 export const generateSampleData = (count: number) => {
-    const sampleData: { date: Date; value: number; }[] = [];
+	const sampleData: { date: Date; value: number }[] = [];
 
-    let trendDirection = 1;
-    let trendDuration = 0;
+	let trendDirection = 1;
+	let trendDuration = 0;
 
-    for (let i = 0; i < count; i++) {
-        const date = randomDate(new Date(2002, 0, 1), new Date());
-        while (sampleData.some((x) => x.date.getTime() === date.getTime())) {
-            date.setDate(randomDate(new Date(2002, 0, 1), new Date()).getDate());
-        }
+	for (let i = 0; i < count; i++) {
+		const date = randomDate(new Date(2002, 0, 1), new Date());
+		while (sampleData.some((x) => x.date.getTime() === date.getTime())) {
+			date.setDate(randomDate(new Date(2002, 0, 1), new Date()).getDate());
+		}
 
-        if (trendDuration <= 0) {
-            trendDirection *= -1;
-            trendDuration = Math.floor(Math.random() * 10) + 1; 
-        }
+		if (trendDuration <= 0) {
+			trendDirection *= -1;
+			trendDuration = Math.floor(Math.random() * 10) + 1;
+		}
 
-        const previousValue = i > 0 ? sampleData[i - 1].value : 10; 
-        const trendChange = trendDirection * (Math.random() * 5); 
-        const newValue = previousValue + trendChange;
+		const previousValue = i > 0 ? sampleData[i - 1].value : 10;
+		const trendChange = trendDirection * (Math.random() * 5);
+		const newValue = previousValue + trendChange;
 
-        const value = Math.max(10, newValue); 
+		const value = Math.max(10, newValue);
 
-        trendDuration--;
+		trendDuration--;
 
-        sampleData.push({ date, value });
-    }
-    return sampleData.sort((a, b) => a.date.getTime() - b.date.getTime());
-}
+		sampleData.push({ date, value });
+	}
+	return sampleData.sort((a, b) => a.date.getTime() - b.date.getTime());
+};
 
 export const calculatePayPerKwh = (balance: number, totalKwh: number) => {
-    return Number((balance / totalKwh).toFixed(2));
-}
+	return Number((balance / totalKwh).toFixed(2));
+};
+
+export const getInitials = (name: string | undefined) => {
+	if (!name) return '';
+	const names = name.split(' ');
+	let initials = names[0].substring(0, 1).toUpperCase();
+
+	if (names.length === 3) {
+		initials += names[1].substring(0, 1).toUpperCase();
+	} else {
+		initials += names[names.length - 1].substring(0, 1).toUpperCase();
+	}
+	return initials;
+};
