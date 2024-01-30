@@ -1,23 +1,18 @@
 <script lang="ts">
-	import { formatDate } from '$lib';
-	import type { PageData } from './$types';
 	import DataTable from './data-table.svelte';
+	import type { PageData } from './$types';
+	import { getState } from '$lib/state';
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
 
 	export let data: PageData;
 
-	$: history = data.user?.billing_info.map((bill) => {
-		return {
-			id: bill.id,
-			date: formatDate(new Date(bill.date)),
-			totalKwh: bill.totalKwh,
-			subKwh: bill.subKwh,
-			payPerKwh: bill.payPerKwh,
-			balance: bill.balance,
-			payment: bill.payment?.amount,
-			subPayment: bill.subPayment?.amount,
-			status: bill.status
-		};
-	}) as BillingInfoDTO[];
+	const state: Writable<State> = getState();
+
+	$: {
+		$state.user = data.user;
+		$state.history = data.history;
+	}
 </script>
 
 <svelte:head>
@@ -25,5 +20,5 @@
 </svelte:head>
 
 <div class="container mx-auto">
-	<DataTable {history} />
+	<DataTable />
 </div>
