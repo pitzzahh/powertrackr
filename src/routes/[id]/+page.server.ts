@@ -4,7 +4,7 @@ import { prismaClient } from '$lib/server/prisma';
 
 export const load = (async ({ locals, params }) => {
 	const session = await locals.auth.validate();
-	if (!session) throw redirect(302, '/auth/login');
+	if (!session) redirect(302, '/auth/login');
 
 	const user = await prismaClient.user.findUnique({
 		where: {
@@ -13,6 +13,6 @@ export const load = (async ({ locals, params }) => {
 	});
 
 	if (!user || user.id !== session.user.userId) {
-		throw error(403, 'You do not have permission to access that page');
+		error(403, 'You do not have permission to access that page');
 	}
 }) satisfies PageServerLoad;
