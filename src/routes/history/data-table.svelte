@@ -17,8 +17,29 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import DataTableCheckbox from './data-table-checkbox.svelte';
 	import DataTableComboBox from './data-table-combobox.svelte';
+	import { getState } from '$lib/state';
+	import type { Writable } from 'svelte/store';
+	import type { State, BillingInfoDTO } from '$lib/types';
+	import { formatDate, PeriodType } from 'svelte-ux';
 
-	export let history: BillingInfoDTO[];
+	const state: Writable<State> = getState();
+
+	let history =
+		$state.history && $state.history.length > 0
+			? ($state.history?.map((bill) => {
+					return {
+						id: bill.id,
+						date: formatDate(bill.date, PeriodType.Day),
+						totalKwh: bill.totalKwh,
+						subKwh: bill.subKwh,
+						payPerKwh: bill.payPerKwh,
+						balance: bill.balance,
+						payment: bill.payment?.amount,
+						subPayment: bill.subPayment?.amount,
+						status: bill.status
+					};
+				}) as BillingInfoDTO[])
+			: [];
 
 	const table = createTable(readable(history), {
 		page: addPagination(),
@@ -178,7 +199,7 @@
 			accessor: ({ id }: { id: string }) => id,
 			header: '',
 			cell: ({ value }: { value: string }) => {
-				return createRender(DataTableActions, { id: value });
+				return createRender(DataTableActions, { bill_id: value });
 			},
 			plugins: {
 				sort: {
@@ -197,8 +218,8 @@
 	const { selectedDataIds } = pluginStates.select;
 
 	const ids = flatColumns.map((col: { id: string }) => col.id);
-	let hideForId = Object.fromEntries(ids.map((id: string) => [id, true]));
 
+	$: hideForId = Object.fromEntries(ids.map((id: string) => [id, true]));
 	$: $hiddenColumnIds = Object.entries(hideForId)
 		.filter(([, hide]) => !hide)
 		.map(([id]) => id);
@@ -233,9 +254,6 @@
 	</div>
 	<div class="rounded-md border">
 		<Table.Root {...$tableAttrs}>
-			<Table.Caption
-				>{history.length > 0 ? 'A list of your invoices.' : 'No invoices'}</Table.Caption
-			>
 			<Table.Header>
 				{#each $headerRows as headerRow}
 					<Subscribe rowAttrs={headerRow.attrs()}>
@@ -273,6 +291,9 @@
 					</Subscribe>
 				{/each}
 			</Table.Body>
+			<Table.Caption
+				>{history.length > 0 ? 'A list of your invoices.' : 'No invoices'}</Table.Caption
+			>
 		</Table.Root>
 	</div>
 	<div class="flex items-center justify-end space-x-2 py-4">
