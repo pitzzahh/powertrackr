@@ -1,5 +1,6 @@
 import { getContext, setContext } from 'svelte';
 import { writable, type Writable } from 'svelte/store';
+import type { State } from '$lib/types';
 
 const STATE_CTX = 'STATE_CTX';
 
