@@ -5,6 +5,13 @@
 	import { loginFormSchema, type LoginFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
+	import { getState } from '$lib/state';
+	import type { State } from '$lib/types';
+	import type { Writable } from 'svelte/store';
+
+	export let data: PageData;
+
+	const state: Writable<State> = getState();
 
 	$: processing = false;
 
@@ -14,7 +21,9 @@
 			processing = true;
 		},
 		onResult({ result }) {
-			if (result.status === 302) toast.success('Logged-in successfully!');
+			if (result.status === 200) {
+				toast.success('Logged-in successfully!');
+			}
 			if (result.status === 400 || result.status === 500) {
 				{
 					toast.error(result.data?.message || 'Please enter valid credentials', {
@@ -32,8 +41,6 @@
 			processing = false;
 		}
 	};
-
-	export let data: PageData;
 </script>
 
 <svelte:head>
