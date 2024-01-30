@@ -6,14 +6,17 @@
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
 
+	export let data: PageData;
+
 	$: processing = false;
+
 	const options: FormOptions<RegisterFormSchema> = {
 		onSubmit() {
 			toast.info('Submitting...');
 			processing;
 		},
 		onResult({ result }) {
-			if (result.status === 302) toast.success('Registered Successfully!');
+			if (result.status === 301) toast.success('Registered Successfully!');
 			if (result.status === 400 || result.status === 500) {
 				{
 					toast.error(result.data?.message || 'Please enter valid credentials', {
@@ -31,7 +34,6 @@
 			processing = false;
 		}
 	};
-	export let data: PageData;
 </script>
 
 <svelte:head>
@@ -60,7 +62,7 @@
 		<Form.Field {config} name="password">
 			<Form.Item>
 				<Form.Label>Password</Form.Label>
-				<Form.Input type="password"/>
+				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
@@ -83,9 +85,7 @@
 		{#if processing}
 			<span class="text-muted-foreground">login</span>
 		{:else}
-			<a href="login" class="hover:text-primary hover:underline hover:underline-offset-4"
-				>login</a
-			>
+			<a href="login" class="hover:text-primary hover:underline hover:underline-offset-4">login</a>
 		{/if}
 	</p>
 </div>

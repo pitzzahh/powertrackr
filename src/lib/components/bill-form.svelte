@@ -3,7 +3,6 @@
 	import * as Form from '$lib/components/ui/form';
 	import { billFormSchema, type BillFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
-	import type { FormOptions } from 'formsnap';
 	import { getState } from '$lib/state';
 	import { Calendar as CalendarIcon } from 'radix-icons-svelte';
 	import {
@@ -22,6 +21,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { superForm } from 'sveltekit-superforms/client';
 	import type { SuperValidated } from 'sveltekit-superforms';
+	import { invalidateAll } from '$app/navigation';
 
 	export let form: SuperValidated<BillFormSchema> = $page.data.form;
 
@@ -38,10 +38,8 @@
 	];
 
 	const state = getState();
+	
 	let paid = false;
-
-	const options: FormOptions<BillFormSchema> = {};
-
 	let placeholder: CalendarDate = today(getLocalTimeZone());
 
 	const theForm = superForm(form, {
@@ -50,11 +48,12 @@
 		onSubmit() {
 			toast.info('Adding billing info...');
 		},
-		onResult({ result }) {
+		async onResult({ result }) {
 			console.log(JSON.stringify(result));
 			if (result.status === 200) {
 				toast.success('Billing info added successfully!');
 				$state.isAddingBill = false;
+				await invalidateAll()
 			}
 			if (result.status === 400 || result.status === 500) {
 				toast.error('Please enter valid data', {

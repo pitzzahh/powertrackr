@@ -8,9 +8,11 @@
 	import { inject } from '@vercel/analytics';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import PageProgress from '$lib/components/page-progress.svelte';
-	import type { LayoutData } from './$types';
+	import type { PageData } from './$types';
 	import { setState } from '$lib/state';
 	import { mediaQuery } from 'svelte-legos';
+	
+	export let data: PageData;
 
 	onNavigate((navigation) => {
 		// @ts-ignore
@@ -25,21 +27,19 @@
 		});
 	});
 
-	inject({ mode: dev ? 'development' : 'production' });
-	injectSpeedInsights();
-
-	const state: State = {
-		isAddingBill: false
-	};
 	const largeScreen = mediaQuery('(min-width: 425px)');
 
-	setState(state);
-
-	export let data: LayoutData;
+	setState({
+		isAddingBill: false,
+		user: data.user,
+		history: data.history
+	});
+	inject({ mode: dev ? 'development' : 'production' });
+	injectSpeedInsights();
 </script>
 
 <Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
 <PageProgress />
 <ModeWatcher />
-<Header user={data?.user} />
+<Header />
 <slot />

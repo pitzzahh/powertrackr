@@ -12,21 +12,24 @@
 		Axis
 	} from 'layerchart';
 	import { format, PeriodType } from 'svelte-ux';
-	import type { PageData } from './$types';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
 	import { mediaQuery } from 'svelte-legos';
 	import { getState } from '$lib/state';
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
+	import type { PageData } from './$types';
+	import { onMount } from 'svelte';
 
-	export let data: PageData;
+	export let data: PageData
+	
+	const state: Writable<State> = getState();
 
-	const state = getState();
-
-	$: hasUser = !!data.user;
-	$: balanceHistory = data.user
-		? data.user.billing_info?.length > 0
-			? data.user?.billing_info.map((billing) => ({
+	$: hasUser = !!$state.user;
+	$: balanceHistory = $state.user
+		? $state.history && $state.history.length > 0
+			? $state?.history.map((billing) => ({
 					date: new Date(billing.date),
 					value: billing.balance,
 					Kwh: billing.totalKwh,
@@ -49,6 +52,11 @@
 			event.preventDefault();
 		}
 	};
+
+	$: {
+		$state.user = data.user
+		$state.history = data.history
+	}
 </script>
 
 <svelte:head>
@@ -153,8 +161,6 @@
 				<Tooltip y={55} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
 					{#if data.subValue}
 						{format(data.subValue, 'currency', { currency: 'PHP' })} {data.subKwh}Kwh
-					{:else}
-						N/A
 					{/if}
 				</Tooltip>
 

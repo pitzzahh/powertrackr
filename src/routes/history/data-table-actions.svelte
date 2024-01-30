@@ -1,13 +1,50 @@
 <script lang="ts">
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import { Button } from '$lib/components/ui/button';
+	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import { BookUser, Copy, MoreHorizontal, Trash, Receipt } from 'lucide-svelte';
 	import { toast } from 'svelte-sonner';
-	import { goto } from '$app/navigation';
-	export let id: string;
+	import { goto, invalidateAll } from '$app/navigation';
+	import { cn } from '$lib/utils';
+	import { getState } from '$lib/state';
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
 
+	export let bill_id: string;
+
+	const state: Writable<State> = getState();
+
+	$: user_id = $state.user?.id;
 	$: isDeleting = false;
+
+	async function deleteBill(): Promise<any> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				if (!user_id) reject('Not authenticated');
+				isDeleting = true;
+				const response: Response = await fetch('/history', {
+					method: 'DELETE',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ bill_id, user_id })
+				});
+				const res = await response.json();
+				if (response.ok) {
+					resolve(res.message);
+					await invalidateAll();
+					await goto('/');
+					goto('/history');
+				} else {
+					reject(res.message);
+				}
+			} catch (error: any) {
+				toast.error(error.message);
+				reject(error.message);
+			}
+			isDeleting = false;
+		});
+	}
 </script>
 
 <DropdownMenu.Root>
@@ -39,7 +76,7 @@
 							}
 						}
 					});
-					navigator.clipboard.writeText(id);
+					navigator.clipboard.writeText(bill_id);
 				}}
 			>
 				<Copy class="mr-2 h-4 w-4" />
@@ -55,7 +92,7 @@
 			<BookUser class="mr-2 h-4 w-4" />
 			View customer</DropdownMenu.Item
 		>
-		<DropdownMenu.Item on:click={() => goto(`history/${id}`)}>
+		<DropdownMenu.Item on:click={() => goto(`history/${bill_id}`)}>
 			<Receipt class="mr-2 h-4 w-4" />
 			View payment details</DropdownMenu.Item
 		>
@@ -70,10 +107,21 @@
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action asChild let:builder>
-				<Button variant="destructive" builders={[builder]} on:click={() => (isDeleting = false)}>
-					Delete
-				</Button>
+			<AlertDialog.Action
+				class={cn(buttonVariants({ variant: 'destructive' }))}
+				on:click={() => {
+					toast.promise(deleteBill, {
+						loading: `Deleting bill`,
+						success: (res) => {
+							return `${res}`;
+						},
+						error: (err) => {
+							return `${err}`;
+						}
+					});
+				}}
+			>
+				Delete
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

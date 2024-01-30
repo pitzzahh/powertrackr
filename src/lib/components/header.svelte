@@ -19,15 +19,24 @@
 	import { page } from '$app/stores';
 	import { Icons } from '$lib/config/icons';
 	import { goto, invalidateAll } from '$app/navigation';
-	import type { User } from '@prisma/client';
-
-	export let user: User | null | undefined;
+	import { getState } from '$lib/state';
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
+	
+	const state: Writable<State> = getState();
 
 	let route = '/';
 	let isLoggingOut = false;
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
-	$: hasUser = !!user;
+	$: hasUser = !!$state.user;
+
+	const logout = async () => {
+		await invalidateAll();
+		goto(`${$page.url.protocol}//${$page.url.host}/${$state.user?.username}/logout`);
+		$state.user = undefined;
+		$state.history = undefined;
+	};
 </script>
 
 <header
@@ -48,11 +57,8 @@
 				<DropdownMenu.Trigger asChild let:builder>
 					<Button builders={[builder]} variant="ghost" class="h-8 w-8 rounded-full ">
 						<Avatar.Root class="h-8 w-8">
-							<Avatar.Image
-								src={user?.picture}
-								alt="@{user?.username}"
-							/>
-							<Avatar.Fallback>{getInitials(user?.name)}</Avatar.Fallback>
+							<Avatar.Image src={$state.user?.picture} alt="@{$state.user?.username}" />
+							<Avatar.Fallback>{getInitials($state.user?.name)}</Avatar.Fallback>
 						</Avatar.Root>
 					</Button>
 				</DropdownMenu.Trigger>
@@ -63,7 +69,7 @@
 						{#each siteConfig.profileLinks as pf}
 							<DropdownMenu.Item
 								on:click={() => {
-									if (user) goto(pf.href.replace('user', user.username));
+									if ($state.user) goto(pf.href.replace('user', $state.user.username));
 								}}
 							>
 								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />
@@ -161,14 +167,7 @@
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
 			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action
-				on:click={async () => {
-					isLoggingOut = false;
-					hasUser = false;
-					await invalidateAll()
-					goto(`${$page.url.protocol}//${$page.url.host}/${user?.username}/logout`);
-				}}>Logout</AlertDialog.Action
-			>
+			<AlertDialog.Action on:click={logout}>Logout</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>
