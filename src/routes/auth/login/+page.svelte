@@ -5,13 +5,13 @@
 	import { loginFormSchema, type LoginFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { State } from '$lib/types';
 	import type { Writable } from 'svelte/store';
 
 	export let data: PageData;
 
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: processing = false;
 
