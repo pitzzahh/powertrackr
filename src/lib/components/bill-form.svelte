@@ -49,11 +49,9 @@
 			toast.info('Adding billing info...');
 		},
 		async onResult({ result }) {
-			console.log(JSON.stringify(result));
 			if (result.status === 200) {
 				toast.success('Billing info added successfully!');
 				$state.isAddingBill = false;
-				await invalidateAll()
 			}
 			if (result.status === 400 || result.status === 500) {
 				toast.error('Please enter valid data', {
