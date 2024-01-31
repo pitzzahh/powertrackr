@@ -9,9 +9,11 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import PageProgress from '$lib/components/page-progress.svelte';
 	import type { PageData } from './$types';
-	import { setState } from '$lib/state';
+	import { setState, MAIN_STATE_CTX } from '$lib/state';
 	import { mediaQuery } from 'svelte-legos';
-	
+	import { ParaglideJS } from '@inlang/paraglide-js-adapter-sveltekit'
+	import { i18n } from '$lib/i18n.js'
+
 	export let data: PageData;
 
 	onNavigate((navigation) => {
@@ -33,7 +35,7 @@
 		isAddingBill: false,
 		user: data.user,
 		history: data.history
-	});
+	}, MAIN_STATE_CTX);
 	inject({ mode: dev ? 'development' : 'production' });
 	injectSpeedInsights();
 </script>
@@ -42,4 +44,6 @@
 <PageProgress />
 <ModeWatcher />
 <Header />
-<slot />
+<ParaglideJS {i18n}>
+    <slot />
+</ParaglideJS>
