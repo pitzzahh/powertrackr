@@ -8,10 +8,12 @@
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 	import type { FormOptions } from 'formsnap';
-	export let data: PageData;
 	import { toast } from 'svelte-sonner';
 	import { Loader2 } from 'lucide-svelte';
-	
+	import { Separator } from '$lib/components/ui/separator';
+
+	export let data: PageData;
+
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	let selectedFile: File | undefined;
@@ -53,6 +55,11 @@
 		avatarSrc = selectedFile ? URL.createObjectURL(selectedFile) : $state.user?.picture || '';
 		console.log('Selected File:', selectedFile);
 	};
+
+	$: {
+		$state.user = data.user;
+		$state.history = data.history;
+	}
 </script>
 
 <svelte:head>
@@ -60,9 +67,12 @@
 </svelte:head>
 
 <h4>Profile</h4>
-<p class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1 sm:mb-6">
+<p
+	class="text-sm text-muted-foreground sm:mb-6 [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
+>
 	This is how you will see yourself on the site.
 </p>
+<Separator class="my-4" />
 <Form.Root
 	method="POST"
 	form={data.form}
@@ -74,7 +84,7 @@
 	<Form.Field {config} name="picture">
 		<Form.Item class="group relative flex flex-col items-start">
 			<label for="avatarInput" class="relative cursor-pointer">
-				<Avatar.Root class="h-32 w-32 m-2">
+				<Avatar.Root class="m-2 h-32 w-32">
 					<Avatar.Image src={avatarSrc} alt="@{$state.user?.username}" />
 					<Avatar.Fallback class="text-xl">{getInitials($state.user?.name)}</Avatar.Fallback>
 				</Avatar.Root>
