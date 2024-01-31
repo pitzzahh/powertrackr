@@ -21,9 +21,9 @@
 	import type { State } from '$lib/types';
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
+	import { availableLanguageTags } from '$lib//paraglide/runtime.js';
+	export let data: PageData;
 
-	export let data: PageData
-	
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: hasUser = !!$state.user;
@@ -54,8 +54,8 @@
 	};
 
 	$: {
-		$state.user = data.user
-		$state.history = data.history
+		$state.user = data.user;
+		$state.history = data.history;
 	}
 </script>
 
