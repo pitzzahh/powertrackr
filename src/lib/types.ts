@@ -1,10 +1,9 @@
 import type { BillingInfo, User, Payment } from '@prisma/client';
-import type { SvelteComponent } from 'svelte';
 
 export type NavItem = {
 	text: string;
 	href: string;
-	icon: SvelteComponent;
+	icon: any;
 	selected: boolean | false;
 };
 

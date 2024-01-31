@@ -19,11 +19,11 @@
 	import { page } from '$app/stores';
 	import { Icons } from '$lib/config/icons';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 	
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	let route = '/';
 	let isLoggingOut = false;
