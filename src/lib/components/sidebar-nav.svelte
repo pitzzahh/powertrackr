@@ -17,7 +17,7 @@
 
 <nav
 	class={cn(
-		'flex space-x-2 overflow-auto rounded-md bg-muted scrollbar-hide sm:flex-col sm:space-x-0 sm:space-y-1',
+		'flex space-x-2 overflow-auto rounded-md scrollbar-hide sm:flex-col sm:space-x-0 sm:space-y-1',
 		className
 	)}
 >
@@ -25,7 +25,7 @@
 		{@const isActive = $page.url.pathname === item.href}
 		<Button
 			href={item.href}
-			size="sm"
+			size="xs"
 			variant="ghost"
 			class={cn(
 				!isActive && 'hover:underline',
@@ -36,12 +36,12 @@
 		>
 			{#if isActive}
 				<div
-					class="absolute inset-1 rounded-md bg-primary"
+					class="absolute inset-0 rounded-md bg-primary"
 					in:send={{ key: 'active-sidebar-tab' }}
 					out:receive={{ key: 'active-sidebar-tab' }}
 				/>
 			{/if}
-			<div class="relative">
+			<div class="relative w-20">
 				{item.title}
 			</div>
 		</Button>
