@@ -1,7 +1,7 @@
 import type { Session } from 'lucia';
 import type { LayoutServerLoad } from './$types';
 import { prismaClient } from '$lib/server/prisma';
-import type { BillingInfo, User, Payment } from '@prisma/client';
+import type { User } from '@prisma/client';
 import type { ExtendedBillingInfo } from '$lib/types';
 
 export const load = (async ({ locals }) => {
