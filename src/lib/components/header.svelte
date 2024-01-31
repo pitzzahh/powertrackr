@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Avatar from '$lib/components/ui/avatar';
-	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Button } from '$lib/components/ui/button';
 	import { siteConfig } from '$lib/config/site';
 	import { getInitials } from '$lib';
@@ -18,25 +17,19 @@
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
 	import { Icons } from '$lib/config/icons';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
-	
+	import LogoutDialog from '$lib/components/logout-dialog.svelte';
+
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	let route = '/';
-	let isLoggingOut = false;
+	$: isLoggingOut = false;
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
 	$: hasUser = !!$state.user;
-
-	const logout = async () => {
-		await invalidateAll();
-		goto(`${$page.url.protocol}//${$page.url.host}/${$state.user?.username}/logout`);
-		$state.user = undefined;
-		$state.history = undefined;
-	};
 </script>
 
 <header
@@ -160,14 +153,4 @@
 	</div>
 </header>
 
-<AlertDialog.Root bind:open={isLoggingOut}>
-	<AlertDialog.Content>
-		<AlertDialog.Header>
-			<AlertDialog.Title>Are you sure you want to logout?</AlertDialog.Title>
-		</AlertDialog.Header>
-		<AlertDialog.Footer>
-			<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action on:click={logout}>Logout</AlertDialog.Action>
-		</AlertDialog.Footer>
-	</AlertDialog.Content>
-</AlertDialog.Root>
+<LogoutDialog bind:open={isLoggingOut}/>
