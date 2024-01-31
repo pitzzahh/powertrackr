@@ -1,6 +1,7 @@
-import { error } from '@sveltejs/kit';
 import { z } from 'zod';
 
+const MAX_FILE_SIZE = 500000;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MIN_LENGTH = 6;
 const FIELD_VALIDATION = {
 	TEST: {
@@ -75,6 +76,17 @@ export const billFormSchema = z.object({
 	status: z.boolean()
 });
 
+export const profileFormSchema = z.object({
+	picture: z.any()
+		.refine((files: any) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
+		.refine(
+			(files: any) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
+			`${ACCEPTED_IMAGE_TYPES.join(',')} are the only accepted file types.`
+		)
+		.optional()
+});
+
 export type RegisterFormSchema = typeof registerFormSchema;
 export type LoginFormSchema = typeof loginFormSchema;
 export type BillFormSchema = typeof billFormSchema;
+export type ProfileFormSchema = typeof profileFormSchema;
