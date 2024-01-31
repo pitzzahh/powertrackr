@@ -55,8 +55,6 @@ export const actions: Actions = {
 			}
 		});
 
-		console.log(`LatestBill: ${JSON.stringify(latestBill, null, 2)}`);
-
 		const subReadingOld = latestBill?.subReadingLatest ?? null;
 		const subKwh = subReadingOld ? (subReading ? Number(subReading) - subReadingOld : null) : null;
 		const subPayment: number | null = subReadingOld
@@ -64,8 +62,6 @@ export const actions: Actions = {
 				? subKwh * calculatePayPerKwh(Number(balance), Number(totalKwh))
 				: null
 			: null;
-
-		console.log(`subPayment: ${subPayment}`);
 
 		const bill = await prismaClient.billingInfo.create({
 			data: {
