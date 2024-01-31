@@ -17,12 +17,12 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import DataTableCheckbox from './data-table-checkbox.svelte';
 	import DataTableComboBox from './data-table-combobox.svelte';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State, BillingInfoDTO } from '$lib/types';
 	import { formatDate, PeriodType } from 'svelte-ux';
 
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	let history =
 		$state.history && $state.history.length > 0

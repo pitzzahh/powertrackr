@@ -4,7 +4,7 @@
 	import { profileFormSchema, type ProfileFormSchema } from '$lib/config/formSchema';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { getInitials } from '$lib';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 	import type { FormOptions } from 'formsnap';
@@ -12,7 +12,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Loader2 } from 'lucide-svelte';
 	
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	let selectedFile: File | undefined;
 	let avatarSrc = $state.user?.picture || '';
