@@ -6,13 +6,13 @@
 	import { toast } from 'svelte-sonner';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { cn } from '$lib/utils';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 
 	export let bill_id: string;
 
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: user_id = $state.user?.id;
 	$: isDeleting = false;

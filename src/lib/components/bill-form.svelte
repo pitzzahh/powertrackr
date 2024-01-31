@@ -3,7 +3,7 @@
 	import * as Form from '$lib/components/ui/form';
 	import { billFormSchema, type BillFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import { Calendar as CalendarIcon } from 'radix-icons-svelte';
 	import {
 		type DateValue,
@@ -16,12 +16,12 @@
 	import { cn } from '$lib/utils';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import * as Popover from '$lib/components/ui/popover';
-	import { Calendar } from '$lib/components/ui/calendar';
 	import { CustomCalendar } from '$lib/components/ui/custom-calendar';
 	import * as Select from '$lib/components/ui/select';
 	import { superForm } from 'sveltekit-superforms/client';
 	import type { SuperValidated } from 'sveltekit-superforms';
-	import { invalidateAll } from '$app/navigation';
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
 
 	export let form: SuperValidated<BillFormSchema> = $page.data.form;
 
@@ -37,7 +37,7 @@
 		{ value: 30, label: 'In a month' }
 	];
 
-	const state = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 	
 	let paid = false;
 	let placeholder: CalendarDate = today(getLocalTimeZone());
@@ -49,11 +49,9 @@
 			toast.info('Adding billing info...');
 		},
 		async onResult({ result }) {
-			console.log(JSON.stringify(result));
 			if (result.status === 200) {
 				toast.success('Billing info added successfully!');
 				$state.isAddingBill = false;
-				await invalidateAll()
 			}
 			if (result.status === 400 || result.status === 500) {
 				toast.error('Please enter valid data', {

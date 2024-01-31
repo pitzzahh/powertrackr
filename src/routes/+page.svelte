@@ -16,15 +16,14 @@
 	import * as Drawer from '$lib/components/ui/drawer';
 	import { Button } from '$lib/components/ui/button';
 	import { mediaQuery } from 'svelte-legos';
-	import { getState } from '$lib/state';
+	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 	import type { PageData } from './$types';
-	import { onMount } from 'svelte';
+	import { siteConfig } from '$lib/config/site';
+	export let data: PageData;
 
-	export let data: PageData
-	
-	const state: Writable<State> = getState();
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: hasUser = !!$state.user;
 	$: balanceHistory = $state.user
@@ -54,13 +53,13 @@
 	};
 
 	$: {
-		$state.user = data.user
-		$state.history = data.history
+		$state.user = data.user;
+		$state.history = data.history;
 	}
 </script>
 
 <svelte:head>
-	<title>PowerTrackr: Monitor and track electricity consumption.</title>
+	<title>PowerTrackr: {siteConfig.description}</title>
 </svelte:head>
 
 <div class="container md:mt-12">
