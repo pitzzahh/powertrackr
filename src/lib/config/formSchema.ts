@@ -77,13 +77,7 @@ export const billFormSchema = z.object({
 });
 
 export const profileFormSchema = z.object({
-	picture: z.any()
-		.refine((files: any) => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`)
-		.refine(
-			(files: any) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-			`${ACCEPTED_IMAGE_TYPES.join(',')} are the only accepted file types.`
-		)
-		.optional()
+	picture: z.any().optional()
 });
 
 export type RegisterFormSchema = typeof registerFormSchema;
