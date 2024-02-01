@@ -1,4 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"history_welcome": "Kasaysayan ng Buwanang Balanse"
+	"history_welcome": "Kasaysayan ng Buwanang Balanse",
+	"no_history": "Walang nakitang data ng history ng balanse sa ngayon"
 }
