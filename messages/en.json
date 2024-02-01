@@ -1,5 +1,5 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"history_welcome": "Monthly Balance History",
-	"no_history": "No history data found at this moment"
+	"no_history": "No balance history data found at this moment"
 }
