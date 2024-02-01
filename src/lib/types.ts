@@ -27,6 +27,7 @@ export type ExtendedBillingInfo = BillingInfo & {
 };
 
 export type State = {
+	currentRoute: string;
 	isAddingBill: boolean;
 	user: User | null | undefined;
 	history: ExtendedBillingInfo[] | undefined;
