@@ -4,10 +4,14 @@
 	import { Button } from '$lib/components/ui/button';
 	import { cubicInOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
-
+	import type { Writable } from 'svelte/store';
+	import type { State } from '$lib/types';
+	import { MAIN_STATE_CTX, getState } from '$lib/state';
 	let className: string | undefined | null = undefined;
 	export let items: { href: string; title: string }[];
 	export { className as class };
+
+	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	const [send, receive] = crossfade({
 		duration: 200,
@@ -15,15 +19,11 @@
 	});
 </script>
 
-<nav
-	class={cn(
-		'flex space-x-2 overflow-auto rounded-md scrollbar-hide sm:flex-col sm:space-x-0 sm:space-y-1',
-		className
-	)}
->
+<nav class={cn('flex overflow-auto scrollbar-hide sm:flex-col', className)}>
 	{#each items as item}
 		{@const isActive = $page.url.pathname === item.href}
 		<Button
+			on:click={() => ($state.currentRoute = item.href)}
 			href={item.href}
 			size="xs"
 			variant="ghost"

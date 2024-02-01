@@ -32,6 +32,7 @@
 	const largeScreen = mediaQuery('(min-width: 425px)');
 
 	setState({
+		currentRoute: '/',
 		isAddingBill: false,
 		user: data.user,
 		history: data.history
