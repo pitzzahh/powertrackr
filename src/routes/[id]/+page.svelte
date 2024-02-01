@@ -75,11 +75,11 @@
 <Separator class="my-4" />
 <Form.Root
 	method="POST"
+	enctype="multipart/form-data"
 	form={data.form}
+	{options}
 	schema={profileFormSchema}
 	let:config
-	enctype="multipart/form-data"
-	{options}
 >
 	<Form.Field {config} name="picture">
 		<Form.Item class="group relative flex flex-col items-start">
@@ -101,6 +101,7 @@
 					Choose File
 				</span>
 			</label>
+			<Form.Validation/>
 		</Form.Item>
 	</Form.Field>
 	<Form.Button disabled={processing}>
