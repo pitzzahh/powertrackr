@@ -11,8 +11,8 @@ export const siteConfig = {
 		{ text: 'HISTORY', href: '/history', icon: FolderClock, selected: false }
 	] as unknown as NavItem[],
 	profileLinks: [
-		{ text: 'Profile', href: '/user', icon: User },
-		{ text: 'Preferences', href: '/user/preferences', icon: Palette }
+		{ text: 'Profile', href: '/user/[id]', icon: User },
+		{ text: 'Preferences', href: '/user/[id]/preferences', icon: Palette }
 	] as unknown as NavItem[]
 };
 export type SiteConfig = typeof siteConfig;
