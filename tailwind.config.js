@@ -53,17 +53,16 @@ const config = {
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
 				},
 				custom: {
-					900: 'hsl(var(--primary) / 0.1)',
-					800: 'hsl(var(--primary) / 0.2)',
-					700: 'hsl(var(--primary) / 0.3)',
-					600: 'hsl(var(--primary) / 0.4)',
-					500: 'hsl(var(--primary) / 0.5)',
-					400: 'hsl(var(--primary) / 0.6)',
-					300: 'hsl(var(--primary) / 0.7)',
-					200: 'hsl(var(--primary) / 0.8)',
-					100: 'hsl(var(--primary) / 0.9)'
+					900: 'hsl(var(--primary) / 0.2)',
+					800: 'hsl(var(--primary) / 0.3)',
+					700: 'hsl(var(--primary) / 0.4)',
+					600: 'hsl(var(--primary) / 0.5)',
+					500: 'hsl(var(--primary) / 0.6)',
+					400: 'hsl(var(--primary) / 0.7)',
+					300: 'hsl(var(--primary) / 0.8)',
+					200: 'hsl(var(--primary) / 0.9)',
+					100: 'hsl(var(--primary) / 1)'
 				}
-				
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
