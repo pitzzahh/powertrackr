@@ -21,6 +21,8 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
+	import Nav from '$lib/components/sidebar-nav.svelte';
+	import type { NavItem } from '$lib/types';
 	import LogoutDialog from '$lib/components/logout-dialog.svelte';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -30,6 +32,14 @@
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
 	$: hasUser = !!$state.user;
+
+	const navItems = siteConfig.navLinks.map((item: NavItem) => {
+		return {
+			title: item.text,
+			href: item.href,
+			icon: item.icon
+		};
+	});
 </script>
 
 <header
@@ -44,7 +54,7 @@
 		/>
 	</div>
 
-	<div class="flex h-14 items-center justify-between gap-1">
+	<div class="flex h-14 items-center justify-center gap-1">
 		{#if hasUser}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
@@ -77,7 +87,11 @@
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
-			<div class="flex items-center justify-center gap-2 transition-all">
+			<Nav
+				class="sm:align-center hidden text-center sm:flex sm:flex-row sm:items-center sm:justify-center"
+				items={navItems}
+			/>
+			<div class="flex items-center justify-center gap-2 transition-all sm:hidden">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]} size="icon">
@@ -87,7 +101,7 @@
 					<DropdownMenu.Content class="w-auto">
 						<DropdownMenu.Label>Menu</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						{#each siteConfig.navLinks as link}
+						{#each navItems as link}
 							<DropdownMenu.RadioGroup bind:value={route}>
 								<div class="gap-2">
 									<DropdownMenu.RadioItem
@@ -100,7 +114,7 @@
 										<svelte:component this={link.icon} class="mr-2 h-4 w-4">
 											{link.icon}
 										</svelte:component>
-										{link.text}</DropdownMenu.RadioItem
+										{link.title}</DropdownMenu.RadioItem
 									>
 								</div>
 							</DropdownMenu.RadioGroup>
@@ -153,4 +167,4 @@
 	</div>
 </header>
 
-<LogoutDialog bind:open={isLoggingOut}/>
+<LogoutDialog bind:open={isLoggingOut} />
