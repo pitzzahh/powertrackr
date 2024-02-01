@@ -15,12 +15,7 @@
 	});
 </script>
 
-<nav
-	class={cn(
-		'flex space-x-2 overflow-auto rounded-md scrollbar-hide sm:flex-col sm:space-x-0 sm:space-y-1',
-		className
-	)}
->
+<nav class={cn('flex overflow-auto scrollbar-hide sm:flex-col', className)}>
 	{#each items as item}
 		{@const isActive = $page.url.pathname === item.href}
 		<Button
