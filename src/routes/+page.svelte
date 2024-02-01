@@ -21,6 +21,7 @@
 	import type { State } from '$lib/types';
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
+	import * as m from '$paraglide/messages'
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -66,7 +67,7 @@
 	<div class="flex items-end justify-between gap-2 md:items-center">
 		<div class="flex flex-col items-start justify-start">
 			{#if hasUser}
-				<h1>Monthly Balance History</h1>
+				<h1>{m.history_welcome()}</h1>
 			{/if}
 			{#if show}
 				<p
@@ -105,7 +106,7 @@
 									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
 								>
 							</Drawer.Header>
-							<div class="mx-[0.9rem]">
+							<div class="mx-[0.9rem] scrollbar-hide overflow-y-auto">
 								<BillForm />
 							</div>
 							<Drawer.Footer class="pt-2">
@@ -135,8 +136,8 @@
 				let:tooltip
 			>
 				<Svg>
-					<LinearGradient class="from-green-500/50 to-green-500/0" vertical let:url>
-						<Area line={{ class: 'stroke-2 stroke-green-500 opacity-20' }} fill={url} />
+					<LinearGradient class="from-custom-500/50 to-custom-500/0" vertical let:url>
+						<Area line={{ class: 'stroke-2 stroke-custom-500 opacity-20' }} fill={url} />
 						<RectClipPath
 							x={0}
 							y={0}
@@ -145,10 +146,10 @@
 							initialWidth={0}
 							spring
 						>
-							<Area initialHeight={0} line={{ class: 'stroke-2 stroke-green-500' }} fill={url} />
+							<Area initialHeight={0} line={{ class: 'stroke-2 stroke-custom-500' }} fill={url} />
 						</RectClipPath>
 					</LinearGradient>
-					<Highlight points lines={{ class: 'stroke-green-500 [stroke-dasharray:unset]' }} />
+					<Highlight points lines={{ class: 'stroke-custom-500 [stroke-dasharray:unset]' }} />
 					<Axis placement="bottom" />
 				</Svg>
 
@@ -175,7 +176,7 @@
 					y={height + padding.top + 2}
 					anchor="top"
 					variant="none"
-					class="whitespace-nowrap rounded bg-green-500 px-2 py-1 text-sm font-semibold leading-3"
+					class="whitespace-nowrap rounded bg-custom-500 px-2 py-1 text-sm font-semibold leading-3"
 					let:data
 				>
 					{format(data.date, PeriodType.Day)}
@@ -210,7 +211,7 @@
 					></polygon> <path d="M3,11h39V3H3V11z M5,5h35v4H5V5z"></path>
 				</g>
 			</svg>
-			<p class="text-sm text-muted-foreground">No history data found at the moment</p>
+			<p class="text-sm text-muted-foreground">{m.no_history()}</p>
 		</div>
 	{/if}
 </div>

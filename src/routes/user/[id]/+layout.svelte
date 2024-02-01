@@ -20,7 +20,7 @@
 	const sidebarNavItems = siteConfig.profileLinks.map((item: NavItem) => {
 		return {
 			title: item.text,
-			href: item.href.replace('user', user?.username)
+			href: item.href.replace('[id]', user?.username)
 		};
 	});
 	const canFitText = mediaQuery('(min-width: 340px)');

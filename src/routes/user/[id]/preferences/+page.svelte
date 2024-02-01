@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Separator } from '$lib/components/ui/separator';
+	import { i18n } from '$lib/i18n.js'
+	import { page } from '$app/stores'
+	import { availableLanguageTags, languageTag } from '../../../../paraglide/runtime';
 
 	export let data: PageData;
 </script>
@@ -17,3 +20,12 @@
 </p>
 
 <Separator class="my-4" />
+{#each availableLanguageTags as lang}
+	<a 
+		href={i18n.route($page.url.pathname)}
+		hreflang={lang}
+		aria-current={lang === languageTag() ? "page" : undefined}
+	>
+		{lang}
+	</a>
+{/each}
