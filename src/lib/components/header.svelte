@@ -27,7 +27,6 @@
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
-	let route = '/';
 	$: isLoggingOut = false;
 
 	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
@@ -43,13 +42,13 @@
 </script>
 
 <header
-	class="shadown-sm container sticky top-0 z-50 flex items-center justify-between backdrop-blur-[10px]"
+	class="shadown-sm container sticky top-0 flex items-center justify-between backdrop-blur-[10px]"
 >
 	<div class="flex items-center justify-start gap-1">
 		<Icons.logo
 			on:click={() => {
-				route = '/';
-				goto(route);
+				$state.currentRoute = '/';
+				goto($state.currentRoute);
 			}}
 		/>
 	</div>
@@ -94,7 +93,7 @@
 			<div class="flex items-center justify-center gap-2 transition-all sm:hidden">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>
-						<Button variant="outline" builders={[builder]} size="icon">
+						<Button title="menu-button" variant="outline" builders={[builder]} size="icon">
 							<Menu />
 						</Button>
 					</DropdownMenu.Trigger>
@@ -102,7 +101,7 @@
 						<DropdownMenu.Label>Menu</DropdownMenu.Label>
 						<DropdownMenu.Separator />
 						{#each navItems as link}
-							<DropdownMenu.RadioGroup bind:value={route}>
+							<DropdownMenu.RadioGroup bind:value={$state.currentRoute}>
 								<div class="gap-2">
 									<DropdownMenu.RadioItem
 										on:click={() => goto(link.href)}
