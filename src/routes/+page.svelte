@@ -136,8 +136,8 @@
 				let:tooltip
 			>
 				<Svg>
-					<LinearGradient class="from-green-500/50 to-green-500/0" vertical let:url>
-						<Area line={{ class: 'stroke-2 stroke-green-500 opacity-20' }} fill={url} />
+					<LinearGradient class="from-custom-500/50 to-custom-500/0" vertical let:url>
+						<Area line={{ class: 'stroke-2 stroke-custom-500 opacity-20' }} fill={url} />
 						<RectClipPath
 							x={0}
 							y={0}
@@ -146,10 +146,10 @@
 							initialWidth={0}
 							spring
 						>
-							<Area initialHeight={0} line={{ class: 'stroke-2 stroke-green-500' }} fill={url} />
+							<Area initialHeight={0} line={{ class: 'stroke-2 stroke-custom-500' }} fill={url} />
 						</RectClipPath>
 					</LinearGradient>
-					<Highlight points lines={{ class: 'stroke-green-500 [stroke-dasharray:unset]' }} />
+					<Highlight points lines={{ class: 'stroke-custom-500 [stroke-dasharray:unset]' }} />
 					<Axis placement="bottom" />
 				</Svg>
 
@@ -176,7 +176,7 @@
 					y={height + padding.top + 2}
 					anchor="top"
 					variant="none"
-					class="whitespace-nowrap rounded bg-green-500 px-2 py-1 text-sm font-semibold leading-3"
+					class="whitespace-nowrap rounded bg-custom-500 px-2 py-1 text-sm font-semibold leading-3"
 					let:data
 				>
 					{format(data.date, PeriodType.Day)}
