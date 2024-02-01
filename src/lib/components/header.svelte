@@ -71,7 +71,7 @@
 						{#each siteConfig.profileLinks as pf}
 							<DropdownMenu.Item
 								on:click={() => {
-									if ($state.user) goto(pf.href.replace('user', $state.user.username));
+									if ($state.user) goto(pf.href.replace('[id]', $state.user.username));
 								}}
 							>
 								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />

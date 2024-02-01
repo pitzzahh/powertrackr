@@ -52,17 +52,18 @@ const config = {
 					DEFAULT: 'hsl(var(--card) / <alpha-value>)',
 					foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
 				},
-				green: {
-					100: '#4EF18A',
-					200: '#3BEA7A',
-					300: '#2EE56B',
-					400: '#25D95F',
-					500: '#1FC953',
-					600: '#1ABD49',
-					700: '#16B23F',
-					800: '#11A635',
-					900: '#0D9B2B'
+				custom: {
+					900: 'hsl(var(--primary) / 0.1)',
+					800: 'hsl(var(--primary) / 0.2)',
+					700: 'hsl(var(--primary) / 0.3)',
+					600: 'hsl(var(--primary) / 0.4)',
+					500: 'hsl(var(--primary) / 0.5)',
+					400: 'hsl(var(--primary) / 0.6)',
+					300: 'hsl(var(--primary) / 0.7)',
+					200: 'hsl(var(--primary) / 0.8)',
+					100: 'hsl(var(--primary) / 0.9)'
 				}
+				
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
