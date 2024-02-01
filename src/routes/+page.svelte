@@ -105,7 +105,7 @@
 									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
 								>
 							</Drawer.Header>
-							<div class="mx-[0.9rem]">
+							<div class="mx-[0.9rem] scrollbar-hide overflow-y-auto">
 								<BillForm />
 							</div>
 							<Drawer.Footer class="pt-2">
