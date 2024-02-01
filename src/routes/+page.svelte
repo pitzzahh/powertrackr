@@ -21,6 +21,7 @@
 	import type { State } from '$lib/types';
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
+	import * as m from '$paraglide/messages'
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -66,7 +67,7 @@
 	<div class="flex items-end justify-between gap-2 md:items-center">
 		<div class="flex flex-col items-start justify-start">
 			{#if hasUser}
-				<h1>Monthly Balance History</h1>
+				<h1>{m.history_welcome()}</h1>
 			{/if}
 			{#if show}
 				<p
@@ -210,7 +211,7 @@
 					></polygon> <path d="M3,11h39V3H3V11z M5,5h35v4H5V5z"></path>
 				</g>
 			</svg>
-			<p class="text-sm text-muted-foreground">No history data found at the moment</p>
+			<p class="text-sm text-muted-foreground">{m.no_history()}</p>
 		</div>
 	{/if}
 </div>
