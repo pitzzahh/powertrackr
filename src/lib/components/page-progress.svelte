@@ -3,13 +3,13 @@
 </script>
 
 {#if $navigating}
-	<div class="fixed inset-0 z-[99999] flex h-screen items-center justify-center backdrop-blur-[2px]">
+	<div class="fixed inset-0 z-[99999] flex h-screen items-center justify-center backdrop-blur-sm">
 		<svg
 			width="80"
 			height="120"
 			viewBox="0 0 135 120"
 			xmlns="http://www.w3.org/2000/svg"
-			fill="#16a34a"
+			fill="hsl(var(--primary) / 1)"
 		>
 			<rect y="10" width="15" height="120" rx="6">
 				<animate
