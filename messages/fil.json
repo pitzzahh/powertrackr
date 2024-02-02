@@ -1,5 +1,15 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"history_welcome": "Kasaysayan ng Buwanang Balanse",
-	"no_history": "Walang nakitang data ng history ng balanse sa ngayon"
+	"history_welcome": "Buwanang ng Pagsingil",
+	"balance_desc": "Mula sa {firstDate} hanggang {lastDate}",
+	"no_history": "Walang nakitang data ng history ng balanse sa ngayon",
+	"bill_form_title": "Impormasyon sa Pagsingil",
+	"bill_form_desc": "Ilagay ang impormasyon sa pagsingil para sa kasalukuyang buwan. I-click ang Magdagdag kapag tapos ka na",
+	"settings": "Mga setting",
+	"settings_desc": "Pamahalaan ang mga setting ng iyong account at itakda ang mga kagustuhan.",
+	"profile": "Profile",
+	"profile_desc": "Pamahalaan ang iyong profile at impormasyon ng account.",
+	"preferences": "Mga Kagustuhan",
+	"preferences_desc": "I-customize ang app batay sa iyong mga kagustuhan gaya ng mga tema atbp.",
+	"months": "Enero Pebrero Marso Abril Mayo Hunyo Hulyo Agosto Setyembre Oktubre Nobyembre Disyembre"
 }
