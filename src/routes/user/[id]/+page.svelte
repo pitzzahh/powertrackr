@@ -68,7 +68,7 @@
 
 <h4>Profile</h4>
 <p
-	class="text-sm text-muted-foreground sm:mb-6 [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
+	class="mb-2 text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
 >
 	This is how you will see yourself on the site.
 </p>
@@ -101,7 +101,7 @@
 					Choose File
 				</span>
 			</label>
-			<Form.Validation/>
+			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
 	<Form.Button disabled={processing}>
