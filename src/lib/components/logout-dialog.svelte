@@ -13,7 +13,7 @@
 
 	const logout = async () => {
 		await invalidateAll();
-		goto(`${$page.url.protocol}//${$page.url.host}/${$state.user?.username}/logout`);
+		goto(`${$page.url.protocol}//${$page.url.host}/user/${$state.user?.username}/logout`);
 		$state.user = undefined;
 		$state.history = undefined;
 	};
