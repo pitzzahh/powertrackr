@@ -1,6 +1,6 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"history_welcome": "Monthly Balance History",
+	"history_welcome": "Monthly Billing History",
 	"balance_desc": "From {firstDate} to {lastDate}",
 	"no_history": "No balance history data found at this moment",
 	"bill_form_title": "Billing Information",
