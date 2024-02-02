@@ -1,5 +1,15 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"history_welcome": "Monthly Balance History",
-	"no_history": "No balance history data found at this moment"
+	"balance_desc": "From {firstDate} to {lastDate}",
+	"no_history": "No balance history data found at this moment",
+	"bill_form_title": "Billing Information",
+	"bill_form_desc": "Enter the billing info for the month. Click Add when you're done",
+	"settings": "Settings",
+	"settings_desc": "Manage your account settings and set preferences.",
+	"profile": "Profile",
+	"profile_desc": "Manage your profile and account information.",
+	"preferences": "Preferences",
+	"preferences_desc": "Customize the app based on your preferences such as themes etc.",
+	"months": "January February March April May June July August September October November December"
 }
