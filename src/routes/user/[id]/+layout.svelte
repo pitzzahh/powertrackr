@@ -33,10 +33,11 @@
 	</p>
 	<div class=" flex flex-col sm:flex-row">
 		<div class="flex grow flex-col gap-2 sm:flex-row">
-			<aside class="flex items-center justify-start gap-1 sm:block sm:w-1/5">
+			<aside class="flex items-center justify-start gap-2 sm:block sm:w-1/5">
 				<SidebarNav class="grow" items={sidebarNavItems} />
+				<Separator class="h-full w-[1px] sm:my-2 sm:h-[1px] sm:w-full" />
 				<Button
-					class="my-2 sm:w-full"
+					class="sm:w-full"
 					variant="destructive"
 					on:click={() => (isLoggingOut = true)}
 					size="xs"
@@ -54,5 +55,4 @@
 		</div>
 	</div>
 </div>
-
 <LogoutDialog bind:open={isLoggingOut} />
