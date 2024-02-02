@@ -21,7 +21,7 @@
 	import type { State } from '$lib/types';
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
-	import * as m from '$paraglide/messages'
+	import * as m from '$paraglide/messages';
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -98,15 +98,15 @@
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
-					<Drawer.Content>
-						<div class="mx-auto max-w-sm">
+					<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%]">
+						<div>
 							<Drawer.Header class="text-left">
 								<Drawer.Title>Billing Info</Drawer.Title>
 								<Drawer.Description
 									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
 								>
 							</Drawer.Header>
-							<div class="mx-[0.9rem] scrollbar-hide overflow-y-auto">
+							<div class="w-full overflow-y-auto px-4 scrollbar-hide">
 								<BillForm />
 							</div>
 							<Drawer.Footer class="pt-2">
@@ -154,13 +154,13 @@
 				</Svg>
 
 				<Tooltip y={20} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
-					{format(data.value, 'currency', { currency: 'PHP' })}
+					{format(data.value, 'currency')}
 					{data.Kwh}Kwh
 				</Tooltip>
 
 				<Tooltip y={55} xOffset={4} variant="none" class="text-sm font-semibold leading-3" let:data>
 					{#if data.subValue}
-						{format(data.subValue, 'currency', { currency: 'PHP' })} {data.subKwh}Kwh
+						{format(data.subValue, 'currency')} {data.subKwh}Kwh
 					{/if}
 				</Tooltip>
 
