@@ -101,21 +101,20 @@
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
-					<Drawer.Content class="fixed bottom-0 left-0 right-0">
-						<div>
-							<Drawer.Header class="text-left">
-								<Drawer.Title>{m.bill_form_title()}</Drawer.Title>
-								<Drawer.Description>{m.bill_form_desc()}</Drawer.Description>
-							</Drawer.Header>
-							<div class="h-full w-full overflow-y-auto px-4 scrollbar-hide">
-								<BillForm />
-							</div>
-							<Drawer.Footer class="pt-2">
-								<Drawer.Close asChild let:builder>
-									<Button variant="outline" builders={[builder]}>Cancel</Button>
-								</Drawer.Close>
-							</Drawer.Footer>
+					<Drawer.Overlay class="fixed inset-0" />
+					<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%]">
+						<Drawer.Header class="text-left">
+							<Drawer.Title>{m.bill_form_title()}</Drawer.Title>
+							<Drawer.Description>{m.bill_form_desc()}</Drawer.Description>
+						</Drawer.Header>
+						<div class="overflow-y-auto px-4 scrollbar-hide">
+							<BillForm />
 						</div>
+						<Drawer.Footer class="pt-2">
+							<Drawer.Close asChild let:builder>
+								<Button variant="outline" builders={[builder]}>Cancel</Button>
+							</Drawer.Close>
+						</Drawer.Footer>
 					</Drawer.Content>
 				</Drawer.Root>
 			{/if}
