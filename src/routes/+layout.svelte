@@ -13,6 +13,9 @@
 	import { mediaQuery } from 'svelte-legos';
 	import { ParaglideJS } from '@inlang/paraglide-js-adapter-sveltekit';
 	import { i18n } from '$lib/i18n.js';
+	import { lang } from '$lib';
+	import { onMount } from 'svelte';
+	import { setLanguageTag } from '$paraglide/runtime';
 
 	export let data: PageData;
 
@@ -42,6 +45,11 @@
 	);
 	inject({ mode: dev ? 'development' : 'production' });
 	injectSpeedInsights();
+
+	onMount(() => {
+		// @ts-ignore
+		setLanguageTag($lang);
+	});
 </script>
 
 <Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
