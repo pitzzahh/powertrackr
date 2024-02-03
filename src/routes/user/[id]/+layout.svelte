@@ -34,7 +34,7 @@
 	</p>
 	<div class=" flex flex-col sm:flex-row">
 		<div class="flex grow flex-col gap-2 sm:flex-row">
-			<aside class="flex items-center justify-start gap-2 sm:block sm:w-1/5">
+			<aside class="flex items-center justify-start gap-2 sm:block sm:w-1/5 sm:min-w-[15rem] sm:max-w-[15rem]">
 				<SidebarNav class="grow" items={sidebarNavItems} />
 				<Separator class="h-full w-[1px] sm:my-2 sm:h-[1px] sm:w-full" />
 				<Button
@@ -50,7 +50,7 @@
 				</Button>
 			</aside>
 			<Separator class="my-2 hidden sm:flex" orientation="vertical" />
-			<div class="max-w-2xl grow gap-2">
+			<div class="grow gap-2">
 				<slot />
 			</div>
 		</div>
