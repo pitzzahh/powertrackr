@@ -22,6 +22,7 @@
 	import type { SuperValidated } from 'sveltekit-superforms';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
+	import * as m from '$paraglide/messages';
 
 	export let form: SuperValidated<BillFormSchema> = $page.data.form;
 
@@ -41,6 +42,7 @@
 	
 	let paid = false;
 	let placeholder: CalendarDate = today(getLocalTimeZone());
+	let subTitle: string[] = m.form_sub_title().split(',');
 
 	const theForm = superForm(form, {
 		validators: billFormSchema,
@@ -70,13 +72,13 @@
 	const { form: formStore } = theForm;
 
 	$: value = $formStore.date ? parseDate($formStore.date) : undefined;
-	$: status = paid ? 'Paid' : 'Pending';
+	$: status = paid ? subTitle[5] : subTitle[4];
 </script>
 
 <Form.Root method="POST" form={theForm} controlled schema={billFormSchema} let:config>
 	<Form.Field {config} name="date">
 		<Form.Item class="flex flex-col">
-			<Form.Label for="date">Date of Bill</Form.Label>
+			<Form.Label for="date">{subTitle[0]}</Form.Label>
 			<Popover.Root>
 				<Form.Control id="date" let:attrs>
 					<Popover.Trigger
@@ -120,7 +122,7 @@
 						bind:placeholder
 						minValue={new CalendarDate(1900, 1, 1)}
 						maxValue={today(getLocalTimeZone())}
-						calendarLabel="Date of Bill"
+						calendarLabel={subTitle[0]}
 						initialFocus
 						onValueChange={(v) => {
 							if (v) {
@@ -137,21 +139,21 @@
 	</Form.Field>
 	<Form.Field {config} name="balance">
 		<Form.Item>
-			<Form.Label>Balance</Form.Label>
+			<Form.Label>{subTitle[1]}</Form.Label>
 			<Form.Input />
 			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
 	<Form.Field {config} name="totalKwh">
 		<Form.Item>
-			<Form.Label>Total Kwh</Form.Label>
+			<Form.Label>{subTitle[2]}</Form.Label>
 			<Form.Input />
 			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
 	<Form.Field {config} name="subReading">
 		<Form.Item>
-			<Form.Label>Sub Meter Reading</Form.Label>
+			<Form.Label>{subTitle[3]}</Form.Label>
 			<Form.Input />
 			<Form.Validation />
 		</Form.Item>
