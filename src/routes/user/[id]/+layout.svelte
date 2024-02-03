@@ -10,6 +10,7 @@
 	import LogoutDialog from '$lib/components/logout-dialog.svelte';
 	import { mediaQuery } from 'svelte-legos';
 	import { cn } from '$lib/utils';
+	import * as m from '$paraglide/messages';
 
 	export let data: LayoutData;
 
@@ -27,9 +28,9 @@
 </script>
 
 <div class="container">
-	<h2>Settings</h2>
+	<h2>{m.settings()}</h2>
 	<p class="mb-4 text-muted-foreground [&:not(:first-child)]:mt-1">
-		Manage your account settings and set preferences.
+		{m.settings_desc()}
 	</p>
 	<div class=" flex flex-col sm:flex-row">
 		<div class="flex grow flex-col gap-2 sm:flex-row">
