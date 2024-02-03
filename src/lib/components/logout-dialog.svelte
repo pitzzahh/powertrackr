@@ -5,7 +5,6 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import { invalidateAll, goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { onMount, onDestroy } from 'svelte';
 
 	export let open: boolean = false;
 
@@ -17,16 +16,6 @@
 		$state.user = undefined;
 		$state.history = undefined;
 	};
-
-	onMount(() => {
-		console.log(`Logout model mounted`);
-	});
-
-	onDestroy(() => {
-		console.log(`Logout model unmounted`);
-	});
-
-	$: console.log(`Logout model open: ${open}`);
 </script>
 
 <AlertDialog.Root bind:open>
