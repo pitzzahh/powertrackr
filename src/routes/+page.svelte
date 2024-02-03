@@ -22,6 +22,7 @@
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
 	import * as m from '$paraglide/messages';
+
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -43,6 +44,10 @@
 	$: oldestDate = balanceHistory?.length > 0 ? balanceHistory[0].date : new Date();
 	$: latestDate =
 		balanceHistory?.length > 0 ? balanceHistory[balanceHistory.length - 1].date : new Date();
+	$: {
+		$state.user = data.user;
+		$state.history = data.history;
+	}
 
 	const largeScreen = mediaQuery('(min-width: 768px)');
 
@@ -52,11 +57,6 @@
 			event.preventDefault();
 		}
 	};
-
-	$: {
-		$state.user = data.user;
-		$state.history = data.history;
-	}
 </script>
 
 <svelte:head>
@@ -73,7 +73,10 @@
 				<p
 					class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2"
 				>
-					From {format(oldestDate, PeriodType.Day)} to {format(latestDate, PeriodType.Day)}
+					{m.balance_desc({
+						firstDate: format(oldestDate, PeriodType.Day),
+						lastDate: format(latestDate, PeriodType.Day)
+					})}
 				</p>
 			{/if}
 		</div>
@@ -85,9 +88,9 @@
 					</Dialog.Trigger>
 					<Dialog.Content class="sm:max-w-[425px]">
 						<Dialog.Header>
-							<Dialog.Title>Billing Info</Dialog.Title>
+							<Dialog.Title>{m.bill_form_title()}</Dialog.Title>
 							<Dialog.Description>
-								Enter the billing info for the month. Click Add when you're done.
+								{m.bill_form_desc()}
 							</Dialog.Description>
 						</Dialog.Header>
 						<BillForm />
@@ -101,10 +104,8 @@
 					<Drawer.Content class="fixed bottom-0 left-0 right-0">
 						<div>
 							<Drawer.Header class="text-left">
-								<Drawer.Title>Billing Info</Drawer.Title>
-								<Drawer.Description
-									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
-								>
+								<Drawer.Title>{m.bill_form_title()}</Drawer.Title>
+								<Drawer.Description>{m.bill_form_desc()}</Drawer.Description>
 							</Drawer.Header>
 							<div class="h-full w-full overflow-y-auto px-4 scrollbar-hide">
 								<BillForm />
