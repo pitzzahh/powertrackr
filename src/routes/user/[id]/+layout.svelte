@@ -10,6 +10,7 @@
 	import LogoutDialog from '$lib/components/logout-dialog.svelte';
 	import { mediaQuery } from 'svelte-legos';
 	import { cn } from '$lib/utils';
+	import * as m from '$paraglide/messages';
 
 	export let data: LayoutData;
 
@@ -27,16 +28,17 @@
 </script>
 
 <div class="container">
-	<h2>Settings</h2>
+	<h2>{m.settings()}</h2>
 	<p class="mb-4 text-muted-foreground [&:not(:first-child)]:mt-1">
-		Manage your account settings and set preferences.
+		{m.settings_desc()}
 	</p>
 	<div class=" flex flex-col sm:flex-row">
 		<div class="flex grow flex-col gap-2 sm:flex-row">
-			<aside class="flex items-center justify-start gap-1 sm:block sm:w-1/5">
+			<aside class="flex items-center justify-start gap-2 sm:block sm:w-1/5">
 				<SidebarNav class="grow" items={sidebarNavItems} />
+				<Separator class="h-full w-[1px] sm:my-2 sm:h-[1px] sm:w-full" />
 				<Button
-					class="my-2 sm:w-full"
+					class="sm:w-full"
 					variant="destructive"
 					on:click={() => (isLoggingOut = true)}
 					size="xs"
@@ -54,5 +56,4 @@
 		</div>
 	</div>
 </div>
-
 <LogoutDialog bind:open={isLoggingOut} />

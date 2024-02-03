@@ -11,8 +11,11 @@
 	import type { PageData } from './$types';
 	import { setState, MAIN_STATE_CTX } from '$lib/state';
 	import { mediaQuery } from 'svelte-legos';
-	import { ParaglideJS } from '@inlang/paraglide-js-adapter-sveltekit'
-	import { i18n } from '$lib/i18n.js'
+	import { ParaglideJS } from '@inlang/paraglide-js-adapter-sveltekit';
+	import { i18n } from '$lib/i18n.js';
+	import { lang } from '$lib';
+	import { onMount } from 'svelte';
+	import { setLanguageTag } from '$paraglide/runtime';
 
 	export let data: PageData;
 
@@ -31,14 +34,22 @@
 
 	const largeScreen = mediaQuery('(min-width: 425px)');
 
-	setState({
-		currentRoute: '/',
-		isAddingBill: false,
-		user: data.user,
-		history: data.history
-	}, MAIN_STATE_CTX);
+	setState(
+		{
+			currentRoute: '/',
+			isAddingBill: false,
+			user: data.user,
+			history: data.history
+		},
+		MAIN_STATE_CTX
+	);
 	inject({ mode: dev ? 'development' : 'production' });
 	injectSpeedInsights();
+
+	onMount(() => {
+		// @ts-ignore
+		setLanguageTag($lang);
+	});
 </script>
 
 <Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
@@ -46,5 +57,5 @@
 <ModeWatcher />
 <Header />
 <ParaglideJS {i18n}>
-    <slot />
+	<slot />
 </ParaglideJS>

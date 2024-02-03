@@ -11,6 +11,7 @@
 	import { toast } from 'svelte-sonner';
 	import { Loader2 } from 'lucide-svelte';
 	import { Separator } from '$lib/components/ui/separator';
+	import * as m from '$paraglide/messages';
 
 	export let data: PageData;
 
@@ -68,9 +69,9 @@
 
 <h4>Profile</h4>
 <p
-	class="text-sm text-muted-foreground sm:mb-6 [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
+	class="mb-2 text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
 >
-	This is how you will see yourself on the site.
+	{m.profile_desc()}
 </p>
 <Separator class="my-4" />
 <Form.Root
@@ -101,7 +102,7 @@
 					Choose File
 				</span>
 			</label>
-			<Form.Validation/>
+			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
 	<Form.Button disabled={processing}>

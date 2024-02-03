@@ -20,7 +20,7 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State, BillingInfoDTO } from '$lib/types';
-	import { formatDate, PeriodType } from 'svelte-ux';
+	import { format, formatDate, PeriodType } from 'svelte-ux';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
@@ -128,12 +128,7 @@
 		table.column({
 			accessor: 'balance',
 			header: 'Balance',
-			cell: ({ value }: { value: number }) => {
-				return new Intl.NumberFormat('en-US', {
-					style: 'currency',
-					currency: 'PHP'
-				}).format(value);
-			},
+			cell: ({ value }: { value: number }) => format(value, 'currency'),
 			plugins: {
 				sort: {
 					disable: false
@@ -146,14 +141,7 @@
 		table.column({
 			accessor: 'payment',
 			header: 'Payment',
-			cell: ({ value }: { value: number }) => {
-				return value
-					? new Intl.NumberFormat('en-US', {
-							style: 'currency',
-							currency: 'PHP'
-						}).format(value)
-					: 'N/A';
-			},
+			cell: ({ value }: { value: number }) => (value ? format(value, 'currency') : 'N/A'),
 			plugins: {
 				sort: {
 					disable: false
@@ -166,14 +154,7 @@
 		table.column({
 			accessor: 'subPayment',
 			header: 'SubPayment',
-			cell: ({ value }: { value: number }) => {
-				return value
-					? new Intl.NumberFormat('en-US', {
-							style: 'currency',
-							currency: 'PHP'
-						}).format(value)
-					: 'N/A';
-			},
+			cell: ({ value }: { value: number }) => (value ? format(value, 'currency') : 'N/A'),
 			plugins: {
 				sort: {
 					disable: false
