@@ -42,7 +42,7 @@
 </script>
 
 <header
-	class="shadown-sm container sticky top-0 flex items-center justify-between backdrop-blur-[10px]"
+	class="shadown-sm container z-[999] sticky top-0 flex items-center justify-between backdrop-blur-[10px]"
 >
 	<div class="flex items-center justify-start gap-1">
 		<Icons.logo
