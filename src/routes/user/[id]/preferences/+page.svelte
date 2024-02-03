@@ -6,6 +6,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as m from '$paraglide/messages';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 </script>
@@ -28,12 +29,13 @@
 	<RadioGroup.Root
 		value={languageTag()}
 		class="grid grid-cols-3 gap-4"
-		onValueChange={(val) => {
+		onValueChange={async (val) => {
 			// @ts-ignore
 			setLanguageTag(val);
 			$lang = languageTag();
+			await goto('/');
+			goto(`user/${data.user?.username}/preferences`);
 		}}
-		data-sveltekit-reload
 	>
 		{#each availableLanguageTags as lang}
 			<Label
