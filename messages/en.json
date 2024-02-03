@@ -9,5 +9,6 @@
 	"settings_desc": "Manage your account settings and set preferences.",
 	"profile_desc": "Manage your profile and account information.",
 	"preferences": "Preferences",
-	"preferences_desc": "Customize the app based on your preferences such as themes etc."
+	"preferences_desc": "Customize the app based on your preferences such as themes etc.",
+	"form_sub_title": "Date of Bill, Balance, Total Kwh, Sub-Meter, Pending, Paid"
 }
