@@ -1,9 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { Separator } from '$lib/components/ui/separator';
-	import { i18n } from '$lib/i18n.js'
-	import { page } from '$app/stores'
-	import { availableLanguageTags, languageTag } from '../../../../paraglide/runtime';
+	import { lang } from '$lib';
+	import { availableLanguageTags, languageTag, setLanguageTag } from '$paraglide/runtime';
+	import { Label } from '$lib/components/ui/label';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import * as m from '$paraglide/messages';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 </script>
@@ -12,20 +15,36 @@
 	<title>{data.user?.name} preference settings</title>
 </svelte:head>
 
-<h4>Preferences</h4>
+<h4>{m.preferences()}</h4>
 <p
-	class="text-sm text-muted-foreground sm:mb-6 [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
+	class="mb-2 text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
 >
-	Customize the app based on your preferences such as themes etc.
+	{m.preferences_desc()}
 </p>
 
-<Separator class="my-4" />
-{#each availableLanguageTags as lang}
-	<a 
-		href={i18n.route($page.url.pathname)}
-		hreflang={lang}
-		aria-current={lang === languageTag() ? "page" : undefined}
+<Separator />
+<p class="text-md font-medium leading-none">Language</p>
+<span class=" text-sm text-muted-foreground">Choose your preferred language</span>
+<div class="mt-2 flex gap-2">
+	<RadioGroup.Root
+		value={languageTag()}
+		class="grid grid-cols-3 gap-4"
+		onValueChange={async (val) => {
+			// @ts-ignore
+			setLanguageTag(val);
+			$lang = languageTag();
+			await goto('/');
+			goto(`user/${data.user?.username}/preferences`);
+		}}
 	>
-		{lang}
-	</a>
-{/each}
+		{#each availableLanguageTags as lang}
+			<Label
+				for={lang}
+				class="rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
+			>
+				<RadioGroup.Item value={lang} id={lang} class="sr-only" aria-label={lang} />
+				{lang}
+			</Label>
+		{/each}
+	</RadioGroup.Root>
+</div>

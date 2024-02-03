@@ -1,4 +1,22 @@
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { availableLanguageTags, languageTag, setLanguageTag } from '$paraglide/runtime';
+
+const lang = writable<string>(
+	browser ? window.localStorage.getItem('lang') ?? languageTag() : languageTag()
+);
+
+lang.subscribe((value) => {
+	if (browser) {
+		// @ts-ignore
+		if (!availableLanguageTags.includes(value)) {
+			throw new Error(`Language tag "${value}" is not available`);
+		}
+		// @ts-ignore
+		setLanguageTag(value);
+		window.localStorage.setItem('lang', value);
+	}
+});
 
 const randomDate = (start: Date, end: Date) => {
 	return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
@@ -62,3 +80,5 @@ export const getInitials = (name: string | undefined) => {
 	}
 	return initials;
 };
+
+export { lang };
