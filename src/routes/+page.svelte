@@ -98,7 +98,7 @@
 					<Drawer.Trigger asChild let:builder>
 						<Button variant="outline" builders={[builder]}>Add Data</Button>
 					</Drawer.Trigger>
-					<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%]">
+					<Drawer.Content class="fixed bottom-0 left-0 right-0">
 						<div>
 							<Drawer.Header class="text-left">
 								<Drawer.Title>Billing Info</Drawer.Title>
@@ -106,7 +106,7 @@
 									>Enter the billing info for the month. Click Add when you're done.</Drawer.Description
 								>
 							</Drawer.Header>
-							<div class="w-full overflow-y-auto px-4 scrollbar-hide">
+							<div class="h-full w-full overflow-y-auto px-4 scrollbar-hide">
 								<BillForm />
 							</div>
 							<Drawer.Footer class="pt-2">
