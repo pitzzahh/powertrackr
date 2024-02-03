@@ -5,6 +5,7 @@
 	import { availableLanguageTags, languageTag, setLanguageTag } from '$paraglide/runtime';
 	import { Label } from '$lib/components/ui/label';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import * as m from '$paraglide/messages';
 
 	export let data: PageData;
 </script>
@@ -13,11 +14,11 @@
 	<title>{data.user?.name} preference settings</title>
 </svelte:head>
 
-<h4>Preferences</h4>
+<h4>{m.preferences()}</h4>
 <p
 	class="mb-2 text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
 >
-	Customize the app based on your preferences such as themes etc.
+	{m.preferences_desc()}
 </p>
 
 <Separator />
@@ -32,6 +33,7 @@
 			setLanguageTag(val);
 			$lang = languageTag();
 		}}
+		data-sveltekit-reload
 	>
 		{#each availableLanguageTags as lang}
 			<Label
