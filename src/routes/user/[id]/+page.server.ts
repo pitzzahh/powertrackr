@@ -30,7 +30,7 @@ export const load = (async ({ locals, params }) => {
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
-	default: async (event: RequestEvent<RouteParams, "/[id]">) => {
+	default: async (event: RequestEvent<RouteParams, "/user/[id]">) => {
 		const form = await superValidate(event, profileFormSchema);
 		console.log(`Profile form: ${JSON.stringify(form, null, 2)}`);
 		if (!form.valid) {
@@ -39,18 +39,24 @@ export const actions: Actions = {
 			});
 		}
 
-		cloudinary.config({
-			cloud_name: CLOUDINARY_CLOUD_NAME,
-			api_key: CLOUDINARY_API_KEY,
-			api_secret: CLOUDINARY_API_SECRET,
-			secure: true
-		});
-		// TODO: Upload user profile pic to cloudinary
-		const result = await cloudinary.uploader.upload('/path/to/image');
+		const { picture } = form.data
+
+		console.log(`Picture: ${JSON.stringify(picture, null, 2)}`)
+
+		if (picture) {
+			cloudinary.config({
+				cloud_name: CLOUDINARY_CLOUD_NAME,
+				api_key: CLOUDINARY_API_KEY,
+				api_secret: CLOUDINARY_API_SECRET,
+				secure: true
+			});
+			// TODO: Upload user profile pic to cloudinary
+			const result = await cloudinary.uploader.upload(picture);
+			console.log(`Cloudinary result: ${JSON.stringify(result, null, 2)}`);
+		}
 
 		return {
-			form,
-			result
+			form
 		};
 	}
 };
