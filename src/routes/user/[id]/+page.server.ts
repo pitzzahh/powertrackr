@@ -39,11 +39,11 @@ export const actions: Actions = {
 			});
 		}
 
-		const { picture } = form.data
+		const { avatar } = form.data
 
-		console.log(`Picture: ${JSON.stringify(picture, null, 2)}`)
+		console.log(`avatar: ${JSON.stringify(avatar, null, 2)}`)
 
-		if (picture) {
+		if (avatar) {
 			cloudinary.config({
 				cloud_name: CLOUDINARY_CLOUD_NAME,
 				api_key: CLOUDINARY_API_KEY,
@@ -51,7 +51,7 @@ export const actions: Actions = {
 				secure: true
 			});
 			// TODO: Upload user profile pic to cloudinary
-			const result = await cloudinary.uploader.upload(picture);
+			const result = await cloudinary.uploader.upload(avatar);
 			console.log(`Cloudinary result: ${JSON.stringify(result, null, 2)}`);
 		}
 
