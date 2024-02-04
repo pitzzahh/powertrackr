@@ -23,17 +23,6 @@ export const load = (async ({ locals }) => {
 			}
 		})) as ExtendedBillingInfo[] | undefined;
 
-		console.log(
-			`REFETCHING ALL: ${JSON.stringify(
-				{
-					user,
-					history
-				},
-				null,
-				2
-			)}`
-		);
-
 		return {
 			user,
 			history

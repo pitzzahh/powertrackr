@@ -58,6 +58,7 @@
 		"cmdk-sv": "^0.0.12",
 		"d3-array": "^3.2.4",
 		"d3-scale": "^4.0.2",
+		"file-system": "^2.2.2",
 		"formsnap": "^0.4.2",
 		"layercake": "^8.0.2",
 		"layerchart": "^0.27.1",
