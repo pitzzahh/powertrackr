@@ -59,7 +59,7 @@
 		selectedFile = file;
 
 		avatarSrc = selectedFile ? URL.createObjectURL(selectedFile) : $state.user?.picture || '';
-		console.log('Selected File:', selectedFile);
+		console.log('Selected File:', avatarSrc);
 	};
 
 	$: {
@@ -87,9 +87,9 @@
 	schema={profileFormSchema}
 	let:config
 >
-	<Form.Field {config} name="picture">
+	<Form.Field {config} name="avatar">
 		<Form.Item class="relative flex items-start">
-			<Label for="avatarInput" class="relative">
+			<Label for="avatar" class="relative">
 				<Avatar.Root class="m-2 h-32 w-32">
 					<Avatar.Image src={avatarSrc} alt="@{$state.user?.username}" />
 					<Avatar.Fallback class="text-xl">{getInitials($state.user?.name)}</Avatar.Fallback>
@@ -97,7 +97,7 @@
 				<Form.Input
 					type="file"
 					accept="image/*"
-					id="avatarInput"
+					id="avatar"
 					class="hidden"
 					on:change={handleFileChange}
 				/>
