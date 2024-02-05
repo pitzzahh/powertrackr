@@ -29,7 +29,7 @@
 
 	$: isLoggingOut = false;
 
-	$: isLoginPage = $page.url.href === `${$page.url.protocol}//${$page.url.host}/auth/login`;
+	$: isLoginPage = $page.url.href === `/auth/login`;
 	$: hasUser = !!$state.user;
 
 	const navItems = siteConfig.navLinks.map((item: NavItem) => {
@@ -144,7 +144,7 @@
 			</div>
 		{:else}
 			<Button
-				href="{$page.url.protocol}//{$page.url.host}/auth/{isLoginPage ? 'register' : 'login'}"
+				href="/auth/{isLoginPage ? 'register' : 'login'}"
 			>
 				{#if isLoginPage}
 					<UserPlus class="mr-1 h-4 w-4" />

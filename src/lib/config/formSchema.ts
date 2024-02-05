@@ -77,7 +77,7 @@ export const billFormSchema = z.object({
 });
 
 export const profileFormSchema = z.object({
-	avatar: z.any().optional()
+	avatar: z.string().optional()
 });
 
 export type RegisterFormSchema = typeof registerFormSchema;
