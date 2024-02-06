@@ -1,8 +1,8 @@
-import { error, redirect } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import { error, fail, redirect, type RequestEvent } from '@sveltejs/kit';
 import { prismaClient } from '$lib/server/prisma';
 import { superValidate } from 'sveltekit-superforms/server';
 import { profileFormSchema } from '$lib/config/formSchema';
+import type { PageServerLoad, RouteParams, Actions } from './$types';
 
 export const load = (async ({ locals, params }) => {
 	const session = await locals.auth.validate();
@@ -16,6 +16,10 @@ export const load = (async ({ locals, params }) => {
 
 	if (!user || user.id !== session.user.userId) {
 		error(403, 'You do not have permission to access that page');
+	}
+
+	return {
+		form: await superValidate(profileFormSchema)
 	}
 }) satisfies PageServerLoad;
 
