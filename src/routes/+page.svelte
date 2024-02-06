@@ -23,10 +23,7 @@
 	import { siteConfig } from '$lib/config/site';
 	import * as m from '$paraglide/messages';
 	// @ts-ignore
-	import * as THREE from 'three';
 	// @ts-ignore
-	import HALO from 'vanta/dist/vanta.halo.min';
-	import { onMount, onDestroy } from 'svelte';
 	export let data: PageData;
 	import { mediaQuery } from 'svelte-legos';
 
@@ -62,19 +59,6 @@
 			event.preventDefault();
 		}
 	};
-
-	function vanta(node: HTMLElement) {
-		HALO({
-			el: node,
-			THREE: THREE,
-			mouseControls: true,
-			touchControls: true,
-			gyroControls: false,
-			minHeight: 200.0,
-			minWidth: 200.0,
-			xOffset: 0.2
-		});
-	}
 </script>
 
 <svelte:head>
