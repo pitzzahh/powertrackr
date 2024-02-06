@@ -74,7 +74,7 @@
 								/>
 							{:else}
 								<div class="flex h-full w-full items-center justify-center rounded-full bg-accent">
-									<span class="text-lg text-accent-foreground">
+									<span class="text-sm text-accent-foreground">
 										{getInitials($state.user?.name)}
 									</span>
 								</div>
