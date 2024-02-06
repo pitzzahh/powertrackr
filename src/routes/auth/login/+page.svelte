@@ -76,7 +76,7 @@
 		{#if processing}
 			<span class="text-muted-foreground">register</span>
 		{:else}
-			<a href="register" class="hover:text-primary hover:underline hover:underline-offset-4"
+			<a href="/auth/register" class="hover:text-primary hover:underline hover:underline-offset-4"
 				>register</a
 			>
 		{/if}
