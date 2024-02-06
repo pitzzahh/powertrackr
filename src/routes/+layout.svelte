@@ -3,6 +3,7 @@
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
 	import Header from '$lib/components/header.svelte';
+	import Footer from '$lib/components/footer.svelte';
 	import { onNavigate } from '$app/navigation';
 	import { dev } from '$app/environment';
 	import { inject } from '@vercel/analytics';
@@ -52,10 +53,11 @@
 	});
 </script>
 
-<Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
 <PageProgress />
 <ModeWatcher />
-<Header />
 <ParaglideJS {i18n}>
+	<Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
+	<Header />
 	<slot />
+	<Footer />
 </ParaglideJS>
