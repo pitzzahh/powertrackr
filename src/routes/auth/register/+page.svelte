@@ -81,11 +81,11 @@
 		>
 	</Form.Root>
 	<p>
-		Don't have an account?
+		Already have an account?
 		{#if processing}
 			<span class="text-muted-foreground">login</span>
 		{:else}
-			<a href="login" class="hover:text-primary hover:underline hover:underline-offset-4">login</a>
+			<a href="/auth/login" class="hover:text-primary hover:underline hover:underline-offset-4">login</a>
 		{/if}
 	</p>
 </div>

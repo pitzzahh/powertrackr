@@ -2,29 +2,26 @@
 	import type { PageData } from './$types';
 	import * as Form from '$lib/components/ui/form';
 	import { profileFormSchema, type ProfileFormSchema } from '$lib/config/formSchema';
-	import * as Avatar from '$lib/components/ui/avatar';
 	import { getInitials } from '$lib';
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
-	import type { FormOptions } from 'formsnap';
 	import { toast } from 'svelte-sonner';
 	import { Loader2 } from 'lucide-svelte';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import { Label } from '$lib/components/ui/label';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as m from '$paraglide/messages';
-	import { cn } from '$lib/utils';
 	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
+	import { Label } from '$lib/components/ui/label';
+	import type { FormOptions } from 'formsnap';
 
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
-	let selectedFile: File | undefined;
-	let avatarSrc = $state.user?.picture || '';
+	$: avatarSrc = $state.user?.picture
+		? defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src ?? null
+		: null;
 	$: processing = false;
-	$: currentAvatar = avatarSrc || 'user1';
 
 	const options: FormOptions<ProfileFormSchema> = {
 		onSubmit() {
@@ -54,14 +51,6 @@
 		}
 	};
 
-	const handleFileChange = (event: any) => {
-		const [file] = event.target.files;
-		selectedFile = file;
-
-		avatarSrc = selectedFile ? URL.createObjectURL(selectedFile) : $state.user?.picture || '';
-		console.log('Selected File:', selectedFile);
-	};
-
 	$: {
 		$state.user = data.user;
 		$state.history = data.history;
@@ -69,7 +58,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.user?.name} profile settings</title>
+	<title>{$state.user?.name} profile settings</title>
 </svelte:head>
 
 <h4>Profile</h4>
@@ -78,6 +67,7 @@
 >
 	{m.profile_desc()}
 </p>
+
 <Separator class="my-4" />
 <Form.Root
 	method="POST"
@@ -87,57 +77,50 @@
 	schema={profileFormSchema}
 	let:config
 >
-	<Form.Field {config} name="picture">
-		<Form.Item class="relative flex items-start">
-			<Label for="avatarInput" class="relative">
-				<Avatar.Root class="m-2 h-32 w-32">
-					<Avatar.Image src={avatarSrc} alt="@{$state.user?.username}" />
-					<Avatar.Fallback class="text-xl">{getInitials($state.user?.name)}</Avatar.Fallback>
-				</Avatar.Root>
-				<Form.Input
-					type="file"
-					accept="image/*"
-					id="avatarInput"
-					class="hidden"
-					on:change={handleFileChange}
-				/>
-				<span
-					class="absolute bottom-6 left-[2.2rem] transform text-center text-sm text-muted-foreground opacity-100 transition-opacity hover:cursor-pointer sm:opacity-0 sm:hover:opacity-100"
-				>
-					Choose File
-				</span>
+	<Form.Field {config} name="avatar">
+		<Form.Item class="relative flex items-center justify-start">
+			<Label for="avatar" class="h-32 w-32 shrink-0">
+				{#if avatarSrc}
+					<enhanced:img
+						src={avatarSrc}
+						alt="@{$state.user?.username}"
+						class="aspect-square h-full w-full rounded-full"
+						style="object-fit:cover"
+					/>
+				{:else}
+					<div class="flex h-full w-full items-center justify-center rounded-full bg-accent">
+						<span class="text-lg text-accent-foreground">
+							{getInitials($state.user?.name)}
+						</span>
+					</div>
+				{/if}
 			</Label>
-			<div class="grid h-40 grid-flow-row auto-rows-max gap-1 overflow-auto scrollbar-hide">
-				<RadioGroup.Root
-					value={currentAvatar}
-					class="flex flex-wrap items-center justify-center gap-2"
-					onValueChange={async (val) => {
-						currentAvatar = val;
-						// @ts-ignore
-						avatarSrc = defaultUserAvatars.find((avatar) => avatar.id === Number(currentAvatar))?.src.img.src || '';
-					}}
-				>
-					{#each defaultUserAvatars as avatar}
-						<Label
-							for={avatar.id.toString()}
-							class="h-20 w-20 rounded-full bg-popover p-1 hover:cursor-pointer hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
-						>
+			<Form.RadioGroup
+				class="grid h-40 grow grid-cols-3 place-items-center gap-2 overflow-y-auto scrollbar-hide sm:grid-cols-5 md:grid-cols-9 lg:auto-cols-fr"
+				onValueChange={(val) => {
+					avatarSrc = defaultUserAvatars.find((avatar) => avatar.id === val)?.src || '';
+				}}
+			>
+				{#each defaultUserAvatars as avatar}
+					<Form.Item
+						class="h-16 w-16  rounded-full bg-popover hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
+					>
+						<Label for={avatar.id} class="hover:cursor-pointer">
 							<enhanced:img
 								src={avatar.src}
-								alt={avatar.id.toString()}
+								alt={avatar.id}
 								style="width:100%; height:100%; object-fit:cover border-radius:9999px;"
 							/>
-							<RadioGroup.Item
-								value={avatar.id.toString()}
-								id={avatar.id.toString()}
+							<Form.RadioItem
+								value={avatar.id}
+								id={avatar.id}
 								class="sr-only"
-								aria-label={avatar.id.toString()}
+								aria-label={avatar.id}
 							/>
 						</Label>
-					{/each}
-				</RadioGroup.Root>
-			</div>
-
+					</Form.Item>
+				{/each}
+			</Form.RadioGroup>
 			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
