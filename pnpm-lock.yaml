@@ -47,9 +47,6 @@ dependencies:
   d3-scale:
     specifier: ^4.0.2
     version: 4.0.2
-  file-system:
-    specifier: ^2.2.2
-    version: 2.2.2
   formsnap:
     specifier: ^0.4.2
     version: 0.4.2(svelte@4.2.9)(sveltekit-superforms@1.13.3)(zod@3.22.4)
@@ -93,8 +90,8 @@ dependencies:
     specifier: ^0.1.19
     version: 0.1.19(tailwindcss@3.4.0)
   vaul-svelte:
-    specifier: ^0.2.1
-    version: 0.2.1(svelte@4.2.9)
+    specifier: ^0.2.2
+    version: 0.2.2(svelte@4.2.9)
   zod:
     specifier: ^3.22.4
     version: 3.22.4
@@ -3343,23 +3340,10 @@ packages:
       flat-cache: 3.2.0
     dev: true
 
-  /file-match@1.0.2:
-    resolution: {integrity: sha512-g9p6bZV3HlSUM35QPvFWiP/PckDVe5jLPDhx6PfMuy06o+htesJTyDu7zRdXnOm3BY8pXmxb+QY5qIcsoWMGNg==}
-    dependencies:
-      utils-extend: 1.0.8
-    dev: false
-
   /file-source@0.6.1:
     resolution: {integrity: sha512-1R1KneL7eTXmXfKxC10V/9NeGOdbsAXJ+lQ//fvvcHUgtaZcZDWNJNblxAoVOyV1cj45pOtUrR3vZTBwqcW8XA==}
     dependencies:
       stream-source: 0.3.5
-    dev: false
-
-  /file-system@2.2.2:
-    resolution: {integrity: sha512-YgbXEVCu21CfmoeJ1rFLVLPGhW9o7iCzVFqk7ydy2TxF7rXH2YB68CFgDXLOvTD2pMLtg8paVqurzVjxGRdYmw==}
-    dependencies:
-      file-match: 1.0.2
-      utils-extend: 1.0.8
     dev: false
 
   /file-uri-to-path@1.0.0:
@@ -6278,10 +6262,6 @@ packages:
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  /utils-extend@1.0.8:
-    resolution: {integrity: sha512-+VzQieEAijyCFGqnGAWIy7Em1dFGdgf1w+orKwmTWHyaGL19aw9Oq5e5ZZaxgcS777AkPYEsbgWqpz5E6KniPg==}
-    dev: false
-
   /validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
     dependencies:
@@ -6289,8 +6269,8 @@ packages:
       spdx-expression-parse: 3.0.1
     dev: false
 
-  /vaul-svelte@0.2.1(svelte@4.2.9):
-    resolution: {integrity: sha512-563E/ZwOOXSYBaqRvhxS9BmgwY7zumFnF8kT9cMjMI5OiEzDccfX5E4fhwsLUZFFvYUNc6kYKeG1R8EiQ3KQnw==}
+  /vaul-svelte@0.2.2(svelte@4.2.9):
+    resolution: {integrity: sha512-7hDF7rKnA+DlYLYlrAQ7XhNVXnbfaQy6nh3zkGmzD23gFNqpo03U6ChNZTmeduCjpgK7qUa5HEdNTNddqlZMUg==}
     peerDependencies:
       svelte: ^4.0.0
     dependencies:
