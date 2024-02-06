@@ -1,8 +1,6 @@
 import { fail, redirect, type Actions, type RequestHandler } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const prerender = true;
-
 export const load = (async ({ locals }) => {
 	const session = await locals.auth.validate();
 	if (!session) redirect(302, '/auth/login');
