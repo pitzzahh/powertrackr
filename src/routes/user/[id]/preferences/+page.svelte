@@ -28,7 +28,7 @@
 <div class="mt-2 flex gap-2">
 	<RadioGroup.Root
 		value={languageTag()}
-		class="grid grid-cols-3 gap-4"
+		class="flex items-center justify-start gap-4"
 		onValueChange={async (val) => {
 			// @ts-ignore
 			setLanguageTag(val);
