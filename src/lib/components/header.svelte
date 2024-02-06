@@ -24,8 +24,14 @@
 	import Nav from '$lib/components/sidebar-nav.svelte';
 	import type { NavItem } from '$lib/types';
 	import LogoutDialog from '$lib/components/logout-dialog.svelte';
+	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
+	import { Label } from '$lib/components/ui/label';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
+
+	$: avatarSrc = $state.user?.picture
+		? defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src ?? null
+		: null;
 
 	$: isLoggingOut = false;
 
@@ -42,7 +48,7 @@
 </script>
 
 <header
-	class="shadown-sm container z-[999] sticky top-0 flex items-center justify-between backdrop-blur-[10px]"
+	class="shadown-sm container sticky top-0 z-[999] flex items-center justify-between backdrop-blur-[10px]"
 >
 	<div class="flex items-center justify-start gap-1">
 		<Icons.logo
@@ -57,11 +63,23 @@
 		{#if hasUser}
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
-					<Button builders={[builder]} variant="ghost" class="h-8 w-8 rounded-full ">
-						<Avatar.Root class="h-8 w-8">
-							<Avatar.Image src={$state.user?.picture} alt="@{$state.user?.username}" />
-							<Avatar.Fallback>{getInitials($state.user?.name)}</Avatar.Fallback>
-						</Avatar.Root>
+					<Button builders={[builder]} variant="ghost" class="transparent h-8 w-8 rounded-full">
+						<Label for="avatar" class="h-8 w-8 shrink-0 hover:cursor-pointer">
+							{#if avatarSrc}
+								<enhanced:img
+									src={avatarSrc}
+									alt="@{$state.user?.username}"
+									class="aspect-square h-full w-full rounded-full"
+									style="object-fit:cover"
+								/>
+							{:else}
+								<div class="flex h-full w-full items-center justify-center rounded-full bg-accent">
+									<span class="text-lg text-accent-foreground">
+										{getInitials($state.user?.name)}
+									</span>
+								</div>
+							{/if}
+						</Label>
 					</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
@@ -143,9 +161,7 @@
 				</DropdownMenu.Root>
 			</div>
 		{:else}
-			<Button
-				href="/auth/{isLoginPage ? 'register' : 'login'}"
-			>
+			<Button href="/auth/{isLoginPage ? 'register' : 'login'}">
 				{#if isLoginPage}
 					<UserPlus class="mr-1 h-4 w-4" />
 				{:else}
