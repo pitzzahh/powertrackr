@@ -8,19 +8,19 @@
 	import type { State } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import { Loader2 } from 'lucide-svelte';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { Separator } from '$lib/components/ui/separator';
 	import * as m from '$paraglide/messages';
 	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
-	import { v2 } from 'cloudinary';
-	import { onMount } from 'svelte';
+	import { Label } from '$lib/components/ui/label';
+	import type { FormOptions } from 'formsnap';
 
 	export let data: PageData;
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
-	let selectedFile: File | undefined;
-	let avatarSrc = $state.user?.picture ? defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src : '';
+	$: avatarSrc = $state.user?.picture
+		? defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src ?? null
+		: null;
 	$: processing = false;
 
 	const options: FormOptions<ProfileFormSchema> = {
@@ -79,21 +79,31 @@
 >
 	<Form.Field {config} name="avatar">
 		<Form.Item class="relative flex items-center justify-start">
-			<enhanced:img
-			class="rounded-full m-2 h-32 w-32"
-					src={avatarSrc}
-					alt={getInitials($state.user?.name)}
-					style="width:100%; height:100%; object-fit:cover border-radius:9999px;"
-				/>
+			<Label for="avatar" class="h-32 w-32 shrink-0">
+				{#if avatarSrc}
+					<enhanced:img
+						src={avatarSrc}
+						alt="@{$state.user?.username}"
+						class="aspect-square h-full w-full rounded-full"
+						style="object-fit:cover"
+					/>
+				{:else}
+					<div class="flex h-full w-full items-center justify-center rounded-full bg-accent">
+						<span class="text-lg text-accent-foreground">
+							{getInitials($state.user?.name)}
+						</span>
+					</div>
+				{/if}
+			</Label>
 			<Form.RadioGroup
-				class="grid h-40 grid-cols-3 overflow-auto scrollbar-hide sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-12"
+				class="grid h-40 grow grid-cols-3 place-items-center gap-2 overflow-y-auto scrollbar-hide sm:grid-cols-5 md:grid-cols-9 lg:auto-cols-fr"
 				onValueChange={(val) => {
 					avatarSrc = defaultUserAvatars.find((avatar) => avatar.id === val)?.src || '';
 				}}
 			>
 				{#each defaultUserAvatars as avatar}
 					<Form.Item
-						class="h-16 w-16  rounded-full bg-popover p-1  hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
+						class="h-16 w-16  rounded-full bg-popover hover:bg-accent hover:text-accent-foreground [&:has([data-state=checked])]:border-primary"
 					>
 						<Label for={avatar.id} class="hover:cursor-pointer">
 							<enhanced:img
