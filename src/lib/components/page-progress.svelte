@@ -1,8 +1,25 @@
-<script>
+<script lang="ts">
 	import { navigating } from '$app/stores';
+
+	let showSvg: boolean = false;
+	let timer: NodeJS.Timeout;
+	const timeoutDuration: number = 1000;
+
+	$: {
+		if ($navigating) {
+			timer = setTimeout(() => {
+				console.log('showing svg');
+				showSvg = true;
+			}, timeoutDuration);
+		} else {
+			console.log('clearing timeout');
+			clearTimeout(timer);
+			showSvg = false;
+		}
+	}
 </script>
 
-{#if $navigating}
+{#if $navigating && showSvg}
 	<div class="fixed inset-0 z-[99999] flex h-screen items-center justify-center backdrop-blur-sm">
 		<svg
 			width="80"
