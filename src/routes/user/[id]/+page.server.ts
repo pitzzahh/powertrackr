@@ -20,7 +20,7 @@ export const load = (async ({ locals, params }) => {
 
 	return {
 		form: await superValidate(profileFormSchema)
-	}
+	};
 }) satisfies PageServerLoad;
 
 export const actions: Actions = {
@@ -35,7 +35,9 @@ export const actions: Actions = {
 
 		const { avatar } = form.data;
 		console.log(`avatar: `, JSON.stringify(avatar));
-		if (avatar) {
+
+		// idk why but the avatar is coming as 'undefined' string from the form data
+		if (avatar !== 'undefined') {
 			const res = await prismaClient.user.update({
 				where: {
 					username: event.params.id
