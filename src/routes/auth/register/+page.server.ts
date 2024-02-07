@@ -5,6 +5,7 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { registerFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
 
 export const load = (async ({ locals }) => {
 	const session = await locals.auth.validate();
@@ -26,6 +27,13 @@ export const actions: Actions = {
 		const { name, username, password } = registrationForm.data;
 
 		try {
+
+			const request = await event.fetch(`https://api.genderize.io/?name=${name.split(' ')[0]}`);
+
+			const res = await request.json();
+
+			const filteredAvatars = defaultUserAvatars.filter((a) => a.id.startsWith(res.gender.toLowerCase()) );
+
 			await auth.createUser({
 				key: {
 					providerId: 'username',
@@ -35,7 +43,7 @@ export const actions: Actions = {
 				attributes: {
 					name,
 					username,
-					picture: null
+					picture: filteredAvatars ? filteredAvatars[Math.floor(Math.random() * filteredAvatars.length)].id : null
 				}
 			});
 		} catch (e: any) {

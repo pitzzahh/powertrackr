@@ -51,7 +51,7 @@
 		$state.history = data.history;
 	}
 
-	const largeScreen = mediaQuery('(min-width: 425px)');
+	const largeScreen = mediaQuery('(min-width: 768px)');
 
 	const onOutsideClick = (event: PointerEvent) => {
 		// @ts-ignore
@@ -84,12 +84,12 @@
 				{/if}
 			</div>
 			{#if hasUser}
-				{#if largeScreen}
+				{#if $largeScreen}
 					<Dialog.Root bind:open={$state.isAddingBill}>
 						<Dialog.Trigger asChild let:builder>
 							<Button variant="outline" builders={[builder]}>Add Data</Button>
 						</Dialog.Trigger>
-						<Dialog.Content class="hidden sm:max-w-[425px] md:block">
+						<Dialog.Content>
 							<Dialog.Header>
 								<Dialog.Title>{m.bill_form_title()}</Dialog.Title>
 								<Dialog.Description>
@@ -105,7 +105,7 @@
 							<Button variant="outline" builders={[builder]}>Add Data</Button>
 						</Drawer.Trigger>
 						<Drawer.Overlay class="fixed inset-0" />
-						<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%] md:hidden">
+						<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%]">
 							<Drawer.Header class="text-left">
 								<Drawer.Title>{m.bill_form_title()}</Drawer.Title>
 								<Drawer.Description>{m.bill_form_desc()}</Drawer.Description>
