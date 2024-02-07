@@ -1,5 +1,6 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_desc": "Subaybayan at subaybayan ang pagkonsumo ng kuryente",
 	"history_welcome": "Buwanang ng Pagsingil",
 	"balance_desc": "Mula sa {firstDate} hanggang {lastDate}",
 	"no_history": "Walang nakitang data ng history ng balanse sa ngayon",
@@ -10,5 +11,14 @@
 	"profile_desc": "Pamahalaan ang iyong profile at impormasyon ng account.",
 	"preferences": "Mga Kagustuhan",
 	"preferences_desc": "I-customize ang app batay sa iyong mga kagustuhan gaya ng mga tema atbp.",
-	"form_sub_title": "Petsa ng Bill, Balanse, Kabuuang Kwh, Sub-Metro, Nakabinbin, Nabayaran"
+	"form_sub_title": "Petsa ng Bill, Balanse, Kabuuang Kwh, Sub-Metro, Nakabinbin, Nabayaran",
+	"authLinks": "Mag-login, Mag-logout",
+	"get_started": "Magsimula",
+	"username": "Username",
+	"password": "Password",
+	"no_account": "Walang account?",
+	"register": "Magrehistro",
+	"forgot_password": "Nakalimutan ang password?",
+	"login": "Mag log in",
+	"have_account": "Mayroon nang account?"
 }

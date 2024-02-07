@@ -1,5 +1,6 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_desc": "Monitor and track electricity consumption",
 	"history_welcome": "Monthly Billing History",
 	"balance_desc": "From {firstDate} to {lastDate}",
 	"no_history": "No balance history data found at this moment",
@@ -10,5 +11,14 @@
 	"profile_desc": "Manage your profile and account information.",
 	"preferences": "Preferences",
 	"preferences_desc": "Customize the app based on your preferences such as themes etc.",
-	"form_sub_title": "Date of Bill, Balance, Total Kwh, Sub-Meter, Pending, Paid"
+	"form_sub_title": "Date of Bill, Balance, Total Kwh, Sub-Meter, Pending, Paid",
+	"authLinks": "Login, Logout",
+	"get_started": "Get Started",
+	"username": "Username",
+	"password": "Password",
+	"no_account": "Don't have an account?",
+	"register": "Register",
+	"forgot_password": "Forgot Password?",
+	"login": "Login",
+	"have_account": "Already have an account?"
 }
