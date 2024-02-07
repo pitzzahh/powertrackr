@@ -35,7 +35,7 @@
 
 	$: isLoggingOut = false;
 
-	$: isLoginPage = $page.url.href === `/auth/login`;
+	$: isLoginPage = $page.route.id === `/auth/login`;
 	$: hasUser = !!$state.user;
 
 	const navItems = siteConfig.navLinks.map((item: NavItem) => {
