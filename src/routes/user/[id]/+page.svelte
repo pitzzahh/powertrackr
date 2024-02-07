@@ -124,7 +124,7 @@
 			<Form.Validation />
 		</Form.Item>
 	</Form.Field>
-	{#if avatarSrc !== $state.user?.picture}
+	{#if defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src !== avatarSrc}
 		<Form.Button disabled={processing}>
 			{#if processing}
 				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
