@@ -1,6 +1,6 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"app_desc": "Subaybayan at subaybayan ang pagkonsumo ng kuryente",
+	"app_desc": "Subaybayan at i track ang pagkonsumo ng kuryente",
 	"history_welcome": "Buwanang ng Pagsingil",
 	"balance_desc": "Mula sa {firstDate} hanggang {lastDate}",
 	"no_history": "Walang nakitang data ng history ng balanse sa ngayon",
