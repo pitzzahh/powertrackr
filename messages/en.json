@@ -81,5 +81,6 @@
 	"close_form": "Close form?",
 	"close": "Close",
 	"open": "Open",
-	"pick_date": "Pick a date"
+	"pick_date": "Pick a date",
+	"logout_confirmation": "Are you sure you want to logout?"
 }
