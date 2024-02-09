@@ -12,7 +12,8 @@
     "hi-IN",
     "ja",
     "ko-KR",
-    "sw"
+    "sw",
+    "zh"
   ],
   "modules": [
     "https://cdn.jsdelivr.net/npm/@inlang/message-lint-rule-empty-pattern@latest/dist/index.js",
