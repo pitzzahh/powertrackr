@@ -1,8 +1,6 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-	import * as Avatar from '$lib/components/ui/avatar';
 	import { Button } from '$lib/components/ui/button';
-	import { siteConfig } from '$lib/config/site';
 	import { getInitials } from '$lib';
 	import {
 		Sun,
@@ -12,7 +10,9 @@
 		Palette,
 		LogOut,
 		User as UserIcon,
-		UserPlus
+		UserPlus,
+		FolderClock,
+		Home
 	} from 'lucide-svelte';
 	import { setMode, resetMode, toggleMode } from 'mode-watcher';
 	import { page } from '$app/stores';
@@ -21,35 +21,22 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
-	import Nav from '$lib/components/sidebar-nav.svelte';
-	import type { NavItem } from '$lib/types';
 	import LogoutDialog from '$lib/components/logout-dialog.svelte';
 	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
 	import { Label } from '$lib/components/ui/label';
-
+	import * as m from '$paraglide/messages';
+		
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: avatarSrc = $state.user?.picture
 		? defaultUserAvatars.find((avatar) => avatar.id === $state.user?.picture)?.src ?? null
 		: null;
-
 	$: isLoggingOut = false;
-
 	$: isLoginPage = $page.route.id === `/auth/login`;
 	$: hasUser = !!$state.user;
-
-	const navItems = siteConfig.navLinks.map((item: NavItem) => {
-		return {
-			title: item.text,
-			href: item.href,
-			icon: item.icon
-		};
-	});
 </script>
 
-<header
-	class="shadown-sm container sticky top-0 z-[999] flex items-center justify-between backdrop-blur-[10px]"
->
+<header class="shadown-sm container flex items-center justify-between backdrop-blur-[10px]">
 	<div class="flex items-center justify-start gap-1">
 		<Icons.logo
 			on:click={() => {
@@ -84,31 +71,33 @@
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					<DropdownMenu.Group>
-						<DropdownMenu.Label>My Account</DropdownMenu.Label>
+						<DropdownMenu.Label>{m.my_account()}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						{#each siteConfig.profileLinks as pf}
-							<DropdownMenu.Item
-								on:click={() => {
-									if ($state.user) goto(pf.href.replace('[id]', $state.user.username));
-								}}
-							>
-								<svelte:component this={pf.icon} class="mr-2 h-4 w-4" />
-								{pf.text}
-							</DropdownMenu.Item>
-						{/each}
+						<DropdownMenu.Item
+							on:click={() => {
+								if ($state.user) goto(`/user/${$state.user?.username}`);
+							}}
+						>
+							<UserIcon class="mr-2 h-4 w-4" />
+							{m.profile()}
+						</DropdownMenu.Item>
+						<DropdownMenu.Item
+							on:click={() => {
+								if ($state.user) goto(`/user/${$state.user?.username}/preferences`);
+							}}
+						>
+							<Palette class="mr-2 h-4 w-4" />
+							{m.preferences()}
+						</DropdownMenu.Item>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item on:click={() => (isLoggingOut = true)}>
-							<svelte:component this={LogOut} class="mr-2 h-4 w-4" />
-							Logout</DropdownMenu.Item
+							<LogOut class="mr-2 h-4 w-4" />
+							{m.logout()}</DropdownMenu.Item
 						>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
-			<Nav
-				class="sm:align-center hidden text-center sm:flex sm:flex-row sm:items-center sm:justify-center"
-				items={navItems}
-			/>
-			<div class="flex items-center justify-center gap-2 transition-all sm:hidden">
+			<div class="flex items-center justify-center gap-2 transition-all">
 				<DropdownMenu.Root>
 					<DropdownMenu.Trigger asChild let:builder>
 						<Button title="menu-button" variant="outline" builders={[builder]} size="icon">
@@ -116,44 +105,50 @@
 						</Button>
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Content class="w-auto">
-						<DropdownMenu.Label>Menu</DropdownMenu.Label>
+						<DropdownMenu.Label>{m.menu()}</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						{#each navItems as link}
-							<DropdownMenu.RadioGroup bind:value={$state.currentRoute}>
-								<div class="gap-2">
-									<DropdownMenu.RadioItem
-										on:click={() => goto(link.href)}
-										value={link.href}
-										class={$page.route && link.href === $page.route.id
-											? 'font-bold text-primary'
-											: 'transition-all'}
-									>
-										<svelte:component this={link.icon} class="mr-2 h-4 w-4">
-											{link.icon}
-										</svelte:component>
-										{link.title}</DropdownMenu.RadioItem
-									>
-								</div>
-							</DropdownMenu.RadioGroup>
-						{/each}
+						<DropdownMenu.RadioGroup bind:value={$state.currentRoute}>
+							<div class="gap-2">
+								<DropdownMenu.RadioItem
+									on:click={() => goto('/')}
+									value={'/'}
+									class={$page.route && '/' === $page.route.id
+										? 'font-bold text-primary'
+										: 'transition-all'}
+								>
+									<Home class="mr-2 h-4 w-4" />
+									{m.home()}</DropdownMenu.RadioItem
+								>
+								<DropdownMenu.RadioItem
+									on:click={() => goto('/history')}
+									value={'/history'}
+									class={$page.route && '/history' === $page.route.id
+										? 'font-bold text-primary'
+										: 'transition-all'}
+								>
+									<FolderClock class="mr-2 h-4 w-4" />
+									{m.history()}</DropdownMenu.RadioItem
+								>
+							</div>
+						</DropdownMenu.RadioGroup>
 						<DropdownMenu.Separator />
 						<DropdownMenu.Sub>
 							<DropdownMenu.SubTrigger>
 								<Palette class="mr-2 h-4 w-4" />
-								<span>Set Theme</span>
+								<span>{m.set_theme()}</span>
 							</DropdownMenu.SubTrigger>
 							<DropdownMenu.SubContent>
 								<DropdownMenu.Item on:click={() => setMode('light')}>
 									<Sun class="mr-2 h-4 w-4" />
-									Light
+									{m.light()}
 								</DropdownMenu.Item>
 								<DropdownMenu.Item on:click={() => setMode('dark')}>
 									<Moon class="mr-2 h-4 w-4" />
-									Dark</DropdownMenu.Item
+									{m.dark()}</DropdownMenu.Item
 								>
 								<DropdownMenu.Item on:click={() => resetMode()}>
 									<Settings class="mr-2 h-4 w-4" />
-									System</DropdownMenu.Item
+									{m.system()}</DropdownMenu.Item
 								>
 							</DropdownMenu.SubContent>
 						</DropdownMenu.Sub>
@@ -167,7 +162,7 @@
 				{:else}
 					<UserIcon class="mr-1 h-4 w-4" />
 				{/if}
-				<span>{isLoginPage ? 'Register' : 'Login'}</span>
+				<span>{isLoginPage ? m.register() : m.login()}</span>
 			</Button>
 		{/if}
 		<Button on:click={toggleMode} variant="outline" size="icon">
