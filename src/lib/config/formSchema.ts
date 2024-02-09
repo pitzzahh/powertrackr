@@ -1,7 +1,18 @@
 import { z } from 'zod';
-
-const MAX_FILE_SIZE = 500000;
-const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+import {
+	min_length_required,
+	special_char_required,
+	lowecase_required,
+	uppercase_required,
+	number_required,
+	must_match,
+	required,
+	password,
+	form_sub_title,
+	must_be_a_number,
+	must_be_greater_than_0
+} from '$paraglide/messages';
+const FIELDS = form_sub_title().split('|');
 const MIN_LENGTH = 6;
 const FIELD_VALIDATION = {
 	TEST: {
@@ -11,12 +22,15 @@ const FIELD_VALIDATION = {
 		NUMBER: (value: string) => /.*[0-9].*/.test(value)
 	},
 	MSG: {
-		MIN_LEN: `Password must have ${MIN_LENGTH} characters`,
-		SPECIAL_CHAR: 'Password must contain atleast one special character',
-		LOWERCASE: 'Password must contain at least one lowercase letter',
-		UPPERCASE: 'Password must contain at least one uppercase letter',
-		NUMBER: 'Password must contain at least one number',
-		MATCH: 'Password must match'
+		MIN_LEN: min_length_required({
+			input: password(),
+			minLength: MIN_LENGTH
+		}),
+		SPECIAL_CHAR: special_char_required({ input: password() }),
+		LOWERCASE: lowecase_required({ input: password() }),
+		UPPERCASE: uppercase_required({ input: password() }),
+		NUMBER: number_required({ input: password() }),
+		MATCH: must_match({ input: password() })
 	}
 };
 
@@ -59,19 +73,25 @@ export const loginFormSchema = z.object({
 });
 
 export const billFormSchema = z.object({
-	date: z.string().refine((v) => v, { message: 'A date of bill is required.' }),
+	date: z.string().refine((v) => v, { message: required({ input: FIELDS[0] }) }),
 	balance: z
 		.string()
-		.refine(FIELD_VALIDATION.TEST.NUMBER, 'Balance must be a number')
-		.refine((value) => Number(value) > 0, { message: 'Balance must be greater than 0' }),
+		.refine(FIELD_VALIDATION.TEST.NUMBER, must_be_a_number({ input: FIELDS[1] }))
+		.refine((value) => Number(value) > 0, {
+			message: must_be_greater_than_0({ input: FIELDS[1] })
+		}),
 	totalKwh: z
 		.string()
-		.refine(FIELD_VALIDATION.TEST.NUMBER, 'Total Kwh must be a number')
-		.refine((value) => Number(value) > 0, { message: 'Total Kwh must be greater than 0' }),
+		.refine(FIELD_VALIDATION.TEST.NUMBER, must_be_a_number({ input: FIELDS[2] }))
+		.refine((value) => Number(value) > 0, {
+			message: must_be_greater_than_0({ input: FIELDS[2] })
+		}),
 	subReading: z
 		.string()
-		.refine(FIELD_VALIDATION.TEST.NUMBER, 'SubReading must be a number')
-		.refine((value) => Number(value) > 0, { message: 'SubReading must be greater than 0' })
+		.refine(FIELD_VALIDATION.TEST.NUMBER, must_be_a_number({ input: FIELDS[3] }))
+		.refine((value) => Number(value) > 0, {
+			message: must_be_greater_than_0({ input: FIELDS[3] })
+		})
 		.optional(),
 	status: z.boolean()
 });
