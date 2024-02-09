@@ -5,6 +5,8 @@
 	import { registerFormSchema, type RegisterFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
+	import * as m from '$paraglide/messages';
+	import { languageTag } from '$paraglide/runtime';
 
 	export let data: PageData;
 
@@ -12,15 +14,15 @@
 
 	const options: FormOptions<RegisterFormSchema> = {
 		onSubmit() {
-			toast.info('Submitting...');
+			toast.info(`${m.registering()}...`);
 			processing;
 		},
 		onResult({ result }) {
-			if (result.status === 301) toast.success('Registered Successfully!');
+			if (result.status === 301) toast.success(m.register_success());
 			if (result.status === 400 || result.status === 500) {
 				{
-					toast.error(result.data?.message || 'Please enter valid credentials', {
-						description: new Date().toLocaleDateString('en-us', {
+					toast.error(result.data?.message || m.invalid_credentials(), {
+						description: new Date().toLocaleDateString(languageTag(), {
 							weekday: 'long',
 							year: 'numeric',
 							month: 'long',
@@ -37,38 +39,38 @@
 </script>
 
 <svelte:head>
-	<title>PowerTrackr Registration</title>
+	<title>PowerTrackr {m.register()}</title>
 </svelte:head>
 
 <div class="container md:w-1/2">
-	<h2>Register</h2>
+	<h2>{m.register()}</h2>
 	<Form.Root method="POST" form={data.form} {options} schema={registerFormSchema} let:config>
 		<Form.Field {config} name="name">
 			<Form.Item>
-				<Form.Label>Name</Form.Label>
+				<Form.Label>{m.name()}</Form.Label>
 				<Form.Input />
-				<Form.Description>This is your public display name.</Form.Description>
+				<Form.Description>{m.public_display_notice({ info: 'name' })}</Form.Description>
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
 		<Form.Field {config} name="username">
 			<Form.Item>
-				<Form.Label>Username</Form.Label>
+				<Form.Label>{m.username()}</Form.Label>
 				<Form.Input />
-				<Form.Description>This is your public display username.</Form.Description>
+				<Form.Description>{m.public_display_notice({ info: 'username' })}</Form.Description>
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
 		<Form.Field {config} name="password">
 			<Form.Item>
-				<Form.Label>Password</Form.Label>
+				<Form.Label>{m.password()}</Form.Label>
 				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
 		<Form.Field {config} name="confirmPassword">
 			<Form.Item>
-				<Form.Label>ConfirmPassword</Form.Label>
+				<Form.Label>{m.confirm_pass()}</Form.Label>
 				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
@@ -81,11 +83,13 @@
 		>
 	</Form.Root>
 	<p>
-		Already have an account?
+		{m.have_account()}
 		{#if processing}
-			<span class="text-muted-foreground">login</span>
+			<span class="text-muted-foreground">{m.login()}</span>
 		{:else}
-			<a href="/auth/login" class="hover:text-primary hover:underline hover:underline-offset-4">login</a>
+			<a href="/auth/login" class="hover:text-primary hover:underline hover:underline-offset-4"
+				>{m.login()}</a
+			>
 		{/if}
 	</p>
 </div>

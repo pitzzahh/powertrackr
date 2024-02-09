@@ -6,7 +6,6 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import { Calendar as CalendarIcon } from 'radix-icons-svelte';
 	import {
-		type DateValue,
 		DateFormatter,
 		getLocalTimeZone,
 		parseDate,
@@ -31,35 +30,35 @@
 	});
 
 	const items = [
-		{ value: 0, label: 'Today' },
-		{ value: 1, label: 'Tomorrow' },
-		{ value: 3, label: 'In 3 days' },
-		{ value: 7, label: 'In a week' },
-		{ value: 30, label: 'In a month' }
+		{ value: 0, label: m.today() },
+		{ value: 1, label: m.tomorrow() },
+		{ value: 3, label: m.in_three_days() },
+		{ value: 7, label: m.in_a_week() },
+		{ value: 30, label: m.in_a_month() }
 	];
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 	
 	let paid = false;
 	let placeholder: CalendarDate = today(getLocalTimeZone());
-	let subTitle: string[] = m.form_sub_title().split(',');
+	let subTitle: string[] = m.form_sub_title().split('|');
 
 	const theForm = superForm(form, {
 		validators: billFormSchema,
 		taintedMessage: null,
 		onSubmit() {
-			toast.info('Adding billing info...');
+			toast.info(m.adding_info({some: m.billing_info()}));
 		},
 		async onResult({ result }) {
 			if (result.status === 200) {
-				toast.success('Billing info added successfully!');
+				toast.success(m.added_success({some: m.billing_info()}));
 				$state.isAddingBill = false;
 			}
 			if (result.status === 400 || result.status === 500) {
-				toast.error('Please enter valid data', {
-					description: 'Close form?',
+				toast.error(m.invalid_data(), {
+					description: m.close_form(),
 					action: {
-						label: 'Close',
+						label: m.close(),
 						onClick: () => {
 							$state.isAddingBill = false;
 						}
@@ -90,7 +89,7 @@
 							!value && 'text-muted-foreground'
 						)}
 					>
-						{value ? df.format(value.toDate(getLocalTimeZone())) : 'Pick a date'}
+						{value ? df.format(value.toDate(getLocalTimeZone())) : m.pick_date()}
 						<CalendarIcon class="ml-auto h-4 w-4 opacity-50" />
 					</Popover.Trigger>
 				</Form.Control>
@@ -109,7 +108,6 @@
 						}}
 					>
 						<Select.Trigger>
-							<Select.Value placeholder="Select calendar options" />
 						</Select.Trigger>
 						<Select.Content>
 							{#each items as item}
@@ -164,5 +162,5 @@
 			<Form.Switch onCheckedChange={(e) => (paid = e)} />
 		</Form.Item>
 	</Form.Field>
-	<Form.Button class="mt-2 w-full">Add</Form.Button>
+	<Form.Button class="mt-2 w-full">{m.add()}</Form.Button>
 </Form.Root>
