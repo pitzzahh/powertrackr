@@ -5,29 +5,26 @@
 	import { loginFormSchema, type LoginFormSchema } from '$lib/config/formSchema';
 	import { toast } from 'svelte-sonner';
 	import type { FormOptions } from 'formsnap';
-	import { getState, MAIN_STATE_CTX } from '$lib/state';
-	import type { State } from '$lib/types';
-	import type { Writable } from 'svelte/store';
+	import * as m from '$paraglide/messages';
+	import { languageTag } from '$paraglide/runtime';
 
 	export let data: PageData;
-
-	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: processing = false;
 
 	const options: FormOptions<LoginFormSchema> = {
 		onSubmit() {
-			toast.info('Logging in...');
+			toast.info(`${m.logging_in()}...`);
 			processing = true;
 		},
 		onResult({ result }) {
 			if (result.status === 200) {
-				toast.success('Logged-in successfully!');
+				toast.success(m.login_success());
 			}
 			if (result.status === 400 || result.status === 500) {
 				{
-					toast.error(result.data?.message || 'Please enter valid credentials', {
-						description: new Date().toLocaleDateString('en-us', {
+					toast.error(result.data?.message || m.invalid_credentials(), {
+						description: new Date().toLocaleDateString(languageTag(), {
 							weekday: 'long',
 							year: 'numeric',
 							month: 'long',
@@ -44,22 +41,22 @@
 </script>
 
 <svelte:head>
-	<title>PowerTrackr Login</title>
+	<title>PowerTrackr {m.login()}</title>
 </svelte:head>
 
 <div class="container md:w-1/2">
-	<h2>Login</h2>
+	<h2>{m.login()}</h2>
 	<Form.Root method="POST" form={data.form} {options} schema={loginFormSchema} let:config>
 		<Form.Field {config} name="username">
 			<Form.Item>
-				<Form.Label>Username</Form.Label>
+				<Form.Label>{m.username()}</Form.Label>
 				<Form.Input />
 				<Form.Validation />
 			</Form.Item>
 		</Form.Field>
 		<Form.Field {config} name="password">
 			<Form.Item>
-				<Form.Label>Password</Form.Label>
+				<Form.Label>{m.password()}</Form.Label>
 				<Form.Input type="password" />
 				<Form.Validation />
 			</Form.Item>
@@ -68,16 +65,16 @@
 			{#if processing}
 				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 			{/if}
-			{processing ? 'Please wait' : 'Login'}</Form.Button
+			{processing ? m.please_wait() : m.login()}</Form.Button
 		>
 	</Form.Root>
 	<p>
-		Don't have an account?
+		{m.no_account()}
 		{#if processing}
-			<span class="text-muted-foreground">register</span>
+			<span class="text-muted-foreground">{m.register()}</span>
 		{:else}
 			<a href="/auth/register" class="hover:text-primary hover:underline hover:underline-offset-4"
-				>register</a
+				>{m.register()}</a
 			>
 		{/if}
 	</p>

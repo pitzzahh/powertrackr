@@ -26,6 +26,9 @@
 	// @ts-ignore
 	export let data: PageData;
 	import { mediaQuery } from 'svelte-legos';
+	import { lang } from '$lib';
+	import { onMount } from 'svelte';
+	import { setLanguageTag } from '$paraglide/runtime';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
@@ -59,10 +62,25 @@
 			event.preventDefault();
 		}
 	};
+
+	onMount(() => {
+		// @ts-ignore
+		setLanguageTag($lang);
+	});
 </script>
 
 <svelte:head>
-	<title>PowerTrackr: {siteConfig.description}</title>
+	<title>PowerTrackr: {m.app_desc()}</title>
+	<meta name="author" content="Peter John Arao" />
+	<meta name="description" content={m.app_desc()} />
+	<meta name="keywords" content={siteConfig.keywords} />
+	<meta name="robots" content="index, follow" />
+	<meta property="og:title" content="PowerTrackr" />
+	<meta property="og:description" content={m.app_desc()} />
+	<meta property="og:site_name" content={siteConfig.name} />
+	<meta property="og:image" content={siteConfig.ogImage} />
+	<meta property="og:url" content={siteConfig.url} />
+	<meta property="og:type" content="website" />
 </svelte:head>
 
 {#if hasUser}
@@ -87,7 +105,7 @@
 				{#if $largeScreen}
 					<Dialog.Root bind:open={$state.isAddingBill}>
 						<Dialog.Trigger asChild let:builder>
-							<Button variant="outline" builders={[builder]}>Add Data</Button>
+							<Button variant="outline" builders={[builder]}>{m.add_data()}</Button>
 						</Dialog.Trigger>
 						<Dialog.Content>
 							<Dialog.Header>
@@ -102,7 +120,7 @@
 				{:else}
 					<Drawer.Root bind:open={$state.isAddingBill} {onOutsideClick}>
 						<Drawer.Trigger asChild let:builder>
-							<Button variant="outline" builders={[builder]}>Add Data</Button>
+							<Button variant="outline" builders={[builder]}>{m.add_data()}</Button>
 						</Drawer.Trigger>
 						<Drawer.Overlay class="fixed inset-0" />
 						<Drawer.Content class="fixed bottom-0 left-0 right-0 max-h-[96%]">

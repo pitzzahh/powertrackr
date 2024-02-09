@@ -13,6 +13,7 @@
 	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
 	import { Label } from '$lib/components/ui/label';
 	import type { FormOptions } from 'formsnap';
+	import { languageTag } from '$paraglide/runtime';
 
 	export let data: PageData;
 
@@ -25,18 +26,18 @@
 
 	const options: FormOptions<ProfileFormSchema> = {
 		onSubmit() {
-			toast.info('Saving...');
+			toast.info(m.saving());
 			processing = true;
 		},
 		onResult({ result }) {
 			console.log(result);
 			if (result.status === 200) {
-				toast.success('Saved successfully!');
+				toast.success(m.saved_success());
 			}
 			if (result.status === 400 || result.status === 500) {
 				{
-					toast.error(result.data?.message || 'Something went wrong', {
-						description: new Date().toLocaleDateString('en-us', {
+					toast.error(result.data?.message || m.something_went_wrong(), {
+						description: new Date().toLocaleDateString(languageTag(), {
 							weekday: 'long',
 							year: 'numeric',
 							month: 'long',
@@ -58,7 +59,7 @@
 </script>
 
 <svelte:head>
-	<title>{$state.user?.name} profile settings</title>
+	<title>{data.user?.name} {m.profile_route_title()}</title>
 </svelte:head>
 
 <h4>Profile</h4>

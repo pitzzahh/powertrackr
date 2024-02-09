@@ -6,6 +6,7 @@ import { registerFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
+import { username_taken, unknown_error } from '$paraglide/messages';
 
 export const load = (async ({ locals }) => {
 	const session = await locals.auth.validate();
@@ -27,12 +28,13 @@ export const actions: Actions = {
 		const { name, username, password } = registrationForm.data;
 
 		try {
-
 			const request = await event.fetch(`https://api.genderize.io/?name=${name.split(' ')[0]}`);
 
 			const res = await request.json();
 
-			const filteredAvatars = defaultUserAvatars.filter((a) => a.id.startsWith(res.gender.toLowerCase()) );
+			const filteredAvatars = defaultUserAvatars.filter((a) =>
+				a.id.startsWith(res.gender.toLowerCase())
+			);
 
 			await auth.createUser({
 				key: {
@@ -43,7 +45,9 @@ export const actions: Actions = {
 				attributes: {
 					name,
 					username,
-					picture: filteredAvatars ? filteredAvatars[Math.floor(Math.random() * filteredAvatars.length)].id : null
+					picture: filteredAvatars
+						? filteredAvatars[Math.floor(Math.random() * filteredAvatars.length)].id
+						: null
 				}
 			});
 		} catch (e: any) {
@@ -51,12 +55,12 @@ export const actions: Actions = {
 			console.error(`e: ${JSON.stringify(e)}`);
 			if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
 				return fail(400, {
-					message: 'Username already taken',
+					message: username_taken(),
 					form: registrationForm
 				});
 			}
 			return fail(500, {
-				message: 'An unknown error occurred',
+				message: unknown_error(),
 				form: registrationForm
 			});
 		}

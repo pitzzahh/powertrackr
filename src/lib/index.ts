@@ -64,6 +64,10 @@ export const generateSampleData = (count: number) => {
 	return sampleData.sort((a, b) => a.date.getTime() - b.date.getTime());
 };
 
+export const getLanguageName = (languageCode: string): string | undefined => {
+	return new Intl.DisplayNames(['en'], { type: 'language' }).of(languageCode);
+};
+
 export const calculatePayPerKwh = (balance: number, totalKwh: number) => {
 	return Number((balance / totalKwh).toFixed(2));
 };

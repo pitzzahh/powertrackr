@@ -3,6 +3,7 @@ import { prismaClient } from '$lib/server/prisma';
 import { superValidate } from 'sveltekit-superforms/server';
 import { profileFormSchema } from '$lib/config/formSchema';
 import type { PageServerLoad, RouteParams, Actions } from './$types';
+import { no_access_permission } from '$paraglide/messages';
 
 export const load = (async ({ locals, params }) => {
 	const session = await locals.auth.validate();
@@ -15,7 +16,7 @@ export const load = (async ({ locals, params }) => {
 	});
 
 	if (!user || user.id !== session.user.userId) {
-		error(403, 'You do not have permission to access that page');
+		error(403, no_access_permission());
 	}
 
 	return {
