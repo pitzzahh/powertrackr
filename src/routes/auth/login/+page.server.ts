@@ -5,6 +5,7 @@ import { superValidate } from 'sveltekit-superforms/server';
 import { loginFormSchema } from '$lib/config/formSchema';
 import { auth } from '$lib/server/lucia';
 import { LuciaError } from 'lucia';
+import { username_not_found, incorrect_password, unknown_error } from '$paraglide/messages';
 
 export const load = (async ({ locals }) => {
 	const session = await locals.auth.validate();
@@ -37,12 +38,12 @@ export const actions: Actions = {
 			if (e instanceof LuciaError) {
 				if (e.message === 'AUTH_INVALID_KEY_ID') {
 					return fail(400, {
-						message: 'Username not found',
+						message: username_not_found(),
 						form: loginForm
 					});
 				} else if (e.message === 'AUTH_INVALID_PASSWORD') {
 					return fail(400, {
-						message: 'Incorrect password',
+						message: incorrect_password(),
 						form: loginForm
 					});
 				} else {
@@ -54,7 +55,7 @@ export const actions: Actions = {
 			}
 			console.error(`Login Error: ${JSON.stringify(e)}`);
 			return fail(500, {
-				message: 'An unknown error occurred',
+				message: unknown_error(),
 				form: loginForm
 			});
 		}
