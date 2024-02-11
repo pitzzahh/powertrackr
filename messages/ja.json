@@ -82,6 +82,5 @@
 	"close": "近い",
 	"open": "開ける",
 	"pick_date": "日付を選択します",
-	"calendar_options": "今日|明日|3日後|1週間後|1か月後",
-	"biling_info": "請求情報"
+	"logout_confirmation": "ログアウトしてもよろしいですか?"
 }

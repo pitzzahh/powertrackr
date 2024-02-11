@@ -82,6 +82,5 @@
 	"close": "Schließen",
 	"open": "Offen",
 	"pick_date": "Suche dir einen Termin aus",
-	"calendar_options": "Heute|Morgen|In 3 Tagen|In einer Woche|In einem Monat",
-	"biling_info": "Rechnungsinfo"
+	"logout_confirmation": "Sind Sie sicher, dass Sie sich abmelden möchten?"
 }

@@ -49,9 +49,9 @@
 	"must_be_a_number": "{input} a bheith ina uimhir",
 	"must_be_greater_than_0": "{input} a bheith níos mó ná 0",
 	"min_length_required": "{input} Ní mór {minLength} carachtar a bheith ag ionchur\"}",
-	"special_char_required": "Ní mór carachtar speisialta amháin ar a laghad a bheith in {input}",
+	"special_char_required": "{input} carachtar speisialta amháin ar a laghad a bheith ann",
 	"lowecase_required": "{input} litir bheag ar a laghad a bheith ann",
-	"uppercase_required": "{input} litir uachtair amháin ar a laghad a bheith ann",
+	"uppercase_required": "{input}",
 	"number_required": "{input}",
 	"must_match": "Ní mór {input} a mheaitseáil",
 	"public_display_notice": "Seo é do thaispeántas poiblí {info}",
@@ -82,6 +82,5 @@
 	"close": "Dún",
 	"open": "Oscail",
 	"pick_date": "Roghnaigh dáta",
-	"calendar_options": "Inniu|Amárach|I 3 lá|I seachtain|I mí",
-	"biling_info": "Eolas Billeála"
+	"logout_confirmation": "An bhfuil tú cinnte gur mhaith leat logáil amach?"
 }
