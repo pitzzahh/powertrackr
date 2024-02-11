@@ -1,9 +1,9 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
 	"app_desc": "Pag-monitor ug pagsubay sa konsumo sa kuryente",
-	"history_welcome": "Buwan nga Kasaysayan sa Pagsingil",
+	"history_welcome": "Buwan nga history sa Pagsingil",
 	"balance_desc": "Gikan sa {firstDate} ngadto sa {lastDate}",
-	"no_history": "Wala'y nakit-an nga datos sa kasaysayan sa balanse karong panahona",
+	"no_history": "Wala'y nakit-an nga datos sa history sa balanse karong panahona",
 	"bill_form_title": "Impormasyon sa Pagsingil",
 	"bill_form_desc": "Pagsulod sa impormasyon sa pagsingil para sa bulan. I-klik ang Idugang kung nahuman na ka",
 	"settings": "Mga setting",
@@ -36,8 +36,8 @@
 	"invalid_credentials": "Palihug isulod ang balido nga mga kredensyal",
 	"invalid_data": "Palihug isulod ang balido nga datos",
 	"filter_bills": "Salain nga mga bayranan",
-	"history": "KASAYSAYAN",
-	"home": "BALAY",
+	"history": "HISTORY",
+	"home": "HOME",
 	"menu": "Menu",
 	"columns": "Mga kolum",
 	"set_theme": "Ibutang ang tema",
@@ -58,7 +58,7 @@
 	"my_account": "Akong Account",
 	"please_wait": "Palihog hulat",
 	"lang": "Pinulongan",
-	"choose_lang": "Pilia ang imong gusto nga lengguwahe (mo-full-reload)",
+	"choose_lang": "Pilia ang imong gusto nga lengguwahe (full-reload)",
 	"no_lang_found": "Walay pinulongan nga nakit-an",
 	"select_lang": "Pagpili og pinulongan",
 	"name": "Ngalan",
@@ -82,6 +82,5 @@
 	"close": "Suod nga",
 	"open": "Bukas",
 	"pick_date": "Pagpili og petsa",
-	"calendar_options": "Karon|Ugma|Sa 3 ka adlaw|Sa usa ka semana|Sa usa ka bulan",
-	"biling_info": "Impormasyon sa Pagsingil"
+	"logout_confirmation": "Sigurado ka ba nga gusto nimong mo-logout?"
 }
