@@ -5,6 +5,9 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import { invalidateAll, goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import * as m from '$paraglide/messages';
+	import { cn } from '$lib/utils';
+	import { buttonVariants } from '$lib/components/ui/button';
 
 	export let open: boolean = false;
 
@@ -21,11 +24,11 @@
 <AlertDialog.Root bind:open>
 	<AlertDialog.Content>
 		<AlertDialog.Header>
-			<AlertDialog.Title>Are you sure you want to logout?</AlertDialog.Title>
+			<AlertDialog.Title>{m.logout_confirmation()}</AlertDialog.Title>
 		</AlertDialog.Header>
 		<AlertDialog.Footer>
-			<AlertDialog.Cancel on:click={() => (open = false)}>Cancel</AlertDialog.Cancel>
-			<AlertDialog.Action on:click={logout}>Logout</AlertDialog.Action>
+			<AlertDialog.Cancel on:click={() => (open = false)}>{m.cancel()}</AlertDialog.Cancel>
+			<AlertDialog.Action on:click={logout} class={cn(buttonVariants({ variant: 'destructive' }))}>{m.logout()}</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>
 </AlertDialog.Root>

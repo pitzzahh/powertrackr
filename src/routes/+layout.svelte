@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.pcss';
-	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit';
 	import { ModeWatcher } from 'mode-watcher';
 	import Header from '$lib/components/header.svelte';
 	import Footer from '$lib/components/footer.svelte';
@@ -42,7 +41,6 @@
 		MAIN_STATE_CTX
 	);
 	inject({ mode: dev ? 'development' : 'production' });
-	injectSpeedInsights();
 </script>
 
 <PageProgress />
@@ -50,6 +48,8 @@
 <ParaglideJS {i18n}>
 	<Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
 	<Header />
-	<slot />
+	<main class="container mt-2">
+		<slot />
+	</main>
 	<Footer />
 </ParaglideJS>

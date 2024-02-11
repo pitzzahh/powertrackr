@@ -82,6 +82,5 @@
 	"close": "Fermer",
 	"open": "Ouvrir",
 	"pick_date": "Choisis une date",
-	"calendar_options": "Aujourd'hui|Demain|Dans 3 jours|Dans une semaine|Dans un mois",
-	"biling_info": "Informations de facturation"
+	"logout_confirmation": "Êtes-vous sûr de vouloir vous déconnecter?"
 }

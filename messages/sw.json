@@ -51,7 +51,7 @@
 	"min_length_required": "{input} lazima iwe na herufi {minLength}",
 	"special_char_required": "{input} lazima iwe na angalau herufi moja maalum.",
 	"lowecase_required": "{input} lazima iwe na angalau herufi moja ndogo.",
-	"uppercase_required": "{input} lazima iwe na angalau herufi moja kubwa",
+	"uppercase_required": "{input} lazima iwe na angalau herufi kubwa moja.",
 	"number_required": "{input} lazima iwe na angalau nambari moja",
 	"must_match": "{input} lazima ilingane",
 	"public_display_notice": "Hili ni onyesho lako la umma {info}",
@@ -82,6 +82,5 @@
 	"close": "Funga",
 	"open": "Fungua",
 	"pick_date": "Chagua tarehe",
-	"calendar_options": "Leo|Kesho|Baada ya siku 3|Baada ya wiki|Baada ya mwezi mmoja",
-	"biling_info": "Maelezo ya Malipo"
+	"logout_confirmation": "Je, una uhakika unataka kuondoka?"
 }
