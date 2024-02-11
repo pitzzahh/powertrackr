@@ -25,7 +25,7 @@
 	];
 </script>
 
-<div class="container">
+<div>
 	<h2>{m.settings()}</h2>
 	<p class="mb-4 text-muted-foreground [&:not(:first-child)]:mt-1">
 		{m.settings_desc()}
