@@ -51,7 +51,6 @@
 		"@prisma/client": "5.8.1",
 		"@sveltejs/adapter-vercel": "^5.1.0",
 		"@vercel/analytics": "^1.1.1",
-		"@vercel/speed-insights": "^1.0.2",
 		"bits-ui": "^0.16.0",
 		"cloudinary": "^2.0.0",
 		"clsx": "^2.0.0",
