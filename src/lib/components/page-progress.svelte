@@ -3,7 +3,7 @@
 
 	let showSvg: boolean = false;
 	let timer: NodeJS.Timeout;
-	const timeoutDuration: number = 1000;
+	const timeoutDuration: number = 1500;
 
 	$: {
 		if ($navigating) {
