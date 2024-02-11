@@ -25,7 +25,7 @@
 	import { defaultUserAvatars } from '$lib/assets/default-user-avatar';
 	import { Label } from '$lib/components/ui/label';
 	import * as m from '$paraglide/messages';
-		
+
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
 	$: avatarSrc = $state.user?.picture
@@ -36,7 +36,9 @@
 	$: hasUser = !!$state.user;
 </script>
 
-<header class="shadown-sm container flex items-center justify-between backdrop-blur-[10px]">
+<header
+	class="shadown-sm container sticky top-0 z-50 flex items-center justify-between backdrop-blur-[10px]"
+>
 	<div class="flex items-center justify-start gap-1">
 		<Icons.logo
 			on:click={() => {
