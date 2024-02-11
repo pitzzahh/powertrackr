@@ -4,6 +4,7 @@
 	import * as Select from '$lib/components/ui/select';
 	import { cn } from '$lib/utils';
 	import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
+	import { languageTag } from '$paraglide/runtime';
 
 	type $$Props = CalendarPrimitive.Props;
 	type $$Events = CalendarPrimitive.Events;
@@ -27,7 +28,7 @@
 		'December'
 	].map((month, i) => ({ value: i + 1, label: month }));
 
-	const monthFmt = new DateFormatter('en-US', {
+	const monthFmt = new DateFormatter(languageTag(), {
 		month: 'long'
 	});
 

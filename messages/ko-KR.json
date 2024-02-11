@@ -82,6 +82,5 @@
 	"close": "닫다",
 	"open": "열려 있는",
 	"pick_date": "날짜를 선택하세요",
-	"calendar_options": "오늘|내일|3일 후|일주일 후|한 달 후",
-	"biling_info": "청구 정보"
+	"logout_confirmation": "정말로 로그아웃하시겠습니까?"
 }

@@ -108,6 +108,7 @@
 						}}
 					>
 						<Select.Trigger>
+							{m.calendar_option_label()}
 						</Select.Trigger>
 						<Select.Content>
 							{#each items as item}

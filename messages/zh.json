@@ -81,5 +81,6 @@
 	"close_form": "关闭表格？",
 	"close": "关闭",
 	"open": "打开",
-	"pick_date": "选择一个日期"
+	"pick_date": "选择一个日期",
+	"logout_confirmation": "您确定要退出吗？"
 }
