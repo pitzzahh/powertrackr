@@ -62,7 +62,7 @@
 	<title>{data.user?.name} {m.profile_route_title()}</title>
 </svelte:head>
 
-<h4>Profile</h4>
+<h4>{m.profile()}</h4>
 <p
 	class="mb-2 text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-1"
 >
