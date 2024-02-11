@@ -69,7 +69,7 @@
 				<ChevronsUpDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
 			</Button>
 		</Popover.Trigger>
-		<Popover.Content class="w-[39%] p-0">
+		<Popover.Content class="w-auto p-0">
 			<Command.Root>
 				<Command.Input placeholder={m.select_lang()} />
 				<Command.Empty>{m.no_lang_found()}</Command.Empty>
