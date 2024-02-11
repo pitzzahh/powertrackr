@@ -22,13 +22,11 @@
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
 	import * as m from '$paraglide/messages';
-	// @ts-ignore
-	// @ts-ignore
+	import { setLanguageTag } from '$paraglide/runtime';
 	export let data: PageData;
 	import { mediaQuery } from 'svelte-legos';
 	import { lang } from '$lib';
 	import { onMount } from 'svelte';
-	import { setLanguageTag } from '$paraglide/runtime';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
@@ -77,14 +75,14 @@
 	<meta name="robots" content="index, follow" />
 	<meta property="og:title" content="PowerTrackr" />
 	<meta property="og:description" content={m.app_desc()} />
-	<meta property="og:site_name" content={siteConfig.name} />
+	<meta property="og:site_name" content={`PowerTrackr: ${m.app_desc()}`} />
 	<meta property="og:image" content={siteConfig.ogImage} />
 	<meta property="og:url" content={siteConfig.url} />
 	<meta property="og:type" content="website" />
 </svelte:head>
 
 {#if hasUser}
-	<div class="container md:mt-12">
+	<div>
 		<div class="flex items-end justify-between gap-2 md:items-center">
 			<div class="flex flex-col items-start justify-start">
 				{#if hasUser}
@@ -133,7 +131,7 @@
 							</div>
 							<Drawer.Footer class="pt-2">
 								<Drawer.Close asChild let:builder>
-									<Button variant="outline" builders={[builder]}>Cancel</Button>
+									<Button variant="outline" builders={[builder]}>{m.cancel()}</Button>
 								</Drawer.Close>
 							</Drawer.Footer>
 						</Drawer.Content>
