@@ -23,7 +23,7 @@ const randomDate = (start: Date, end: Date) => {
 };
 
 export const formatDate = (date: Date) => {
-	return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+	return date.toLocaleDateString(languageTag(), { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
 export const filteredDataFields = ['date', 'totalKwh', 'subKwh', 'balance', 'payment', 'status'];
