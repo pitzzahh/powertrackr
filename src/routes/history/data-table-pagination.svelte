@@ -5,6 +5,19 @@
 	import type { BillingInfoDTO } from '$lib/types';
 	import type { TableViewModel } from 'svelte-headless-table';
 	import type { AnyPlugins } from 'svelte-headless-table/plugins';
+	import {
+		num_rows_selected,
+		item_per_page,
+		current_page,
+		rows_only,
+		select_item_size,
+		page_only,
+		goto_item_page,
+		first_only,
+		last_only,
+		next_only,
+		previous_only
+	} from '$paraglide/messages';
 
 	export let tableModel: TableViewModel<BillingInfoDTO, AnyPlugins>;
 
@@ -16,20 +29,22 @@
 </script>
 
 <!-- TODO: Fix style on mobile, use scrollbar-hide to and overflow-auto to make it horizontally scrollable -->
-<div class="mt-1 flex min-w-fit items-center justify-between overflow-auto px-2 scrollbar-hide">
-	<span class="text-sm text-muted-foreground">
-		{Object.keys($selectedDataIds).length} of{' '}
-		{$rows.length} row(s) selected.
+<div class="mt-1 flex items-center justify-between overflow-auto scrollbar-hide">
+	<span class="w-full flex-nowrap text-sm text-muted-foreground">
+		{num_rows_selected({
+			from: Object.keys($selectedDataIds).length,
+			to: $rows.length
+		})}
 	</span>
-	<div class="flex items-center gap-1">
+	<div class="flex items-center justify-end gap-1">
 		<div class="flex items-center space-x-2">
-			<p class="text-sm font-medium">Rows per page</p>
+			<p class=" text-sm font-medium">{item_per_page({ item: rows_only() })}</p>
 			<Select.Root
 				onSelectedChange={(selected) => pageSize.set(Number(selected?.value))}
 				selected={{ value: 10, label: '10' }}
 			>
-				<Select.Trigger class="w-[180px]">
-					<Select.Value placeholder="Select page size" />
+				<Select.Trigger>
+					<Select.Value placeholder={select_item_size({ item: page_only() })} />
 				</Select.Trigger>
 				<Select.Content>
 					<Select.Item value="10">10</Select.Item>
@@ -41,7 +56,7 @@
 			</Select.Root>
 		</div>
 		<div class="flex w-[100px] items-center justify-center text-sm font-medium">
-			Page {$pageIndex + 1} of {$pageCount}
+			{current_page({ from: $pageIndex + 1, to: $pageCount })}
 		</div>
 		<div class="flex items-center space-x-2">
 			<Button
@@ -50,7 +65,7 @@
 				on:click={() => ($pageIndex = 0)}
 				disabled={!$hasPreviousPage}
 			>
-				<span class="sr-only">Go to first page</span>
+				<span class="sr-only">{goto_item_page({ item: first_only() })}</span>
 				<DoubleArrowLeft size={15} />
 			</Button>
 			<Button
@@ -59,7 +74,7 @@
 				on:click={() => ($pageIndex = $pageIndex - 1)}
 				disabled={!$hasPreviousPage}
 			>
-				<span class="sr-only">Go to previous page</span>
+				<span class="sr-only">{goto_item_page({ item: previous_only() })}</span>
 				<ChevronLeft size={15} />
 			</Button>
 			<Button
@@ -68,7 +83,7 @@
 				disabled={!$hasNextPage}
 				on:click={() => ($pageIndex = $pageIndex + 1)}
 			>
-				<span class="sr-only">Go to next page</span>
+				<span class="sr-only">{goto_item_page({ item: next_only() })}</span>
 				<ChevronRight size={15} />
 			</Button>
 			<Button
@@ -77,7 +92,7 @@
 				disabled={!$hasNextPage}
 				on:click={() => ($pageIndex = Math.ceil($rows.length / $pageRows.length) - 1)}
 			>
-				<span class="sr-only">Go to last page</span>
+				<span class="sr-only">{goto_item_page({ item: last_only() })}</span>
 				<DoubleArrowRight size={15} />
 			</Button>
 		</div>
