@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { store, filteredDataFields } from '$lib';
+	import { store, filteredDataFields, formatDate } from '$lib';
 	import {
 		addPagination,
 		addSortBy,
@@ -21,7 +21,7 @@
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State, BillingInfoDTO } from '$lib/types';
-	import { format, formatDate, PeriodType } from 'svelte-ux';
+	import { format, PeriodType } from 'svelte-ux';
 	import * as m from '$paraglide/messages';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
@@ -31,7 +31,7 @@
 			? ($state.history?.map((bill) => {
 					return {
 						id: bill.id,
-						date: formatDate(bill.date, PeriodType.Day),
+						date: formatDate(bill.date),
 						totalKwh: bill.totalKwh,
 						subKwh: bill.subKwh,
 						payPerKwh: bill.payPerKwh,
