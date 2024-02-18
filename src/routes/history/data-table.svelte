@@ -17,14 +17,16 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import DataTableCheckbox from './data-table-checkbox.svelte';
 	import DataTableComboBox from './data-table-combobox.svelte';
+	import DataTablePagination from './data-table-pagination.svelte';
 	import { getState, MAIN_STATE_CTX } from '$lib/state';
 	import type { Writable } from 'svelte/store';
 	import type { State, BillingInfoDTO } from '$lib/types';
 	import { format, formatDate, PeriodType } from 'svelte-ux';
+	import * as m from '$paraglide/messages';
 
 	const state: Writable<State> = getState(MAIN_STATE_CTX);
 
-	let history =
+	let history: BillingInfoDTO[] =
 		$state.history && $state.history.length > 0
 			? ($state.history?.map((bill) => {
 					return {
@@ -84,7 +86,7 @@
 		}),
 		table.column({
 			accessor: 'date',
-			header: 'Date',
+			header: m.date_only(),
 			cell: ({ value }: { value: string }) => value,
 			plugins: {
 				sort: {
@@ -97,7 +99,7 @@
 		}),
 		table.column({
 			accessor: 'totalKwh',
-			header: 'Total kwh',
+			header: m.total_kwh(),
 			cell: ({ value }: { value: number }) => {
 				return `${value} kwh`;
 			},
@@ -112,7 +114,7 @@
 		}),
 		table.column({
 			accessor: 'subKwh',
-			header: 'Sub Kwh',
+			header: m.sub_kwh(),
 			cell: ({ value }: { value: number }) => {
 				return value ? `${value} kwh` : 'N/A';
 			},
@@ -127,7 +129,7 @@
 		}),
 		table.column({
 			accessor: 'balance',
-			header: 'Balance',
+			header: m.balance(),
 			cell: ({ value }: { value: number }) => format(value, 'currency'),
 			plugins: {
 				sort: {
@@ -140,7 +142,7 @@
 		}),
 		table.column({
 			accessor: 'payment',
-			header: 'Payment',
+			header: m.payment(),
 			cell: ({ value }: { value: number }) => (value ? format(value, 'currency') : 'N/A'),
 			plugins: {
 				sort: {
@@ -153,7 +155,7 @@
 		}),
 		table.column({
 			accessor: 'subPayment',
-			header: 'SubPayment',
+			header: m.sub_payment(),
 			cell: ({ value }: { value: number }) => (value ? format(value, 'currency') : 'N/A'),
 			plugins: {
 				sort: {
@@ -166,7 +168,7 @@
 		}),
 		table.column({
 			accessor: 'status',
-			header: 'Status',
+			header: m.status(),
 			plugins: {
 				sort: {
 					disable: false
@@ -190,10 +192,11 @@
 		})
 	]);
 
-	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } =
+	const tableModel =
 		table.createViewModel(columns);
 
-	const { hasNextPage, hasPreviousPage, pageIndex } = pluginStates.page;
+		const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, flatColumns, rows } = tableModel;
+
 	const { filterValue } = pluginStates.filter;
 	const { hiddenColumnIds } = pluginStates.hide;
 	const { selectedDataIds } = pluginStates.select;
@@ -277,22 +280,5 @@
 			>
 		</Table.Root>
 	</div>
-	<div class="flex items-center justify-end space-x-2 py-4">
-		<div class="flex-1 text-sm text-muted-foreground">
-			{Object.keys($selectedDataIds).length} of{' '}
-			{$rows.length} row(s) selected.
-		</div>
-		<Button
-			variant="outline"
-			size="sm"
-			on:click={() => ($pageIndex = $pageIndex - 1)}
-			disabled={!$hasPreviousPage}>Previous</Button
-		>
-		<Button
-			variant="outline"
-			size="sm"
-			disabled={!$hasNextPage}
-			on:click={() => ($pageIndex = $pageIndex + 1)}>Next</Button
-		>
-	</div>
+	<DataTablePagination {tableModel} />
 </div>
