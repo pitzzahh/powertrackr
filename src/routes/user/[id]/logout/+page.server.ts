@@ -5,7 +5,6 @@ import type { PageServerLoad } from './$types';
 import { no_action_permission} from '$paraglide/messages'
 
 export const load = (async ({ locals, params }) => {
-	console.log('logging out');
 	const session = await locals.auth.validate();
 	if (!session) redirect(302, '/auth/login');
 	const user = await prismaClient.user.findUnique({
@@ -20,6 +19,5 @@ export const load = (async ({ locals, params }) => {
 	}
 	await auth.invalidateSession(session.sessionId);
 	locals.auth.setSession(null);
-	console.log('logged out');
 	redirect(301, '/');
 }) satisfies PageServerLoad;

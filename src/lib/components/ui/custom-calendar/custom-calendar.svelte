@@ -5,6 +5,7 @@
 	import { cn } from '$lib/utils';
 	import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date';
 	import { languageTag } from '$paraglide/runtime';
+	import {month_only, year_only, select_item} from '$paraglide/messages';
 
 	type $$Props = CalendarPrimitive.Props;
 	type $$Events = CalendarPrimitive.Events;
@@ -13,23 +14,12 @@
 	export let placeholder: $$Props['placeholder'] = today(getLocalTimeZone());
 	export let weekdayFormat: $$Props['weekdayFormat'] = 'short';
 
-	const monthOptions = [
-		'January',
-		'February',
-		'March',
-		'April',
-		'May',
-		'June',
-		'July',
-		'August',
-		'September',
-		'October',
-		'November',
-		'December'
-	].map((month, i) => ({ value: i + 1, label: month }));
-
 	const monthFmt = new DateFormatter(languageTag(), {
 		month: 'long'
+	});
+
+	const monthOptions = Array.from({ length: 12 }, (_, i) => {
+		return { value: i + 1, label: monthFmt.format(new Date(2022, i, 1)) };
 	});
 
 	const yearOptions = Array.from({ length: 100 }, (_, i) => ({
@@ -76,8 +66,8 @@
 					placeholder = placeholder.set({ month: v.value });
 				}}
 			>
-				<Select.Trigger aria-label="Select month" class="w-[60%]">
-					<Select.Value placeholder="Select month" />
+				<Select.Trigger aria-label={select_item({item: month_only()})} class="w-[60%]">
+					<Select.Value placeholder={select_item({item: month_only()})} />
 				</Select.Trigger>
 				<Select.Content class="max-h-[200px] overflow-y-auto scrollbar-hide">
 					{#each monthOptions as { value, label }}
@@ -96,8 +86,8 @@
 					placeholder = placeholder.set({ year: v.value });
 				}}
 			>
-				<Select.Trigger aria-label="Select year" class="w-[40%]">
-					<Select.Value placeholder="Select year" />
+				<Select.Trigger aria-label={select_item({item: year_only()})} class="w-[40%]">
+					<Select.Value placeholder={select_item({item: year_only()})} />
 				</Select.Trigger>
 				<Select.Content class="max-h-[200px] overflow-y-auto scrollbar-hide">
 					{#each yearOptions as { value, label }}
