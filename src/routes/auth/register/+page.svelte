@@ -79,7 +79,7 @@
 			{#if processing}
 				<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 			{/if}
-			{processing ? 'Please wait' : 'Register'}</Form.Button
+			{processing ? m.please_wait() : m.register()}</Form.Button
 		>
 	</Form.Root>
 	<p>
