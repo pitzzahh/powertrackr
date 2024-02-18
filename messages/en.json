@@ -108,5 +108,16 @@
 	"bill": "Bill",
 	"select_item": "Select {item}",
 	"month_only": "Month",
-	"year_only": "Year"
+	"rows_only": "Rows",
+	"year_only": "Year",
+	"num_rows_selected": "{from} of {to} row(s) selected",
+	"item_per_page": "{item} per page",
+	"current_page": "Page {from} of {to}",
+	"select_item_size": "Select {item} size",
+	"page_only": "Page",
+	"goto_item_page": "Go to {item} page",
+	"first_only": "First",
+	"last_only": "Last",
+	"previous_only": "Previous",
+	"next_only": "Next"
 }

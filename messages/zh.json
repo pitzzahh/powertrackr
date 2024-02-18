@@ -108,5 +108,15 @@
 	"bill": "账单",
 	"select_item": "选择{item}",
 	"month_only": "月",
-	"year_only": "年"
+	"rows_only": "行数",
+	"year_only": "年",
+	"num_rows_selected": "已选择{from} {to}",
+	"item_per_page": "每页{item}",
+	"current_page": "{from}的{to}",
+	"select_item_size": "选择{item}尺寸",
+	"page_only": "页",
+	"first_only": "第一的",
+	"last_only": "最后的",
+	"previous_only": "以前的",
+	"next_only": "下一个"
 }

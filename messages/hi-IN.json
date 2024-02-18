@@ -108,5 +108,15 @@
 	"bill": "बिल",
 	"select_item": "{item} चुनें",
 	"month_only": "महीना",
-	"year_only": "वर्ष"
+	"rows_only": "पंक्तियों",
+	"year_only": "वर्ष",
+	"num_rows_selected": "{from} {to} पंक्ति चयनित",
+	"item_per_page": "{item} प्रति पृष्ठ",
+	"current_page": "पेज {from} का {to}",
+	"select_item_size": "{item} आकार चुनें",
+	"page_only": "पृष्ठ",
+	"first_only": "पहला",
+	"last_only": "अंतिम",
+	"previous_only": "पहले का",
+	"next_only": "अगला"
 }

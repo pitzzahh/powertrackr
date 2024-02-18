@@ -108,5 +108,15 @@
 	"bill": "請求書",
 	"select_item": "{item}を選択します",
 	"month_only": "月",
-	"year_only": "年"
+	"rows_only": "行",
+	"year_only": "年",
+	"num_rows_selected": "{from} {to}行が選択されました",
+	"item_per_page": "ページあたり{item}",
+	"current_page": "ページ{from} {to}",
+	"select_item_size": "{item}サイズを選択してください",
+	"page_only": "ページ",
+	"first_only": "初め",
+	"last_only": "最後",
+	"previous_only": "前の",
+	"next_only": "次"
 }
