@@ -22,7 +22,7 @@
 	import type { PageData } from './$types';
 	import { siteConfig } from '$lib/config/site';
 	import * as m from '$paraglide/messages';
-	import { setLanguageTag } from '$paraglide/runtime';
+	import { setLanguageTag, languageTag } from '$paraglide/runtime';
 	export let data: PageData;
 	import { mediaQuery } from 'svelte-legos';
 	import { lang } from '$lib';
@@ -60,6 +60,8 @@
 			event.preventDefault();
 		}
 	};
+	
+	let siteName = `PowerTrackr: ${m.app_desc()}`
 
 	onMount(() => {
 		// @ts-ignore
@@ -68,14 +70,14 @@
 </script>
 
 <svelte:head>
-	<title>PowerTrackr: {m.app_desc()}</title>
+	<title>{siteName}</title>
 	<meta name="author" content="Peter John Arao" />
 	<meta name="description" content={m.app_desc()} />
 	<meta name="keywords" content={siteConfig.keywords} />
 	<meta name="robots" content="index, follow" />
-	<meta property="og:title" content="PowerTrackr" />
+	<meta property="og:title" content={siteName} />
 	<meta property="og:description" content={m.app_desc()} />
-	<meta property="og:site_name" content={`PowerTrackr: ${m.app_desc()}`} />
+	<meta property="og:site_name" content={siteName} />
 	<meta property="og:image" content={siteConfig.ogImage} />
 	<meta property="og:url" content={siteConfig.url} />
 	<meta property="og:type" content="website" />
@@ -93,8 +95,8 @@
 						class="text-sm text-muted-foreground [&:not(:first-child)]:mt-1 md:[&:not(:first-child)]:mt-2"
 					>
 						{m.balance_desc({
-							firstDate: format(oldestDate, PeriodType.Day),
-							lastDate: format(latestDate, PeriodType.Day)
+							firstDate: format(oldestDate, PeriodType.Day, {locale: languageTag()}),
+							lastDate: format(latestDate, PeriodType.Day, {locale: languageTag()})
 						})}
 					</p>
 				{/if}
@@ -196,7 +198,7 @@
 					</Tooltip>
 
 					<Tooltip x={4} y={1} variant="none" class="text-sm font-semibold leading-3" let:data>
-						{format(data.date, PeriodType.Day)}
+						{format(data.date, PeriodType.Day, {locale: languageTag()})}
 					</Tooltip>
 
 					<Tooltip
@@ -210,7 +212,7 @@
 						class="whitespace-nowrap rounded bg-custom-500 px-2 py-1 text-sm font-semibold leading-3"
 						let:data
 					>
-						{format(data.date, PeriodType.Day)}
+						{format(data.date, PeriodType.Day, {locale: languageTag()})}
 					</Tooltip>
 				</Chart>
 			</div>
