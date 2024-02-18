@@ -22,10 +22,11 @@
 	import type { Writable } from 'svelte/store';
 	import type { State } from '$lib/types';
 	import * as m from '$paraglide/messages';
+	import { languageTag } from '$paraglide/runtime';
 
 	export let form: SuperValidated<BillFormSchema> = $page.data.form;
-
-	const df = new DateFormatter('en-US', {
+		
+	const df = new DateFormatter(languageTag(), {
 		dateStyle: 'long'
 	});
 
@@ -47,11 +48,11 @@
 		validators: billFormSchema,
 		taintedMessage: null,
 		onSubmit() {
-			toast.info(m.adding_info({some: m.billing_info()}));
+			toast.info(m.adding_item({item: m.billing_info()}));
 		},
 		async onResult({ result }) {
 			if (result.status === 200) {
-				toast.success(m.added_success({some: m.billing_info()}));
+				toast.success(m.item_added_success({item: m.billing_info()}));
 				$state.isAddingBill = false;
 			}
 			if (result.status === 400 || result.status === 500) {
