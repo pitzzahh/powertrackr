@@ -108,5 +108,15 @@
 	"bill": "Bill",
 	"select_item": "Chagua {item}",
 	"month_only": "Mwezi",
-	"year_only": "Mwaka"
+	"rows_only": "Safu",
+	"year_only": "Mwaka",
+	"num_rows_selected": "{from} ya {to} safu mlalo zimechaguliwa.",
+	"item_per_page": "{item} kwa kila ukurasa",
+	"current_page": "Ukurasa {from} ya {to}",
+	"select_item_size": "Chagua ukubwa {item}",
+	"page_only": "Ukurasa",
+	"first_only": "Kwanza",
+	"last_only": "Mwisho",
+	"previous_only": "Iliyotangulia",
+	"next_only": "Inayofuata"
 }

@@ -108,5 +108,15 @@
 	"bill": "Bill",
 	"select_item": "Piliin ang {item}",
 	"month_only": "buwan",
-	"year_only": "taon"
+	"rows_only": "Mga hilera",
+	"year_only": "taon",
+	"num_rows_selected": "{from} ng {to} (mga) row ang napili",
+	"item_per_page": "{item} bawat page",
+	"current_page": "Pahina {from} ng {to}",
+	"select_item_size": "Piliin ang laki {item}",
+	"page_only": "Pahina",
+	"first_only": "Una",
+	"last_only": "Huling",
+	"previous_only": "Nakaraang",
+	"next_only": "Susunod"
 }

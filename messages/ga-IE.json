@@ -49,9 +49,9 @@
 	"must_be_a_number": "{input} a bheith ina uimhir",
 	"must_be_greater_than_0": "{input} a bheith níos mó ná 0",
 	"min_length_required": "{input} Ní mór {minLength} carachtar a bheith ag ionchur\"}",
-	"special_char_required": "{input} carachtar speisialta amháin ar a laghad a bheith ann",
+	"special_char_required": "Ní mór carachtar speisialta amháin ar a laghad a bheith in {input}",
 	"lowecase_required": "{input} litir bheag ar a laghad a bheith ann",
-	"uppercase_required": "{input}",
+	"uppercase_required": "{input} litir uachtair amháin ar a laghad a bheith ann",
 	"number_required": "{input}",
 	"must_match": "Ní mór {input} a mheaitseáil",
 	"public_display_notice": "Seo é do thaispeántas poiblí {info}",
@@ -108,5 +108,15 @@
 	"bill": "Bille",
 	"select_item": "Roghnaigh {item}",
 	"month_only": "Mí",
-	"year_only": "Bliain"
+	"rows_only": "Sraitheanna",
+	"year_only": "Bliain",
+	"num_rows_selected": "{from} de {to} sraith roghnaithe",
+	"item_per_page": "{item} in aghaidh an leathanaigh",
+	"current_page": "Leathanach {from} de {to}",
+	"select_item_size": "Roghnaigh {item} méid",
+	"page_only": "Leathanach",
+	"first_only": "Ar dtús",
+	"last_only": "seo caite",
+	"previous_only": "Roimhe Seo",
+	"next_only": "Ar aghaidh"
 }

@@ -108,5 +108,15 @@
 	"bill": "Facture",
 	"select_item": "Sélectionnez {item}",
 	"month_only": "Mois",
-	"year_only": "Année"
+	"rows_only": "Lignes",
+	"year_only": "Année",
+	"num_rows_selected": "{from} sur {to} ligne(s) sélectionnée(s)",
+	"item_per_page": "{item} par page",
+	"current_page": "Page {from} de {to}",
+	"select_item_size": "Sélectionnez la taille {item}",
+	"page_only": "Page",
+	"first_only": "D'abord",
+	"last_only": "Dernier",
+	"previous_only": "Précédent",
+	"next_only": "Suivant"
 }

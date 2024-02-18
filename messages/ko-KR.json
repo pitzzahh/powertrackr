@@ -108,5 +108,15 @@
 	"bill": "청구서",
 	"select_item": "{item} 선택하세요.",
 	"month_only": "월",
-	"year_only": "년도"
+	"rows_only": "행",
+	"year_only": "년도",
+	"num_rows_selected": "{from} 행 중 {to} 선택됨",
+	"item_per_page": "페이지당 {item}",
+	"current_page": "{from} {to} 페이지",
+	"select_item_size": "{item} 크기를 선택하세요.",
+	"page_only": "페이지",
+	"first_only": "첫 번째",
+	"last_only": "마지막",
+	"previous_only": "이전의",
+	"next_only": "다음"
 }
