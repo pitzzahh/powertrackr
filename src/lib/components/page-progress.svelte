@@ -2,18 +2,14 @@
 	import { navigating } from '$app/stores';
 
 	let showSvg: boolean = false;
-	let timer: NodeJS.Timeout;
+	let timeout: NodeJS.Timeout;
 	const timeoutDuration: number = 1500;
 
 	$: {
 		if ($navigating) {
-			timer = setTimeout(() => {
-				console.log('showing svg');
-				showSvg = true;
-			}, timeoutDuration);
+			timeout = setTimeout(() => (showSvg = true), timeoutDuration);
 		} else {
-			console.log('clearing timeout');
-			clearTimeout(timer);
+			clearTimeout(timeout);
 			showSvg = false;
 		}
 	}
