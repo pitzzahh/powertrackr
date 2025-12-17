@@ -2850,7 +2850,7 @@ packages:
       prettier-plugin-style-order:
         optional: true
       prettier-plugin-svelte:
-        optional: true
+        optional: true<<<<<<< dependabot/npm_and_yarn/micromatch-4.0.8
       prettier-plugin-twig-melody:
         optional: true
 
@@ -4573,7 +4573,7 @@ snapshots:
 
   '@rollup/plugin-node-resolve@13.3.0(rollup@2.79.1)':
     dependencies:
-      '@rollup/pluginutils': 3.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 3.1.0(rollup@2.79.2)
       '@types/resolve': 1.17.1
       deepmerge: 4.3.1
       is-builtin-module: 3.2.1
@@ -4876,7 +4876,7 @@ snapshots:
       estree-walker: 2.0.2
       glob: 7.2.3
       graceful-fs: 4.2.11
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       node-gyp-build: 4.8.0
       resolve-from: 5.0.0
     transitivePeerDependencies:
@@ -5653,7 +5653,7 @@ snapshots:
       '@nodelib/fs.walk': 1.2.8
       glob-parent: 5.1.2
       merge2: 1.4.1
-      micromatch: 4.0.5
+      micromatch: 4.0.8
 
   fast-json-stable-stringify@2.1.0: {}
 
@@ -5691,7 +5691,7 @@ snapshots:
 
   find-yarn-workspace-root2@1.2.16:
     dependencies:
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       pkg-dir: 4.2.0
 
   flat-cache@3.2.0:
@@ -6713,7 +6713,7 @@ snapshots:
     dependencies:
       '@rollup/pluginutils': 4.2.1
       resolve.exports: 2.0.2
-      rollup: 2.79.1
+      rollup: 2.79.2
       svelte: 3.59.2
 
   rollup@2.79.1:
@@ -7030,13 +7030,13 @@ snapshots:
 
   sveld@0.18.1(postcss-load-config@4.0.2(postcss@8.4.32))(postcss@8.4.32)(sass@1.70.0):
     dependencies:
-      '@rollup/plugin-node-resolve': 13.3.0(rollup@2.79.1)
+      '@rollup/plugin-node-resolve': 13.3.0(rollup@2.79.2)
       acorn: 8.11.2
       comment-parser: 1.4.1
       fast-glob: 3.3.2
       prettier: 2.8.8
-      rollup: 2.79.1
-      rollup-plugin-svelte: 7.1.6(rollup@2.79.1)(svelte@3.59.2)
+      rollup: 2.79.2
+      rollup-plugin-svelte: 7.1.6(rollup@2.79.2)(svelte@3.59.2)
       svelte: 3.59.2
       svelte-preprocess: 4.10.7(postcss-load-config@4.0.2(postcss@8.4.32))(postcss@8.4.32)(sass@1.70.0)(svelte@3.59.2)(typescript@4.9.5)
       typescript: 4.9.5
@@ -7238,7 +7238,7 @@ snapshots:
       is-glob: 4.0.3
       jiti: 1.21.0
       lilconfig: 2.1.0
-      micromatch: 4.0.5
+      micromatch: 4.0.8
       normalize-path: 3.0.0
       object-hash: 3.0.0
       picocolors: 1.0.0
@@ -7430,7 +7430,7 @@ snapshots:
 
   vite-imagetools@6.2.9(rollup@2.79.1):
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       imagetools-core: 6.0.4
     transitivePeerDependencies:
       - rollup
