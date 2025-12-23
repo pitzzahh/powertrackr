@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm/relations";
-import { payment } from "../schema/payment";
-import { billingInfo } from "../schema/billing-info";
+import { payment } from "$/server/db/schema/payment";
+import { billingInfo } from "$/server/db/schema/billing-info";
 
 export const paymentRelations = relations(payment, ({ many }) => ({
   billingInfos_paymentId: many(billingInfo, {

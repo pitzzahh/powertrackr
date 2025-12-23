@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm/relations";
-import { key } from "../schema/key";
-import { user } from "../schema/user";
+import { key } from "$/server/db/schema/key";
+import { user } from "$/server/db/schema/user";
 
 export const keyRelations = relations(key, ({ one }) => ({
   user: one(user, {
