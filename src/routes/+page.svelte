@@ -1,17 +1,20 @@
 <script lang="ts">
-  import MoonIcon from "@lucide/svelte/icons/moon";
-  import SunIcon from "@lucide/svelte/icons/sun";
-
-  import { toggleMode } from "mode-watcher";
-  import { Button } from "$lib/components/ui/button/index.js";
+  import Header from "./(components)/header.svelte";
+  import Sidebar from "./(components)/sidebar.svelte";
 </script>
 
-<Button onclick={toggleMode} variant="outline" size="icon">
-  <SunIcon
-    class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
-  />
-  <MoonIcon
-    class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all! dark:scale-100 dark:rotate-0"
-  />
-  <span class="sr-only">Toggle theme</span>
-</Button>
+<div class="relative h-screen w-full overflow-hidden">
+  <Header />
+
+  <div class="h-full overflow-y-auto no-scrollbar">
+    <main class="flex gap-6 p-6 pt-24 min-h-full">
+      <Sidebar />
+
+      <div class="flex-1 flex flex-col gap-6 min-w-0">
+        <!-- <DashboardMetrics />
+        <PerformanceChart />
+        <TickerList /> -->
+      </div>
+    </main>
+  </div>
+</div>
