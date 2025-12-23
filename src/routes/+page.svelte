@@ -3,6 +3,7 @@
   import Header from "./(components)/header.svelte";
   import Sidebar from "./(components)/sidebar.svelte";
   import { formatNumber } from "$/utils/format";
+  import ChartArea from "./(components)/chart-area.svelte";
 </script>
 
 <div class="relative h-screen w-full overflow-hidden">
@@ -14,6 +15,7 @@
 
       <div class="flex-1 flex flex-col gap-6 min-w-0">
         {@render Metrics()}
+        <ChartArea />
         <!-- <DashboardMetrics />
         <PerformanceChart />
         <TickerList /> -->
