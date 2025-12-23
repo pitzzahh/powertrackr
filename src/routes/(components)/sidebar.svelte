@@ -1,21 +1,11 @@
 <script lang="ts">
   import { Button } from "$/components/ui/button";
-  import {
-    Settings2,
-    LogOut,
-    ChartColumn,
-    LayoutDashboard,
-    PiggyBank,
-    Receipt,
-    Zap,
-  } from "@lucide/svelte";
+  import { Settings2, LogOut, Blocks, Zap, History } from "@lucide/svelte";
 
   const navItems = $state([
-    { icon: LayoutDashboard, label: "DASHBOARD", active: true },
-    { icon: ChartColumn, label: "CONSUMPTION", active: false },
-    { icon: Zap, label: "SUB METERS", active: false },
-    { icon: Receipt, label: "EXPENSES", active: false },
-    { icon: PiggyBank, label: "FUNDS", active: false },
+    { icon: Blocks, label: "DASHBOARD", active: true },
+    { icon: Zap, label: "CONSUMPTION", active: false },
+    { icon: History, label: "HISTORY", active: false },
   ]);
 </script>
 
