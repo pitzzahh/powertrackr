@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button } from "$/components/ui/button";
   import {
-    SquareArrowOutUpRight,
     Settings2,
     LogOut,
     ChartColumn,
@@ -21,7 +20,7 @@
 </script>
 
 <aside
-  class="sticky top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-64 bg-muted hidden md:flex flex-col p-8 overflow-y-auto"
+  class="sticky top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
 >
   <nav class="flex flex-col gap-8">
     {#each navItems as item (item.label)}
@@ -45,24 +44,26 @@
     {/each}
   </nav>
 
-  <div class="mt-auto pt-8 border-t border-[#1F1F1F] flex flex-col gap-8">
-    <div
-      class="flex items-center gap-4 text-[#919191] hover:text-[#E7E7E7] transition-colors cursor-pointer"
-    >
-      <SquareArrowOutUpRight class="size-6" />
-      <span class="text-sm font-medium tracking-wide">FINBRO SUPPORT</span>
-    </div>
-    <div
-      class="flex items-center gap-4 text-[#919191] hover:text-[#E7E7E7] transition-colors cursor-pointer"
+  <div class="mt-auto pt-8 p-x border-t border-border flex flex-col gap-8">
+    <Button
+      variant="ghost"
+      class="flex items-center gap-4 no-underline! cursor-pointer w-full justify-start"
     >
       <Settings2 class="h-6 w-6" />
       <span class="text-sm font-medium tracking-wide">SETTINGS</span>
-    </div>
-    <div
-      class="flex items-center gap-4 text-[#919191] hover:text-[#E7E7E7] transition-colors cursor-pointer"
+    </Button>
+    <Button
+      variant="ghost"
+      class="flex items-center gap-4 no-underline! cursor-pointer w-full justify-start"
     >
       <LogOut class="h-6 w-6" />
       <span class="text-sm font-medium tracking-wide">LOGOUT</span>
-    </div>
+    </Button>
   </div>
 </aside>
+
+<!-- <style>
+  * {
+    border: 1px solid red;
+  }
+</style> -->
