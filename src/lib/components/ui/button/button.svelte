@@ -1,5 +1,6 @@
 <script lang="ts" module>
-  import { cn, type WithElementRef } from "$lib/utils/style.js";
+  import type { WithElementRef } from "$/index";
+  import { cn } from "$lib/utils/style.js";
   import type {
     HTMLAnchorAttributes,
     HTMLButtonAttributes,
