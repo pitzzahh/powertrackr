@@ -38,7 +38,7 @@
   --sidebar-accent-foreground: oklch(0.3791 0.1378 265.5222);
   --sidebar-border: oklch(0.9276 0.0058 264.5313);
   --sidebar-ring: oklch(0.6397 0.172 36.4421);
-  --font-sans: Ubuntu Sans, ui-sans-serif, sans-serif, system-ui;
+  --font-sans: Space Grotesk, Ubuntu Sans, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Source Serif 4, serif;
   --font-mono: JetBrains Mono, monospace;
   --radius: 0.2rem;
