@@ -8,7 +8,15 @@ const config = {
 		alias: {
 			"$/*": "./src/lib/*",
 		},
+		experimental: {
+			remoteFunctions: true,
+		},
 		adapter: adapter(),
+	},
+	compilerOptions: {
+		experimental: {
+			async: true,
+		},
 	},
 };
 
