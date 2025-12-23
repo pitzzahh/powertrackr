@@ -32,7 +32,7 @@
             </Button>
           {/snippet}
         </DropdownMenu.Trigger>
-        <DropdownMenu.Content class="w-56" align="start">
+        <DropdownMenu.Content class="w-56" align="end">
           <DropdownMenu.Label>My Account</DropdownMenu.Label>
           <DropdownMenu.Group>
             <DropdownMenu.Item>
