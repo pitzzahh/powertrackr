@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Wallet } from "@lucide/svelte";
   import Header from "./(components)/header.svelte";
-  import Sidebar from "./(components)/sidebar.svelte";
+  import AppSidebar from "./(components)/app-sidebar.svelte";
   import { formatNumber } from "$/utils/format";
   import ChartArea from "./(components)/chart-area.svelte";
 </script>
@@ -11,7 +11,7 @@
 
   <div class="h-full overflow-y-auto no-scrollbar">
     <main class="flex justify-between gap-6 p-4 pt-24 min-h-full">
-      <Sidebar />
+      <AppSidebar />
 
       <div class="flex-1 flex flex-col gap-6 min-w-0">
         {@render Metrics()}
