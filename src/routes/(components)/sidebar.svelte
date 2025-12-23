@@ -10,7 +10,7 @@
 </script>
 
 <aside
-  class="sticky top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
+  class="sticky rounded top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
 >
   <nav class="flex flex-col gap-8">
     {#each navItems as item (item.label)}
