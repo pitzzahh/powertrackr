@@ -23,14 +23,6 @@
 			"quoteStyle": "double"
 		}
 	},
-	"assist": {
-		"enabled": true,
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
-	},
 	"html": {
 		"experimentalFullSupportEnabled": true,
 		"formatter": {
@@ -50,6 +42,13 @@
 				"rules": {
 					"correctness": {
 						"noUnusedImports": "off"
+					}
+				}
+			},
+			"assist": {
+				"actions": {
+					"source": {
+						"organizeImports": "off"
 					}
 				}
 			}
