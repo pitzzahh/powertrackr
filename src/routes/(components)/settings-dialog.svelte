@@ -32,7 +32,7 @@
       { name: "Advanced", icon: SettingsIcon },
     ],
   };
-  let open = $state(true);
+  let open = $state(false);
 </script>
 
 <Dialog.Root bind:open>
