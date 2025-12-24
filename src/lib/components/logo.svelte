@@ -33,8 +33,10 @@
   {...restProps}
 >
   <Zap class="size-6" />
-  <span class="mr-1 leading-0 text-3xl font-bold space-x-0">
-    <span class="text-foreground">{site.name.substring(0, 5)}</span>
-    <span class="text-primary">{site.name.substring(5, site.name.length)}</span>
+  <span class="mr-1 leading-0 text-3xl font-bold">
+    <span class="text-foreground">{site.name.substring(0, 5)}</span><span
+      class="text-primary"
+      >{site.name.substring(5, site.name.length)}
+    </span>
   </span>
 </Button>
