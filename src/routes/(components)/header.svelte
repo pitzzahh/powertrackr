@@ -6,7 +6,7 @@
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { MoonIcon, SunIcon, User, Menu } from "@lucide/svelte";
   import { toggleMode } from "mode-watcher";
-  import SidebarContent from "./sidebar-content.svelte";
+  import SidebarContent from "$routes/(components)/sidebar-content.svelte";
 
   let { open } = $state({
     open: false,

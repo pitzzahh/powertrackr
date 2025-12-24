@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Wallet } from "@lucide/svelte";
-  import Header from "./(components)/header.svelte";
-  import AppSidebar from "./(components)/app-sidebar.svelte";
+  import Header from "$routes/(components)/header.svelte";
+  import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { formatNumber } from "$/utils/format";
-  import ChartArea from "./(components)/chart-area.svelte";
+  import ChartArea from "$routes/(components)/chart-area.svelte";
 </script>
 
 <div class="relative h-screen w-full overflow-hidden">
@@ -11,8 +11,11 @@
 
   <div class="h-full overflow-y-auto no-scrollbar">
     <main class="flex justify-between gap-6 p-4 pt-24 min-h-full">
-      <AppSidebar />
-
+      <aside
+        class="sticky rounded top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
+      >
+        <SidebarContent />
+      </aside>
       <div class="flex-1 flex flex-col gap-6 min-w-0">
         {@render Metrics()}
         <ChartArea />
