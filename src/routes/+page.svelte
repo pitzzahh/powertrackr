@@ -47,21 +47,21 @@
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Returns</span>
         <span
-          class="text-2xl md:text-xl lg:text-2xl font-semibold text-[#86efac]"
+          class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
           >+{formatNumber(1590)}</span
         >
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-sm">Net Returns</span>
         <span
-          class="text-2xl md:text-xl lg:text-2xl font-semibold text-[#86efac]"
+          class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
           >+30.46%</span
         >
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-sm">1 Day Returns</span>
         <span
-          class="text-2xl md:text-xl lg:text-2xl font-semibold text-[#86efac]"
+          class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
           >+{formatNumber(142.5)}</span
         >
       </div>
