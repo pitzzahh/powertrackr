@@ -12,6 +12,7 @@
     <Button
       data-active={item.active}
       variant="link"
+      href={item.route}
       onclick={() => {
         sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
           ...navItem,
