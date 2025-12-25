@@ -20,7 +20,7 @@
   <Header />
 
   <div class="h-full overflow-y-auto no-scrollbar">
-    <main class="flex justify-between gap-6 p-4 pt-24 min-h-full">
+    <main class="flex justify-between gap-4 p-4 pt-24 min-h-full">
       <aside
         class="sticky rounded-md top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
       >
