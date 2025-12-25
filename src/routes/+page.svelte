@@ -2,13 +2,18 @@
   import { Wallet } from "@lucide/svelte";
   import { formatNumber } from "$/utils/format";
   import ChartArea from "$routes/(components)/chart-area.svelte";
+  import { scale } from "svelte/transition";
+  import { cubicInOut } from "svelte/easing";
 </script>
 
 {@render Metrics()}
-<ChartArea />
+<section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+  <ChartArea />
+</section>
 
 {#snippet Metrics()}
   <section
+    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
     class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-accent text-accent-foreground rounded-md"
   >
     <div class="flex flex-col gap-2">
