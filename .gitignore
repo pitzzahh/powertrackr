@@ -14,7 +14,9 @@ Thumbs.db
 
 # Env
 .env
+.vercel
 .env.*
+prisma/dev.sqlite
 !.env.example
 !.env.test
 
