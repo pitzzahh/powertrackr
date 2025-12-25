@@ -46,3 +46,6 @@ export const billingInfo = pgTable(
       .onDelete("cascade"),
   ],
 );
+
+export type BillingInfo = typeof billingInfo.$inferSelect;
+export type NewBillingInfo = typeof billingInfo.$inferInsert;
