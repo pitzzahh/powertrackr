@@ -8,7 +8,7 @@
 <ChartArea />
 
 {#snippet Metrics()}
-  <div
+  <section
     class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-accent text-accent-foreground rounded-md"
   >
     <div class="flex flex-col gap-2">
@@ -49,5 +49,5 @@
         >
       </div>
     </div>
-  </div>
+  </section>
 {/snippet}
