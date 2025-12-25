@@ -12,7 +12,7 @@
   <div class="h-full overflow-y-auto no-scrollbar">
     <main class="flex justify-between gap-6 p-4 pt-24 min-h-full">
       <aside
-        class="sticky rounded top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
+        class="sticky rounded-md top-24 h-[calc(100vh-8rem)] md:w-48 lg:w-54 bg-muted hidden md:flex flex-col p-4 overflow-y-auto"
       >
         <SidebarContent />
       </aside>
@@ -29,7 +29,7 @@
 
 {#snippet Metrics()}
   <div
-    class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-accent text-accent-foreground rounded"
+    class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-accent text-accent-foreground rounded-md"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
