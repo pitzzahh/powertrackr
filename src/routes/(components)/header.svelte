@@ -16,7 +16,7 @@
   <header
     class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/10 backdrop-blur-[120px]"
   >
-    <div class="flex items-center md:justify-start gap-4 w-full">
+    <div class="flex items-center gap-4 w-full md:justify-between">
       <Sheet.Trigger
         class={buttonVariants({
           variant: "outline",
@@ -27,7 +27,7 @@
         <Menu class="h-4 w-4" />
         <span class="sr-only">Open sidebar</span>
       </Sheet.Trigger>
-      {@render logo({ className: "mx-auto w-1/2 md:mr-auto" })}
+      {@render logo({ className: "mx-auto w-1/2 md:w-fit md:m-0 md:pl-0!" })}
       <Button onclick={toggleMode} variant="secondary" size="icon">
         <SunIcon
           class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all! dark:scale-0 dark:-rotate-90"
