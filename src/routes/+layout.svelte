@@ -26,7 +26,7 @@
       >
         <SidebarContent />
       </aside>
-      <div class="flex-1 flex flex-col gap-6 min-w-0">
+      <div class="flex-1 flex flex-col gap-4 min-w-0">
         {@render children()}
       </div>
     </main>
