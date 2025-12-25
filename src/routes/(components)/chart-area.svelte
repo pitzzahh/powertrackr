@@ -141,9 +141,9 @@
 
 <Card.Root>
   <Card.Header
-    class="flex md:items-center gap-2 space-y-0 border-b py-5 flex-col md:flex-row"
+    class="flex md:items-center gap-2 space-y-0 border-b flex-col md:flex-row"
   >
-    <div class="grid flex-1 gap-1 md:text-center sm:text-start">
+    <div class="grid flex-1 gap-1">
       <Card.Title>Area Chart - Interactive</Card.Title>
       <Card.Description
         >Showing total visitors for the last 3 months</Card.Description
