@@ -46,7 +46,7 @@
     $derived({
       entity_plural_name: entity_name_plural || `${entity_name}s`,
       selected_rows: table.getFilteredSelectedRowModel().rows,
-      default_dialog_description: `This action cannot be undone. This will permanently delete the selected ${entity_name_plural || `${entity_name}s`}, this is not reversible.`,
+      default_dialog_description: `This action cannot be undone. This will permanently delete the ${table.getFilteredSelectedRowModel().rows.length} selected ${entity_name_plural || `${entity_name}s`}, this is not reversible.`,
     });
 
   async function handleDeleteSelectedRows() {
@@ -141,17 +141,13 @@
       </Tooltip.Provider>
     </div>
 
-    <Separator orientation="vertical" class="ml-2" />
-
-    <div>
-      <Button
-        size="icon"
-        class=" text-red-600 hover:bg-red-600/20 hover:text-red-600"
-        variant="ghost"
-        onclick={() => (dialog_open = true)}
-        ><Trash2 />
-      </Button>
-    </div>
+    <Button
+      size="icon"
+      variant="hover-text-destructive"
+      onclick={() => (dialog_open = true)}
+    >
+      <Trash2 />
+    </Button>
   </div>
 </div>
 
@@ -167,11 +163,7 @@
       <Button variant="outline" onclick={() => (dialog_open = false)}
         >Cancel</Button
       >
-      <Button
-        variant="default"
-        class="bg-red-600 text-white hover:bg-red-600/90 hover:text-white"
-        onclick={handleDeleteSelectedRows}
-      >
+      <Button variant="destructive" onclick={handleDeleteSelectedRows}>
         <RefreshCw
           class={cn("hidden h-4 w-4 animate-spin", {
             block: app_state === "processing",
