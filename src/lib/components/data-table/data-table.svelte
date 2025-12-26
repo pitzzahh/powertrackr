@@ -48,7 +48,7 @@
     data_table_toolbar,
     floating_bar,
     custom_row_count = 10,
-    class: className,
+    class: className = "",
     pagination_props = $bindable<DataTablePaginationProps<TData>>(),
   }: DataTableProps<TData, TValue> = $props();
 
@@ -90,39 +90,23 @@
       columns,
       enableRowSelection: true,
       onRowSelectionChange: (updater) => {
-        if (typeof updater === "function") {
-          rowSelection = updater(rowSelection);
-        } else {
-          rowSelection = updater;
-        }
+        rowSelection =
+          typeof updater === "function" ? updater(rowSelection) : updater;
       },
       onSortingChange: (updater) => {
-        if (typeof updater === "function") {
-          sorting = updater(sorting);
-        } else {
-          sorting = updater;
-        }
+        sorting = typeof updater === "function" ? updater(sorting) : updater;
       },
       onColumnFiltersChange: (updater) => {
-        if (typeof updater === "function") {
-          columnFilters = updater(columnFilters);
-        } else {
-          columnFilters = updater;
-        }
+        columnFilters =
+          typeof updater === "function" ? updater(columnFilters) : updater;
       },
       onColumnVisibilityChange: (updater) => {
-        if (typeof updater === "function") {
-          columnVisibility = updater(columnVisibility);
-        } else {
-          columnVisibility = updater;
-        }
+        columnVisibility =
+          typeof updater === "function" ? updater(columnVisibility) : updater;
       },
       onPaginationChange: (updater) => {
-        if (typeof updater === "function") {
-          pagination = updater(pagination);
-        } else {
-          pagination = updater;
-        }
+        pagination =
+          typeof updater === "function" ? updater(pagination) : updater;
       },
       getCoreRowModel: getCoreRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
@@ -134,38 +118,41 @@
   );
 </script>
 
-{#if data_table_toolbar}
-  <ScrollArea class="grid h-auto w-full">
-    {@render data_table_toolbar?.({
-      table,
-    })}
-  </ScrollArea>
-{/if}
-
 {#if floating_bar && table.getFilteredSelectedRowModel().rows.length > 0}
   {@render floating_bar({ table })}
 {/if}
 
-<ScrollArea class={["grid h-full w-full overflow-auto", className]}>
-  <div class="rounded-md border overflow-hidden">
-    <Table.Root>
-      <Table.Header class="sticky top-0 z-10">
-        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-          <Table.Row>
-            {#each headerGroup.headers as header (header.id)}
-              <Table.Head colspan={header.colSpan}>
-                {#if !header.isPlaceholder}
-                  <FlexRender
-                    content={header.column.columnDef.header}
-                    context={header.getContext()}
-                  />
-                {/if}
-              </Table.Head>
-            {/each}
-          </Table.Row>
-        {/each}
-      </Table.Header>
-      <Table.Body class="h-100 overflow-auto">
+<div class="relative overflow-hidden rounded-md border {className}">
+  {#if data_table_toolbar}
+    <div class="border-b p-2">
+      {@render data_table_toolbar({ table })}
+    </div>
+  {/if}
+
+  <!-- Header outside ScrollArea so it stays fixed and matches body width -->
+  <Table.Root class="table-fixed">
+    <Table.Header class="sticky top-0 z-10 bg-background border-b">
+      {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+        <Table.Row>
+          {#each headerGroup.headers as header (header.id)}
+            <Table.Head class="text-left">
+              {#if !header.isPlaceholder}
+                <FlexRender
+                  content={header.column.columnDef.header}
+                  context={header.getContext()}
+                />
+              {/if}
+            </Table.Head>
+          {/each}
+        </Table.Row>
+      {/each}
+    </Table.Header>
+  </Table.Root>
+
+  <!-- Scrollable body with same table structure -->
+  <ScrollArea class="max-h-[calc(100vh-15rem)] overflow-auto w-full">
+    <Table.Root class="table-fixed">
+      <Table.Body>
         {#each table.getRowModel().rows as row (row.id)}
           <Table.Row data-state={row.getIsSelected() && "selected"}>
             {#each row.getVisibleCells() as cell (cell.id)}
@@ -186,6 +173,7 @@
         {/each}
       </Table.Body>
     </Table.Root>
-    <DataTablePagination {table} {...pagination_props} />
-  </div>
-</ScrollArea>
+  </ScrollArea>
+
+  <DataTablePagination {table} {...pagination_props} />
+</div>
