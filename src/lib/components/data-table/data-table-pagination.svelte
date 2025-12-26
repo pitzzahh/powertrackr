@@ -32,7 +32,7 @@
 
 <ScrollArea orientation="horizontal" class="w-full sticky-0 bottom-0 z-10">
   <div
-    class="flex items-center justify-between gap-6 px-4 py-2 bg-card/50 border-t backdrop-blur-sm"
+    class="flex items-center justify-between gap-6 px-4 py-2 bg-card rounded-b backdrop-blur-sm"
   >
     <!-- Left section: Selection and loading info -->
     <div class="flex items-center gap-4">

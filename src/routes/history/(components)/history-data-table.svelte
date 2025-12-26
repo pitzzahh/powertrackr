@@ -18,32 +18,34 @@
   let { data, data_table_props }: HistoryDataTableProps = $props();
 </script>
 
-<DataTable {data} columns={historyTableColumns()} {...data_table_props}>
-  {#snippet data_table_toolbar({ table })}
-    <HistoryDataTableToolbar
-      {table}
-      statuses={generateOptions(data, "status")}
-      default_hidden_columns={["id", "userId", "paymentId", "subPaymentId"]}
-    />
-  {/snippet}
-  {#snippet floating_bar({ table })}
-    <DataTableFloatingBar
-      {table}
-      entity_name="Billing Info"
-      entity_name_plural="Billing Infos"
-      delete_fn={(row) => {
-        alert("Not yet implemented " + row);
-        return Promise.resolve(0);
-      }}
-      callback={(valid) => {
-        if (!valid) return;
-        toast.custom(Toast, {
-          componentProps: {
-            title: "Deletion Successful",
-            description: "Billing Info record has been successfully removed.",
-          },
-        });
-      }}
-    />
-  {/snippet}
-</DataTable>
+<section class="flex flex-col gap-2">
+  <DataTable {data} columns={historyTableColumns()} {...data_table_props}>
+    {#snippet data_table_toolbar({ table })}
+      <HistoryDataTableToolbar
+        {table}
+        statuses={generateOptions(data, "status")}
+        default_hidden_columns={["id", "userId", "paymentId", "subPaymentId"]}
+      />
+    {/snippet}
+    {#snippet floating_bar({ table })}
+      <DataTableFloatingBar
+        {table}
+        entity_name="Billing Info"
+        entity_name_plural="Billing Infos"
+        delete_fn={(row) => {
+          alert("Not yet implemented " + row);
+          return Promise.resolve(0);
+        }}
+        callback={(valid) => {
+          if (!valid) return;
+          toast.custom(Toast, {
+            componentProps: {
+              title: "Deletion Successful",
+              description: "Billing Info record has been successfully removed.",
+            },
+          });
+        }}
+      />
+    {/snippet}
+  </DataTable>
+</section>
