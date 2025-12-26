@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Tween } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
+  import { onDestroy } from "svelte";
 
   let top = new Tween(0, { duration: 200, easing: cubicOut });
   let left = new Tween(0, { duration: 200, easing: cubicOut });
@@ -9,17 +10,13 @@
   let opacity = new Tween(0, { duration: 200, easing: cubicOut });
 
   let mouseDown = $state(false);
-</script>
+  let currentTarget: HTMLElement | null = null;
+  let animationId: number | null = null;
 
-<svelte:document
-  onfocusin={(event) => {
-    const target = event.target as HTMLElement;
-    if (!target || mouseDown) {
-      opacity.set(0);
-      return;
-    }
+  function updatePosition() {
+    if (!currentTarget) return;
 
-    const rect = target.getBoundingClientRect();
+    const rect = currentTarget.getBoundingClientRect();
     const scrollX = window.scrollX || window.pageXOffset;
     const scrollY = window.scrollY || window.pageYOffset;
 
@@ -27,9 +24,50 @@
     left.set(rect.left + scrollX - 4);
     width.set(rect.width + 8);
     height.set(rect.height + 8);
+  }
+
+  function updateLoop() {
+    updatePosition();
+    animationId = requestAnimationFrame(updateLoop);
+  }
+
+  function startUpdating() {
+    if (animationId) return;
+    animationId = requestAnimationFrame(updateLoop);
+  }
+
+  function stopUpdating() {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+  }
+
+  onDestroy(() => {
+    stopUpdating();
+  });
+</script>
+
+<svelte:document
+  onfocusin={(event) => {
+    const target = event.target as HTMLElement;
+    if (!target || mouseDown) {
+      opacity.set(0);
+      stopUpdating();
+      currentTarget = null;
+      return;
+    }
+
+    currentTarget = target;
+    updatePosition();
     opacity.set(1);
+    startUpdating();
   }}
-  onfocusout={() => opacity.set(0)}
+  onfocusout={() => {
+    opacity.set(0);
+    stopUpdating();
+    currentTarget = null;
+  }}
   onmousedown={() => (mouseDown = true)}
   onmouseup={() => (mouseDown = false)}
 />
