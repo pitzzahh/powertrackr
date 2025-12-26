@@ -7,10 +7,12 @@
 </script>
 
 <svelte:boundary>
-  {@const payment = await getPayment(paymentId!)}
-  <Badge title={formatNumber(payment?.amount || 0)}>
-    {formatNumber(payment?.amount || 0)}
-  </Badge>
+  {#if paymentId}
+    {@const payment = await getPayment(paymentId)}
+    {@render badge(payment?.amount || 0)}
+  {:else}
+    {@render badge(0)}
+  {/if}
 
   {#snippet pending()}
     <Badge>Loading...</Badge>
@@ -20,3 +22,9 @@
     <Badge title="0">0</Badge>
   {/snippet}
 </svelte:boundary>
+
+{#snippet badge(amount: number)}
+  <Badge title={formatNumber(amount)}>
+    {formatNumber(amount)}
+  </Badge>
+{/snippet}
