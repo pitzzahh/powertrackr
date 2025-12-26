@@ -47,5 +47,7 @@ export const billingInfo = pgTable(
   ],
 );
 
-export type BillingInfo = typeof billingInfo.$inferSelect;
+export type BillingInfo = Omit<typeof billingInfo.$inferSelect, "date"> & {
+  date: Date;
+};
 export type NewBillingInfo = typeof billingInfo.$inferInsert;
