@@ -1,7 +1,7 @@
 <script module lang="ts">
   import type { DataTableProps } from "$/components/data-table/data-table.svelte";
 
-  export interface SalesDataTableProps {
+  export interface HistoryDataTableProps {
     data: BillingInfo[];
     data_table_props?: Partial<DataTableProps<BillingInfo, unknown>>;
   }
@@ -15,7 +15,7 @@
   import { Toast } from "$/components/toast";
   import type { BillingInfo } from "$/server/db/schema/billing-info";
 
-  let { data, data_table_props }: SalesDataTableProps = $props();
+  let { data, data_table_props }: HistoryDataTableProps = $props();
 </script>
 
 <DataTable {data} columns={historyTableColumns()} {...data_table_props}>
