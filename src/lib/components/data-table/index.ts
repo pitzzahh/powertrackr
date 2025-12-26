@@ -3,3 +3,4 @@ export { default as DataTableSearchFilter } from "./data-table-search-filter.sve
 export { default as DataTableFacetedFilter } from "./data-table-faceted-filter.svelte";
 export { default as DataTablePagination } from "./data-table-pagination.svelte";
 export { default as DataTable } from "./data-table.svelte";
+export { default as DataTableFloatingBar } from "./data-table-floating-bar.svelte";
