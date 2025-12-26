@@ -14,7 +14,7 @@
 {#snippet Metrics()}
   <section
     in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-accent text-accent-foreground rounded-md"
+    class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-muted text-muted-foreground rounded-md"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
