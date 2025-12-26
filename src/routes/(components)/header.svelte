@@ -61,7 +61,7 @@
 
   <Sheet.Content side="left" class="bg-muted p-4 flex flex-col h-full w-full">
     {@render logo({ className: "py-6 w-fit mx-auto" })}
-    <SidebarContent />
+    <SidebarContent bind:open />
   </Sheet.Content>
 </Sheet.Root>
 

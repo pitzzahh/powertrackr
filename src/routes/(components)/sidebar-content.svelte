@@ -4,6 +4,12 @@
   import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
   import { sidebarStore } from "$lib/stores/sidebar.svelte";
+
+  let {
+    open = $bindable(false),
+  }: {
+    open: boolean;
+  } = $props();
 </script>
 
 <nav class="flex flex-col gap-8">
@@ -14,6 +20,7 @@
       variant="link"
       href={item.route}
       onclick={() => {
+        open = false;
         sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
           ...navItem,
           active: navItem.label === item.label,
