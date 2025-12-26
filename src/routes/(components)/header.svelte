@@ -7,6 +7,8 @@
   import { cn } from "$/utils/style";
   import { MoonIcon, SunIcon } from "@lucide/svelte";
   import { toggleMode } from "mode-watcher";
+  import { scale } from "svelte/transition";
+  import { cubicInOut } from "svelte/easing";
   let { open, quickActions } = $state({
     open: false,
     quickActions: [
@@ -40,9 +42,18 @@
 
       <div class="flex items-center justify-center gap-4">
         <div class="items-center justify-center gap-2 hidden md:flex">
-          {#each quickActions as quickAction (quickAction.content)}
+          {#each quickActions as quickAction, index (quickAction.content)}
             {@const Icon = quickAction.icon}
-            <Button><Icon /> {quickAction.content}</Button>
+            <span
+              in:scale={{
+                duration: 250,
+                delay: index * 150,
+                easing: cubicInOut,
+                start: 0.8,
+              }}
+            >
+              <Button><Icon /> {quickAction.content}</Button>
+            </span>
           {/each}
         </div>
 
