@@ -3,53 +3,44 @@
 
   export interface SalesDataTableProps {
     data: BillingInfo[];
-    data_table_props?: Partial<DataTableProps<BillingInfo, any>>;
+    data_table_props?: Partial<DataTableProps<BillingInfo, unknown>>;
   }
 </script>
 
 <script lang="ts">
   import { DataTable, DataTableFloatingBar } from "$/components/data-table";
-  import { sales_table_columns, SalesDataTableToolbar } from ".";
-  import { generateOptions } from "@/utils/mapper";
+  import { historyTableColumns, HistoryDataTableToolbar } from ".";
+  import { generateOptions } from "$/utils/mapper";
   import { toast } from "svelte-sonner";
-  import { Toast } from "@/components/ui/toast";
-  import { deleteSale } from "@/db/services/sales.service";
+  import { Toast } from "$/components/toast";
   import type { BillingInfo } from "$/server/db/schema/billing-info";
 
-  let {
-    sync_manager_options,
-    data,
-    data_table_props,
-    customer_types,
-    sale_form,
-  }: SalesDataTableProps = $props();
+  let { data, data_table_props }: SalesDataTableProps = $props();
 </script>
 
-<DataTable
-  {data}
-  columns={sales_table_columns(sync_manager_options, customer_types, sale_form)}
-  {...data_table_props}
->
+<DataTable {data} columns={historyTableColumns()} {...data_table_props}>
   {#snippet data_table_toolbar({ table })}
-    <SalesDataTableToolbar
+    <HistoryDataTableToolbar
       {table}
-      receipt_numbers={generateOptions(data, "receipt_number")}
-      payment_methods={generateOptions(data, "payment_method")}
-      default_hidden_columns={["created_at", "updated_at"]}
+      statuses={generateOptions(data, "status")}
+      default_hidden_columns={["id", "userId", "paymentId", "subPaymentId"]}
     />
   {/snippet}
   {#snippet floating_bar({ table })}
     <DataTableFloatingBar
       {table}
-      entity_name="sale"
-      entity_name_plural="sales"
-      delete_fn={(row) => deleteSale(sync_manager_options, row.id)}
+      entity_name="Billing Info"
+      entity_name_plural="Billing Infos"
+      delete_fn={(row) => {
+        alert("Not yet implemented " + row);
+        return Promise.resolve(0);
+      }}
       callback={(valid) => {
         if (!valid) return;
         toast.custom(Toast, {
           componentProps: {
             title: "Deletion Successful",
-            description: "Sale record has been successfully removed.",
+            description: "Billing Info record has been successfully removed.",
           },
         });
       }}
