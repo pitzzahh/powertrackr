@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { Database } from "bun:sqlite";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
 import { DATABASE_URL } from "$env/static/private";
 
-const db = drizzle({ client: new Database(DATABASE_URL) });
+const db = drizzle(new Database(DATABASE_URL));
 
 export { db };
