@@ -25,7 +25,9 @@
   }: DataTableFacetedFilterProps<TData, TValue, FilterType> = $props();
   const { facets, selectedValues } = $derived({
     facets: column?.getFacetedUniqueValues(),
-    selectedValues: new SvelteSet(column?.getFilterValue() as FilterType[]),
+    selectedValues: new SvelteSet(
+      (column?.getFilterValue() as FilterType[]) || [],
+    ),
   });
 </script>
 
