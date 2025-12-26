@@ -28,21 +28,6 @@
     fetching = $bindable(false),
     hide_show_row_count,
   }: DataTablePaginationProps<TData> = $props();
-
-  let selectedPageSize = $state(10);
-
-  const options = $derived(() => {
-    return [
-      5,
-      10,
-      25,
-      Math.round(table.getRowCount() / 4),
-      Math.round(table.getRowCount() / 2),
-      selectedPageSize,
-    ]
-      .filter((size, i, arr) => size > 0 && arr.indexOf(size) === i)
-      .sort((a, b) => a - b);
-  });
 </script>
 
 <ScrollArea orientation="horizontal" class="w-full sticky-0 bottom-0 z-10">
@@ -85,19 +70,22 @@
           <Select.Root
             allowDeselect={false}
             type="single"
-            value={String(selectedPageSize)}
+            value={String(table.getState().pagination.pageSize)}
             onValueChange={(value) => {
-              selectedPageSize = Number(value);
               table.setPageSize(Number(value));
             }}
           >
             <Select.Trigger
               class="h-9 w-18.75 bg-background border-border/50 hover:border-border transition-colors shadow-sm"
             >
-              <span class="font-medium">{String(selectedPageSize)}</span>
+              <span class="font-medium"
+                >{String(table.getState().pagination.pageSize)}</span
+              >
             </Select.Trigger>
             <Select.Content side="top" class="max-h-md">
-              {#each options() as pageSize (pageSize)}
+              {#each [5, 10, 25, Math.round(table.getRowCount() / 4), Math.round(table.getRowCount() / 2)]
+                .filter((size, i, arr) => size > 0 && arr.indexOf(size) === i)
+                .sort((a, b) => a - b) as pageSize (pageSize)}
                 <Select.Item value={`${pageSize}`} class="font-medium">
                   {pageSize}
                 </Select.Item>

@@ -7,7 +7,10 @@
     floating_bar?: Snippet<[{ table: TableCore<TData> }]>;
     custom_row_count?: number;
     class?: string;
-    pagination_props?: Omit<DataTablePaginationProps<TData>, "table">;
+    pagination_props?: Omit<
+      DataTablePaginationProps<TData>,
+      "table" | "pagination"
+    >;
   }
 
   interface ComponentState {
@@ -53,17 +56,13 @@
   }: DataTableProps<TData, TValue> = $props();
 
   let { rowSelection, columnVisibility, columnFilters, sorting, pagination } =
-    $state<ComponentState>({
+    $derived<ComponentState>({
       rowSelection: {},
       columnVisibility: {},
       columnFilters: [],
       sorting: [],
-      pagination: { pageIndex: 0, pageSize: 10 },
+      pagination: { pageIndex: 0, pageSize: custom_row_count },
     });
-
-  $effect(() => {
-    pagination.pageSize = custom_row_count;
-  });
 
   const table = $derived(
     createSvelteTable({
@@ -130,12 +129,12 @@
   {/if}
 
   <!-- Header outside ScrollArea so it stays fixed and matches body width -->
-  <Table.Root class="table-fixed">
+  <Table.Root>
     <Table.Header class="sticky top-0 z-10 bg-background border-b">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         <Table.Row>
           {#each headerGroup.headers as header (header.id)}
-            <Table.Head class="text-left">
+            <Table.Head>
               {#if !header.isPlaceholder}
                 <FlexRender
                   content={header.column.columnDef.header}
@@ -150,13 +149,13 @@
   </Table.Root>
 
   <!-- Scrollable body with same table structure -->
-  <ScrollArea class="max-h-[calc(100vh-15rem)] overflow-auto w-full">
-    <Table.Root class="table-fixed">
+  <ScrollArea class="max-h-[calc(100vh-15rem)] overflow-auto">
+    <Table.Root>
       <Table.Body>
         {#each table.getRowModel().rows as row (row.id)}
           <Table.Row data-state={row.getIsSelected() && "selected"}>
             {#each row.getVisibleCells() as cell (cell.id)}
-              <Table.Cell>
+              <Table.Cell class="whitespace-nowrap">
                 <FlexRender
                   content={cell.column.columnDef.cell}
                   context={cell.getContext()}
