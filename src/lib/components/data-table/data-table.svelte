@@ -64,57 +64,55 @@
       pagination: { pageIndex: 0, pageSize: custom_row_count },
     });
 
-  const table = $derived(
-    createSvelteTable({
-      get data() {
-        return data;
+  const table = createSvelteTable({
+    get data() {
+      return data;
+    },
+    state: {
+      get sorting() {
+        return sorting;
       },
-      state: {
-        get sorting() {
-          return sorting;
-        },
-        get columnVisibility() {
-          return columnVisibility;
-        },
-        get rowSelection() {
-          return rowSelection;
-        },
-        get columnFilters() {
-          return columnFilters;
-        },
-        get pagination() {
-          return pagination;
-        },
+      get columnVisibility() {
+        return columnVisibility;
       },
-      columns,
-      enableRowSelection: true,
-      onRowSelectionChange: (updater) => {
-        rowSelection =
-          typeof updater === "function" ? updater(rowSelection) : updater;
+      get rowSelection() {
+        return rowSelection;
       },
-      onSortingChange: (updater) => {
-        sorting = typeof updater === "function" ? updater(sorting) : updater;
+      get columnFilters() {
+        return columnFilters;
       },
-      onColumnFiltersChange: (updater) => {
-        columnFilters =
-          typeof updater === "function" ? updater(columnFilters) : updater;
+      get pagination() {
+        return pagination;
       },
-      onColumnVisibilityChange: (updater) => {
-        columnVisibility =
-          typeof updater === "function" ? updater(columnVisibility) : updater;
-      },
-      onPaginationChange: (updater) => {
-        pagination =
-          typeof updater === "function" ? updater(pagination) : updater;
-      },
-      getCoreRowModel: getCoreRowModel(),
-      getFilteredRowModel: getFilteredRowModel(),
-      getPaginationRowModel: getPaginationRowModel(),
-      getSortedRowModel: getSortedRowModel(),
-      getFacetedRowModel: getFacetedRowModel(),
-      getFacetedUniqueValues: getFacetedUniqueValues(),
-    }),
-  );
+    },
+    columns,
+    enableRowSelection: true,
+    onRowSelectionChange: (updater) => {
+      rowSelection =
+        typeof updater === "function" ? updater(rowSelection) : updater;
+    },
+    onSortingChange: (updater) => {
+      sorting = typeof updater === "function" ? updater(sorting) : updater;
+    },
+    onColumnFiltersChange: (updater) => {
+      columnFilters =
+        typeof updater === "function" ? updater(columnFilters) : updater;
+    },
+    onColumnVisibilityChange: (updater) => {
+      columnVisibility =
+        typeof updater === "function" ? updater(columnVisibility) : updater;
+    },
+    onPaginationChange: (updater) => {
+      pagination =
+        typeof updater === "function" ? updater(pagination) : updater;
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+  });
 </script>
 
 {#if floating_bar && table.getFilteredSelectedRowModel().rows.length > 0}
