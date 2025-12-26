@@ -16,3 +16,7 @@ export { default as RefreshCw } from "@lucide/svelte/icons/refresh-cw";
 export { default as PhilippinePeso } from "@lucide/svelte/icons/philippine-peso";
 export { default as Menu } from "@lucide/svelte/icons/menu";
 export { default as ArrowUpRight } from "@lucide/svelte/icons/arrow-up-right";
+export { default as EyeOff } from "@lucide/svelte/icons/eye-off";
+export { default as ChevronsUpDown } from "@lucide/svelte/icons/chevrons-up-down";
+export { default as ArrowUp } from "@lucide/svelte/icons/arrow-up";
+export { default as ArrowDown } from "@lucide/svelte/icons/arrow-down";
