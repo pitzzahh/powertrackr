@@ -15,3 +15,4 @@ export { default as Loader } from "@lucide/svelte/icons/loader";
 export { default as RefreshCw } from "@lucide/svelte/icons/refresh-cw";
 export { default as PhilippinePeso } from "@lucide/svelte/icons/philippine-peso";
 export { default as Menu } from "@lucide/svelte/icons/menu";
+export { default as ArrowUpRight } from "@lucide/svelte/icons/arrow-up-right";
