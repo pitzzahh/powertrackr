@@ -18,6 +18,7 @@ export function historyTableColumns() {
       header: ({ table }: { table: Table<BillingInfo> }) =>
         renderComponent(DataTableCheckbox, {
           checked: table.getIsAllPageRowsSelected(),
+          indeterminate: table.getIsSomePageRowsSelected(),
           onCheckedChange: (value) => table.toggleAllPageRowsSelected(!!value),
           "aria-label": "Select all",
           class: "translate-y-[2px]",
