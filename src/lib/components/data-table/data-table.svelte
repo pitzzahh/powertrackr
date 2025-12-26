@@ -121,7 +121,14 @@
   {@render floating_bar({ table })}
 {/if}
 
-<div class="relative overflow-hidden rounded-md border {className}">
+<div
+  class={[
+    "relative overflow-hidden rounded-md border bg-muted",
+    {
+      className,
+    },
+  ]}
+>
   {#if data_table_toolbar}
     <div class="border-b p-2">
       {@render data_table_toolbar({ table })}
@@ -130,7 +137,7 @@
 
   <!-- Header outside ScrollArea so it stays fixed and matches body width -->
   <Table.Root>
-    <Table.Header class="sticky top-0 z-10 bg-background border-b">
+    <Table.Header class="sticky top-0 z-10 border-b">
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         <Table.Row>
           {#each headerGroup.headers as header (header.id)}
