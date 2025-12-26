@@ -121,43 +121,36 @@
   {@render floating_bar({ table })}
 {/if}
 
+{#if data_table_toolbar}
+  {@render data_table_toolbar({ table })}
+{/if}
+
 <div
   class={[
-    "relative overflow-hidden rounded-md border bg-muted",
+    "overflow-hidden bg-muted",
     {
       className,
     },
   ]}
 >
-  {#if data_table_toolbar}
-    <div class="border-b p-2">
-      {@render data_table_toolbar({ table })}
-    </div>
-  {/if}
-
-  <!-- Header outside ScrollArea so it stays fixed and matches body width -->
-  <Table.Root>
-    <Table.Header class="sticky top-0 z-10 border-b">
-      {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-        <Table.Row>
-          {#each headerGroup.headers as header (header.id)}
-            <Table.Head>
-              {#if !header.isPlaceholder}
-                <FlexRender
-                  content={header.column.columnDef.header}
-                  context={header.getContext()}
-                />
-              {/if}
-            </Table.Head>
-          {/each}
-        </Table.Row>
-      {/each}
-    </Table.Header>
-  </Table.Root>
-
-  <!-- Scrollable body with same table structure -->
   <ScrollArea class="max-h-[calc(100vh-15rem)] overflow-auto">
     <Table.Root>
+      <Table.Header class="sticky top-0 z-10 border-b">
+        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+          <Table.Row>
+            {#each headerGroup.headers as header (header.id)}
+              <Table.Head>
+                {#if !header.isPlaceholder}
+                  <FlexRender
+                    content={header.column.columnDef.header}
+                    context={header.getContext()}
+                  />
+                {/if}
+              </Table.Head>
+            {/each}
+          </Table.Row>
+        {/each}
+      </Table.Header>
       <Table.Body>
         {#each table.getRowModel().rows as row (row.id)}
           <Table.Row data-state={row.getIsSelected() && "selected"}>
@@ -180,6 +173,5 @@
       </Table.Body>
     </Table.Root>
   </ScrollArea>
-
-  <DataTablePagination {table} {...pagination_props} />
 </div>
+<DataTablePagination {table} {...pagination_props} />
