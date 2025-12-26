@@ -1,28 +1,32 @@
-import { pgTable, index, foreignKey } from "drizzle-orm/pg-core";
+import {
+  sqliteTable,
+  index,
+  foreignKey,
+  text,
+  integer,
+  real,
+} from "drizzle-orm/sqlite-core";
 import { payment } from "./payment";
 import { user } from "./user";
 
-export const billingInfo = pgTable(
+export const billingInfo = sqliteTable(
   "BillingInfo",
-  (t) => ({
-    id: t.text().primaryKey().notNull(),
-    userId: t.text("user_id").notNull(),
-    date: t.timestamp({ precision: 3, mode: "string" }).notNull(),
-    totalKwh: t.integer().notNull(),
-    subKwh: t.integer(),
-    balance: t.doublePrecision().notNull(),
-    status: t.text().notNull(),
-    payPerKwh: t.doublePrecision().notNull(),
-    subReadingLatest: t.integer(),
-    subReadingOld: t.integer(),
-    paymentId: t.text(),
-    subPaymentId: t.text(),
-  }),
+  {
+    id: text().primaryKey().notNull(),
+    userId: text("user_id").notNull(),
+    date: text().notNull(), // Use text for timestamp in sqlite
+    totalKwh: integer().notNull(),
+    subKwh: integer(),
+    balance: real().notNull(),
+    status: text().notNull(),
+    payPerKwh: real().notNull(),
+    subReadingLatest: integer(),
+    subReadingOld: integer(),
+    paymentId: text(),
+    subPaymentId: text(),
+  },
   (table) => [
-    index("BillingInfo_user_id_idx").using(
-      "btree",
-      table.userId.asc().nullsLast().op("text_ops"),
-    ),
+    index("BillingInfo_user_id_idx").on(table.userId),
     foreignKey({
       columns: [table.paymentId],
       foreignColumns: [payment.id],
@@ -47,7 +51,5 @@ export const billingInfo = pgTable(
   ],
 );
 
-export type BillingInfo = Omit<typeof billingInfo.$inferSelect, "date"> & {
-  date: Date;
-};
+export type BillingInfo = typeof billingInfo.$inferSelect;
 export type NewBillingInfo = typeof billingInfo.$inferInsert;

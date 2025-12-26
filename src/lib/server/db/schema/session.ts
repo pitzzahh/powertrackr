@@ -1,32 +1,24 @@
 import {
-  pgTable,
+  sqliteTable,
   text,
-  bigint,
+  integer,
   uniqueIndex,
   index,
   foreignKey,
-} from "drizzle-orm/pg-core";
+} from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
-export const session = pgTable(
+export const session = sqliteTable(
   "Session",
   {
     id: text().primaryKey().notNull(),
     userId: text("user_id").notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    activeExpires: bigint("active_expires", { mode: "number" }).notNull(),
-    // You can use { mode: "bigint" } if numbers are exceeding js number limitations
-    idleExpires: bigint("idle_expires", { mode: "number" }).notNull(),
+    activeExpires: integer("active_expires").notNull(),
+    idleExpires: integer("idle_expires").notNull(),
   },
   (table) => [
-    uniqueIndex("Session_id_key").using(
-      "btree",
-      table.id.asc().nullsLast().op("text_ops"),
-    ),
-    index("Session_user_id_idx").using(
-      "btree",
-      table.userId.asc().nullsLast().op("text_ops"),
-    ),
+    uniqueIndex("Session_id_key").on(table.id),
+    index("Session_user_id_idx").on(table.userId),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
