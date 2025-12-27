@@ -6,9 +6,8 @@
         /**
          * Callback to be called when the form is submitted.
          * This can be used to reset the form or perform other actions.
-         * takes true if the form is valid, false otherwise.
          */
-        callback?: (valid: boolean) => void;
+        callback?: () => void;
     };
 </script>
 
@@ -64,7 +63,7 @@
     });
 </script>
 
-<form {...createBillingInfo} class="space-y-4">
+<form {...createBillingInfo} onsubmit={() => callback?.()} class="space-y-4">
     <Field.Group>
         <Field.Field>
             <Label for="{identity}-date" class="px-1">Date</Label>

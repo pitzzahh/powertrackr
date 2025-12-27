@@ -7,8 +7,8 @@
         quickActions: {
             icon: typeof Icon;
             label: string;
-            content: () => ReturnType<Snippet<[]>>;
-            action: () => void;
+            content: (callback: () => void) => ReturnType<Snippet<[]>>;
+            callback: () => void;
         }[];
     };
 </script>
@@ -34,7 +34,7 @@
                 icon: PhilippinePeso,
                 label: "New Bill",
                 content: newBill,
-                action: () => {
+                callback: () => {
                     alert("Not yet implemented!");
                 },
             },
@@ -83,7 +83,7 @@
                                 </Sheet.Trigger>
                                 <Sheet.Portal>
                                     <Sheet.Content
-                                        class="min-w-[60%]"
+                                        class="md:min-w-[60%] w-full"
                                         side="left"
                                     >
                                         <Sheet.Header>
@@ -94,7 +94,9 @@
                                                 >Enter billing info</Sheet.Description
                                             >
                                         </Sheet.Header>
-                                        {@render quickAction.content(quickAction.action)}
+                                        {@render quickAction.content(
+                                            quickAction.callback,
+                                        )}
                                     </Sheet.Content>
                                 </Sheet.Portal>
                             </Sheet.Root>
@@ -125,10 +127,10 @@
     <Logo variant="ghost" class={cn("px-0", className)} />
 {/snippet}
 
-{#snippet newBill()}
+{#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
     <ScrollArea class="overflow-y-auto h-[calc(100vh-50px)] pr-2.5">
         <div class="space-y-4 p-4">
-            <BillingInfoForm action="add" />
+            <BillingInfoForm action="add" {callback} />
         </div>
     </ScrollArea>
 {/snippet}
