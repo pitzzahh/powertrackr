@@ -12,7 +12,7 @@
 
     type ChartBarState = {
         timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
-        activeChart: string;
+        activeChart: "totalKWh" | "mainKWh" | "subKWh" | "all";
     };
 
     const CHART_CONFIG = {
@@ -40,7 +40,7 @@
 
     let { timeRange, activeChart }: ChartBarState = $state({
         timeRange: "all",
-        activeChart: "totalKWh",
+        activeChart: "all",
     });
 
     const { selectedLabel, filteredData } = $derived({
@@ -141,7 +141,8 @@
                 <button
                     data-active={activeChart === chart}
                     class="data-[active=true]:bg-muted/50 data-[active=true]:border-2 data-[active=true]:border-primary/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
-                    onclick={() => (activeChart = key)}
+                    onclick={() =>
+                        (activeChart = key as ChartBarState["activeChart"])}
                 >
                     <span
                         class="text-xs {activeChart === chart
