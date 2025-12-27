@@ -16,7 +16,7 @@
     } from "$/assets/icons";
     import type { Table } from "@tanstack/table-core";
     import * as Select from "$/components/ui/select/index.js";
-    import { ScrollArea } from "$/components//ui/scroll-area";
+
     import { Button } from "$/components/ui/button/index.js";
     import { Badge } from "$/components/ui/badge/index.js";
     import { cubicInOut } from "svelte/easing";
@@ -30,36 +30,31 @@
     }: DataTablePaginationProps<TData> = $props();
 </script>
 
-<ScrollArea orientation="horizontal" class="w-full sticky-0 bottom-0 z-10">
-    <div
-        class="flex items-center justify-between gap-6 px-4 py-2 bg-card rounded-b backdrop-blur-sm"
-    >
-        <!-- Left section: Selection and loading info -->
-        <div class="flex items-center gap-4">
-            {#if table.getFilteredSelectedRowModel().rows.length > 0}
-                <div transition:scale={{ duration: 200, easing: cubicInOut }}>
-                    <Badge
-                        variant="secondary"
-                        class="flex items-center dark:bg-background gap-2 text-sm font-medium whitespace-nowrap"
-                    >
-                        <div
-                            class="size-2 bg-primary rounded-full animate-pulse"
-                        ></div>
-                        {table.getFilteredSelectedRowModel().rows.length} of
-                        {table.getFilteredRowModel().rows.length} selected
-                    </Badge>
-                </div>
-            {/if}
-            {#if fetching}
+<div
+    class="flex items-center justify-between gap-6 px-4 py-2 bg-card rounded-b backdrop-blur-sm w-full sticky bottom-0 z-10"
+>
+    <!-- Left section: Selection and loading info -->
+    <div class="flex items-center gap-4">
+        {#if table.getFilteredSelectedRowModel().rows.length > 0}
+            <div transition:scale={{ duration: 200, easing: cubicInOut }}>
                 <Badge
                     variant="secondary"
-                    class="whitespace-nowrap animate-pulse"
+                    class="flex items-center dark:bg-background gap-2 text-sm font-medium whitespace-nowrap"
                 >
-                    <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
-                    Loading...
+                    <div
+                        class="size-2 bg-primary rounded-full animate-pulse"
+                    ></div>
+                    {table.getFilteredSelectedRowModel().rows.length} of
+                    {table.getFilteredRowModel().rows.length} selected
                 </Badge>
-            {/if}
-        </div>
+            </div>
+        {/if}
+        {#if fetching}
+            <Badge variant="secondary" class="whitespace-nowrap animate-pulse">
+                <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
+                Loading...
+            </Badge>
+        {/if}
     </div>
 
     <!-- Right section: Controls -->
@@ -170,7 +165,7 @@
             })}
         </div>
     </div>
-</ScrollArea>
+</div>
 
 {#snippet pagination_buttons({
     onclick,

@@ -63,7 +63,7 @@
             columnVisibility: {},
             columnFilters: [],
             sorting: [],
-            pagination: { pageIndex: 0, pageSize: 10 },
+            pagination: { pageIndex: 0, pageSize: custom_row_count },
         });
 
     const table = createSvelteTable({
@@ -89,9 +89,6 @@
         },
         get columns() {
             return columns;
-        },
-        get rowCount() {
-            return custom_row_count;
         },
         enableRowSelection: true,
         onRowSelectionChange: (updater) => {
