@@ -82,6 +82,32 @@ export function historyTableColumns() {
       },
     },
     {
+      accessorKey: "subKwh",
+      header: ({ column }) => {
+        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+          column,
+          title: "Sub KWh",
+        });
+      },
+      cell: ({ row }) => {
+        const subKwh = row.original.subKwh;
+        return subKwh ? `${subKwh}KWh` : "N/A";
+      },
+      filterFn: (row, id, value) => {
+        return (
+          value.includes(row.getValue(id)) ||
+          row.original.subKwh
+            ?.toString()
+            ?.toLowerCase()
+            .includes(value.toLowerCase()) ||
+          row.original.subKwh
+            ?.toString()
+            ?.toLowerCase()
+            .startsWith(value.toLowerCase())
+        );
+      },
+    },
+    {
       id: "balance",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
@@ -120,6 +146,24 @@ export function historyTableColumns() {
       filterFn: async (row, id, value) => {
         const payment = await getPayment(row.original.paymentId!);
         return value.includes(payment.amount);
+      },
+    },
+    {
+      id: "subPayment",
+      header: ({ column }) => {
+        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+          column,
+          title: "Sub Payment",
+        });
+      },
+      cell: ({ row }) => {
+        return renderComponent(PaymentCell, {
+          paymentId: row.original.subPaymentId,
+        });
+      },
+      filterFn: async (row, id, value) => {
+        const subPayment = await getPayment(row.original.subPaymentId!);
+        return value.includes(subPayment.amount);
       },
     },
     {
