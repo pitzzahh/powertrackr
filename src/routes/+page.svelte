@@ -22,6 +22,9 @@
                     balance: item.balance,
                     payment: item.payment?.amount || 0,
                     subPayment: item.subPayment?.amount || 0,
+                    totalKWh: item.totalKwh,
+                    mainKWh: item.totalKwh - (item.subKwh || 0),
+                    subKWh: item.subKwh || 0,
                 }) as ChartData,
         )}
     />

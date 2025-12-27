@@ -4,6 +4,9 @@
         balance: number;
         payment: number;
         subPayment: number;
+        totalKWh: number;
+        mainKWh: number;
+        subKWh: number;
     };
 
     export type AreaChartInteractiveProps = {
@@ -14,6 +17,9 @@
         balance: { label: "Balance", color: "var(--chart-1)" },
         payment: { label: "Payment", color: "var(--chart-2)" },
         subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
+        totalKWh: { label: "Total kWh", color: "var(--chart-4)" },
+        mainKWh: { label: "Main kWh", color: "var(--chart-5)" },
+        subKWh: { label: "Sub kWh", color: "var(--chart-6)" },
     } satisfies Chart.ChartConfig;
 </script>
 
@@ -32,6 +38,8 @@
     let { chartData }: AreaChartInteractiveProps = $props();
 
     let timeRange = $state("all");
+
+    let visibleKeys = $state(Object.keys(CHART_CONFIG));
 
     const { selectedLabel, filteredData } = $derived({
         selectedLabel: () => {
@@ -127,28 +135,12 @@
             class="-ml-3 aspect-auto h-62.5 w-full"
         >
             <LineChart
-                legend
                 data={filteredData()}
                 x="date"
                 xScale={scaleUtc()}
-                series={[
-                    {
-                        key: "balance",
-                        label: "Balance",
-                        color: CHART_CONFIG.balance.color,
-                    },
-                    {
-                        key: "payment",
-                        label: "Payment",
-                        color: CHART_CONFIG.payment.color,
-                    },
-                    {
-                        key: "subPayment",
-                        label: "Sub Payment",
-                        color: CHART_CONFIG.subPayment.color,
-                    },
-                ]}
-                seriesLayout="stack"
+                series={Object.entries(CHART_CONFIG)
+                    .filter(([key]) => visibleKeys.includes(key))
+                    .map(([key, { label, color }]) => ({ key, label, color }))}
                 props={{
                     xAxis: {
                         ticks: timeRange === "7d" ? 7 : undefined,
@@ -159,7 +151,10 @@
                             });
                         },
                     },
-                    yAxis: { format: () => "", label: "Amount ($)" },
+                    yAxis: {
+                        format: () => "",
+                        label: `Amount (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(0).charAt(0)})`,
+                    },
                 }}
             >
                 {#snippet marks({ series, getSplineProps, getPointsProps })}
@@ -197,5 +192,29 @@
                 {/snippet}
             </LineChart>
         </ChartContainer>
+        <div class="flex flex-wrap justify-center gap-4 mt-4">
+            {#each Object.entries(CHART_CONFIG) as [key, { label, color }] (key)}
+                <button
+                    class="flex items-center gap-2 text-sm"
+                    onclick={() =>
+                        (visibleKeys = visibleKeys.includes(key)
+                            ? visibleKeys.filter((k) => k !== key)
+                            : [...visibleKeys, key])}
+                >
+                    <div
+                        class="w-3 h-3 rounded"
+                        style="background-color: {color}; opacity: {visibleKeys.includes(
+                            key,
+                        )
+                            ? 1
+                            : 0.5}"
+                    ></div>
+                    <span
+                        class={visibleKeys.includes(key) ? "" : "line-through"}
+                        >{label}</span
+                    >
+                </button>
+            {/each}
+        </div>
     </Card.Content>
 </Card.Root>
