@@ -15,16 +15,16 @@
   {/if}
 
   {#snippet pending()}
-    <Badge>Loading...</Badge>
+    <Badge variant="secondary">Loading...</Badge>
   {/snippet}
 
   {#snippet failed()}
-    <Badge title="0">0</Badge>
+    <Badge variant="secondary" title="0">0</Badge>
   {/snippet}
 </svelte:boundary>
 
 {#snippet badge(amount: number)}
-  <Badge title={formatNumber(amount)}>
+  <Badge variant="secondary" title={formatNumber(amount)}>
     {formatNumber(amount)}
   </Badge>
 {/snippet}
