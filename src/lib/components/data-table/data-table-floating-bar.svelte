@@ -106,7 +106,7 @@
 
 <div
   transition:scale={{ duration: 100, easing: cubicInOut }}
-  class="fixed inset-x-0 bottom-6 z-50 mx-auto w-fit rounded-lg border bg-background p-3"
+  class="fixed inset-x-0 bottom-6 z-50 mx-auto w-fit rounded-lg border bg-muted p-3"
 >
   <div class="flex gap-2">
     <div
