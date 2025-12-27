@@ -7,11 +7,22 @@
     ref = $bindable(null),
     class: className,
     children,
+    noWrap = false,
     ...restProps
-  }: WithElementRef<HTMLTableAttributes> = $props();
+  }: WithElementRef<HTMLTableAttributes> & {
+    noWrap?: boolean;
+  } = $props();
 </script>
 
-<div data-slot="table-container" class="relative w-full overflow-x-auto">
+{#if noWrap}
+  {@render table()}
+{:else}
+  <div data-slot="table-container" class="relative w-full overflow-x-auto">
+    {@render table()}
+  </div>
+{/if}
+
+{#snippet table()}
   <table
     bind:this={ref}
     data-slot="table"
@@ -20,4 +31,4 @@
   >
     {@render children?.()}
   </table>
-</div>
+{/snippet}
