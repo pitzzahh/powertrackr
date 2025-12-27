@@ -21,6 +21,7 @@
     import ChartContainer from "$/components/ui/chart/chart-container.svelte";
     import { cubicInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
+    import { formatDate } from "$/utils/format";
 
     let { chartData }: AreaChartInteractiveProps = $props();
 
@@ -246,11 +247,7 @@
                 {#snippet tooltip()}
                     <Chart.Tooltip
                         formatAsCurrency={true}
-                        labelFormatter={(v: Date) => {
-                            return v.toLocaleDateString("en-US", {
-                                month: "long",
-                            });
-                        }}
+                        labelFormatter={(v: Date) => formatDate(v)}
                         indicator="line"
                     />
                 {/snippet}
