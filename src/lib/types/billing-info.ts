@@ -1,5 +1,8 @@
-import type { BillingInfo } from "$/server/db/schema/billing-info";
+import type { billingInfo } from "$/server/db/schema/billing-info";
 import type { Payment } from "$/server/db/schema/payment";
+
+export type BillingInfo = typeof billingInfo.$inferSelect;
+export type NewBillingInfo = typeof billingInfo.$inferInsert;
 
 export type BillingInfoDTO = {
   id: string;

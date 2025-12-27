@@ -23,12 +23,15 @@
         getLocalTimeZone,
         today,
     } from "@internationalized/date";
-    import { createBillingInfo } from "$/remotes/billing-info.remote";
+    import {
+        createBillingInfo,
+        updateBillingInfo,
+    } from "$/remotes/billing-info.remote";
     import { Label } from "$/components/ui/label";
     import { ChevronDown } from "$/assets/icons";
     import { Calendar } from "$/components/ui/calendar";
     import * as Card from "$/components/ui/card/index.js";
-    import type { BillingInfo } from "$/server/db/schema/billing-info";
+    import type { BillingInfo } from "$/types/billing-info";
     import { formatDate } from "$/utils/format";
 
     let {
@@ -61,9 +64,16 @@
             );
         })(),
     });
+
+    let currentAction = $derived(
+        action === "add" ? createBillingInfo : updateBillingInfo,
+    );
 </script>
 
-<form {...createBillingInfo} onsubmit={() => callback?.()} class="space-y-4">
+<form {...currentAction} onsubmit={callback} class="space-y-4">
+    {#if action === "update" && billingInfo}
+        <input type="hidden" name="id" value={billingInfo.id} />
+    {/if}
     <Field.Group>
         <Field.Field>
             <Label for="{identity}-date" class="px-1">Date</Label>
@@ -73,7 +83,7 @@
                         <Button
                             {...props}
                             variant="outline"
-                            class="w-48 justify-between font-normal"
+                            class="w-full sm:w-48 justify-between font-normal"
                         >
                             {dateValue
                                 ? formatDate(
@@ -131,34 +141,133 @@
         <Field.Field>
             <Field.Label for="{identity}-balance">Current Balance</Field.Label>
             <Input
-                type="text"
+                type="number"
+                step="0.01"
                 id="{identity}-balance"
                 name="balance"
                 placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? billingInfo.balance.toString()
+                    : ""}
             />
-            <Field.Description>Enter text</Field.Description>
+            <Field.Description>Enter balance</Field.Description>
         </Field.Field>
         <Field.Field>
-            <Field.Label for="{identity}-totalKWh">Total KWh</Field.Label>
+            <Field.Label for="{identity}-totalKwh">Total KWh</Field.Label>
             <Input
-                type="text"
-                id="{identity}-totalKWh"
-                name="totalKWh"
+                type="number"
+                id="{identity}-totalKwh"
+                name="totalKwh"
                 placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? billingInfo.totalKwh.toString()
+                    : ""}
             />
-            <Field.Description>Enter text</Field.Description>
+            <Field.Description>Enter total KWh</Field.Description>
         </Field.Field>
         <Field.Field>
-            <Field.Label for="{identity}-text_d7">Sub KWh</Field.Label>
+            <Field.Label for="{identity}-subKwh">Sub KWh</Field.Label>
+            <Input
+                type="number"
+                id="{identity}-subKwh"
+                name="subKwh"
+                placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? (billingInfo.subKwh?.toString() ?? "")
+                    : ""}
+            />
+            <Field.Description>Enter sub KWh</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-status">Status</Field.Label>
+            <select
+                id="{identity}-status"
+                name="status"
+                value={action === "update" && billingInfo
+                    ? billingInfo.status
+                    : "pending"}
+                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+            </select>
+            <Field.Description>Select status</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-payPerKwh">Pay Per KWh</Field.Label>
+            <Input
+                type="number"
+                step="0.01"
+                id="{identity}-payPerKwh"
+                name="payPerKwh"
+                placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? billingInfo.payPerKwh.toString()
+                    : ""}
+            />
+            <Field.Description>Enter pay per KWh</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-subReadingLatest"
+                >Sub Reading Latest</Field.Label
+            >
+            <Input
+                type="number"
+                id="{identity}-subReadingLatest"
+                name="subReadingLatest"
+                placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? (billingInfo.subReadingLatest?.toString() ?? "")
+                    : ""}
+            />
+            <Field.Description>Enter sub reading latest</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-subReadingOld"
+                >Sub Reading Old</Field.Label
+            >
+            <Input
+                type="number"
+                id="{identity}-subReadingOld"
+                name="subReadingOld"
+                placeholder="Enter value"
+                value={action === "update" && billingInfo
+                    ? (billingInfo.subReadingOld?.toString() ?? "")
+                    : ""}
+            />
+            <Field.Description>Enter sub reading old</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-paymentId">Payment ID</Field.Label>
             <Input
                 type="text"
-                id="{identity}-text_d7"
-                name="text_d7"
-                placeholder="Enter value"
+                id="{identity}-paymentId"
+                name="paymentId"
+                placeholder="Enter payment ID"
+                value={action === "update" && billingInfo
+                    ? (billingInfo.paymentId ?? "")
+                    : ""}
             />
-            <Field.Description>Enter text</Field.Description>
+            <Field.Description>Enter payment ID (optional)</Field.Description>
+        </Field.Field>
+        <Field.Field>
+            <Field.Label for="{identity}-subPaymentId"
+                >Sub Payment ID</Field.Label
+            >
+            <Input
+                type="text"
+                id="{identity}-subPaymentId"
+                name="subPaymentId"
+                placeholder="Enter sub payment ID"
+                value={action === "update" && billingInfo
+                    ? (billingInfo.subPaymentId ?? "")
+                    : ""}
+            />
+            <Field.Description
+                >Enter sub payment ID (optional)</Field.Description
+            >
         </Field.Field>
     </Field.Group>
 
-    <Button type="submit">Submit</Button>
+    <Button class="w-full" type="submit">Submit</Button>
 </form>
