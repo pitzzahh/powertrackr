@@ -9,6 +9,12 @@
     export type AreaChartInteractiveProps = {
         chartData: ChartData[];
     };
+
+    const CHART_CONFIG = {
+        balance: { label: "Balance", color: "var(--chart-1)" },
+        payment: { label: "Payment", color: "var(--chart-2)" },
+        subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
+    } satisfies Chart.ChartConfig;
 </script>
 
 <script lang="ts">
@@ -76,12 +82,6 @@
             });
         },
     });
-
-    const chartConfig = {
-        balance: { label: "Balance", color: "var(--chart-1)" },
-        payment: { label: "Payment", color: "var(--chart-2)" },
-        subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
-    } satisfies Chart.ChartConfig;
 </script>
 
 <Card.Root>
@@ -123,7 +123,7 @@
     </Card.Header>
     <Card.Content>
         <ChartContainer
-            config={chartConfig}
+            config={CHART_CONFIG}
             class="-ml-3 aspect-auto h-62.5 w-full"
         >
             <AreaChart
@@ -135,17 +135,17 @@
                     {
                         key: "balance",
                         label: "Balance",
-                        color: chartConfig.balance.color,
+                        color: CHART_CONFIG.balance.color,
                     },
                     {
                         key: "payment",
                         label: "Payment",
-                        color: chartConfig.payment.color,
+                        color: CHART_CONFIG.payment.color,
                     },
                     {
                         key: "subPayment",
                         label: "Sub Payment",
-                        color: chartConfig.subPayment.color,
+                        color: CHART_CONFIG.subPayment.color,
                     },
                 ]}
                 seriesLayout="stack"
