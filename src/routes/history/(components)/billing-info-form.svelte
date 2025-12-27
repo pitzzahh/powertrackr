@@ -18,6 +18,7 @@
     import { Button } from "$/components/ui/button";
     import { Input } from "$/components/ui/input";
     import * as Popover from "$/components/ui/popover";
+    import * as Select from "$/components/ui/select";
     import {
         CalendarDate,
         getLocalTimeZone,
@@ -33,6 +34,7 @@
     import * as Card from "$/components/ui/card/index.js";
     import type { BillingInfo } from "$/types/billing-info";
     import { formatDate } from "$/utils/format";
+    import { convertToNormalText } from "$/utils/text";
 
     let {
         action,
@@ -47,10 +49,12 @@
         open,
         todayDate,
         dateValue,
+        status,
     }: {
         open: boolean;
         todayDate: CalendarDate;
         dateValue: CalendarDate | undefined;
+        status: string;
     } = $derived({
         open: false,
         todayDate: today(getLocalTimeZone()),
@@ -63,6 +67,8 @@
                 date.getDate(),
             );
         })(),
+        status:
+            action === "update" && billingInfo ? billingInfo.status : "pending",
     });
 
     let currentAction = $derived(
@@ -180,92 +186,30 @@
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-status">Status</Field.Label>
-            <select
-                id="{identity}-status"
-                name="status"
-                value={action === "update" && billingInfo
-                    ? billingInfo.status
-                    : "pending"}
-                class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            <Select.Root
+                type="single"
+                bind:value={status}
+                disabled={app_state === "processing" || action === "add"}
             >
-                <option value="pending">Pending</option>
-                <option value="paid">Paid</option>
-            </select>
+                <Select.Trigger class="w-full">
+                    {convertToNormalText(status) || "Select status"}
+                </Select.Trigger>
+                <Select.Content>
+                    <Select.Group>
+                        <Select.Label>Status</Select.Label>
+                        {#each [{ value: "paid", label: "Paid" }, { value: "pending", label: "Pending" }] as option (option.value)}
+                            <Select.Item
+                                value={option.value}
+                                label={option.label}
+                            >
+                                {option.label}
+                            </Select.Item>
+                        {/each}
+                    </Select.Group>
+                </Select.Content>
+            </Select.Root>
+            <input type="hidden" name="status" value={status} />
             <Field.Description>Select status</Field.Description>
-        </Field.Field>
-        <Field.Field>
-            <Field.Label for="{identity}-payPerKwh">Pay Per KWh</Field.Label>
-            <Input
-                type="number"
-                step="0.01"
-                id="{identity}-payPerKwh"
-                name="payPerKwh"
-                placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? billingInfo.payPerKwh.toString()
-                    : ""}
-            />
-            <Field.Description>Enter pay per KWh</Field.Description>
-        </Field.Field>
-        <Field.Field>
-            <Field.Label for="{identity}-subReadingLatest"
-                >Sub Reading Latest</Field.Label
-            >
-            <Input
-                type="number"
-                id="{identity}-subReadingLatest"
-                name="subReadingLatest"
-                placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? (billingInfo.subReadingLatest?.toString() ?? "")
-                    : ""}
-            />
-            <Field.Description>Enter sub reading latest</Field.Description>
-        </Field.Field>
-        <Field.Field>
-            <Field.Label for="{identity}-subReadingOld"
-                >Sub Reading Old</Field.Label
-            >
-            <Input
-                type="number"
-                id="{identity}-subReadingOld"
-                name="subReadingOld"
-                placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? (billingInfo.subReadingOld?.toString() ?? "")
-                    : ""}
-            />
-            <Field.Description>Enter sub reading old</Field.Description>
-        </Field.Field>
-        <Field.Field>
-            <Field.Label for="{identity}-paymentId">Payment ID</Field.Label>
-            <Input
-                type="text"
-                id="{identity}-paymentId"
-                name="paymentId"
-                placeholder="Enter payment ID"
-                value={action === "update" && billingInfo
-                    ? (billingInfo.paymentId ?? "")
-                    : ""}
-            />
-            <Field.Description>Enter payment ID (optional)</Field.Description>
-        </Field.Field>
-        <Field.Field>
-            <Field.Label for="{identity}-subPaymentId"
-                >Sub Payment ID</Field.Label
-            >
-            <Input
-                type="text"
-                id="{identity}-subPaymentId"
-                name="subPaymentId"
-                placeholder="Enter sub payment ID"
-                value={action === "update" && billingInfo
-                    ? (billingInfo.subPaymentId ?? "")
-                    : ""}
-            />
-            <Field.Description
-                >Enter sub payment ID (optional)</Field.Description
-            >
         </Field.Field>
     </Field.Group>
 
