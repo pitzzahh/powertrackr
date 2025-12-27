@@ -20,10 +20,6 @@
         mainKWh: { label: "Main kWh", color: "var(--chart-2)" },
         subKWh: { label: "Sub kWh", color: "var(--chart-3)" },
     } satisfies Chart.ChartConfig;
-
-    const SUMMARY_CONFIG = {
-        value: { label: "kWh", color: "var(--chart-1)" },
-    } satisfies Chart.ChartConfig;
 </script>
 
 <script lang="ts">
@@ -96,19 +92,23 @@
         subKWh: filteredData().reduce((acc, curr) => acc + curr.subKWh, 0),
     });
 
-    const summaryData = $derived([
-        { kWh: "Total kWh", value: total.totalKWh },
-        { kWh: "Main kWh", value: total.mainKWh },
-        { kWh: "Sub kWh", value: total.subKWh },
-    ]);
-
     const activeSeries = $derived(
         activeChart === "all"
             ? [
                   {
-                      key: "value",
-                      label: "kWh",
-                      color: SUMMARY_CONFIG.value.color,
+                      key: "totalKWh",
+                      label: "Total kWh",
+                      color: CHART_CONFIG.totalKWh.color,
+                  },
+                  {
+                      key: "mainKWh",
+                      label: "Main kWh",
+                      color: CHART_CONFIG.mainKWh.color,
+                  },
+                  {
+                      key: "subKWh",
+                      label: "Sub kWh",
+                      color: CHART_CONFIG.subKWh.color,
                   },
               ]
             : [
@@ -181,116 +181,65 @@
             </Select.Root>
         </div>
         {#if filteredData().length > 0}
-            {#if activeChart === "all"}
-                <Chart.Container
-                    config={SUMMARY_CONFIG}
-                    class="aspect-auto h-62.5 w-full"
+            <Chart.Container
+                config={CHART_CONFIG}
+                class="aspect-auto h-62.5 w-full"
+            >
+                <BarChart
+                    data={filteredData()}
+                    x="date"
+                    xScale={scaleBand().padding(0.25)}
+                    series={activeSeries}
+                    seriesLayout="group"
+                    props={{
+                        bars: {
+                            stroke: "none",
+                            rounded: "none",
+                            initialY: 0,
+                            initialHeight: 0,
+                            motion: {
+                                y: {
+                                    type: "tween",
+                                    duration: 300,
+                                    easing: cubicInOut,
+                                },
+                                height: {
+                                    type: "tween",
+                                    duration: 300,
+                                    easing: cubicInOut,
+                                },
+                            },
+                        },
+                        highlight: { area: { fill: "none" } },
+                        xAxis: {
+                            format: (d: Date) => {
+                                return d.toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "2-digit",
+                                });
+                            },
+                        },
+                        yAxis: {
+                            format: (v) => v.toLocaleString(),
+                        },
+                        ...(activeChart === "all"
+                            ? {
+                                  seriesLayout: "stack",
+                              }
+                            : {}),
+                    }}
                 >
-                    <BarChart
-                        data={summaryData}
-                        x="kWh"
-                        xScale={scaleBand().padding(0.25)}
-                        series={[
-                            {
-                                key: "value",
-                                label: "kWh",
-                                color: SUMMARY_CONFIG.value.color,
-                            },
-                        ]}
-                        props={{
-                            bars: {
-                                stroke: "none",
-                                rounded: "none",
-                                initialY: 0,
-                                initialHeight: 0,
-                                motion: {
-                                    y: {
-                                        type: "tween",
-                                        duration: 300,
-                                        easing: cubicInOut,
-                                    },
-                                    height: {
-                                        type: "tween",
-                                        duration: 300,
-                                        easing: cubicInOut,
-                                    },
-                                },
-                            },
-                            highlight: { area: { fill: "none" } },
-                            xAxis: {
-                                format: (d) => d,
-                            },
-                            yAxis: {
-                                format: (v) => v.toLocaleString(),
-                            },
-                        }}
-                    >
-                        {#snippet belowMarks()}
-                            <Highlight area={{ class: "fill-muted" }} />
-                        {/snippet}
-                        {#snippet tooltip()}
-                            <Chart.Tooltip
-                                nameKey="kWh"
-                                labelFormatter={(v) => v}
-                            />
-                        {/snippet}
-                    </BarChart>
-                </Chart.Container>
-            {:else}
-                <Chart.Container
-                    config={CHART_CONFIG}
-                    class="aspect-auto h-62.5 w-full"
-                >
-                    <BarChart
-                        data={filteredData()}
-                        x="date"
-                        xScale={scaleBand().padding(0.25)}
-                        series={activeSeries}
-                        props={{
-                            bars: {
-                                stroke: "none",
-                                rounded: "none",
-                                initialY: 0,
-                                initialHeight: 0,
-                                motion: {
-                                    y: {
-                                        type: "tween",
-                                        duration: 300,
-                                        easing: cubicInOut,
-                                    },
-                                    height: {
-                                        type: "tween",
-                                        duration: 300,
-                                        easing: cubicInOut,
-                                    },
-                                },
-                            },
-                            highlight: { area: { fill: "none" } },
-                            xAxis: {
-                                format: (d: Date) => {
-                                    return d.toLocaleDateString("en-US", {
-                                        month: "short",
-                                        day: "2-digit",
-                                    });
-                                },
-                            },
-                            yAxis: {
-                                format: (v) => v.toLocaleString(),
-                            },
-                        }}
-                    >
-                        {#snippet belowMarks()}
-                            <Highlight area={{ class: "fill-muted" }} />
-                        {/snippet}
-                        {#snippet tooltip()}
-                            <Chart.Tooltip
-                                nameKey="kWh"
-                                labelFormatter={(v: Date) => formatDate(v)}
-                            />
-                        {/snippet}
-                    </BarChart>
-                </Chart.Container>
-            {/if}
+                    {#snippet belowMarks()}
+                        <Highlight area={{ class: "fill-muted" }} />
+                    {/snippet}
+                    {#snippet tooltip()}
+                        <Chart.Tooltip
+                            nameKey="kWh"
+                            labelFormatter={(v: Date) => formatDate(v)}
+                        />
+                    {/snippet}
+                </BarChart>
+            </Chart.Container>
         {:else}
             <p class="text-center text-muted-foreground py-8">
                 No data available for the selected time range.
