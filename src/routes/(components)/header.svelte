@@ -1,3 +1,18 @@
+<script lang="ts" module>
+    import type { Snippet } from "svelte";
+    import { Icon } from "@lucide/svelte";
+
+    type HeaderState = {
+        openMenu: boolean;
+        quickActions: {
+            icon: typeof Icon;
+            label: string;
+            content: () => ReturnType<Snippet<[]>>;
+            action: () => void;
+        }[];
+    };
+</script>
+
 <script lang="ts">
     import Logo from "$/components/logo.svelte";
     import { Button, buttonVariants } from "$/components/ui/button";
@@ -9,21 +24,25 @@
     import { toggleMode } from "mode-watcher";
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
-    let { open, quickActions } = $state({
-        open: false,
+    import BillingInfoForm from "$routes/history/(components)/billing-info-form.svelte";
+    import { ScrollArea } from "$/components/ui/scroll-area";
+
+    let { openMenu, quickActions }: HeaderState = $state({
+        openMenu: false,
         quickActions: [
             {
                 icon: PhilippinePeso,
-                content: "New Bill",
+                label: "New Bill",
+                content: newBill,
                 action: () => {
-                    // TODO: Implement new bill action, e.g., open a modal
+                    alert("Not yet implemented!");
                 },
             },
         ],
     });
 </script>
 
-<Sheet.Root bind:open>
+<Sheet.Root bind:open={openMenu}>
     <header
         class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/10 backdrop-blur-[120px]"
     >
@@ -44,7 +63,7 @@
 
             <div class="flex items-center justify-center gap-4">
                 <div class="items-center justify-center gap-2 hidden md:flex">
-                    {#each quickActions as quickAction, index (quickAction.content)}
+                    {#each quickActions as quickAction, index (quickAction.label)}
                         {@const Icon = quickAction.icon}
                         <span
                             in:scale={{
@@ -54,7 +73,31 @@
                                 start: 0.8,
                             }}
                         >
-                            <Button><Icon /> {quickAction.content}</Button>
+                            <Sheet.Root>
+                                <Sheet.Trigger class={buttonVariants()}>
+                                    <Icon class="size-4" />
+                                    <span>{quickAction.label}</span>
+                                    <span class="sr-only">
+                                        {quickAction.label}
+                                    </span>
+                                </Sheet.Trigger>
+                                <Sheet.Portal>
+                                    <Sheet.Content
+                                        class="min-w-[60%]"
+                                        side="left"
+                                    >
+                                        <Sheet.Header>
+                                            <Sheet.Title
+                                                >Add new Bill</Sheet.Title
+                                            >
+                                            <Sheet.Description
+                                                >Enter billing info</Sheet.Description
+                                            >
+                                        </Sheet.Header>
+                                        {@render quickAction.content(quickAction.action)}
+                                    </Sheet.Content>
+                                </Sheet.Portal>
+                            </Sheet.Root>
                         </span>
                     {/each}
                 </div>
@@ -74,10 +117,18 @@
 
     <Sheet.Content side="left" class="bg-muted p-4 flex flex-col h-full w-full">
         {@render logo({ className: "py-6 w-fit mx-auto" })}
-        <SidebarContent bind:open />
+        <SidebarContent bind:open={openMenu} />
     </Sheet.Content>
 </Sheet.Root>
 
 {#snippet logo({ className }: { className?: string } | undefined = {})}
     <Logo variant="ghost" class={cn("px-0", className)} />
+{/snippet}
+
+{#snippet newBill()}
+    <ScrollArea class="overflow-y-auto h-[calc(100vh-50px)] pr-2.5">
+        <div class="space-y-4 p-4">
+            <BillingInfoForm action="add" />
+        </div>
+    </ScrollArea>
 {/snippet}
