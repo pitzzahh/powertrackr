@@ -29,11 +29,14 @@
     import * as Select from "$/components/ui/select/index.js";
     import { BarChart, type ChartContextValue, Highlight } from "layerchart";
     import { cubicInOut } from "svelte/easing";
-    import { SvelteDate } from "svelte/reactivity";
     import { formatDate } from "$/utils/format";
     import { TIME_RANGE_OPTIONS } from ".";
 
     let { chartData }: BarChartInteractiveProps = $props();
+
+    const sortedData = $derived(
+        [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
+    );
 
     let { timeRange, context, activeChart }: ChartBarState = $state({
         timeRange: "all",
@@ -61,7 +64,7 @@
             }
         },
         filteredData: () => {
-            if (timeRange === "all") return chartData;
+            if (timeRange === "all") return sortedData;
             let daysToSubtract = 90;
             if (timeRange === "30d") {
                 daysToSubtract = 30;
@@ -73,21 +76,14 @@
                 daysToSubtract = 365;
             }
 
-            return chartData.filter((item: BarChartData) => {
-                const referenceDate = new SvelteDate(
-                    chartData.length > 0
-                        ? new SvelteDate(
-                              Math.max(
-                                  ...chartData.map((d: BarChartData) =>
-                                      d.date.getTime(),
-                                  ),
-                              ),
-                          )
-                        : new Date(),
-                );
-                referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
-                return item.date >= referenceDate;
-            });
+            const maxDate =
+                sortedData.length > 0
+                    ? sortedData[sortedData.length - 1].date
+                    : new Date();
+            const referenceDate = new Date(
+                maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000,
+            );
+            return sortedData.filter((item) => item.date >= referenceDate);
         },
     });
 
@@ -134,7 +130,7 @@
             {/each}
         </div>
     </Card.Header>
-    <Card.Content class="px-2 sm:p-6">
+    <Card.Content>
         <div class="flex justify-end mb-4">
             <Select.Root type="single" bind:value={timeRange}>
                 <Select.Trigger
@@ -172,12 +168,12 @@
                             motion: {
                                 y: {
                                     type: "tween",
-                                    duration: 500,
+                                    duration: 300,
                                     easing: cubicInOut,
                                 },
                                 height: {
                                     type: "tween",
-                                    duration: 500,
+                                    duration: 300,
                                     easing: cubicInOut,
                                 },
                             },
