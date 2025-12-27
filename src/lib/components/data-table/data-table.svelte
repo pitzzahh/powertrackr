@@ -135,7 +135,7 @@
     },
   ]}
 >
-  <ScrollArea class="max-h-[calc(100vh-15rem)] overflow-auto">
+  <ScrollArea class="max-h-[calc(100vh-15rem)] h-full">
     <Table.Root>
       <Table.Header class="sticky top-0 z-10 border-b">
         {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
