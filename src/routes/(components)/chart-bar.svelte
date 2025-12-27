@@ -1,0 +1,224 @@
+<script lang="ts" module>
+    export type BarChartData = {
+        date: Date;
+        totalKWh: number;
+        mainKWh: number;
+        subKWh: number;
+    };
+
+    export type BarChartInteractiveProps = {
+        chartData: BarChartData[];
+    };
+
+    type ChartBarState = {
+        timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
+        context: ChartContextValue;
+        activeChart: keyof typeof CHART_CONFIG;
+    };
+
+    const CHART_CONFIG = {
+        totalKWh: { label: "Total kWh", color: "var(--chart-1)" },
+        mainKWh: { label: "Main kWh", color: "var(--chart-2)" },
+        subKWh: { label: "Sub kWh", color: "var(--chart-3)" },
+    } satisfies Chart.ChartConfig;
+</script>
+
+<script lang="ts">
+    import * as Chart from "$/components/ui/chart/index.js";
+    import * as Card from "$/components/ui/card/index.js";
+    import * as Select from "$/components/ui/select/index.js";
+    import { scaleUtc } from "d3-scale";
+    import { BarChart, type ChartContextValue, Highlight } from "layerchart";
+    import { cubicInOut } from "svelte/easing";
+    import { SvelteDate } from "svelte/reactivity";
+    import { formatDate } from "$/utils/format";
+
+    let { chartData }: BarChartInteractiveProps = $props();
+
+    console.log({ chartData });
+
+    let { timeRange, context, activeChart }: ChartBarState = $state({
+        timeRange: "all",
+        context: null!,
+        activeChart: "totalKWh",
+    });
+
+    const { selectedLabel, filteredData } = $derived({
+        selectedLabel: () => {
+            switch (timeRange) {
+                case "7d":
+                    return "Last 7 days";
+                case "30d":
+                    return "Last 30 days";
+                case "90d":
+                    return "Last 3 months";
+                case "6m":
+                    return "Last 6 months";
+                case "1y":
+                    return "Last year";
+                case "all":
+                    return "Show All";
+                default:
+                    return "Last 3 months";
+            }
+        },
+        filteredData: () => {
+            if (timeRange === "all") return chartData;
+            let daysToSubtract = 90;
+            if (timeRange === "30d") {
+                daysToSubtract = 30;
+            } else if (timeRange === "7d") {
+                daysToSubtract = 7;
+            } else if (timeRange === "6m") {
+                daysToSubtract = 180;
+            } else if (timeRange === "1y") {
+                daysToSubtract = 365;
+            }
+
+            return chartData.filter((item: BarChartData) => {
+                const referenceDate = new SvelteDate(
+                    chartData.length > 0
+                        ? new SvelteDate(
+                              Math.max(
+                                  ...chartData.map((d: BarChartData) =>
+                                      d.date.getTime(),
+                                  ),
+                              ),
+                          )
+                        : new Date(),
+                );
+                referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
+                return item.date >= referenceDate;
+            });
+        },
+    });
+
+    const total = $derived({
+        totalKWh: filteredData().reduce((acc, curr) => acc + curr.totalKWh, 0),
+        mainKWh: filteredData().reduce((acc, curr) => acc + curr.mainKWh, 0),
+        subKWh: filteredData().reduce((acc, curr) => acc + curr.subKWh, 0),
+    });
+
+    const activeSeries = $derived([
+        {
+            key: activeChart,
+            label: CHART_CONFIG[activeChart].label,
+            color: CHART_CONFIG[activeChart].color,
+        },
+    ]);
+</script>
+
+<Card.Root>
+    <Card.Header
+        class="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row"
+    >
+        <div
+            class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6"
+        >
+            <Card.Title>Bar Chart - Interactive</Card.Title>
+            <Card.Description>Showing kWh usage over time</Card.Description>
+        </div>
+        <div class="flex">
+            {#each ["totalKWh", "mainKWh", "subKWh"] as key (key)}
+                {@const chart = key as keyof typeof CHART_CONFIG}
+                <button
+                    data-active={activeChart === chart}
+                    class="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
+                    onclick={() => (activeChart = chart)}
+                >
+                    <span class="text-muted-foreground text-xs">
+                        {CHART_CONFIG[chart].label}
+                    </span>
+                    <span class="text-lg leading-none font-bold sm:text-3xl">
+                        {total[key as keyof typeof total].toLocaleString()}
+                    </span>
+                </button>
+            {/each}
+        </div>
+    </Card.Header>
+    <Card.Content class="px-2 sm:p-6">
+        <div class="flex justify-end mb-4">
+            <Select.Root type="single" bind:value={timeRange}>
+                <Select.Trigger
+                    class="w-40 rounded-lg"
+                    aria-label="Select a time range"
+                >
+                    {selectedLabel()}
+                </Select.Trigger>
+                <Select.Content class="rounded-xl">
+                    <Select.Item value="7d" class="rounded-lg"
+                        >Last 7 days</Select.Item
+                    >
+                    <Select.Item value="30d" class="rounded-lg"
+                        >Last 30 days</Select.Item
+                    >
+                    <Select.Item value="90d" class="rounded-lg"
+                        >Last 3 months</Select.Item
+                    >
+                    <Select.Item value="6m" class="rounded-lg"
+                        >Last 6 months</Select.Item
+                    >
+                    <Select.Item value="1y" class="rounded-lg"
+                        >Last year</Select.Item
+                    >
+                    <Select.Item value="all" class="rounded-lg"
+                        >Show All</Select.Item
+                    >
+                </Select.Content>
+            </Select.Root>
+        </div>
+        <Chart.Container
+            config={CHART_CONFIG}
+            class="aspect-auto h-62.5 w-full"
+        >
+            <BarChart
+                bind:context
+                data={filteredData()}
+                x="date"
+                axis="x"
+                series={activeSeries}
+                props={{
+                    bars: {
+                        stroke: "none",
+                        rounded: "none",
+                        initialY: context?.height,
+                        initialHeight: 0,
+                        motion: {
+                            y: {
+                                type: "tween",
+                                duration: 500,
+                                easing: cubicInOut,
+                            },
+                            height: {
+                                type: "tween",
+                                duration: 500,
+                                easing: cubicInOut,
+                            },
+                        },
+                    },
+                    highlight: { area: { fill: "none" } },
+                    xAxis: {
+                        format: (d: Date) => {
+                            return d.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "2-digit",
+                            });
+                        },
+                        ticks: (scale) =>
+                            scaleUtc(scale.domain(), scale.range()).ticks(),
+                    },
+                }}
+            >
+                {#snippet belowMarks()}
+                    <Highlight area={{ class: "fill-muted" }} />
+                {/snippet}
+                {#snippet tooltip()}
+                    <Chart.Tooltip
+                        nameKey="kWh"
+                        labelFormatter={(v: Date) => formatDate(v)}
+                    />
+                {/snippet}
+            </BarChart>
+        </Chart.Container>
+    </Card.Content>
+</Card.Root>
