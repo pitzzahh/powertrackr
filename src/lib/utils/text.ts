@@ -16,7 +16,7 @@ export function maskEmailAddress(emailAddress?: string): string | undefined {
 
   if (!match) return emailAddress;
 
-  let [, username, domain, tld] = match;
+  const [, username, domain, tld] = match;
 
   // Mask each component of the username separately if it contains periods
   const maskedUsername = username.split(".").map(maskPart).join(".");
@@ -24,7 +24,7 @@ export function maskEmailAddress(emailAddress?: string): string | undefined {
   return `${maskedUsername}@${maskPart(domain)}.${tld}`;
 }
 
-export function sanitize(value: any): string {
+export function sanitize(value: unknown): string {
   if (value === null || value === undefined) return "";
   return String(value);
 }
@@ -34,7 +34,7 @@ export function convertToNormalText(
   include_separators: boolean = false,
   separators: string[] = [],
 ): string {
-  let textStr = String(text);
+  const textStr = String(text);
   let trimmedText = textStr.trim().replaceAll("_", " ").replaceAll("-", " ");
 
   if (include_separators && separators.length > 0) {
@@ -111,6 +111,7 @@ export const extractMainRoute = (path: string): string => {
 // TODO: Test generateNotFoundMessage function
 export function generateNotFoundMessage<T extends object>(query: T): string {
   const fields = Object.entries(query)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .filter(([_, value]) => value !== undefined && value !== null)
     .map(([key, value]) => {
       if (value instanceof Date) {
