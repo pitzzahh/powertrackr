@@ -102,9 +102,9 @@
     ]);
 </script>
 
-<Card.Root>
+<Card.Root class="pb-6 pt-0">
     <Card.Header
-        class="flex flex-col items-stretch space-y-0 border-b p-0 sm:flex-row"
+        class="flex flex-col items-stretch space-y-0 border-b [.border-b]:pb-0 p-0 sm:flex-row h-fit"
     >
         <div
             class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6"
@@ -112,7 +112,7 @@
             <Card.Title>Energy Usage</Card.Title>
             <Card.Description>Showing kWh usage over time</Card.Description>
         </div>
-        <div class="flex">
+        <div class="flex h-fit">
             {#each ["totalKWh", "mainKWh", "subKWh"] as key (key)}
                 {@const chart = key as keyof typeof CHART_CONFIG}
                 <button
