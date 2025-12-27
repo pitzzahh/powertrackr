@@ -10,3 +10,6 @@ export const user = sqliteTable(
   },
   (table) => [uniqueIndex("User_username_key").on(table.username)],
 );
+
+export type User = typeof user.$inferSelect;
+export type NewUser = typeof user.$inferInsert;

@@ -12,3 +12,7 @@ export const payment = sqliteTable(
   },
   (table) => [uniqueIndex("Payment_id_key").on(table.id)],
 );
+
+export type Payment = typeof payment.$inferSelect;
+
+export type NewPayment = typeof payment.$inferInsert;
