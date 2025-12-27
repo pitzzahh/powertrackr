@@ -28,6 +28,7 @@
     import { expoInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
     import { formatDate } from "$/utils/format";
+    import { TIME_RANGE_OPTIONS } from ".";
 
     let { chartData }: AreaChartInteractiveProps = $props();
 
@@ -102,24 +103,11 @@
                 {selectedLabel()}
             </Select.Trigger>
             <Select.Content class="rounded-xl">
-                <Select.Item value="7d" class="rounded-lg"
-                    >Last 7 days</Select.Item
-                >
-                <Select.Item value="30d" class="rounded-lg"
-                    >Last 30 days</Select.Item
-                >
-                <Select.Item value="90d" class="rounded-lg"
-                    >Last 3 months</Select.Item
-                >
-                <Select.Item value="6m" class="rounded-lg"
-                    >Last 6 months</Select.Item
-                >
-                <Select.Item value="1y" class="rounded-lg"
-                    >Last year</Select.Item
-                >
-                <Select.Item value="all" class="rounded-lg"
-                    >Show All</Select.Item
-                >
+                {#each TIME_RANGE_OPTIONS as option (option.value)}
+                    <Select.Item value={option.value} class="rounded-lg">
+                        {option.label}
+                    </Select.Item>
+                {/each}
             </Select.Content>
         </Select.Root>
     </Card.Header>
