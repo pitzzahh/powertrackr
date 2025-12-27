@@ -1,8 +1,10 @@
 import { query, form, command } from "$app/server";
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
+import { alias } from "drizzle-orm/sqlite-core";
 
 import { db } from "$lib/server/db/index";
 import { billingInfo } from "$lib/server/db/schema/billing-info";
+import { payment } from "$lib/server/db/schema/payment";
 
 import {
   createBillingInfoSchema,
@@ -19,6 +21,27 @@ export const getBillingInfos = query(
     return await db
       .select()
       .from(billingInfo)
+      .where(eq(billingInfo.userId, userId));
+  },
+);
+
+// Query to get extended billing infos with payments for a user
+export const getExtendedBillingInfos = query(
+  getBillingInfosSchema,
+  async ({ userId }) => {
+    const subPaymentAlias = alias(payment, "subPayment");
+    return await db
+      .select({
+        ...getTableColumns(billingInfo),
+        payment: getTableColumns(payment),
+        subPayment: getTableColumns(subPaymentAlias),
+      })
+      .from(billingInfo)
+      .leftJoin(payment, eq(billingInfo.paymentId, payment.id))
+      .leftJoin(
+        subPaymentAlias,
+        eq(billingInfo.subPaymentId, subPaymentAlias.id),
+      )
       .where(eq(billingInfo.userId, userId));
   },
 );
