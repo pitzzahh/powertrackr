@@ -28,7 +28,7 @@
     import * as Select from "$/components/ui/select/index.js";
     import { BarChart, Highlight } from "layerchart";
     import { scaleBand } from "d3-scale";
-    import { cubicInOut } from "svelte/easing";
+    import { quintInOut } from "svelte/easing";
     import { formatDate } from "$/utils/format";
     import { TIME_RANGE_OPTIONS } from ".";
 
@@ -195,7 +195,6 @@
                     x="date"
                     xScale={scaleBand().padding(0.25)}
                     series={activeSeries}
-                    seriesLayout="group"
                     props={{
                         bars: {
                             stroke: "none",
@@ -206,12 +205,12 @@
                                 y: {
                                     type: "tween",
                                     duration: 300,
-                                    easing: cubicInOut,
+                                    easing: quintInOut,
                                 },
                                 height: {
                                     type: "tween",
                                     duration: 300,
-                                    easing: cubicInOut,
+                                    easing: quintInOut,
                                 },
                             },
                         },
