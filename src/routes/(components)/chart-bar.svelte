@@ -13,6 +13,7 @@
     type ChartBarState = {
         timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
         activeChart: "totalKWh" | "mainKWh" | "subKWh" | "all";
+        context: ChartContextValue;
     };
 
     const CHART_CONFIG = {
@@ -26,7 +27,7 @@
     import * as Chart from "$/components/ui/chart/index.js";
     import * as Card from "$/components/ui/card/index.js";
     import * as Select from "$/components/ui/select/index.js";
-    import { BarChart, Highlight } from "layerchart";
+    import { BarChart, Highlight, type ChartContextValue } from "layerchart";
     import { scaleBand } from "d3-scale";
     import { quintInOut } from "svelte/easing";
     import { formatDate } from "$/utils/format";
@@ -38,9 +39,10 @@
         [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
     );
 
-    let { timeRange, activeChart }: ChartBarState = $state({
+    let { timeRange, activeChart, context }: ChartBarState = $state({
         timeRange: "all",
         activeChart: "all",
+        context: null!,
     });
 
     const { selectedLabel, filteredData } = $derived({
@@ -191,6 +193,7 @@
                 class="aspect-auto h-62.5 w-full"
             >
                 <BarChart
+                    bind:context
                     data={filteredData()}
                     x="date"
                     xScale={scaleBand().padding(0.25)}
@@ -199,7 +202,7 @@
                         bars: {
                             stroke: "none",
                             rounded: "none",
-                            initialY: 0,
+                            initialY: context?.height,
                             initialHeight: 0,
                             motion: {
                                 y: {
@@ -226,11 +229,6 @@
                         yAxis: {
                             format: (v) => v.toLocaleString(),
                         },
-                        ...(activeChart === "all"
-                            ? {
-                                  seriesLayout: "stack",
-                              }
-                            : {}),
                     }}
                 >
                     {#snippet belowMarks()}
