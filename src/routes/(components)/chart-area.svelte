@@ -22,8 +22,8 @@
     import * as Card from "$/components/ui/card/index.js";
     import * as Select from "$/components/ui/select/index.js";
     import { scaleUtc } from "d3-scale";
-    import { Area, AreaChart, ChartClipPath } from "layerchart";
-    import { curveStep } from "d3-shape";
+    import { Spline, LineChart, Points } from "layerchart";
+    import { curveLinear } from "d3-shape";
     import ChartContainer from "$/components/ui/chart/chart-container.svelte";
     import { cubicInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
@@ -126,7 +126,7 @@
             config={CHART_CONFIG}
             class="-ml-3 aspect-auto h-62.5 w-full"
         >
-            <AreaChart
+            <LineChart
                 legend
                 data={filteredData()}
                 x="date"
@@ -150,12 +150,6 @@
                 ]}
                 seriesLayout="stack"
                 props={{
-                    area: {
-                        curve: curveStep,
-                        "fill-opacity": 0.4,
-                        line: { class: "stroke-1" },
-                        motion: "tween",
-                    },
                     xAxis: {
                         ticks: timeRange === "7d" ? 7 : undefined,
                         format: (v) => {
@@ -165,85 +159,34 @@
                             });
                         },
                     },
-                    yAxis: { format: () => "" },
+                    yAxis: { format: () => "", label: "Amount ($)" },
                 }}
             >
-                {#snippet marks({ series, getAreaProps })}
-                    <defs>
-                        <linearGradient
-                            id="fillBalance"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                        >
-                            <stop
-                                offset="5%"
-                                stop-color="var(--color-value)"
-                                stop-opacity={1.0}
-                            />
-                            <stop
-                                offset="95%"
-                                stop-color="var(--color-value)"
-                                stop-opacity={0.1}
-                            />
-                        </linearGradient>
-                        <linearGradient
-                            id="fillPayment"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                        >
-                            <stop
-                                offset="5%"
-                                stop-color="var(--color-value)"
-                                stop-opacity={1.0}
-                            />
-                            <stop
-                                offset="95%"
-                                stop-color="var(--color-value)"
-                                stop-opacity={0.1}
-                            />
-                        </linearGradient>
-                        <linearGradient
-                            id="fillSubPayment"
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
-                        >
-                            <stop
-                                offset="5%"
-                                stop-color="var(--color-subValue)"
-                                stop-opacity={0.8}
-                            />
-                            <stop
-                                offset="95%"
-                                stop-color="var(--color-subValue)"
-                                stop-opacity={0.1}
-                            />
-                        </linearGradient>
-                    </defs>
-                    <ChartClipPath
-                        initialWidth={0}
-                        motion={{
-                            width: {
+                {#snippet marks({ series, getSplineProps, getPointsProps })}
+                    {#each series as s, i (s.key)}
+                        <Spline
+                            {...getSplineProps(s, i)}
+                            curve={curveLinear}
+                            stroke-width={2}
+                            motion={{
                                 type: "tween",
                                 duration: 1000,
                                 easing: cubicInOut,
-                            },
-                        }}
-                    >
-                        {#each series as s, i (s.key)}
-                            <Area
-                                {...getAreaProps(s, i)}
-                                fill={s.key === "value"
-                                    ? "url(#fillValue)"
-                                    : "url(#fillSubValue)"}
-                            />
-                        {/each}
-                    </ChartClipPath>
+                            }}
+                        />
+                        <Points
+                            {...getPointsProps(s, i)}
+                            r={3}
+                            fill="white"
+                            stroke={s.color}
+                            stroke-width={1}
+                            motion={{
+                                type: "tween",
+                                duration: 1000,
+                                easing: cubicInOut,
+                            }}
+                        />
+                    {/each}
                 {/snippet}
                 {#snippet tooltip()}
                     <Chart.Tooltip
@@ -252,7 +195,7 @@
                         indicator="line"
                     />
                 {/snippet}
-            </AreaChart>
+            </LineChart>
         </ChartContainer>
     </Card.Content>
 </Card.Root>
