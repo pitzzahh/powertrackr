@@ -32,10 +32,11 @@
     import { cubicInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
     import { formatDate } from "$/utils/format";
+    import { TIME_RANGE_OPTIONS } from ".";
 
     let { chartData }: BarChartInteractiveProps = $props();
 
-    console.log({ chartData });
+    $inspect(chartData);
 
     let { timeRange, context, activeChart }: ChartBarState = $state({
         timeRange: "all",
@@ -146,79 +147,72 @@
                     {selectedLabel()}
                 </Select.Trigger>
                 <Select.Content class="rounded-xl">
-                    <Select.Item value="7d" class="rounded-lg"
-                        >Last 7 days</Select.Item
-                    >
-                    <Select.Item value="30d" class="rounded-lg"
-                        >Last 30 days</Select.Item
-                    >
-                    <Select.Item value="90d" class="rounded-lg"
-                        >Last 3 months</Select.Item
-                    >
-                    <Select.Item value="6m" class="rounded-lg"
-                        >Last 6 months</Select.Item
-                    >
-                    <Select.Item value="1y" class="rounded-lg"
-                        >Last year</Select.Item
-                    >
-                    <Select.Item value="all" class="rounded-lg"
-                        >Show All</Select.Item
-                    >
+                    {#each TIME_RANGE_OPTIONS as option (option.value)}
+                        <Select.Item value={option.value} class="rounded-lg">
+                            {option.label}
+                        </Select.Item>
+                    {/each}
                 </Select.Content>
             </Select.Root>
         </div>
-        <Chart.Container
-            config={CHART_CONFIG}
-            class="aspect-auto h-62.5 w-full"
-        >
-            <BarChart
-                bind:context
-                data={filteredData()}
-                x="date"
-                axis="x"
-                series={activeSeries}
-                props={{
-                    bars: {
-                        stroke: "none",
-                        rounded: "none",
-                        initialY: context?.height,
-                        initialHeight: 0,
-                        motion: {
-                            y: {
-                                type: "tween",
-                                duration: 500,
-                                easing: cubicInOut,
-                            },
-                            height: {
-                                type: "tween",
-                                duration: 500,
-                                easing: cubicInOut,
-                            },
-                        },
-                    },
-                    highlight: { area: { fill: "none" } },
-                    xAxis: {
-                        format: (d: Date) => {
-                            return d.toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "2-digit",
-                            });
-                        },
-                        ticks: (scale) =>
-                            scaleUtc(scale.domain(), scale.range()).ticks(),
-                    },
-                }}
+        {#if filteredData().length > 0}
+            <Chart.Container
+                config={CHART_CONFIG}
+                class="aspect-auto h-62.5 w-full"
             >
-                {#snippet belowMarks()}
-                    <Highlight area={{ class: "fill-muted" }} />
-                {/snippet}
-                {#snippet tooltip()}
-                    <Chart.Tooltip
-                        nameKey="kWh"
-                        labelFormatter={(v: Date) => formatDate(v)}
-                    />
-                {/snippet}
-            </BarChart>
-        </Chart.Container>
+                <BarChart
+                    bind:context
+                    data={filteredData()}
+                    x="date"
+                    axis="x"
+                    series={activeSeries}
+                    props={{
+                        bars: {
+                            stroke: "none",
+                            rounded: "none",
+                            initialY: context?.height || 0,
+                            initialHeight: 0,
+                            motion: {
+                                y: {
+                                    type: "tween",
+                                    duration: 500,
+                                    easing: cubicInOut,
+                                },
+                                height: {
+                                    type: "tween",
+                                    duration: 500,
+                                    easing: cubicInOut,
+                                },
+                            },
+                        },
+                        highlight: { area: { fill: "none" } },
+                        xAxis: {
+                            format: (d: Date) => {
+                                return d.toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "2-digit",
+                                });
+                            },
+                            ticks: (scale) =>
+                                scaleUtc(scale.domain(), scale.range()).ticks(),
+                        },
+                    }}
+                >
+                    {#snippet belowMarks()}
+                        <Highlight area={{ class: "fill-muted" }} />
+                    {/snippet}
+                    {#snippet tooltip()}
+                        <Chart.Tooltip
+                            nameKey="kWh"
+                            labelFormatter={(v: Date) => formatDate(v)}
+                        />
+                    {/snippet}
+                </BarChart>
+            </Chart.Container>
+        {:else}
+            <p class="text-center text-muted-foreground py-8">
+                No data available for the selected time range.
+            </p>
+        {/if}
     </Card.Content>
 </Card.Root>
