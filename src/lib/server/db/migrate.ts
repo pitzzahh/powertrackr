@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/bun-sqlite";
-import { Database } from "bun:sqlite";
+import Database from "better-sqlite3";
 import { Client } from "pg";
 import { user, payment, billingInfo, key, session } from "./schema";
 
