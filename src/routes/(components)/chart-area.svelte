@@ -25,7 +25,7 @@
     import { Spline, LineChart, Points } from "layerchart";
     import { curveLinear } from "d3-shape";
     import ChartContainer from "$/components/ui/chart/chart-container.svelte";
-    import { cubicInOut } from "svelte/easing";
+    import { expoInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
     import { formatDate } from "$/utils/format";
 
@@ -171,7 +171,7 @@
                             motion={{
                                 type: "tween",
                                 duration: 1000,
-                                easing: cubicInOut,
+                                easing: expoInOut,
                             }}
                         />
                         <Points
@@ -183,7 +183,7 @@
                             motion={{
                                 type: "tween",
                                 duration: 1000,
-                                easing: cubicInOut,
+                                easing: expoInOut,
                             }}
                         />
                     {/each}
