@@ -191,7 +191,7 @@
                 bind:value={status}
                 disabled={app_state === "processing" || action === "add"}
             >
-                <Select.Trigger class="w-full">
+                <Select.Trigger id="{identity}-status" class="w-full">
                     {convertToNormalText(status) || "Select status"}
                 </Select.Trigger>
                 <Select.Content>
