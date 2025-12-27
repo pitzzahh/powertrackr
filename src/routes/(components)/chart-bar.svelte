@@ -117,7 +117,7 @@
                 {@const chart = key as keyof typeof CHART_CONFIG}
                 <button
                     data-active={activeChart === chart}
-                    class="data-[active=true]:bg-muted/50 data-[active=true]:border-2 data-[active=true]:border-primary relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
+                    class="data-[active=true]:bg-muted/50 data-[active=true]:border-2 data-[active=true]:border-primary/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
                     onclick={() => (activeChart = chart)}
                 >
                     <span
