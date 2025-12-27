@@ -14,16 +14,11 @@
   import { toast } from "svelte-sonner";
   import { Toast } from "$/components/toast";
   import type { BillingInfo } from "$/server/db/schema/billing-info";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
 
   let { data, data_table_props }: HistoryDataTableProps = $props();
 </script>
 
-<section
-  in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-  class="flex flex-col gap-2"
->
+<section class="flex flex-col gap-2">
   <DataTable {data} columns={historyTableColumns()} {...data_table_props}>
     {#snippet data_table_toolbar({ table })}
       <HistoryDataTableToolbar

@@ -44,6 +44,8 @@
   import type { Snippet } from "svelte";
   import type { Table as TableCore } from "@tanstack/table-core";
   import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
+  import { scale } from "svelte/transition";
+  import { cubicInOut } from "svelte/easing";
 
   let {
     columns,
@@ -121,13 +123,17 @@
   {@render floating_bar({ table })}
 {/if}
 
-{#if data_table_toolbar}
-  <div class="bg-muted rounded-t">
+<div
+  in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
+  class="bg-muted rounded-t"
+>
+  {#if data_table_toolbar}
     {@render data_table_toolbar({ table })}
-  </div>
-{/if}
+  {/if}
+</div>
 
 <div
+  in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}
   class={[
     "overflow-hidden bg-muted",
     {
@@ -176,4 +182,7 @@
     </Table.Root>
   </ScrollArea>
 </div>
-<DataTablePagination {table} {...pagination_props} />
+
+<div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
+  <DataTablePagination {table} {...pagination_props} />
+</div>
