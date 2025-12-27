@@ -45,6 +45,7 @@
     import type { Table as TableCore } from "@tanstack/table-core";
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
+    import { ScrollArea } from "../ui/scroll-area";
 
     let {
         columns,
@@ -135,59 +136,63 @@
         {@render data_table_toolbar({ table })}
     {/if}
 </div>
-
-<div
-    in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}
-    class={[
-        "overflow-auto bg-muted max-h-[calc(100vh-12.2rem)] h-full",
-        {
-            className,
-        },
-    ]}
->
-    <Table.Root>
-        <Table.Header class="sticky top-0 z-10 border-b">
-            {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-                <Table.Row>
-                    {#each headerGroup.headers as header (header.id)}
-                        <Table.Head>
-                            {#if !header.isPlaceholder}
-                                <FlexRender
-                                    content={header.column.columnDef.header}
-                                    context={header.getContext()}
-                                />
-                            {/if}
-                        </Table.Head>
+<div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+    <ScrollArea class="max-h-[calc(100vh-12.25rem)] h-full">
+        <div
+            class={[
+                "overflow-auto bg-muted h-full",
+                {
+                    className,
+                },
+            ]}
+        >
+            <Table.Root>
+                <Table.Header class="sticky top-0 z-10 border-b">
+                    {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+                        <Table.Row>
+                            {#each headerGroup.headers as header (header.id)}
+                                <Table.Head>
+                                    {#if !header.isPlaceholder}
+                                        <FlexRender
+                                            content={header.column.columnDef
+                                                .header}
+                                            context={header.getContext()}
+                                        />
+                                    {/if}
+                                </Table.Head>
+                            {/each}
+                        </Table.Row>
                     {/each}
-                </Table.Row>
-            {/each}
-        </Table.Header>
-        <Table.Body>
-            {#each table.getRowModel().rows as row (row.id)}
-                <Table.Row data-state={row.getIsSelected() && "selected"}>
-                    {#each row.getVisibleCells() as cell (cell.id)}
-                        <Table.Cell class="whitespace-nowrap">
-                            <FlexRender
-                                content={cell.column.columnDef.cell}
-                                context={cell.getContext()}
-                            />
-                        </Table.Cell>
+                </Table.Header>
+                <Table.Body>
+                    {#each table.getRowModel().rows as row (row.id)}
+                        <Table.Row
+                            data-state={row.getIsSelected() && "selected"}
+                        >
+                            {#each row.getVisibleCells() as cell (cell.id)}
+                                <Table.Cell class="whitespace-nowrap">
+                                    <FlexRender
+                                        content={cell.column.columnDef.cell}
+                                        context={cell.getContext()}
+                                    />
+                                </Table.Cell>
+                            {/each}
+                        </Table.Row>
+                    {:else}
+                        <Table.Row>
+                            <Table.Cell
+                                colspan={columns.length}
+                                class="h-24 text-center"
+                            >
+                                No results.
+                            </Table.Cell>
+                        </Table.Row>
                     {/each}
-                </Table.Row>
-            {:else}
-                <Table.Row>
-                    <Table.Cell
-                        colspan={columns.length}
-                        class="h-24 text-center"
-                    >
-                        No results.
-                    </Table.Cell>
-                </Table.Row>
-            {/each}
-        </Table.Body>
-    </Table.Root>
+                </Table.Body>
+            </Table.Root>
+        </div>
+    </ScrollArea>
 </div>
-
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
     <DataTablePagination {table} {...pagination_props} />
 </div>
