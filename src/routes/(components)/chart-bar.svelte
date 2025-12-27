@@ -12,8 +12,7 @@
 
     type ChartBarState = {
         timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
-        context: ChartContextValue;
-        activeChart: keyof typeof CHART_CONFIG;
+        activeChart: string;
     };
 
     const CHART_CONFIG = {
@@ -21,13 +20,18 @@
         mainKWh: { label: "Main kWh", color: "var(--chart-2)" },
         subKWh: { label: "Sub kWh", color: "var(--chart-3)" },
     } satisfies Chart.ChartConfig;
+
+    const SUMMARY_CONFIG = {
+        value: { label: "kWh", color: "var(--chart-1)" },
+    } satisfies Chart.ChartConfig;
 </script>
 
 <script lang="ts">
     import * as Chart from "$/components/ui/chart/index.js";
     import * as Card from "$/components/ui/card/index.js";
     import * as Select from "$/components/ui/select/index.js";
-    import { BarChart, type ChartContextValue, Highlight } from "layerchart";
+    import { BarChart, Highlight } from "layerchart";
+    import { scaleBand } from "d3-scale";
     import { cubicInOut } from "svelte/easing";
     import { formatDate } from "$/utils/format";
     import { TIME_RANGE_OPTIONS } from ".";
@@ -38,9 +42,8 @@
         [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
     );
 
-    let { timeRange, context, activeChart }: ChartBarState = $state({
+    let { timeRange, activeChart }: ChartBarState = $state({
         timeRange: "all",
-        context: null!,
         activeChart: "totalKWh",
     });
 
@@ -93,13 +96,33 @@
         subKWh: filteredData().reduce((acc, curr) => acc + curr.subKWh, 0),
     });
 
-    const activeSeries = $derived([
-        {
-            key: activeChart,
-            label: CHART_CONFIG[activeChart].label,
-            color: CHART_CONFIG[activeChart].color,
-        },
+    const summaryData = $derived([
+        { kWh: "Total kWh", value: total.totalKWh },
+        { kWh: "Main kWh", value: total.mainKWh },
+        { kWh: "Sub kWh", value: total.subKWh },
     ]);
+
+    const activeSeries = $derived(
+        activeChart === "all"
+            ? [
+                  {
+                      key: "value",
+                      label: "kWh",
+                      color: SUMMARY_CONFIG.value.color,
+                  },
+              ]
+            : [
+                  {
+                      key: activeChart,
+                      label: CHART_CONFIG[
+                          activeChart as keyof typeof CHART_CONFIG
+                      ].label,
+                      color: CHART_CONFIG[
+                          activeChart as keyof typeof CHART_CONFIG
+                      ].color,
+                  },
+              ],
+    );
 </script>
 
 <Card.Root class="pb-6 pt-0">
@@ -113,22 +136,27 @@
             <Card.Description>Showing kWh usage over time</Card.Description>
         </div>
         <div class="flex h-fit">
-            {#each ["totalKWh", "mainKWh", "subKWh"] as key (key)}
-                {@const chart = key as keyof typeof CHART_CONFIG}
+            {#each ["totalKWh", "mainKWh", "subKWh", "all"] as key (key)}
+                {@const chart = key}
                 <button
                     data-active={activeChart === chart}
                     class="data-[active=true]:bg-muted/50 data-[active=true]:border-2 data-[active=true]:border-primary/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
-                    onclick={() => (activeChart = chart)}
+                    onclick={() => (activeChart = key)}
                 >
                     <span
                         class="text-xs {activeChart === chart
                             ? 'text-primary'
                             : 'text-muted-foreground'}"
                     >
-                        {CHART_CONFIG[chart].label}
+                        {key === "all"
+                            ? "All"
+                            : CHART_CONFIG[key as keyof typeof CHART_CONFIG]
+                                  .label}
                     </span>
                     <span class="text-lg leading-none font-bold sm:text-3xl">
-                        {total[key as keyof typeof total].toLocaleString()}
+                        {key === "all"
+                            ? total.totalKWh.toLocaleString()
+                            : total[key as keyof typeof total].toLocaleString()}
                     </span>
                 </button>
             {/each}
@@ -153,59 +181,116 @@
             </Select.Root>
         </div>
         {#if filteredData().length > 0}
-            <Chart.Container
-                config={CHART_CONFIG}
-                class="aspect-auto h-62.5 w-full"
-            >
-                <BarChart
-                    bind:context
-                    data={filteredData()}
-                    x="date"
-                    series={activeSeries}
-                    props={{
-                        bars: {
-                            stroke: "none",
-                            rounded: "none",
-                            initialY: context?.height || 0,
-                            initialHeight: 0,
-                            motion: {
-                                y: {
-                                    type: "tween",
-                                    duration: 300,
-                                    easing: cubicInOut,
-                                },
-                                height: {
-                                    type: "tween",
-                                    duration: 300,
-                                    easing: cubicInOut,
-                                },
-                            },
-                        },
-                        highlight: { area: { fill: "none" } },
-                        xAxis: {
-                            format: (d: Date) => {
-                                return d.toLocaleDateString("en-US", {
-                                    month: "short",
-                                    day: "2-digit",
-                                });
-                            },
-                        },
-                        yAxis: {
-                            format: (v) => v.toLocaleString(),
-                        },
-                    }}
+            {#if activeChart === "all"}
+                <Chart.Container
+                    config={SUMMARY_CONFIG}
+                    class="aspect-auto h-62.5 w-full"
                 >
-                    {#snippet belowMarks()}
-                        <Highlight area={{ class: "fill-muted" }} />
-                    {/snippet}
-                    {#snippet tooltip()}
-                        <Chart.Tooltip
-                            nameKey="kWh"
-                            labelFormatter={(v: Date) => formatDate(v)}
-                        />
-                    {/snippet}
-                </BarChart>
-            </Chart.Container>
+                    <BarChart
+                        data={summaryData}
+                        x="kWh"
+                        xScale={scaleBand().padding(0.25)}
+                        series={[
+                            {
+                                key: "value",
+                                label: "kWh",
+                                color: SUMMARY_CONFIG.value.color,
+                            },
+                        ]}
+                        props={{
+                            bars: {
+                                stroke: "none",
+                                rounded: "none",
+                                initialY: 0,
+                                initialHeight: 0,
+                                motion: {
+                                    y: {
+                                        type: "tween",
+                                        duration: 300,
+                                        easing: cubicInOut,
+                                    },
+                                    height: {
+                                        type: "tween",
+                                        duration: 300,
+                                        easing: cubicInOut,
+                                    },
+                                },
+                            },
+                            highlight: { area: { fill: "none" } },
+                            xAxis: {
+                                format: (d) => d,
+                            },
+                            yAxis: {
+                                format: (v) => v.toLocaleString(),
+                            },
+                        }}
+                    >
+                        {#snippet belowMarks()}
+                            <Highlight area={{ class: "fill-muted" }} />
+                        {/snippet}
+                        {#snippet tooltip()}
+                            <Chart.Tooltip
+                                nameKey="kWh"
+                                labelFormatter={(v) => v}
+                            />
+                        {/snippet}
+                    </BarChart>
+                </Chart.Container>
+            {:else}
+                <Chart.Container
+                    config={CHART_CONFIG}
+                    class="aspect-auto h-62.5 w-full"
+                >
+                    <BarChart
+                        data={filteredData()}
+                        x="date"
+                        xScale={scaleBand().padding(0.25)}
+                        series={activeSeries}
+                        props={{
+                            bars: {
+                                stroke: "none",
+                                rounded: "none",
+                                initialY: 0,
+                                initialHeight: 0,
+                                motion: {
+                                    y: {
+                                        type: "tween",
+                                        duration: 300,
+                                        easing: cubicInOut,
+                                    },
+                                    height: {
+                                        type: "tween",
+                                        duration: 300,
+                                        easing: cubicInOut,
+                                    },
+                                },
+                            },
+                            highlight: { area: { fill: "none" } },
+                            xAxis: {
+                                format: (d: Date) => {
+                                    return d.toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "2-digit",
+                                    });
+                                },
+                            },
+                            yAxis: {
+                                format: (v) => v.toLocaleString(),
+                            },
+                        }}
+                    >
+                        {#snippet belowMarks()}
+                            <Highlight area={{ class: "fill-muted" }} />
+                        {/snippet}
+                        {#snippet tooltip()}
+                            <Chart.Tooltip
+                                nameKey="kWh"
+                                labelFormatter={(v: Date) => formatDate(v)}
+                            />
+                        {/snippet}
+                    </BarChart>
+                </Chart.Container>
+            {/if}
         {:else}
             <p class="text-center text-muted-foreground py-8">
                 No data available for the selected time range.
