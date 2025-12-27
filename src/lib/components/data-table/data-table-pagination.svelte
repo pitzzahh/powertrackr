@@ -40,7 +40,7 @@
         <div transition:scale={{ duration: 200, easing: cubicInOut }}>
           <Badge
             variant="secondary"
-            class="flex items-center gap-2 text-sm font-medium whitespace-nowrap"
+            class="flex items-center dark:bg-background gap-2 text-sm font-medium whitespace-nowrap"
           >
             <div class="size-2 bg-primary rounded-full animate-pulse"></div>
             {table.getFilteredSelectedRowModel().rows.length} of
@@ -49,10 +49,7 @@
         </div>
       {/if}
       {#if fetching}
-        <Badge
-          variant="secondary"
-          class="whitespace-nowrap animate-pulse border-primary/20 bg-primary/5 text-primary"
-        >
+        <Badge variant="secondary" class="whitespace-nowrap animate-pulse">
           <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
           Loading...
         </Badge>
