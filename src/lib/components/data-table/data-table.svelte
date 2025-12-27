@@ -122,7 +122,9 @@
 {/if}
 
 {#if data_table_toolbar}
-  {@render data_table_toolbar({ table })}
+  <div class="bg-muted rounded-t">
+    {@render data_table_toolbar({ table })}
+  </div>
 {/if}
 
 <div
