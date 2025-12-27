@@ -27,53 +27,54 @@
 
     let timeRange = $state("all");
 
-    const selectedLabel = $derived.by(() => {
-        switch (timeRange) {
-            case "7d":
-                return "Last 7 days";
-            case "30d":
-                return "Last 30 days";
-            case "90d":
-                return "Last 3 months";
-            case "6m":
-                return "Last 6 months";
-            case "1y":
-                return "Last year";
-            case "all":
-                return "Show All";
-            default:
-                return "Last 3 months";
-        }
-    });
+    const { selectedLabel, filteredData } = $derived({
+        selectedLabel: () => {
+            switch (timeRange) {
+                case "7d":
+                    return "Last 7 days";
+                case "30d":
+                    return "Last 30 days";
+                case "90d":
+                    return "Last 3 months";
+                case "6m":
+                    return "Last 6 months";
+                case "1y":
+                    return "Last year";
+                case "all":
+                    return "Show All";
+                default:
+                    return "Last 3 months";
+            }
+        },
+        filteredData: () => {
+            if (timeRange === "all") return chartData;
+            let daysToSubtract = 90;
+            if (timeRange === "30d") {
+                daysToSubtract = 30;
+            } else if (timeRange === "7d") {
+                daysToSubtract = 7;
+            } else if (timeRange === "6m") {
+                daysToSubtract = 180;
+            } else if (timeRange === "1y") {
+                daysToSubtract = 365;
+            }
 
-    const maxDate = $derived(
-        chartData.length > 0
-            ? new SvelteDate(
-                  Math.max(
-                      ...chartData.map((d: ChartData) => d.date.getTime()),
-                  ),
-              )
-            : new Date(),
-    );
-
-    const filteredData = $derived.by(() => {
-        if (timeRange === "all") return chartData;
-        let daysToSubtract = 90;
-        if (timeRange === "30d") {
-            daysToSubtract = 30;
-        } else if (timeRange === "7d") {
-            daysToSubtract = 7;
-        } else if (timeRange === "6m") {
-            daysToSubtract = 180;
-        } else if (timeRange === "1y") {
-            daysToSubtract = 365;
-        }
-
-        return chartData.filter((item: ChartData) => {
-            const referenceDate = new SvelteDate(maxDate);
-            referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
-            return item.date >= referenceDate;
-        });
+            return chartData.filter((item: ChartData) => {
+                const referenceDate = new SvelteDate(
+                    chartData.length > 0
+                        ? new SvelteDate(
+                              Math.max(
+                                  ...chartData.map((d: ChartData) =>
+                                      d.date.getTime(),
+                                  ),
+                              ),
+                          )
+                        : new Date(),
+                );
+                referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
+                return item.date >= referenceDate;
+            });
+        },
     });
 
     const chartConfig = {
@@ -96,7 +97,7 @@
                 class="w-40 rounded-lg sm:ms-auto"
                 aria-label="Select a value"
             >
-                {selectedLabel}
+                {selectedLabel()}
             </Select.Trigger>
             <Select.Content class="rounded-xl">
                 <Select.Item value="7d" class="rounded-lg"
@@ -127,7 +128,7 @@
         >
             <AreaChart
                 legend
-                data={filteredData}
+                data={filteredData()}
                 x="date"
                 xScale={scaleUtc()}
                 series={[
