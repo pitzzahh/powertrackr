@@ -161,7 +161,6 @@
                     bind:context
                     data={filteredData()}
                     x="date"
-                    axis="x"
                     series={activeSeries}
                     props={{
                         bars: {
@@ -190,6 +189,9 @@
                                     day: "2-digit",
                                 });
                             },
+                        },
+                        yAxis: {
+                            format: (v) => v.toLocaleString(),
                         },
                     }}
                 >
