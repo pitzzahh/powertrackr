@@ -27,7 +27,7 @@
     import ChartContainer from "$/components/ui/chart/chart-container.svelte";
     import { expoInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
-    import { formatDate } from "$/utils/format";
+    import { formatDate, formatNumber } from "$/utils/format";
     import { TIME_RANGE_OPTIONS } from ".";
 
     let { chartData }: AreaChartInteractiveProps = $props();
@@ -111,7 +111,7 @@
             </Select.Content>
         </Select.Root>
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="ml-10">
         <ChartContainer
             config={CHART_CONFIG}
             class="-ml-3 aspect-auto h-62.5 w-full"
@@ -134,8 +134,7 @@
                         },
                     },
                     yAxis: {
-                        format: () => "",
-                        label: `Amount (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(0).charAt(0)})`,
+                        format: (v) => formatNumber(v),
                     },
                 }}
             >
