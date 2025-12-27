@@ -7,25 +7,46 @@
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
     import { getExtendedBillingInfos } from "$lib/remotes/billing-info.remote";
+    import ChartBar, {
+        type BarChartData,
+    } from "$routes/(components)/chart-bar.svelte";
+    import { hydratable } from "svelte";
+
+    const { extendedBillingInfos } = {
+        extendedBillingInfos: await hydratable("chart_data", () =>
+            getExtendedBillingInfos({
+                userId: "5wqtwauhbzkfcqo",
+            }),
+        ),
+    };
 </script>
 
 {@render Metrics()}
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
     <ChartArea
-        chartData={(
-            await getExtendedBillingInfos({ userId: "5wqtwauhbzkfcqo" })
-        ).map(
+        chartData={extendedBillingInfos.map(
             (item) =>
                 ({
                     date: new Date(item.date),
                     balance: item.balance,
                     payment: item.payment?.amount || 0,
                     subPayment: item.subPayment?.amount || 0,
+                }) as ChartData,
+        )}
+    />
+</section>
+
+<section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
+    <ChartBar
+        chartData={extendedBillingInfos.map(
+            (item) =>
+                ({
+                    date: new Date(item.date),
                     totalKWh: item.totalKwh,
                     mainKWh: item.totalKwh - (item.subKwh || 0),
                     subKWh: item.subKwh || 0,
-                }) as ChartData,
+                }) as BarChartData,
         )}
     />
 </section>
