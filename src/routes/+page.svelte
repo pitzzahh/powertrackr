@@ -1,7 +1,9 @@
 <script lang="ts">
     import { Wallet } from "@lucide/svelte";
     import { formatNumber } from "$/utils/format";
-    import ChartArea from "$routes/(components)/chart-area.svelte";
+    import ChartArea, {
+        type ChartData,
+    } from "$routes/(components)/chart-area.svelte";
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
     import { getExtendedBillingInfos } from "$lib/remotes/billing-info.remote";
@@ -13,14 +15,15 @@
     <ChartArea
         chartData={(
             await getExtendedBillingInfos({ userId: "5wqtwauhbzkfcqo" })
-        ).map((item) => ({
-            date: new Date(item.date),
-            value: item.totalKwh,
-            Kwh: item.totalKwh,
-            subKwh: item.subKwh || 0,
-            subValue:
-                (item.payment?.amount || 0) + (item.subPayment?.amount || 0),
-        }))}
+        ).map(
+            (item) =>
+                ({
+                    date: new Date(item.date),
+                    balance: item.balance,
+                    payment: item.payment?.amount || 0,
+                    subPayment: item.subPayment?.amount || 0,
+                }) as ChartData,
+        )}
     />
 </section>
 

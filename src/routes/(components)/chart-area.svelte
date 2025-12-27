@@ -1,10 +1,9 @@
 <script lang="ts" module>
     export type ChartData = {
         date: Date;
-        value: number;
-        Kwh: number;
-        subKwh: number;
-        subValue: number;
+        balance: number;
+        payment: number;
+        subPayment: number;
     };
 
     export type AreaChartInteractiveProps = {
@@ -77,8 +76,9 @@
     });
 
     const chartConfig = {
-        value: { label: "Value", color: "var(--chart-1)" },
-        subValue: { label: "Sub Value", color: "var(--chart-2)" },
+        balance: { label: "Balance", color: "var(--chart-1)" },
+        payment: { label: "Payment", color: "var(--chart-2)" },
+        subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
     } satisfies Chart.ChartConfig;
 </script>
 
@@ -131,14 +131,19 @@
                 xScale={scaleUtc()}
                 series={[
                     {
-                        key: "value",
-                        label: "Value",
-                        color: chartConfig.value.color,
+                        key: "balance",
+                        label: "Balance",
+                        color: chartConfig.balance.color,
                     },
                     {
-                        key: "subValue",
-                        label: "Sub Value",
-                        color: chartConfig.subValue.color,
+                        key: "payment",
+                        label: "Payment",
+                        color: chartConfig.payment.color,
+                    },
+                    {
+                        key: "subPayment",
+                        label: "Sub Payment",
+                        color: chartConfig.subPayment.color,
                     },
                 ]}
                 seriesLayout="stack"
@@ -164,7 +169,7 @@
                 {#snippet marks({ series, getAreaProps })}
                     <defs>
                         <linearGradient
-                            id="fillValue"
+                            id="fillBalance"
                             x1="0"
                             y1="0"
                             x2="0"
@@ -182,7 +187,25 @@
                             />
                         </linearGradient>
                         <linearGradient
-                            id="fillSubValue"
+                            id="fillPayment"
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                        >
+                            <stop
+                                offset="5%"
+                                stop-color="var(--color-value)"
+                                stop-opacity={1.0}
+                            />
+                            <stop
+                                offset="95%"
+                                stop-color="var(--color-value)"
+                                stop-opacity={0.1}
+                            />
+                        </linearGradient>
+                        <linearGradient
+                            id="fillSubPayment"
                             x1="0"
                             y1="0"
                             x2="0"
