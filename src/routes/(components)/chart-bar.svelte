@@ -109,7 +109,7 @@
         <div
             class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6"
         >
-            <Card.Title>Bar Chart - Interactive</Card.Title>
+            <Card.Title>Energy Usage</Card.Title>
             <Card.Description>Showing kWh usage over time</Card.Description>
         </div>
         <div class="flex">

@@ -92,7 +92,7 @@
         class="flex md:items-center gap-2 space-y-0 border-b flex-col md:flex-row"
     >
         <div class="grid flex-1 gap-1">
-            <Card.Title>Area Chart - Interactive</Card.Title>
+            <Card.Title>Billing Trends</Card.Title>
             <Card.Description>Showing billing info over time</Card.Description>
         </div>
         <Select.Root type="single" bind:value={timeRange}>
