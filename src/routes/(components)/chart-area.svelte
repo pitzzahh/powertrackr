@@ -24,7 +24,7 @@
 
     let { chartData }: AreaChartInteractiveProps = $props();
 
-    let timeRange = $state("90d");
+    let timeRange = $state("all");
 
     const selectedLabel = $derived.by(() => {
         switch (timeRange) {
@@ -245,6 +245,7 @@
                 {/snippet}
                 {#snippet tooltip()}
                     <Chart.Tooltip
+                        formatAsCurrency={true}
                         labelFormatter={(v: Date) => {
                             return v.toLocaleDateString("en-US", {
                                 month: "long",
