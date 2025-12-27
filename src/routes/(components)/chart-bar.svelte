@@ -27,7 +27,6 @@
     import * as Chart from "$/components/ui/chart/index.js";
     import * as Card from "$/components/ui/card/index.js";
     import * as Select from "$/components/ui/select/index.js";
-    import { scaleUtc } from "d3-scale";
     import { BarChart, type ChartContextValue, Highlight } from "layerchart";
     import { cubicInOut } from "svelte/easing";
     import { SvelteDate } from "svelte/reactivity";
@@ -35,8 +34,6 @@
     import { TIME_RANGE_OPTIONS } from ".";
 
     let { chartData }: BarChartInteractiveProps = $props();
-
-    $inspect(chartData);
 
     let { timeRange, context, activeChart }: ChartBarState = $state({
         timeRange: "all",
@@ -193,8 +190,6 @@
                                     day: "2-digit",
                                 });
                             },
-                            ticks: (scale) =>
-                                scaleUtc(scale.domain(), scale.range()).ticks(),
                         },
                     }}
                 >
