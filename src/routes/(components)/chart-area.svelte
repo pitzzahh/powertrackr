@@ -4,9 +4,6 @@
         balance: number;
         payment: number;
         subPayment: number;
-        totalKWh: number;
-        mainKWh: number;
-        subKWh: number;
     };
 
     export type AreaChartInteractiveProps = {
@@ -17,9 +14,6 @@
         balance: { label: "Balance", color: "var(--chart-1)" },
         payment: { label: "Payment", color: "var(--chart-2)" },
         subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
-        totalKWh: { label: "Total kWh", color: "var(--chart-4)" },
-        mainKWh: { label: "Main kWh", color: "var(--chart-5)" },
-        subKWh: { label: "Sub kWh", color: "var(--chart-6)" },
     } satisfies Chart.ChartConfig;
 </script>
 
