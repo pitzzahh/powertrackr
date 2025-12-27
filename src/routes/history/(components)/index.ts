@@ -109,7 +109,7 @@ export function historyTableColumns() {
       },
     },
     {
-      id: "balance",
+      accessorKey: "balance",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
           column,
@@ -132,7 +132,7 @@ export function historyTableColumns() {
       },
     },
     {
-      id: "payment",
+      accessorKey: "payment",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
           column,
@@ -150,7 +150,7 @@ export function historyTableColumns() {
       },
     },
     {
-      id: "subPayment",
+      accessorKey: "subPayment",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
           column,
