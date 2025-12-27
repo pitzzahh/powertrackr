@@ -97,7 +97,7 @@
         </div>
         <Select.Root type="single" bind:value={timeRange}>
             <Select.Trigger
-                class="w-40 rounded-lg sm:ms-auto"
+                class="w-40 rounded-lg ms-auto"
                 aria-label="Select a value"
             >
                 {selectedLabel()}
