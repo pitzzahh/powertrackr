@@ -10,6 +10,7 @@ import { DateFormat, formatDate, formatNumber } from "$/utils/format";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import PaymentCell from "./payment-cell.svelte";
+import { HistoryDataTableRowActions } from ".";
 
 export function historyTableColumns() {
   return [
@@ -189,25 +190,24 @@ export function historyTableColumns() {
         return value.toLowerCase().includes(row.original.status.toLowerCase());
       },
     },
-    // {
-    //   id: "actions",
-    //   header: ({ column }) =>
-    //     renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
-    //       column,
-    //       title: "ACTIONS",
-    //       class: "font-semibold text-center",
-    //     }),
-    //   cell: ({ row }) => {
-    //     return renderComponent(BillingInfoDataTableRowActions, {
-    //       sync_manager_options,
-    //       row,
-    //       BillingInfo_form,
-    //     });
-    //   },
-    // },
+    {
+      id: "actions",
+      header: ({ column }) =>
+        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+          column,
+          title: "ACTIONS",
+          class: "font-semibold text-center",
+        }),
+      cell: ({ row }) => {
+        return renderComponent(HistoryDataTableRowActions, {
+          row,
+        });
+      },
+    },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ] as ColumnDef<BillingInfo, any>[];
 }
 
 export { default as HistoryDataTableToolbar } from "./history-data-table-toolbar.svelte";
 export { default as HistoryDataTable } from "./history-data-table.svelte";
+export { default as HistoryDataTableRowActions } from "./history-data-table-row-actions.svelte";
