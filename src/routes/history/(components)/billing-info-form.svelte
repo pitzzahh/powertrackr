@@ -45,17 +45,7 @@
 
     const identity = $props.id();
 
-    let {
-        open,
-        todayDate,
-        dateValue,
-        status,
-    }: {
-        open: boolean;
-        todayDate: CalendarDate;
-        dateValue: CalendarDate | undefined;
-        status: string;
-    } = $derived({
+    let { open, todayDate, dateValue, status, currentAction } = $derived({
         open: false,
         todayDate: today(getLocalTimeZone()),
         dateValue: (() => {
@@ -69,11 +59,8 @@
         })(),
         status:
             action === "update" && billingInfo ? billingInfo.status : "pending",
+        currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
     });
-
-    let currentAction = $derived(
-        action === "add" ? createBillingInfo : updateBillingInfo,
-    );
 </script>
 
 <form {...currentAction} onsubmit={callback} class="space-y-4">
