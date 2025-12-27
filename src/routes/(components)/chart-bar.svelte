@@ -135,7 +135,7 @@
             <Card.Title>Energy Usage</Card.Title>
             <Card.Description>Showing kWh usage over time</Card.Description>
         </div>
-        <div class="flex h-fit">
+        <div class="grid sm:grid-cols-2 md:grid-cols-4 h-fit">
             {#each ["totalKWh", "mainKWh", "subKWh", "all"] as key (key)}
                 {@const chart = key}
                 <button
@@ -155,7 +155,11 @@
                     </span>
                     <span class="text-lg leading-none font-bold sm:text-3xl">
                         {key === "all"
-                            ? total.totalKWh.toLocaleString()
+                            ? (
+                                  total.totalKWh +
+                                  total.mainKWh +
+                                  total.subKWh
+                              ).toLocaleString()
                             : total[key as keyof typeof total].toLocaleString()}
                     </span>
                 </button>
