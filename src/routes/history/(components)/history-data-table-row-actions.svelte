@@ -35,6 +35,7 @@
     import { ScrollArea } from "$/components/ui/scroll-area";
     import BillingInfoForm from "./billing-info-form.svelte";
     import type { BillingInfo } from "$/types/billing-info";
+    import { billingInfotoDto } from "$/utils/mapper/billing-info";
 
     let { row }: BillingInfoDataTableRowActionsProps = $props();
 
@@ -378,7 +379,7 @@
                 <div class="space-y-4 p-4">
                     <BillingInfoForm
                         action="update"
-                        billingInfo={row.original}
+                        billingInfo={billingInfotoDto(row.original)}
                     />
                 </div>
             </ScrollArea>
