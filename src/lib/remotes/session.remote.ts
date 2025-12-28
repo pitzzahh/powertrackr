@@ -12,13 +12,12 @@ import {
 
 // Query to get all sessions for a user
 export const getSessions = query(getSessionsSchema, async ({ userId }) => {
-  return await db.select().from(session).where(eq(session.userId, userId));
+  return await db.query.session.findMany({ where: { userId } });
 });
 
 // Query to get a single session by id
 export const getSession = query(getSessionSchema, async (id) => {
-  const result = await db.select().from(session).where(eq(session.id, id));
-  return result[0] || null;
+  return await db.query.session.findFirst({ where: { id } });
 });
 
 // Form to create a new session

@@ -12,13 +12,12 @@ import {
 
 // Query to get all payments
 export const getPayments = query(z.object({}), async () => {
-  return await db.select().from(payment);
+  return await db.query.payment.findMany();
 });
 
 // Query to get a single payment by id
 export const getPayment = query(getPaymentSchema, async (id) => {
-  const result = await db.select().from(payment).where(eq(payment.id, id));
-  return result[0] || null;
+  return await db.query.payment.findFirst({ where: { id } });
 });
 
 // Form to create a new payment

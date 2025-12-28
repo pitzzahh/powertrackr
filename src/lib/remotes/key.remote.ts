@@ -12,13 +12,12 @@ import {
 
 // Query to get all keys for a user
 export const getKeys = query(getKeysSchema, async ({ userId }) => {
-  return await db.select().from(key).where(eq(key.userId, userId));
+  return await db.query.key.findMany({ where: { userId } });
 });
 
 // Query to get a single key by id
 export const getKey = query(getKeySchema, async (id) => {
-  const result = await db.select().from(key).where(eq(key.id, id));
-  return result[0] || null;
+  return await db.query.key.findFirst({ where: { id } });
 });
 
 // Form to create a new key

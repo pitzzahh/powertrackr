@@ -1,6 +1,4 @@
 import { query, form, command, getRequestEvent } from "$app/server";
-import { eq, getTableColumns, desc } from "drizzle-orm";
-import { alias } from "drizzle-orm/sqlite-core";
 
 import { db } from "$lib/server/db/index";
 import { billingInfo } from "$lib/server/db/schema/billing-info";
@@ -15,15 +13,13 @@ import {
   deleteBillingInfoSchema,
 } from "$lib/schemas/billing-info";
 import type { NewBillingInfo } from "$/types/billing-info";
+import { eq } from "drizzle-orm";
 
 // Query to get all billing infos for a user
 export const getBillingInfos = query(
   getBillingInfosSchema,
   async ({ userId }) => {
-    return await db
-      .select()
-      .from(billingInfo)
-      .where(eq(billingInfo.userId, userId));
+    return await db.query.billingInfo.findMany({ where: { userId } });
   },
 );
 
@@ -31,30 +27,19 @@ export const getBillingInfos = query(
 export const getExtendedBillingInfos = query(
   getBillingInfosSchema,
   async ({ userId }) => {
-    const subPaymentAlias = alias(payment, "subPayment");
-    return await db
-      .select({
-        ...getTableColumns(billingInfo),
-        payment: getTableColumns(payment),
-        subPayment: getTableColumns(subPaymentAlias),
-      })
-      .from(billingInfo)
-      .leftJoin(payment, eq(billingInfo.paymentId, payment.id))
-      .leftJoin(
-        subPaymentAlias,
-        eq(billingInfo.subPaymentId, subPaymentAlias.id),
-      )
-      .where(eq(billingInfo.userId, userId));
+    return await db.query.billingInfo.findMany({
+      where: { userId },
+      with: {
+        payment: true,
+        subPayment: true,
+      },
+    });
   },
 );
 
 // Query to get a single billing info by id
 export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
-  const result = await db
-    .select()
-    .from(billingInfo)
-    .where(eq(billingInfo.id, id));
-  return result[0] || null;
+  return await db.query.billingInfo.findFirst({ where: { id } });
 });
 
 // Form to create a new billing info
@@ -74,14 +59,12 @@ export const createBillingInfo = form(billFormSchema, async (data) => {
   const payPerKwh = calculatePayPerKwh(balance, totalKwh);
 
   // Get the latest billing info for the user
-  const latest = await db
-    .select()
-    .from(billingInfo)
-    .where(eq(billingInfo.userId, userId))
-    .orderBy(desc(billingInfo.date))
-    .limit(1);
+  const latest = await db.query.billingInfo.findFirst({
+    where: { userId },
+    orderBy: { date: "desc" },
+  });
 
-  const subReadingOld = latest[0]?.subReadingLatest ?? null;
+  const subReadingOld = latest?.subReadingLatest ?? null;
   const subKwh =
     subReading && subReadingOld ? subReading - subReadingOld : null;
   const subPaymentAmount = subKwh ? subKwh * payPerKwh : null;

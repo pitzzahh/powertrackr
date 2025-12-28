@@ -12,13 +12,12 @@ import {
 
 // Query to get all users
 export const getUsers = query(z.object({}), async () => {
-  return await db.select().from(user);
+  return await db.query.user.findMany();
 });
 
 // Query to get a single user by id
 export const getUser = query(getUserSchema, async (id) => {
-  const result = await db.select().from(user).where(eq(user.id, id));
-  return result[0] || null;
+  return await db.query.user.findFirst({ where: { id } });
 });
 
 // Form to create a new user
