@@ -24,7 +24,7 @@
         <main class="flex justify-between gap-4 p-4 pt-16 min-h-full">
             <aside
                 in:scale={{ duration: 150 }}
-                class="sticky rounded-md top-16 h-[calc(100vh-5rem)] md:w-48 lg:w-54 bg-muted hidden lg:flex flex-col p-4 overflow-y-auto"
+                class="sticky rounded-md top-17 h-[calc(100vh-5.5rem)] md:w-48 lg:w-54 bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto"
             >
                 <SidebarContent open={false} />
             </aside>
