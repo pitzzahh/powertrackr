@@ -174,7 +174,9 @@ export function omit<T extends object, K extends keyof T>(
   // Handle symbol keys
   const symbolKeys = Object.getOwnPropertySymbols(obj);
   for (const symKey of symbolKeys) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!keysToOmit.includes(symKey as any)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (newObj as any)[symKey] = (obj as any)[symKey];
     }
   }
