@@ -63,7 +63,10 @@
     });
 </script>
 
-<form {...currentAction} onsubmit={callback} class="space-y-4">
+<form
+    {...currentAction.enhance(({ submit }) => submit().finally(callback))}
+    class="space-y-4"
+>
     {#if action === "update" && billingInfo}
         <input type="hidden" name="id" value={billingInfo.id} />
     {/if}
@@ -202,5 +205,7 @@
         </Field.Field>
     </Field.Group>
 
-    <Button class="w-full" type="submit">Submit</Button>
+    <Button class="w-full" type="submit" aria-busy={!!currentAction.pending}>
+        Submit
+    </Button>
 </form>
