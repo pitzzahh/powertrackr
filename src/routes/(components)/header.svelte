@@ -44,7 +44,7 @@
 
 <Sheet.Root bind:open={openMenu}>
     <header
-        class="absolute top-0 left-0 right-0 z-50 flex items-center justify-between p-4 bg-background/10 backdrop-blur-[120px]"
+        class="absolute top-0 left-0 right-0 z-5 flex items-center justify-between p-4 backdrop-blur-xs"
     >
         <div class="flex items-center gap-4 w-full md:justify-between">
             <Sheet.Trigger
