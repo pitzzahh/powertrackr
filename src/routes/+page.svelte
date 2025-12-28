@@ -1,15 +1,15 @@
 <script lang="ts">
     import { Wallet } from "@lucide/svelte";
     import { formatNumber } from "$/utils/format";
-    import ChartArea, {
-        type ChartData,
-    } from "$routes/(components)/chart-area.svelte";
+    import {
+        ChartArea,
+        ChartBar,
+        toAreaChartData,
+        toBarChartData,
+    } from "$routes/(components)";
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
     import { getExtendedBillingInfos } from "$lib/remotes/billing-info.remote";
-    import ChartBar, {
-        type BarChartData,
-    } from "$routes/(components)/chart-bar.svelte";
     import { hydratable } from "svelte";
 
     const { extendedBillingInfos } = {
@@ -24,31 +24,11 @@
 {@render Metrics()}
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-    <ChartArea
-        chartData={extendedBillingInfos.map(
-            (item) =>
-                ({
-                    date: new Date(item.date),
-                    balance: item.balance,
-                    payment: item.payment?.amount || 0,
-                    subPayment: item.subPayment?.amount || 0,
-                }) as ChartData,
-        )}
-    />
+    <ChartArea chartData={extendedBillingInfos.map(toAreaChartData)} />
 </section>
 
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    <ChartBar
-        chartData={extendedBillingInfos.map(
-            (item) =>
-                ({
-                    date: new Date(item.date),
-                    totalKWh: item.totalKwh,
-                    mainKWh: item.totalKwh - (item.subKwh || 0),
-                    subKWh: item.subKwh || 0,
-                }) as BarChartData,
-        )}
-    />
+    <ChartBar chartData={extendedBillingInfos.map(toBarChartData)} />
 </section>
 
 {#snippet Metrics()}

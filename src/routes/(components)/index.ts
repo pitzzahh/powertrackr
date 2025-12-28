@@ -1,3 +1,7 @@
+import type { ExtendedBillingInfo } from "$/types/billing-info";
+import type { ChartData } from "./chart-area.svelte";
+import type { BarChartData } from "./chart-bar.svelte";
+
 export const TIME_RANGE_OPTIONS = [
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
@@ -51,3 +55,24 @@ export function getFilteredData<T extends { date: Date }>(
   );
   return data.filter((item) => item.date >= referenceDate);
 }
+
+export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
+  return {
+    date: new Date(original.date),
+    balance: original.balance,
+    payment: original.payment?.amount || 0,
+    subPayment: original.subPayment?.amount || 0,
+  };
+}
+
+export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
+  return {
+    date: new Date(original.date),
+    totalKWh: original.totalKwh,
+    mainKWh: original.totalKwh - (original.subKwh || 0),
+    subKWh: original.subKwh || 0,
+  };
+}
+
+export { default as ChartArea } from "./chart-area.svelte";
+export { default as ChartBar } from "./chart-bar.svelte";
