@@ -1,7 +1,8 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { Database } from "@sqlitecloud/drivers";
+import { drizzle } from "drizzle-orm/sqlite-cloud";
 import { DATABASE_URL } from "$env/static/private";
+import { relations } from "./relations";
 
-const db = drizzle(new Database(DATABASE_URL));
+const db = drizzle({ client: new Database(DATABASE_URL), relations });
 
 export { db };
