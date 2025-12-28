@@ -2,7 +2,7 @@
     export type BillingInfoFormProps = {
         action: "add" | "update";
         app_state?: "stale" | "processing";
-        billingInfo?: BillingInfo;
+        billingInfo?: BillingInfoDTO;
         /**
          * Callback to be called when the form is submitted.
          * This can be used to reset the form or perform other actions.
@@ -32,7 +32,7 @@
     import { ChevronDown } from "$/assets/icons";
     import { Calendar } from "$/components/ui/calendar";
     import * as Card from "$/components/ui/card/index.js";
-    import type { BillingInfo } from "$/types/billing-info";
+    import type { BillingInfoDTO } from "$/types/billing-info";
     import { formatDate } from "$/utils/format";
     import { convertToNormalText } from "$/utils/text";
 
@@ -125,8 +125,8 @@
                 </Popover.Content>
             </Popover.Root>
             <input
+                {...createBillingInfo.fields.date.as("date")}
                 type="hidden"
-                name="date"
                 value={dateValue?.toString() || ""}
             />
             <Field.Description>Pick date</Field.Description>
@@ -134,40 +134,35 @@
         <Field.Field>
             <Field.Label for="{identity}-balance">Current Balance</Field.Label>
             <Input
-                type="number"
-                step="0.01"
+                {...createBillingInfo.fields.balance.as("number")}
                 id="{identity}-balance"
-                name="balance"
-                placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? billingInfo.balance.toString()
-                    : ""}
+                placeholder="Enter current balance"
+                {...action === "update" &&
+                    billingInfo && { value: billingInfo.balance.toString() }}
             />
             <Field.Description>Enter balance</Field.Description>
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-totalKwh">Total KWh</Field.Label>
             <Input
-                type="number"
+                {...createBillingInfo.fields.totalKwh.as("number")}
                 id="{identity}-totalKwh"
-                name="totalKwh"
                 placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? billingInfo.totalKwh.toString()
-                    : ""}
+                {...action === "update" &&
+                    billingInfo && { value: billingInfo.totalKwh.toString() }}
             />
             <Field.Description>Enter total KWh</Field.Description>
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-subKwh">Sub KWh</Field.Label>
             <Input
-                type="number"
+                {...createBillingInfo.fields.subReading.as("number")}
                 id="{identity}-subKwh"
-                name="subKwh"
                 placeholder="Enter value"
-                value={action === "update" && billingInfo
-                    ? (billingInfo.subKwh?.toString() ?? "")
-                    : ""}
+                {...action === "update" &&
+                    billingInfo && {
+                        value: billingInfo.subReadingLatest.toString(),
+                    }}
             />
             <Field.Description>Enter sub KWh</Field.Description>
         </Field.Field>
@@ -195,7 +190,14 @@
                     </Select.Group>
                 </Select.Content>
             </Select.Root>
-            <input type="hidden" name="status" value={status} />
+            <input
+                {...createBillingInfo.fields.status.as("text")}
+                type="hidden"
+                {...action === "update" &&
+                    billingInfo && {
+                        value: billingInfo.status.toString(),
+                    }}
+            />
             <Field.Description>Select status</Field.Description>
         </Field.Field>
     </Field.Group>
