@@ -133,6 +133,10 @@
                 value={dateValue?.toString() || ""}
             />
             <Field.Description>Pick date</Field.Description>
+            <Field.Error
+                errors={currentAction.fields.date.issues()}
+                fieldName="Date"
+            />
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-balance">Current Balance</Field.Label>
@@ -144,6 +148,10 @@
                     billingInfo && { value: billingInfo.balance.toString() }}
             />
             <Field.Description>Enter balance</Field.Description>
+            <Field.Error
+                errors={currentAction.fields.balance.issues()}
+                fieldName="Current Balance"
+            />
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-totalKwh">Total KWh</Field.Label>
@@ -155,6 +163,10 @@
                     billingInfo && { value: billingInfo.totalKwh.toString() }}
             />
             <Field.Description>Enter total KWh</Field.Description>
+            <Field.Error
+                errors={currentAction.fields.totalKwh.issues()}
+                fieldName="Total KWh"
+            />
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-subKwh">Sub KWh</Field.Label>
@@ -168,6 +180,10 @@
                     }}
             />
             <Field.Description>Enter sub KWh</Field.Description>
+            <Field.Error
+                errors={currentAction.fields.subReading.issues()}
+                fieldName="Sub KWh"
+            />
         </Field.Field>
         <Field.Field>
             <Field.Label for="{identity}-status">Status</Field.Label>
@@ -202,6 +218,10 @@
                     }}
             />
             <Field.Description>Select status</Field.Description>
+            <Field.Error
+                errors={currentAction.fields.status.issues()}
+                fieldName="Status"
+            />
         </Field.Field>
     </Field.Group>
 
