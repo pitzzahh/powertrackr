@@ -35,9 +35,9 @@
 
     let { chartData }: BarChartInteractiveProps = $props();
 
-    const sortedData = $derived(
-        [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
-    );
+    // const sortedData = $derived(
+    //     [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
+    // );
 
     let { timeRange, activeChart, context }: ChartBarState = $state({
         timeRange: "all",
@@ -65,7 +65,7 @@
             }
         },
         filteredData: () => {
-            if (timeRange === "all") return sortedData;
+            if (timeRange === "all") return chartData;
             let daysToSubtract = 90;
             if (timeRange === "30d") {
                 daysToSubtract = 30;
@@ -78,13 +78,13 @@
             }
 
             const maxDate =
-                sortedData.length > 0
-                    ? sortedData[sortedData.length - 1].date
+                chartData.length > 0
+                    ? chartData[chartData.length - 1].date
                     : new Date();
             const referenceDate = new Date(
                 maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000,
             );
-            return sortedData.filter((item) => item.date >= referenceDate);
+            return chartData.filter((item) => item.date >= referenceDate);
         },
     });
 
