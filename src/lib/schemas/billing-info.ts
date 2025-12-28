@@ -1,20 +1,17 @@
 import { z } from "zod";
 
-export const createBillingInfoSchema = z.object({
-  userId: z.string(),
-  date: z.string(),
-  totalKwh: z.number(),
-  subKwh: z.optional(z.number()),
-  balance: z.number(),
-  status: z.string(),
-  payPerKwh: z.number(),
-  subReadingLatest: z.optional(z.number()),
-  subReadingOld: z.optional(z.number()),
-  paymentId: z.optional(z.string()),
-  subPaymentId: z.optional(z.string()),
+export const billFormSchema = z.object({
+  date: z.string().refine((v) => v, { message: "Date is required" }),
+  balance: z.number().gt(0, { message: "Balance must be greater than 0" }),
+  totalKwh: z.number().gt(0, { message: "Total Kwh must be greater than 0" }),
+  subReading: z
+    .number()
+    .gt(0, { message: "Sub Reading must be greater than 0" })
+    .optional(),
+  status: z.enum(["Paid", "Pending"]),
 });
 
-export const updateBillingInfoSchema = createBillingInfoSchema.extend({
+export const updateBillingInfoSchema = billFormSchema.extend({
   id: z.string(),
 });
 
