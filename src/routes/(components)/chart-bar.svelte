@@ -31,13 +31,9 @@
     import { scaleBand } from "d3-scale";
     import { quintInOut } from "svelte/easing";
     import { formatDate } from "$/utils/format";
-    import { TIME_RANGE_OPTIONS } from ".";
+    import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
 
     let { chartData }: BarChartInteractiveProps = $props();
-
-    // const sortedData = $derived(
-    //     [...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()),
-    // );
 
     let { timeRange, activeChart, context }: ChartBarState = $state({
         timeRange: "all",
@@ -45,86 +41,46 @@
         context: null!,
     });
 
-    const { selectedLabel, filteredData } = $derived({
-        selectedLabel: () => {
-            switch (timeRange) {
-                case "7d":
-                    return "Last 7 days";
-                case "30d":
-                    return "Last 30 days";
-                case "90d":
-                    return "Last 3 months";
-                case "6m":
-                    return "Last 6 months";
-                case "1y":
-                    return "Last year";
-                case "all":
-                    return "Show All";
-                default:
-                    return "Last 3 months";
-            }
-        },
-        filteredData: () => {
-            if (timeRange === "all") return chartData;
-            let daysToSubtract = 90;
-            if (timeRange === "30d") {
-                daysToSubtract = 30;
-            } else if (timeRange === "7d") {
-                daysToSubtract = 7;
-            } else if (timeRange === "6m") {
-                daysToSubtract = 180;
-            } else if (timeRange === "1y") {
-                daysToSubtract = 365;
-            }
-
-            const maxDate =
-                chartData.length > 0
-                    ? chartData[chartData.length - 1].date
-                    : new Date();
-            const referenceDate = new Date(
-                maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000,
-            );
-            return chartData.filter((item) => item.date >= referenceDate);
-        },
+    const { selectedLabel, filteredData, activeSeries } = $derived({
+        selectedLabel: getSelectedLabel(timeRange),
+        filteredData: getFilteredData(chartData, timeRange),
+        activeSeries:
+            activeChart === "all"
+                ? [
+                      {
+                          key: "totalKWh",
+                          label: "Total kWh",
+                          color: CHART_CONFIG.totalKWh.color,
+                      },
+                      {
+                          key: "mainKWh",
+                          label: "Main kWh",
+                          color: CHART_CONFIG.mainKWh.color,
+                      },
+                      {
+                          key: "subKWh",
+                          label: "Sub kWh",
+                          color: CHART_CONFIG.subKWh.color,
+                      },
+                  ]
+                : [
+                      {
+                          key: activeChart,
+                          label: CHART_CONFIG[
+                              activeChart as keyof typeof CHART_CONFIG
+                          ].label,
+                          color: CHART_CONFIG[
+                              activeChart as keyof typeof CHART_CONFIG
+                          ].color,
+                      },
+                  ],
     });
 
     const total = $derived({
-        totalKWh: filteredData().reduce((acc, curr) => acc + curr.totalKWh, 0),
-        mainKWh: filteredData().reduce((acc, curr) => acc + curr.mainKWh, 0),
-        subKWh: filteredData().reduce((acc, curr) => acc + curr.subKWh, 0),
+        totalKWh: filteredData.reduce((acc, curr) => acc + curr.totalKWh, 0),
+        mainKWh: filteredData.reduce((acc, curr) => acc + curr.mainKWh, 0),
+        subKWh: filteredData.reduce((acc, curr) => acc + curr.subKWh, 0),
     });
-
-    const activeSeries = $derived(
-        activeChart === "all"
-            ? [
-                  {
-                      key: "totalKWh",
-                      label: "Total kWh",
-                      color: CHART_CONFIG.totalKWh.color,
-                  },
-                  {
-                      key: "mainKWh",
-                      label: "Main kWh",
-                      color: CHART_CONFIG.mainKWh.color,
-                  },
-                  {
-                      key: "subKWh",
-                      label: "Sub kWh",
-                      color: CHART_CONFIG.subKWh.color,
-                  },
-              ]
-            : [
-                  {
-                      key: activeChart,
-                      label: CHART_CONFIG[
-                          activeChart as keyof typeof CHART_CONFIG
-                      ].label,
-                      color: CHART_CONFIG[
-                          activeChart as keyof typeof CHART_CONFIG
-                      ].color,
-                  },
-              ],
-    );
 </script>
 
 <Card.Root class="pb-6 pt-0">
@@ -176,7 +132,7 @@
                     class="w-40 rounded-lg"
                     aria-label="Select a time range"
                 >
-                    {selectedLabel()}
+                    {selectedLabel}
                 </Select.Trigger>
                 <Select.Content class="rounded-xl">
                     {#each TIME_RANGE_OPTIONS as option (option.value)}
@@ -187,14 +143,14 @@
                 </Select.Content>
             </Select.Root>
         </div>
-        {#if filteredData().length > 0}
+        {#if filteredData.length > 0}
             <Chart.Container
                 config={CHART_CONFIG}
                 class="aspect-auto h-62.5 w-full"
             >
                 <BarChart
                     bind:context
-                    data={filteredData()}
+                    data={filteredData}
                     x="date"
                     xScale={scaleBand().padding(0.25)}
                     series={activeSeries}

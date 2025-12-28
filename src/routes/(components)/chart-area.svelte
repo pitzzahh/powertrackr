@@ -26,64 +26,19 @@
     import { curveLinear } from "d3-shape";
     import ChartContainer from "$/components/ui/chart/chart-container.svelte";
     import { expoInOut } from "svelte/easing";
-    import { SvelteDate } from "svelte/reactivity";
     import { formatDate, formatNumber } from "$/utils/format";
-    import { TIME_RANGE_OPTIONS } from ".";
+    import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
 
     let { chartData }: AreaChartInteractiveProps = $props();
 
-    let timeRange = $state("all");
-
-    let visibleKeys = $state(Object.keys(CHART_CONFIG));
+    let { timeRange, visibleKeys } = $state({
+        timeRange: "all",
+        visibleKeys: Object.keys(CHART_CONFIG),
+    });
 
     const { selectedLabel, filteredData } = $derived({
-        selectedLabel: () => {
-            switch (timeRange) {
-                case "7d":
-                    return "Last 7 days";
-                case "30d":
-                    return "Last 30 days";
-                case "90d":
-                    return "Last 3 months";
-                case "6m":
-                    return "Last 6 months";
-                case "1y":
-                    return "Last year";
-                case "all":
-                    return "Show All";
-                default:
-                    return "Last 3 months";
-            }
-        },
-        filteredData: () => {
-            if (timeRange === "all") return chartData;
-            let daysToSubtract = 90;
-            if (timeRange === "30d") {
-                daysToSubtract = 30;
-            } else if (timeRange === "7d") {
-                daysToSubtract = 7;
-            } else if (timeRange === "6m") {
-                daysToSubtract = 180;
-            } else if (timeRange === "1y") {
-                daysToSubtract = 365;
-            }
-
-            return chartData.filter((item: ChartData) => {
-                const referenceDate = new SvelteDate(
-                    chartData.length > 0
-                        ? new SvelteDate(
-                              Math.max(
-                                  ...chartData.map((d: ChartData) =>
-                                      d.date.getTime(),
-                                  ),
-                              ),
-                          )
-                        : new Date(),
-                );
-                referenceDate.setDate(referenceDate.getDate() - daysToSubtract);
-                return item.date >= referenceDate;
-            });
-        },
+        selectedLabel: getSelectedLabel(timeRange),
+        filteredData: getFilteredData(chartData, timeRange),
     });
 </script>
 
@@ -100,7 +55,7 @@
                 class="w-40 rounded-lg ms-auto"
                 aria-label="Select a value"
             >
-                {selectedLabel()}
+                {selectedLabel}
             </Select.Trigger>
             <Select.Content class="rounded-xl">
                 {#each TIME_RANGE_OPTIONS as option (option.value)}
@@ -117,7 +72,7 @@
             class="-ml-3 aspect-auto h-62.5 w-full"
         >
             <LineChart
-                data={filteredData()}
+                data={filteredData}
                 x="date"
                 xScale={scaleUtc()}
                 series={Object.entries(CHART_CONFIG)
