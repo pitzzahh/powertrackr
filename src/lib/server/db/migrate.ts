@@ -1,11 +1,11 @@
 import "dotenv/config";
 import { sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/libsql";
 import { Client } from "pg";
 import { user, payment, billingInfo, key, session } from "./schema";
+import { relations } from "./relations";
 
-const db = drizzle(new Database("powertrackr.db"));
+const db = drizzle({ connection: "powertrackr.db", relations });
 
 async function migrate() {
   // Enable foreign keys
@@ -101,7 +101,7 @@ async function migrate() {
 
     // Migrate users
     console.log("Migrating users...");
-    const existingUsers = await db.select().from(user).limit(1);
+    const existingUsers = await db.query.user.findMany({ limit: 1 });
     if (existingUsers.length > 0) {
       console.log("Users table already has data. Skipping user migration.");
     } else {
@@ -119,7 +119,7 @@ async function migrate() {
 
     // Migrate payments
     console.log("Migrating payments...");
-    const existingPayments = await db.select().from(payment).limit(1);
+    const existingPayments = await db.query.payment.findMany({ limit: 1 });
     if (existingPayments.length > 0) {
       console.log(
         "Payments table already has data. Skipping payment migration.",
@@ -146,7 +146,7 @@ async function migrate() {
 
     // Migrate keys
     console.log("Migrating keys...");
-    const existingKeys = await db.select().from(key).limit(1);
+    const existingKeys = await db.query.key.findMany({ limit: 1 });
     if (existingKeys.length > 0) {
       console.log("Keys table already has data. Skipping key migration.");
     } else {
@@ -171,7 +171,7 @@ async function migrate() {
 
     // Migrate sessions
     console.log("Migrating sessions...");
-    const existingSessions = await db.select().from(session).limit(1);
+    const existingSessions = await db.query.session.findMany({ limit: 1 });
     if (existingSessions.length > 0) {
       console.log(
         "Sessions table already has data. Skipping session migration.",
@@ -199,7 +199,9 @@ async function migrate() {
 
     // Migrate billing info
     console.log("Migrating billing info...");
-    const existingBillingInfos = await db.select().from(billingInfo).limit(1);
+    const existingBillingInfos = await db.query.billingInfo.findMany({
+      limit: 1,
+    });
     if (existingBillingInfos.length > 0) {
       console.log(
         "BillingInfo table already has data. Skipping billing info migration.",
