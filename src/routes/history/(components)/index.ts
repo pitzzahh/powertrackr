@@ -146,6 +146,7 @@ export function historyTableColumns() {
       },
       filterFn: async (row, id, value) => {
         const payment = await getPayment(row.original.paymentId!);
+        if (!payment) return false;
         return value.includes(payment.amount);
       },
     },
@@ -164,6 +165,7 @@ export function historyTableColumns() {
       },
       filterFn: async (row, id, value) => {
         const subPayment = await getPayment(row.original.subPaymentId!);
+        if (!subPayment) return false;
         return value.includes(subPayment.amount);
       },
     },
