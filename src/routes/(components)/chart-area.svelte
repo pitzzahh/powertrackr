@@ -156,17 +156,16 @@
                                 : [...visibleKeys, key])}
                     >
                         <div
-                            class="w-3 h-3 rounded"
-                            style="background-color: {color}; opacity: {visibleKeys.includes(
+                            class="size-3 rounded bg-[{color}] opacity-[{visibleKeys.includes(
                                 key,
                             )
                                 ? 1
-                                : 0.5}"
+                                : 0.5}]"
                         ></div>
                         <span
-                            class={visibleKeys.includes(key)
-                                ? ""
-                                : "line-through"}>{label}</span
+                            class={{
+                                "line-through": !visibleKeys.includes(key),
+                            }}>{label}</span
                         >
                     </button>
                 {/each}
