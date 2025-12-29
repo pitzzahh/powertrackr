@@ -7,7 +7,7 @@
         floating_bar?: Snippet<[{ table: TableCore<TData> }]>;
         custom_row_count?: number;
         class?: string;
-        status: Status;
+        status?: Status;
         pagination_props?: Omit<
             DataTablePaginationProps<TData>,
             "table" | "pagination"
@@ -168,36 +168,47 @@
                     {/each}
                 </Table.Header>
                 <Table.Body>
-                    {#each table.getRowModel().rows as row (row.id)}
-                        <Table.Row
-                            data-state={row.getIsSelected() && "selected"}
-                        >
-                            {#each row.getVisibleCells() as cell (cell.id)}
-                                <Table.Cell class="whitespace-nowrap">
-                                    <FlexRender
-                                        content={cell.column.columnDef.cell}
-                                        context={cell.getContext()}
-                                    />
-                                </Table.Cell>
-                            {/each}
-                        </Table.Row>
-                    {:else}
+                    {#if status === "loading_data"}
                         <Table.Row>
                             <Table.Cell
                                 colspan={columns.length}
                                 class="h-24 text-center"
                             >
-                                No results.
+                                Loading data...
                             </Table.Cell>
                         </Table.Row>
-                    {/each}
+                    {:else if status === "error"}
+                        <Table.Row>
+                            <Table.Cell
+                                colspan={columns.length}
+                                class="h-24 text-center"
+                            >
+                                Error loading data.
+                            </Table.Cell>
+                        </Table.Row>
+                    {:else}
+                        {#each table.getRowModel().rows as row (row.id)}
+                            <Table.Row
+                                data-state={row.getIsSelected() && "selected"}
+                            >
+                                {#each row.getVisibleCells() as cell (cell.id)}
+                                    <Table.Cell class="whitespace-nowrap">
+                                        <FlexRender
+                                            content={cell.column.columnDef.cell}
+                                            context={cell.getContext()}
+                                        />
+                                    </Table.Cell>
+                                {/each}
+                            </Table.Row>
+                        {/each}
+                    {/if}
                 </Table.Body>
             </Table.Root>
         </div>
     </ScrollArea>
 </div>
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    {#key data.length}
+    {#key data.length || status}
         <DataTablePagination {table} {status} {...pagination_props} />
     {/key}
 </div>
