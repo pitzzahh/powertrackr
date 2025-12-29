@@ -10,11 +10,13 @@
         children,
         errors,
         fieldName,
+        value,
         ...restProps
     }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
         children?: Snippet;
         errors?: { message?: string }[];
         fieldName?: string;
+        value?: unknown;
     } = $props();
 
     function transformMessage(message: string): string {
@@ -31,6 +33,19 @@
         return message;
     }
 
+    function isEmpty(val: unknown): boolean {
+        return (
+            val == null || val === "" || (typeof val === "number" && isNaN(val))
+        );
+    }
+
+    function isTypeError(message: string): boolean {
+        return (
+            message.includes("must be a number") ||
+            message.includes("must be a valid number")
+        );
+    }
+
     const hasContent = $derived.by(() => {
         // has slotted error
         if (children) return true;
@@ -40,6 +55,14 @@
 
         // has an error but no message
         if (errors.length === 1 && !errors[0]?.message) {
+            return false;
+        }
+
+        // hide type errors for empty fields
+        if (
+            isEmpty(value) &&
+            errors.some((e) => e.message && isTypeError(e.message))
+        ) {
             return false;
         }
 
