@@ -234,7 +234,11 @@
                     }}
                 >
                     {#snippet belowMarks()}
-                        <Highlight area={{ class: "fill-muted" }} />
+                        <Highlight
+                            area={{
+                                class: "fill-backdrop-blur-sm",
+                            }}
+                        />
                     {/snippet}
                     {#snippet tooltip()}
                         <Chart.Tooltip
