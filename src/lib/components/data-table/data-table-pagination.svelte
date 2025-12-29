@@ -34,6 +34,7 @@
     }: DataTablePaginationProps<TData> = $props();
 </script>
 
+Status: {status}
 <div
     class="flex items-center justify-between gap-6 px-4 py-2 bg-card rounded-b backdrop-blur-sm w-full sticky bottom-0 z-10"
 >
@@ -53,10 +54,17 @@
                 </Badge>
             </div>
         {/if}
-        {#if status === "fetching" || status === "loading_data"}
-            <Badge variant="secondary" class="whitespace-nowrap animate-pulse">
+        {#if status === "loading_data" || status === "fetching"}
+            <Badge
+                variant="secondary"
+                class="animate-pulse flex items-center dark:bg-background text-sm font-medium whitespace-nowrap"
+            >
                 <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
-                Loading...
+                {#if status === "loading_data"}
+                    Crunching initial data...
+                {:else}
+                    Fetching some required data...
+                {/if}
             </Badge>
         {/if}
     </div>
