@@ -12,7 +12,7 @@ export const billFormSchema = z.object({
     .number({ message: "must be a number" })
     .gt(0, { message: "must be greater than 0" })
     .optional(),
-  status: z.enum(["Paid", "Pending"]),
+  status: z.enum(["paid", "pending"]).default("pending"),
 });
 
 export const updateBillingInfoSchema = billFormSchema.extend({
