@@ -15,27 +15,39 @@
 
     let {
         extendedBillingInfos,
-    }: { extendedBillingInfos: ExtendedBillingInfo[] } = $state({
+        status,
+    }: {
+        extendedBillingInfos: ExtendedBillingInfo[];
+        status: "fetching" | "fetched" | "error";
+    } = $state({
         extendedBillingInfos: [],
+        status: "fetching",
     });
 
     onMount(async () => {
-        extendedBillingInfos = await hydratable("chart_data", () =>
-            getExtendedBillingInfos({
-                userId: "5wqtwauhbzkfcqo",
-            }),
-        );
+        status = "fetching";
+        try {
+            extendedBillingInfos = await hydratable("chart_data", () =>
+                getExtendedBillingInfos({
+                    userId: "5wqtwauhbzkfcqo",
+                }),
+            );
+            status = "fetched";
+        } catch (error) {
+            console.error(error);
+            status = "error";
+        }
     });
 </script>
 
 {@render Metrics()}
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-    <ChartArea chartData={extendedBillingInfos.map(toAreaChartData)} />
+    <ChartArea chartData={extendedBillingInfos.map(toAreaChartData)} {status} />
 </section>
 
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    <ChartBar chartData={extendedBillingInfos.map(toBarChartData)} />
+    <ChartBar chartData={extendedBillingInfos.map(toBarChartData)} {status} />
 </section>
 
 {#snippet Metrics()}

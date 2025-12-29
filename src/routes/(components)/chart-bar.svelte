@@ -8,6 +8,7 @@
 
     export type BarChartInteractiveProps = {
         chartData: BarChartData[];
+        status: "fetching" | "fetched" | "error";
     };
 
     type ChartBarState = {
@@ -38,8 +39,9 @@
     import { browser } from "$app/environment";
     import type { Total } from "$lib/workers/total-calculator";
     import { onDestroy } from "svelte";
+    import { Loader } from "$lib/assets/icons";
 
-    let { chartData }: BarChartInteractiveProps = $props();
+    let { chartData, status }: BarChartInteractiveProps = $props();
 
     let {
         timeRange,
@@ -176,7 +178,18 @@
                 </Select.Content>
             </Select.Root>
         </div>
-        {#if filteredData.length > 0}
+        {#if status === "fetching"}
+            <div class="flex flex-col justify-center items-center py-8">
+                <Loader
+                    class="animate-spin h-8 w-8 text-muted-foreground mb-2"
+                />
+                <p class="text-muted-foreground">Fetching data...</p>
+            </div>
+        {:else if status === "error"}
+            <p class="text-center text-muted-foreground py-8">
+                Error loading data.
+            </p>
+        {:else if filteredData.length > 0}
             <Chart.Container
                 config={CHART_CONFIG}
                 class="aspect-auto h-62.5 w-full"
