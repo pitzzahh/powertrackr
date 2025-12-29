@@ -1,25 +1,59 @@
 <script module lang="ts">
     import type { DataTableProps } from "$/components/data-table/data-table.svelte";
 
+    type HistoryDataTableState = {
+        pendingCount: number;
+    };
+
     export interface HistoryDataTableProps {
         data: BillingInfo[];
         data_table_props?: Partial<DataTableProps<BillingInfo, unknown>>;
+        status: Status;
     }
 </script>
 
 <script lang="ts">
-    import { DataTable, DataTableFloatingBar } from "$/components/data-table";
-    import { historyTableColumns, HistoryDataTableToolbar } from ".";
+    import { pendingFetchContext } from "$lib/context";
     import { generateOptions } from "$/utils/mapper";
     import { toast } from "svelte-sonner";
     import { Toast } from "$/components/toast";
     import type { BillingInfo } from "$/types/billing-info";
 
-    let { data, data_table_props }: HistoryDataTableProps = $props();
+    let { data, data_table_props, status }: HistoryDataTableProps = $props();
+
+    let { pendingCount }: HistoryDataTableState = $state({ pendingCount: 0 });
+
+    const ctx = pendingFetchContext;
+    ctx.set({
+        get count() {
+            return pendingCount;
+        },
+        add() {
+            pendingCount++;
+        },
+        delete() {
+            pendingCount--;
+        },
+        reset() {
+            pendingCount = 0;
+        },
+    });
+    import { historyTableColumns, HistoryDataTableToolbar } from ".";
+    import { DataTable, DataTableFloatingBar } from "$/components/data-table";
+    import type { Status } from "$/types/state";
 </script>
 
 <section class="flex flex-col gap-2">
-    <DataTable {data} columns={historyTableColumns()} {...data_table_props}>
+    <DataTable
+        {data}
+        status={status === "loading_data"
+            ? status
+            : pendingCount > 0
+              ? "fetching"
+              : "idle"}
+        columns={historyTableColumns()}
+        {...data_table_props}
+    >
         {#snippet data_table_toolbar({ table })}
             <HistoryDataTableToolbar
                 {table}

@@ -1,12 +1,22 @@
 <script lang="ts">
+    import { untrack } from "svelte";
     import { Badge } from "$/components/ui/badge";
     import { getPayment } from "$/remotes/payment.remote";
     import { formatNumber } from "$/utils/format";
     import { Loader } from "$lib/assets/icons";
+    import { pendingFetchContext } from "$lib/context";
+    import { watch } from "runed";
 
     let { paymentId }: { paymentId: string | null } = $props();
 
     const payment = $derived(paymentId ? getPayment(paymentId) : null);
+
+    const ctx = pendingFetchContext.get();
+
+    watch(
+        () => payment?.loading,
+        (loading) => untrack(() => (loading ? ctx.add() : ctx.delete())),
+    );
 </script>
 
 {#if paymentId && payment}
