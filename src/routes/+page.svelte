@@ -10,15 +10,22 @@
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
     import { getExtendedBillingInfos } from "$lib/remotes/billing-info.remote";
-    import { hydratable } from "svelte";
+    import { hydratable, onMount } from "svelte";
+    import type { ExtendedBillingInfo } from "$/types/billing-info";
 
-    const { extendedBillingInfos } = {
-        extendedBillingInfos: await hydratable("chart_data", () =>
+    let {
+        extendedBillingInfos,
+    }: { extendedBillingInfos: ExtendedBillingInfo[] } = $state({
+        extendedBillingInfos: [],
+    });
+
+    onMount(async () => {
+        extendedBillingInfos = await hydratable("chart_data", () =>
             getExtendedBillingInfos({
                 userId: "5wqtwauhbzkfcqo",
             }),
-        ),
-    };
+        );
+    });
 </script>
 
 {@render Metrics()}

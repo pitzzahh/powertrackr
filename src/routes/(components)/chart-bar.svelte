@@ -37,6 +37,7 @@
     import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
     import { browser } from "$app/environment";
     import type { Total } from "$lib/workers/total-calculator";
+    import { onDestroy } from "svelte";
 
     let { chartData }: BarChartInteractiveProps = $props();
 
@@ -110,6 +111,8 @@
             worker.postMessage({ data: filteredData });
         }
     });
+
+    onDestroy(() => worker?.terminate());
 </script>
 
 <Card.Root class="pb-6 pt-0">
