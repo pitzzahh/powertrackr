@@ -14,6 +14,9 @@
         timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
         activeChart: "totalKWh" | "mainKWh" | "subKWh" | "all";
         context: ChartContextValue;
+        totalKWh: number;
+        mainKWh: number;
+        subKWh: number;
     };
 
     const CHART_CONFIG = {
@@ -32,13 +35,25 @@
     import { quintInOut } from "svelte/easing";
     import { formatDate } from "$/utils/format";
     import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
+    import { browser } from "$app/environment";
+    import type { Total } from "$lib/workers/total-calculator";
 
     let { chartData }: BarChartInteractiveProps = $props();
 
-    let { timeRange, activeChart, context }: ChartBarState = $state({
+    let {
+        timeRange,
+        activeChart,
+        context,
+        totalKWh,
+        mainKWh,
+        subKWh,
+    }: ChartBarState = $state({
         timeRange: "all",
         activeChart: "all",
         context: null!,
+        totalKWh: 0,
+        mainKWh: 0,
+        subKWh: 0,
     });
 
     const { selectedLabel, filteredData, activeSeries } = $derived({
@@ -76,10 +91,24 @@
                   ],
     });
 
-    const total = $derived({
-        totalKWh: filteredData.reduce((acc, curr) => acc + curr.totalKWh, 0),
-        mainKWh: filteredData.reduce((acc, curr) => acc + curr.mainKWh, 0),
-        subKWh: filteredData.reduce((acc, curr) => acc + curr.subKWh, 0),
+    let worker: Worker | null = null;
+
+    if (browser) {
+        worker = new Worker(
+            new URL("$lib/workers/total-calculator.ts", import.meta.url),
+        );
+
+        worker.onmessage = (e: MessageEvent<Total>) => {
+            totalKWh = e.data.totalKWh;
+            mainKWh = e.data.mainKWh;
+            subKWh = e.data.subKWh;
+        };
+    }
+
+    $effect(() => {
+        if (browser && worker) {
+            worker.postMessage({ data: filteredData });
+        }
     });
 </script>
 
@@ -114,12 +143,13 @@
                     </span>
                     <span class="text-lg leading-none font-bold sm:text-3xl">
                         {key === "all"
-                            ? (
-                                  total.totalKWh +
-                                  total.mainKWh +
-                                  total.subKWh
-                              ).toLocaleString()
-                            : total[key as keyof typeof total].toLocaleString()}
+                            ? (totalKWh + mainKWh + subKWh).toLocaleString()
+                            : (key === "totalKWh"
+                                  ? totalKWh
+                                  : key === "mainKWh"
+                                    ? mainKWh
+                                    : subKWh
+                              ).toLocaleString()}
                     </span>
                 </button>
             {/each}
