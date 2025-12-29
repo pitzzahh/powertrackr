@@ -236,7 +236,7 @@
                     {#snippet belowMarks()}
                         <Highlight
                             area={{
-                                class: "fill-gray/40 dark:fill-black/10",
+                                class: "fill-black/10",
                             }}
                         />
                     {/snippet}
