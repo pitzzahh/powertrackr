@@ -1,7 +1,7 @@
 <script module lang="ts">
     export interface DataTablePaginationProps<TData> {
         table: Table<TData>;
-        fetching?: boolean;
+        status?: Status;
         hide_show_row_count?: boolean;
     }
 </script>
@@ -22,10 +22,14 @@
     import { cubicInOut } from "svelte/easing";
     import { scale } from "svelte/transition";
     import type { Icon } from "@lucide/svelte";
+    import { pendingFetchContext } from "$/context";
+    import type { Status } from "$/types/state";
+
+    const ctx = pendingFetchContext.get();
 
     let {
         table,
-        fetching = $bindable(false),
+        status = $bindable("idle"),
         hide_show_row_count,
     }: DataTablePaginationProps<TData> = $props();
 </script>
@@ -49,7 +53,7 @@
                 </Badge>
             </div>
         {/if}
-        {#if fetching}
+        {#if status === "fetching" || status === "loading_data"}
             <Badge variant="secondary" class="whitespace-nowrap animate-pulse">
                 <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
                 Loading...
@@ -182,7 +186,10 @@
         variant="ghost"
         size="icon"
         class="hidden lg:flex h-9 w-9 p-0 transition-all duration-200"
-        {onclick}
+        onclick={() => {
+            ctx.reset();
+            onclick();
+        }}
         {disabled}
     >
         <span class="sr-only">{content}</span>

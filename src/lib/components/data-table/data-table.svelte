@@ -7,6 +7,7 @@
         floating_bar?: Snippet<[{ table: TableCore<TData> }]>;
         custom_row_count?: number;
         class?: string;
+        status: Status;
         pagination_props?: Omit<
             DataTablePaginationProps<TData>,
             "table" | "pagination"
@@ -46,10 +47,12 @@
     import { scale } from "svelte/transition";
     import { cubicInOut } from "svelte/easing";
     import { ScrollArea } from "../ui/scroll-area";
+    import type { Status } from "$/types/state";
 
     let {
         columns,
         data,
+        status,
         data_table_toolbar,
         floating_bar,
         custom_row_count = 10,
@@ -195,6 +198,6 @@
 </div>
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
     {#key data.length}
-        <DataTablePagination {table} {...pagination_props} />
+        <DataTablePagination {table} {status} {...pagination_props} />
     {/key}
 </div>
