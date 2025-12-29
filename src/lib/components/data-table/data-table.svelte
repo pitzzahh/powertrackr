@@ -194,5 +194,7 @@
     </ScrollArea>
 </div>
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    <DataTablePagination {table} {...pagination_props} />
+    {#key data.length}
+        <DataTablePagination {table} {...pagination_props} />
+    {/key}
 </div>
