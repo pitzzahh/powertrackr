@@ -6,3 +6,5 @@ export type State = {
   user: User | null | undefined;
   history: ExtendedBillingInfo[] | undefined;
 };
+
+export type Status = "loading_data" | "fetching" | "success" | "error" | "idle";
