@@ -1,63 +1,67 @@
 <script lang="ts">
-  import { Button, buttonVariants } from "$/components/ui/button";
-  import { LogOut } from "@lucide/svelte";
-  import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
-  import SettingsDialog from "./settings-dialog.svelte";
-  import { sidebarStore } from "$lib/stores/sidebar.svelte";
+    import { Button, buttonVariants } from "$/components/ui/button";
+    import { LogOut } from "@lucide/svelte";
+    import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
+    import SettingsDialog from "./settings-dialog.svelte";
+    import { sidebarStore } from "$lib/stores/sidebar.svelte";
+    import { Separator } from "$/components/ui/separator";
 
-  let {
-    open = $bindable(false),
-  }: {
-    open: boolean;
-  } = $props();
+    let {
+        open = $bindable(false),
+    }: {
+        open: boolean;
+    } = $props();
 </script>
 
 <nav class="flex flex-col gap-8">
-  {#each sidebarStore.navItems as item (item.label)}
-    {@const Icon = item.icon}
-    <Button
-      data-active={item.active}
-      variant="link"
-      href={item.route}
-      onclick={() => {
-        open = false;
-        sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
-          ...navItem,
-          active: navItem.label === item.label,
-        }));
-      }}
-      class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
-    >
-      <Icon class="size-6" />
-      <span class="text-sm font-medium tracking-wide">{item.label}</span>
-    </Button>
-  {/each}
+    {#each sidebarStore.navItems as item (item.label)}
+        {@const Icon = item.icon}
+        <Button
+            data-active={item.active}
+            variant="link"
+            href={item.route}
+            onclick={() => {
+                open = false;
+                sidebarStore.navItems = sidebarStore.navItems.map(
+                    (navItem) => ({
+                        ...navItem,
+                        active: navItem.label === item.label,
+                    }),
+                );
+            }}
+            class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
+        >
+            <Icon class="size-6" />
+            <span class="text-sm font-medium tracking-wide">{item.label}</span>
+        </Button>
+    {/each}
 </nav>
 
-<div class="mt-auto pt-8 px border-t border-border flex flex-col gap-8">
-  <SettingsDialog />
-  <AlertDialog.Root>
-    <AlertDialog.Trigger
-      class={buttonVariants({
-        variant: "hover-destructive",
-        class:
-          "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
-      })}
-    >
-      <LogOut class="h-6 w-6" />
-      <span class="text-sm font-medium tracking-wide">LOGOUT</span>
-    </AlertDialog.Trigger>
-    <AlertDialog.Content>
-      <AlertDialog.Header>
-        <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-        <AlertDialog.Description>
-          Any unsaved changes will be lost. You can log back in at any time.
-        </AlertDialog.Description>
-      </AlertDialog.Header>
-      <AlertDialog.Footer>
-        <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-        <AlertDialog.Action>Logout</AlertDialog.Action>
-      </AlertDialog.Footer>
-    </AlertDialog.Content>
-  </AlertDialog.Root>
+<div class="mt-auto px flex flex-col gap-8">
+    <Separator class="my-4" orientation="horizontal" />
+    <SettingsDialog />
+    <AlertDialog.Root>
+        <AlertDialog.Trigger
+            class={buttonVariants({
+                variant: "hover-destructive",
+                class: "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
+            })}
+        >
+            <LogOut class="h-6 w-6" />
+            <span class="text-sm font-medium tracking-wide">LOGOUT</span>
+        </AlertDialog.Trigger>
+        <AlertDialog.Content>
+            <AlertDialog.Header>
+                <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+                <AlertDialog.Description>
+                    Any unsaved changes will be lost. You can log back in at any
+                    time.
+                </AlertDialog.Description>
+            </AlertDialog.Header>
+            <AlertDialog.Footer>
+                <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+                <AlertDialog.Action>Logout</AlertDialog.Action>
+            </AlertDialog.Footer>
+        </AlertDialog.Content>
+    </AlertDialog.Root>
 </div>
