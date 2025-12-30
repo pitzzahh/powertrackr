@@ -76,16 +76,18 @@ export const getBillingSummary = query(
     }
 
     const latest = extendedInfos[0];
-    const current = latest.balance;
-    const invested = extendedInfos.reduce((sum, info) => sum + info.balance, 0);
-    const totalReturns = extendedInfos.reduce(
+    const current = latest?.balance || 0;
+    const invested = extendedInfos.reduce(
       (sum, info) =>
-        sum + (info.payment?.amount || 0) + (info.subPayment?.amount || 0),
+        sum + ((info.payment?.amount || 0) + (info.subPayment?.amount || 0)),
+      0,
+    );
+    const totalReturns = extendedInfos.reduce(
+      (sum, info) => sum + (info.subPayment?.amount || 0),
       0,
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
-    const oneDayReturns =
-      (latest.payment?.amount || 0) + (latest.subPayment?.amount || 0);
+    const oneDayReturns = latest?.subPayment?.amount || 0;
 
     const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date);
     const lastDate = new Date(latest.date);
