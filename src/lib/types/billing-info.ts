@@ -24,3 +24,13 @@ export type ExtendedBillingInfo = BillingInfo & {
   payment: Payment | null;
   subPayment: Payment | null;
 };
+
+export type BillingSummary = {
+  current: number;
+  invested: number;
+  totalReturns: number;
+  netReturns: number;
+  oneDayReturns: number;
+  averageDailyReturn: number;
+  averageMonthlyReturn: number;
+};
