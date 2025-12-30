@@ -20,6 +20,7 @@
         columnFilters: ColumnFiltersState;
         sorting: SortingState;
         pagination: PaginationState;
+        pendingCount: number;
     }
 </script>
 
@@ -48,6 +49,7 @@
     import { cubicInOut } from "svelte/easing";
     import { ScrollArea } from "../ui/scroll-area";
     import type { Status } from "$/types/state";
+    import { pendingFetchContext } from "$/context";
 
     let {
         columns,
@@ -60,14 +62,21 @@
         pagination_props = $bindable<DataTablePaginationProps<TData>>(),
     }: DataTableProps<TData, TValue> = $props();
 
-    let { rowSelection, columnVisibility, columnFilters, sorting, pagination } =
-        $derived<ComponentState>({
-            rowSelection: {},
-            columnVisibility: {},
-            columnFilters: [],
-            sorting: [],
-            pagination: { pageIndex: 0, pageSize: custom_row_count },
-        });
+    let {
+        rowSelection,
+        columnVisibility,
+        columnFilters,
+        sorting,
+        pagination,
+        pendingCount,
+    } = $derived<ComponentState>({
+        rowSelection: {},
+        columnVisibility: {},
+        columnFilters: [],
+        sorting: [],
+        pagination: { pageIndex: 0, pageSize: custom_row_count },
+        pendingCount: 0,
+    });
 
     const table = createSvelteTable({
         get data() {
@@ -124,6 +133,22 @@
         getSortedRowModel: getSortedRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
+    });
+
+    const ctx = pendingFetchContext;
+    ctx.set({
+        get count() {
+            return pendingCount;
+        },
+        add() {
+            pendingCount++;
+        },
+        delete() {
+            pendingCount--;
+        },
+        reset() {
+            pendingCount = 0;
+        },
     });
 </script>
 
@@ -208,7 +233,13 @@
     </ScrollArea>
 </div>
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    {#key data.length || status}
-        <DataTablePagination {table} {status} {...pagination_props} />
-    {/key}
+    <DataTablePagination
+        {table}
+        status={status === "loading_data"
+            ? status
+            : pendingCount > 0
+              ? "fetching"
+              : "idle"}
+        {...pagination_props}
+    />
 </div>
