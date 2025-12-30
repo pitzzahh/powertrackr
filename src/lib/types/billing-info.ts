@@ -18,6 +18,8 @@ export type BillingInfoDTO = {
   status: "pending" | "paid";
 };
 
+export type BillingInfoTableView = Omit<BillingInfo, "date"> & { date: string };
+
 export type ExtendedBillingInfo = BillingInfo & {
   payment: Payment | null;
   subPayment: Payment | null;

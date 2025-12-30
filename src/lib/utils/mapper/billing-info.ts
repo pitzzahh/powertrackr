@@ -1,4 +1,9 @@
-import type { BillingInfo, BillingInfoDTO } from "$/types/billing-info";
+import type {
+  BillingInfo,
+  BillingInfoDTO,
+  BillingInfoTableView,
+} from "$/types/billing-info";
+import { formatDate } from "../format";
 
 export function billingInfotoDto(original: BillingInfo): BillingInfoDTO {
   return {
@@ -12,6 +17,22 @@ export function billingInfotoDto(original: BillingInfo): BillingInfoDTO {
     balance: original.balance,
     payment: -1,
     subPayment: -1,
+    status: original.status.toLowerCase() as "pending" | "paid",
+  };
+}
+
+export function billingInfoToTableView(
+  original: BillingInfo,
+): BillingInfoTableView {
+  return {
+    ...original,
+    date: formatDate(new Date(original.date)),
+    subKwh: original.subKwh ?? 0,
+    subReadingOld: original.subReadingOld ?? 0,
+    subReadingLatest: original.subReadingLatest || 0,
+    balance: original.balance,
+    paymentId: original.paymentId,
+    subPaymentId: original.subPaymentId,
     status: original.status.toLowerCase() as "pending" | "paid",
   };
 }
