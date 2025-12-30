@@ -50,7 +50,7 @@
     onDestroy(() => clearTimeout(timeout));
 </script>
 
-<ScrollArea orientation="horizontal" class="scrollbar-hide rounded-none">
+<ScrollArea orientation="horizontal" class="pb-2 rounded-none">
     <div class="flex items-center justify-between space-x-2 m-1">
         <div class="flex items-center space-x-2">
             <Input
