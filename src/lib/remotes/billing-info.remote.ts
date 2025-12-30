@@ -16,6 +16,7 @@ import type {
   NewBillingInfo,
   BillingInfo,
   ExtendedBillingInfo,
+  BillingSummary,
 } from "$/types/billing-info";
 import { eq } from "drizzle-orm";
 
@@ -46,6 +47,65 @@ export const getBillingInfo = query(
   getBillingInfoSchema,
   async (id): Promise<BillingInfo | undefined> => {
     return await db.query.billingInfo.findFirst({ where: { id } });
+  },
+);
+
+// Query to get billing summary for a user
+export const getBillingSummary = query(
+  getBillingInfosSchema,
+  async ({ userId }): Promise<BillingSummary> => {
+    const extendedInfos = await db.query.billingInfo.findMany({
+      where: { userId },
+      with: {
+        payment: true,
+        subPayment: true,
+      },
+      orderBy: { date: "desc" },
+    });
+
+    if (extendedInfos.length === 0) {
+      return {
+        current: 0,
+        invested: 0,
+        totalReturns: 0,
+        netReturns: 0,
+        oneDayReturns: 0,
+        averageDailyReturn: 0,
+        averageMonthlyReturn: 0,
+      };
+    }
+
+    const latest = extendedInfos[0];
+    const current = latest.balance;
+    const invested = extendedInfos.reduce((sum, info) => sum + info.balance, 0);
+    const totalReturns = extendedInfos.reduce(
+      (sum, info) =>
+        sum + (info.payment?.amount || 0) + (info.subPayment?.amount || 0),
+      0,
+    );
+    const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
+    const oneDayReturns =
+      (latest.payment?.amount || 0) + (latest.subPayment?.amount || 0);
+
+    const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date);
+    const lastDate = new Date(latest.date);
+    const totalDays = Math.max(
+      1,
+      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const averageDailyReturn = totalReturns / totalDays;
+    const totalMonths = totalDays / 30;
+    const averageMonthlyReturn = totalReturns / totalMonths;
+
+    return {
+      current,
+      invested,
+      totalReturns,
+      netReturns,
+      oneDayReturns,
+      averageDailyReturn,
+      averageMonthlyReturn,
+    };
   },
 );
 
