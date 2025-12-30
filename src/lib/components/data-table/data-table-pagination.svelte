@@ -123,7 +123,7 @@
             </div>
         {/if}
         <!-- Page info -->
-        <div class="hidden sm:flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0">
             <div class="px-3 py-1.5 bg-muted/50 rounded-md">
                 <span class="text-sm font-medium">
                     Page <span class="text-primary font-semibold"
@@ -153,7 +153,7 @@
 
             <!-- Mobile page indicator -->
             <div
-                class="sm:hidden flex items-center px-3 py-1.5 bg-muted/30 rounded-md mx-2"
+                class="flex items-center px-3 py-1.5 bg-muted/30 rounded-md mx-2"
             >
                 <span class="text-xs font-medium text-muted-foreground">
                     {table.getState().pagination.pageIndex +
@@ -192,7 +192,7 @@
     <Button
         variant="ghost"
         size="icon"
-        class="hidden lg:flex h-9 w-9 p-0 transition-all duration-200"
+        class="flex h-9 w-9 p-0 transition-all duration-200"
         onclick={() => {
             ctx.reset();
             onclick();
