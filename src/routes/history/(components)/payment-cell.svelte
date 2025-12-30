@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { untrack } from "svelte";
+    import { untrack, onDestroy } from "svelte";
     import { Badge } from "$/components/ui/badge";
     import { getPayment } from "$/remotes/payment.remote";
     import { formatNumber } from "$/utils/format";
@@ -17,6 +17,10 @@
         () => payment?.loading,
         (loading) => untrack(() => (loading ? ctx.add() : ctx.delete())),
     );
+
+    onDestroy(() => {
+        if (payment?.loading) ctx.delete();
+    });
 </script>
 
 {#if paymentId && payment}
