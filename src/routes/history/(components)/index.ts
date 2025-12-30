@@ -128,7 +128,11 @@ export function historyTableColumns() {
         });
       },
       filterFn: (row, id, value) => {
-        return value.includes(row.original.balance.toString());
+        const balanceStr = row.original.balance.toString();
+        return (
+          balanceStr === value ||
+          balanceStr.toLowerCase().includes(value.toLowerCase())
+        );
       },
     },
     {
@@ -146,8 +150,12 @@ export function historyTableColumns() {
       },
       filterFn: async (row, id, value) => {
         const payment = await getPayment(row.original.paymentId!);
-        if (!payment) return false;
-        return value.includes(payment.amount);
+        if (!payment || payment.amount == null) return false;
+        const amountStr = payment.amount.toString();
+        return (
+          amountStr === value ||
+          amountStr.toLowerCase().includes(value.toLowerCase())
+        );
       },
     },
     {
@@ -165,8 +173,12 @@ export function historyTableColumns() {
       },
       filterFn: async (row, id, value) => {
         const subPayment = await getPayment(row.original.subPaymentId!);
-        if (!subPayment) return false;
-        return value.includes(subPayment.amount);
+        if (!subPayment || subPayment.amount == null) return false;
+        const amountStr = subPayment.amount.toString();
+        return (
+          amountStr === value ||
+          amountStr.toLowerCase().includes(value.toLowerCase())
+        );
       },
     },
     {
@@ -189,7 +201,10 @@ export function historyTableColumns() {
         });
       },
       filterFn: (row, id, value) => {
-        return value.toLowerCase().includes(row.original.status.toLowerCase());
+        const val = value as string[];
+        return val.some(
+          (v) => v.toLowerCase() === row.original.status.toLowerCase(),
+        );
       },
     },
     {
