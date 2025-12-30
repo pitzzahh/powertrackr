@@ -1,6 +1,6 @@
 import { getContext, setContext } from "svelte";
 import { writable, type Writable } from "svelte/store";
-import type { State } from "$lib/types";
+import type { State } from "$/types/state";
 
 export const MAIN_STATE_CTX = "MAIN_STATE_CTX";
 
