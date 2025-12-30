@@ -2,8 +2,10 @@
     import type { DataTableProps } from "$/components/data-table/data-table.svelte";
 
     export interface HistoryDataTableProps {
-        data: BillingInfo[];
-        data_table_props?: Partial<DataTableProps<BillingInfo, unknown>>;
+        data: BillingInfoTableView[];
+        data_table_props?: Partial<
+            DataTableProps<BillingInfoTableView, unknown>
+        >;
         status: Status;
     }
 </script>
@@ -12,7 +14,7 @@
     import { generateOptions } from "$/utils/mapper";
     import { toast } from "svelte-sonner";
     import { Toast } from "$/components/toast";
-    import type { BillingInfo } from "$/types/billing-info";
+    import type { BillingInfoTableView } from "$/types/billing-info";
 
     let { data, data_table_props, status }: HistoryDataTableProps = $props();
 
