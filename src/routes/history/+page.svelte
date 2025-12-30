@@ -9,6 +9,7 @@
     import { getBillingInfos } from "$/remotes/billing-info.remote";
     import type { BillingInfo } from "$/types/billing-info";
     import type { Status } from "$/types/state";
+    import { billingInfoToTableView } from "$/utils/mapper/billing-info";
     import { HistoryDataTable } from "$routes/history/(components)";
     import { hydratable, onMount } from "svelte";
 
@@ -28,4 +29,4 @@
     });
 </script>
 
-<HistoryDataTable {status} data={billingInfos} />
+<HistoryDataTable {status} data={billingInfos.map(billingInfoToTableView)} />

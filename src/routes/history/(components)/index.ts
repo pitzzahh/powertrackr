@@ -6,11 +6,11 @@ import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
 import { getPayment } from "$/remotes/payment.remote";
 import type { BillingInfo } from "$/types/billing-info";
-import { DateFormat, formatDate, formatNumber } from "$/utils/format";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import PaymentCell from "./payment-cell.svelte";
 import { HistoryDataTableRowActions } from ".";
+import { formatNumber } from "$/utils/format";
 
 export function historyTableColumns() {
   return [
@@ -45,15 +45,16 @@ export function historyTableColumns() {
         renderComponent(Badge, {
           children: createRawSnippet(() => {
             return {
-              render: () =>
-                `<span>${formatDate(new Date(row.original.date), {
-                  format: DateFormat.DateOnly,
-                })}</span>`,
+              render: () => `<span>${row.original.date}</span>`,
             };
           }),
         }),
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id));
+        const dateStr = row.getValue(id) as string;
+        return (
+          dateStr === value ||
+          dateStr.toLowerCase().includes(value.toLowerCase())
+        );
       },
     },
     {
