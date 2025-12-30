@@ -1,10 +1,6 @@
 <script module lang="ts">
     import type { DataTableProps } from "$/components/data-table/data-table.svelte";
 
-    type HistoryDataTableState = {
-        pendingCount: number;
-    };
-
     export interface HistoryDataTableProps {
         data: BillingInfo[];
         data_table_props?: Partial<DataTableProps<BillingInfo, unknown>>;
@@ -13,7 +9,6 @@
 </script>
 
 <script lang="ts">
-    import { pendingFetchContext } from "$lib/context";
     import { generateOptions } from "$/utils/mapper";
     import { toast } from "svelte-sonner";
     import { Toast } from "$/components/toast";
@@ -21,23 +16,6 @@
 
     let { data, data_table_props, status }: HistoryDataTableProps = $props();
 
-    let { pendingCount }: HistoryDataTableState = $state({ pendingCount: 0 });
-
-    const ctx = pendingFetchContext;
-    ctx.set({
-        get count() {
-            return pendingCount;
-        },
-        add() {
-            pendingCount++;
-        },
-        delete() {
-            pendingCount--;
-        },
-        reset() {
-            pendingCount = 0;
-        },
-    });
     import { historyTableColumns, HistoryDataTableToolbar } from ".";
     import { DataTable, DataTableFloatingBar } from "$/components/data-table";
     import type { Status } from "$/types/state";
@@ -46,11 +24,7 @@
 <section class="flex flex-col gap-2">
     <DataTable
         {data}
-        status={status === "loading_data"
-            ? status
-            : pendingCount > 0
-              ? "fetching"
-              : "idle"}
+        {status}
         columns={historyTableColumns()}
         {...data_table_props}
     >
