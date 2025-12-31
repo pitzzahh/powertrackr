@@ -32,3 +32,4 @@ export { default as Hash } from "@lucide/svelte/icons/hash";
 export { default as Coins } from "@lucide/svelte/icons/coins";
 export { default as CheckCircle } from "@lucide/svelte/icons/check-circle";
 export { default as Zap } from "@lucide/svelte/icons/zap";
+export { default as Github } from "@lucide/svelte/icons/github";
