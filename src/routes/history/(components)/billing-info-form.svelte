@@ -226,6 +226,10 @@
     </Field.Group>
 
     <Button class="w-full" type="submit" aria-busy={!!currentAction.pending}>
-        Submit
+        {#if action === "add"}
+            Add
+        {:else}
+            Update
+        {/if}
     </Button>
 </form>
