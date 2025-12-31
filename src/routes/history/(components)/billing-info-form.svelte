@@ -7,7 +7,7 @@
          * Callback to be called when the form is submitted.
          * This can be used to reset the form or perform other actions.
          */
-        callback?: () => void;
+        callback?: (valid: boolean) => void;
     };
 </script>
 
@@ -35,6 +35,7 @@
     import type { BillingInfoDTO } from "$/types/billing-info";
     import { formatDate } from "$/utils/format";
     import { convertToNormalText } from "$/utils/text";
+    import { toast } from "svelte-sonner";
 
     let {
         action,
@@ -64,7 +65,23 @@
 </script>
 
 <form
-    {...currentAction.enhance(({ submit }) => submit().finally(callback))}
+    {...currentAction.enhance(async ({ submit }) => {
+        const toastId = toast.loading(
+            action === "add"
+                ? "Adding billing info..."
+                : "Updating billing info...",
+        );
+        try {
+            try {
+                return await submit();
+            } catch {
+                return callback?.(false);
+            }
+        } finally {
+            toast.dismiss(toastId);
+            callback?.(true);
+        }
+    })}
     class="space-y-4"
 >
     {#if action === "update" && billingInfo}
@@ -206,16 +223,13 @@
                                 {option.label}
                             </Select.Item>
                         {/each}
-                    </Select.Group>
+                    </Select.Group>status
                 </Select.Content>
             </Select.Root>
             <input
                 {...createBillingInfo.fields.status.as("text")}
                 type="hidden"
-                {...action === "update" &&
-                    billingInfo && {
-                        value: billingInfo.status.toString(),
-                    }}
+                value={status}
             />
             <Field.Description>Select status</Field.Description>
             <Field.Error
