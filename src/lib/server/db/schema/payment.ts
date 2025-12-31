@@ -1,5 +1,6 @@
 import { sqliteTable, uniqueIndex, text, real } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { timestamps } from ".";
 
 export const payment = sqliteTable(
   "Payment",
@@ -9,6 +10,7 @@ export const payment = sqliteTable(
     date: text()
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    ...timestamps,
   },
   (table) => [uniqueIndex("Payment_id_key").on(table.id)],
 );

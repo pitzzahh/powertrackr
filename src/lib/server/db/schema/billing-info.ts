@@ -8,6 +8,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { payment } from "./payment";
 import { user } from "./user";
+import { timestamps } from ".";
 
 export const billingInfo = sqliteTable(
   "BillingInfo",
@@ -24,6 +25,7 @@ export const billingInfo = sqliteTable(
     subReadingOld: integer(),
     paymentId: text(),
     subPaymentId: text(),
+    ...timestamps,
   },
   (table) => [
     index("BillingInfo_user_id_idx").on(table.userId),
