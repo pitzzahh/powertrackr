@@ -9,7 +9,8 @@ export const handle = async ({ event, resolve }) => {
     headers: event.request.headers,
   });
 
-  if (!session) redirect(303, "/auth?act=login");
+  if (!session && !event.url.pathname.startsWith("/auth"))
+    redirect(303, "/auth?act=login");
 
   if (session) {
     event.locals.session = session.session;
