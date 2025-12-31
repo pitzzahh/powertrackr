@@ -11,42 +11,42 @@ import { user } from "./user";
 import { timestamps } from ".";
 
 export const billingInfo = sqliteTable(
-  "BillingInfo",
+  "billing_info",
   {
     id: text().primaryKey().notNull(),
     userId: text("user_id").notNull(),
     date: text().notNull(), // Use text for timestamp in sqlite
-    totalKwh: integer().notNull(),
-    subKwh: integer(),
+    totalKwh: integer("total_kwh").notNull(),
+    subKwh: integer("sub_kwh"),
     balance: real().notNull(),
     status: text().notNull(),
-    payPerKwh: real().notNull(),
-    subReadingLatest: integer(),
-    subReadingOld: integer(),
-    paymentId: text(),
-    subPaymentId: text(),
+    payPerKwh: real("pay_per_kwh").notNull(),
+    subReadingLatest: integer("sub_reading_latest"),
+    subReadingOld: integer("sub_reading_old"),
+    paymentId: text("payment_id"),
+    subPaymentId: text("sub_payment_id"),
     ...timestamps,
   },
   (table) => [
-    index("BillingInfo_user_id_idx").on(table.userId),
+    index("billing_info_user_id_idx").on(table.userId),
     foreignKey({
       columns: [table.paymentId],
       foreignColumns: [payment.id],
-      name: "BillingInfo_paymentId_fkey",
+      name: "billing_info_payment_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.subPaymentId],
       foreignColumns: [payment.id],
-      name: "BillingInfo_subPaymentId_fkey",
+      name: "billing_info_sub_payment_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "BillingInfo_user_id_fkey",
+      name: "billing_info_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
