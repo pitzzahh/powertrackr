@@ -15,7 +15,7 @@ export function requireAuth(): App.Locals {
   const { locals } = getRequestEvent();
 
   if (!locals.user && !locals.session) {
-    redirect(307, "/auth/login");
+    redirect(307, "/auth");
   }
 
   return {
