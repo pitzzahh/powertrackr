@@ -5,12 +5,15 @@
     import SettingsDialog from "./settings-dialog.svelte";
     import { sidebarStore } from "$lib/stores/sidebar.svelte";
     import { Separator } from "$/components/ui/separator";
+    import { pendingFetchContext } from "$/context";
 
     let {
         open = $bindable(false),
     }: {
         open: boolean;
     } = $props();
+    const pendingFetches = () =>
+        pendingFetchContext && pendingFetchContext.get();
 </script>
 
 <nav class="flex flex-col gap-8">
@@ -22,6 +25,7 @@
             href={item.route}
             onclick={() => {
                 open = false;
+                pendingFetches().delete();
                 sidebarStore.navItems = sidebarStore.navItems.map(
                     (navItem) => ({
                         ...navItem,
