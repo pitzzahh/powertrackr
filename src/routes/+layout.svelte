@@ -1,9 +1,11 @@
 <script lang="ts">
     import "./layout.css";
     import { ModeWatcher } from "mode-watcher";
-    import favicon from "$lib/assets/favicon.svg";
-    import FocusRing from "$lib/components/focus-ring.svelte";
+    import favicon from "$/assets/favicon.svg";
+    import FocusRing from "$/components/focus-ring.svelte";
     import Header from "$routes/(components)/header.svelte";
+    import { Toaster } from "$/components/ui/sonner/index.js";
+
     import SidebarContent from "$routes/(components)/sidebar-content.svelte";
     import { scale } from "svelte/transition";
 
@@ -12,6 +14,7 @@
 
 <ModeWatcher />
 <FocusRing />
+<Toaster />
 
 <svelte:head>
     <link rel="icon" href={favicon} />
