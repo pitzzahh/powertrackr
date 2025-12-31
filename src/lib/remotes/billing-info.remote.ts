@@ -1,4 +1,4 @@
-import { query, form, command, getRequestEvent } from "$app/server";
+import { query, form, command } from "$app/server";
 
 import { db } from "$lib/server/db/index";
 import { billingInfo } from "$lib/server/db/schema/billing-info";
@@ -19,6 +19,7 @@ import type {
   BillingSummary,
 } from "$/types/billing-info";
 import { eq } from "drizzle-orm";
+import { requireAuth } from "$/server/auth";
 
 // Query to get all billing infos for a user
 export const getBillingInfos = query(
@@ -115,15 +116,9 @@ export const getBillingSummary = query(
 export const createBillingInfo = form(
   billFormSchema,
   async (data): Promise<BillingInfo> => {
-    const event = getRequestEvent();
-    // @ts-expect-error - auth will be set up later
-    const session = await event.locals.auth.validate();
+    const { session } = requireAuth();
 
-    if (!session) {
-      throw new Error("Unauthorized");
-    }
-
-    const userId = session.user.userId;
+    const userId = session.userId;
 
     const { date, totalKwh, balance, status: statusBool, subReading } = data;
 
