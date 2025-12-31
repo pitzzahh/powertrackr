@@ -30,11 +30,11 @@
     "@tanstack/table-core": "^8.21.3",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.1.7",
-    "@types/node": "^25.0.3",
     "@types/pg": "^8.16.0",
     "bits-ui": "^2.14.4",
     "clsx": "^2.1.1",
     "drizzle-kit": "^1.0.0-beta.6-4414a19",
+    "drizzle-orm": "^1.0.0-beta.6-4414a19",
     "eslint-plugin-svelte": "^3.13.1",
     "globals": "^16.5.0",
     "layerchart": "2.0.0-next.43",
@@ -52,14 +52,12 @@
     "vite": "^7.2.6"
   },
   "dependencies": {
-    "@sqlitecloud/drivers": "^1.0.715",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
     "better-auth": "^1.4.9",
     "d3-shape": "^3.2.0",
     "dotenv": "^17.2.3",
-    "drizzle-orm": "^1.0.0-beta.6-4414a19",
     "mode-watcher": "^1.1.0",
     "runed": "^0.37.1",
     "zod": "^4.2.1"
