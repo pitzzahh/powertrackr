@@ -11,7 +11,7 @@ export const auth = betterAuth({
   emailAndPassword: { enabled: true },
 });
 
-export function requireAuth() {
+export function requireAuth(): App.Locals {
   const { locals } = getRequestEvent();
 
   if (!locals.user && !locals.session) {
