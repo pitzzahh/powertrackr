@@ -21,7 +21,7 @@
   import { Github } from "$/assets/icons";
 
   let {
-    action = "login",
+    action,
     ref = $bindable(null),
     class: className,
     ...restProps
@@ -77,7 +77,9 @@
         <Password.Input required>
           <Password.ToggleVisibility />
         </Password.Input>
-        <Password.Strength />
+        {#if action === "register"}
+          <Password.Strength />
+        {/if}
       </Password.Root>
     </Field>
     {#if action === "register"}
@@ -93,7 +95,9 @@
         </Password.Root>
       </Field>{/if}
     <Field>
-      <Button type="submit">Login</Button>
+      <Button type="submit">
+        {action === "login" ? "Login to your account" : "Create your account"}
+      </Button>
     </Field>
     <FieldSeparator>Or continue with</FieldSeparator>
     <Field>
@@ -105,7 +109,10 @@
         {action === "login"
           ? "Don't have an account? "
           : "Already have an account? "}
-        <a href="##" class="underline underline-offset-4">
+        <a
+          href="/auth?act={action === 'login' ? 'register' : 'login'}"
+          class="underline underline-offset-4"
+        >
           {action === "login" ? "Sign up" : "Login"}
         </a>
       </FieldDescription>
