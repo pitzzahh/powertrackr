@@ -1,14 +1,20 @@
-import { sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
+import { timestamps } from ".";
 
 export const user = sqliteTable(
-  "User",
-  {
-    id: text().primaryKey().notNull(),
-    name: text().notNull(),
-    username: text().notNull(),
-    picture: text(),
-  },
-  (table) => [uniqueIndex("User_username_key").on(table.username)],
+  "user",
+  (t) => ({
+    id: t.text().primaryKey(),
+    name: t.text().notNull(),
+    email: t.text().notNull(),
+    emailVerified: t
+      .integer("email_verified", { mode: "boolean" })
+      .default(false)
+      .notNull(),
+    image: t.text(),
+    ...timestamps,
+  }),
+  (table) => [uniqueIndex("user_username_key").on(table.email)],
 );
 
 export type User = typeof user.$inferSelect;

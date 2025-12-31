@@ -7,22 +7,28 @@ import {
   foreignKey,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
+import { timestamps } from ".";
 
 export const session = sqliteTable(
-  "Session",
+  "session",
   {
     id: text().primaryKey().notNull(),
-    userId: text("user_id").notNull(),
-    activeExpires: integer("active_expires").notNull(),
-    idleExpires: integer("idle_expires").notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+    token: text().notNull().unique(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    ...timestamps,
   },
   (table) => [
-    uniqueIndex("Session_id_key").on(table.id),
-    index("Session_user_id_idx").on(table.userId),
+    uniqueIndex("session_id_key").on(table.id),
+    index("session_user_id_idx").on(table.userId),
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
-      name: "Session_user_id_fkey",
+      name: "session_user_id_fkey",
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
