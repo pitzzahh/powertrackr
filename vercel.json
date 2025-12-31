@@ -1,4 +1,11 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "bun run build",
-  "outputDirectory": "build"
+  "outputDirectory": "build",
+  "bunVersion": "1.x",
+  "functions": {
+    "build/index.js": {
+      "runtime": "bun"
+    }
+  }
 }
