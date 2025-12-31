@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type User, type Session } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { sveltekitCookies } from "better-auth/svelte-kit";
 import { db } from "$/server/db";
@@ -14,9 +14,12 @@ export const auth = betterAuth({
 export function requireAuth() {
   const { locals } = getRequestEvent();
 
-  if (!locals.user) {
+  if (!locals.user && !locals.session) {
     redirect(307, "/auth/login");
   }
 
-  return locals.user;
+  return {
+    user: locals.user as User,
+    session: locals.session as Session,
+  };
 }
