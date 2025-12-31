@@ -1,7 +1,8 @@
 <script lang="ts">
-  import LoginForm from "$lib/components/login-form.svelte";
+  import AuthForm from "$lib/components/auth-form.svelte";
   import Logo from "$/components/logo.svelte";
   import hero from "$/assets/illustrations/hero.svg";
+  let { data } = $props();
 </script>
 
 <div class="grid min-h-svh lg:grid-cols-2">
@@ -11,7 +12,7 @@
     </div>
     <div class="flex flex-1 items-center justify-center">
       <div class="w-full max-w-xs">
-        <LoginForm />
+        <AuthForm action={data.action} />
       </div>
     </div>
   </div>
@@ -19,7 +20,7 @@
     <img
       src={hero}
       alt="placeholder"
-      class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+      class="absolute inset-0 h-full w-full object-cover"
     />
   </div>
 </div>
