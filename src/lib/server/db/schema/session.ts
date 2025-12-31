@@ -7,7 +7,6 @@ import {
   foreignKey,
 } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
-import { timestamps } from ".";
 
 export const session = sqliteTable(
   "session",
@@ -20,7 +19,6 @@ export const session = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    ...timestamps,
   },
   (table) => [
     uniqueIndex("session_id_key").on(table.id),
