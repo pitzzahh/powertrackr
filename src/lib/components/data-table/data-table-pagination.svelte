@@ -39,33 +39,35 @@
 >
     <!-- Left section: Selection and loading info -->
     <div class="flex items-center gap-4">
-        {#if table.getFilteredSelectedRowModel().rows.length > 0}
-            <div transition:scale={{ duration: 200, easing: cubicInOut }}>
+        {#key status}
+            {#if table.getFilteredSelectedRowModel().rows.length > 0}
+                <div transition:scale={{ duration: 200, easing: cubicInOut }}>
+                    <Badge
+                        variant="secondary"
+                        class="flex items-center dark:bg-background gap-2 text-sm font-medium whitespace-nowrap"
+                    >
+                        <div
+                            class="size-2 bg-primary rounded-full animate-pulse"
+                        ></div>
+                        {table.getFilteredSelectedRowModel().rows.length} of
+                        {table.getFilteredRowModel().rows.length} selected
+                    </Badge>
+                </div>
+            {/if}
+            {#if status === "loading_data" || status === "fetching"}
                 <Badge
                     variant="secondary"
-                    class="flex items-center dark:bg-background gap-2 text-sm font-medium whitespace-nowrap"
+                    class="animate-pulse flex items-center dark:bg-background text-sm font-medium whitespace-nowrap"
                 >
-                    <div
-                        class="size-2 bg-primary rounded-full animate-pulse"
-                    ></div>
-                    {table.getFilteredSelectedRowModel().rows.length} of
-                    {table.getFilteredRowModel().rows.length} selected
+                    <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
+                    {#if status === "loading_data"}
+                        Crunching initial data...
+                    {:else}
+                        Fetching some required data...
+                    {/if}
                 </Badge>
-            </div>
-        {/if}
-        {#if status === "loading_data" || status === "fetching"}
-            <Badge
-                variant="secondary"
-                class="animate-pulse flex items-center dark:bg-background text-sm font-medium whitespace-nowrap"
-            >
-                <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
-                {#if status === "loading_data"}
-                    Crunching initial data...
-                {:else}
-                    Fetching some required data...
-                {/if}
-            </Badge>
-        {/if}
+            {/if}
+        {/key}
     </div>
 
     <!-- Right section: Controls -->
