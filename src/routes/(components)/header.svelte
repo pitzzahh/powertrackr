@@ -7,8 +7,10 @@
         quickActions: {
             icon: typeof Icon;
             label: string;
-            content: (callback: () => void) => ReturnType<Snippet<[]>>;
-            callback: () => void;
+            content: (
+                callback: (valid: boolean) => void,
+            ) => ReturnType<Snippet<[]>>;
+            callback: (valid: boolean) => void;
         }[];
     };
 </script>
@@ -26,6 +28,7 @@
     import { cubicInOut } from "svelte/easing";
     import BillingInfoForm from "$routes/history/(components)/billing-info-form.svelte";
     import { ScrollArea } from "$/components/ui/scroll-area";
+    import { toast } from "svelte-sonner";
 
     let { openMenu, quickActions }: HeaderState = $state({
         openMenu: false,
@@ -34,8 +37,12 @@
                 icon: PhilippinePeso,
                 label: "New Bill",
                 content: newBill,
-                callback: () => {
-                    alert("Not yet implemented!");
+                callback: (valid) => {
+                    let message = valid
+                        ? "Bill added successfully!"
+                        : "Failed to add bill. Please check the form for errors.";
+                    if (valid) toast.success(message);
+                    else toast.error(message);
                 },
             },
         ],
