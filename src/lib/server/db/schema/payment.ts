@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { timestamps } from ".";
 
 export const payment = sqliteTable(
-  "Payment",
+  "payment",
   {
     id: text().primaryKey().notNull(),
     amount: real(),
@@ -12,7 +12,7 @@ export const payment = sqliteTable(
       .notNull(),
     ...timestamps,
   },
-  (table) => [uniqueIndex("Payment_id_key").on(table.id)],
+  (table) => [uniqueIndex("payment_id_key").on(table.id)],
 );
 
 export type Payment = typeof payment.$inferSelect;
