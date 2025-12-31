@@ -7,10 +7,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.billingInfo.userId,
     }),
-    keys: r.many.key({
-      from: r.user.id,
-      to: r.key.userId,
-    }),
     sessions: r.many.session({
       from: r.user.id,
       to: r.session.userId,
@@ -38,12 +34,6 @@ export const relations = defineRelations(schema, (r) => ({
     subBillingInfos: r.many.billingInfo({
       from: r.payment.id,
       to: r.billingInfo.subPaymentId,
-    }),
-  },
-  key: {
-    user: r.one.user({
-      from: r.key.userId,
-      to: r.user.id,
     }),
   },
   session: {
