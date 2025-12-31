@@ -20,11 +20,16 @@
 
     onMount(async () => {
         status = "loading_data";
-        billingInfos = await hydratable("history_data", () =>
-            getBillingInfos({
-                userId: "5wqtwauhbzkfcqo",
-            }),
-        );
+        try {
+            billingInfos = await hydratable("billing_infos", () =>
+                getBillingInfos({ userId: "5wqtwauhbzkfcqo" }),
+            );
+        } catch (error) {
+            console.error(error);
+            billingInfos = [];
+            status = "error";
+            return;
+        }
         status = "success";
     });
 </script>
