@@ -73,7 +73,10 @@
           </a>
         {/if}
       </div>
-      <Password.Root id="password-{id}">
+      <Password.Root
+        id="password-{id}"
+        enableStrengthCheck={action === "register"}
+      >
         <Password.Input required>
           <Password.ToggleVisibility />
         </Password.Input>
