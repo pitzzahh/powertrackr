@@ -52,6 +52,8 @@
     "vite": "^7.2.6"
   },
   "dependencies": {
+    "@oslojs/binary": "^1.0.0",
+    "@oslojs/encoding": "^1.1.0",
     "@zxcvbn-ts/core": "^3.0.4",
     "@zxcvbn-ts/language-common": "^3.0.4",
     "@zxcvbn-ts/language-en": "^3.0.2",
