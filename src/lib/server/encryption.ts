@@ -2,6 +2,7 @@ import { decodeBase64, encodeBase32UpperCaseNoPadding } from "@oslojs/encoding";
 import { createCipheriv, createDecipheriv } from "crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
+import { hash, verify } from "argon2";
 
 const key = decodeBase64(ENCRYPTION_KEY);
 
@@ -51,4 +52,19 @@ export function generateRandomRecoveryCode(): string {
   crypto.getRandomValues(recoveryCodeBytes);
   const recoveryCode = encodeBase32UpperCaseNoPadding(recoveryCodeBytes);
   return recoveryCode;
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  return await hash(password, {
+    memoryCost: 19456,
+    timeCost: 2,
+    parallelism: 1,
+  });
+}
+
+export async function verifyPasswordHash(
+  hash: string,
+  password: string,
+): Promise<boolean> {
+  return await verify(hash, password);
 }
