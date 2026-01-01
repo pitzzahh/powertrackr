@@ -20,6 +20,7 @@ type PasswordRootStateProps = WritableBoxedValues<{
 }> &
   ReadableBoxedValues<{
     minScore: number;
+    enableStrengthCheck: boolean;
   }>;
 
 type PasswordState = {
@@ -42,7 +43,29 @@ class PasswordRootState {
   constructor(readonly opts: PasswordRootStateProps) {}
 
   // only re-run when the password changes
-  strength = $derived.by(() => zxcvbn(this.passwordState.value));
+  strength = $derived.by(() =>
+    this.opts.enableStrengthCheck.current
+      ? zxcvbn(this.passwordState.value)
+      : {
+          score: 4,
+          feedback: { warning: "", suggestions: [] },
+          guesses: 0,
+          guessesLog10: 0,
+          crackTimesSeconds: {
+            onlineThrottling100PerHour: 0,
+            onlineNoThrottling10PerSecond: 0,
+            offlineSlowHashing1e4PerSecond: 0,
+            offlineFastHashing1e10PerSecond: 0,
+          },
+          crackTimesDisplay: {
+            onlineThrottling100PerHour: "less than a second",
+            onlineNoThrottling10PerSecond: "less than a second",
+            offlineSlowHashing1e4PerSecond: "less than a second",
+            offlineFastHashing1e10PerSecond: "less than a second",
+          },
+          sequence: [],
+        },
+  );
 }
 
 type PasswordInputStateProps = WritableBoxedValues<{
@@ -73,7 +96,8 @@ class PasswordInputState {
       // if the password is empty, we let the `required` attribute handle the validation
       if (
         this.root.passwordState.value !== "" &&
-        this.root.strength.score < this.root.opts.minScore.current
+        this.root.strength.score < this.root.opts.minScore.current &&
+        this.root.opts.enableStrengthCheck.current
       ) {
         this.opts.ref.current?.setCustomValidity("Password is too weak");
       } else {
@@ -86,7 +110,8 @@ class PasswordInputState {
     "aria-invalid":
       this.root.strength.score < this.root.opts.minScore.current &&
       this.root.passwordState.tainted &&
-      this.root.passwordState.strengthMounted,
+      this.root.passwordState.strengthMounted &&
+      this.root.opts.enableStrengthCheck.current,
   }));
 }
 

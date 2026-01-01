@@ -8,6 +8,7 @@
     ref = $bindable(null),
     hidden = $bindable(true),
     minScore = 3,
+    enableStrengthCheck = true,
     class: className,
     children,
   }: PasswordRootProps = $props();
@@ -18,6 +19,7 @@
       (v) => (hidden = v),
     ),
     minScore: box.with(() => minScore),
+    enableStrengthCheck: box.with(() => enableStrengthCheck),
   });
 </script>
 

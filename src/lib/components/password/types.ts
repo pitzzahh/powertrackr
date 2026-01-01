@@ -15,6 +15,11 @@ export type PasswordRootPropsWithoutHTML = WithChildren<{
    * @default 3
    */
   minScore?: 0 | 1 | 2 | 3 | 4;
+  /** Whether to enable password strength checking and validation.
+   *
+   * @default true
+   */
+  enableStrengthCheck?: boolean;
 }>;
 
 export type PasswordRootProps = WithoutChildren<
