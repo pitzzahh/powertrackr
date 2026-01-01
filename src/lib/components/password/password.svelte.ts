@@ -1,6 +1,7 @@
 import { Context, watch } from "runed";
 import type { ReadableBoxedValues, WritableBoxedValues } from "svelte-toolbelt";
 import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
+import type { Score } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import * as zxcvbnEnPackage from "@zxcvbn-ts/language-en";
 
@@ -47,10 +48,12 @@ class PasswordRootState {
     this.opts.enableStrengthCheck.current
       ? zxcvbn(this.passwordState.value)
       : {
-          score: 4,
+          password: "",
+          score: 4 as Score,
           feedback: { warning: "", suggestions: [] },
           guesses: 0,
           guessesLog10: 0,
+          calcTime: 0,
           crackTimesSeconds: {
             onlineThrottling100PerHour: 0,
             onlineNoThrottling10PerSecond: 0,
