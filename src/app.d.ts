@@ -1,4 +1,5 @@
-import type { Session, User } from "better-auth";
+import type { User } from "$/server/db/schema/user.js";
+import type { Session } from "$/server/db/schema/session.js";
 
 declare global {
   namespace App {

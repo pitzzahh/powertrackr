@@ -32,3 +32,6 @@ export const session = sqliteTable(
       .onDelete("cascade"),
   ],
 );
+
+export type Session = typeof session.$inferSelect;
+export type NewSession = typeof session.$inferInsert;
