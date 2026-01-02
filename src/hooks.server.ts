@@ -1,9 +1,9 @@
 import * as auth from "$lib/server/auth";
 import { sequence } from "@sveltejs/kit/hooks";
 import { dev } from "$app/environment";
+import type { Handle } from "@sveltejs/kit";
 
-/** @type {import('@sveltejs/kit').Handle} */
-const handleAuth = async ({ event, resolve }) => {
+const handleAuth: Handle = async ({ event, resolve }) => {
   const sessionToken = event.cookies.get(auth.sessionCookieName);
 
   if (!sessionToken) {
