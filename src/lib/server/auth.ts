@@ -7,7 +7,7 @@ import { getRequestEvent } from "$app/server";
 import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { Session } from "$/server/db/schema/session";
 
-export function requireAuth(): App.Locals {
+export function requireAuth() {
   const { locals } = getRequestEvent();
 
   if (locals.user === null || locals.session === null) {
