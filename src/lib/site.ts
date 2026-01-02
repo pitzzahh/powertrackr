@@ -1,5 +1,5 @@
 export const site = {
-  name: "powertrackr",
+  name: "PowerTrackr",
   author: "pitzzahh",
   url: "https://powertrackr.vercel.app",
   ogImage: "https://powertrackr.vercel.app/og.avif",

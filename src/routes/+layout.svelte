@@ -19,7 +19,7 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>{site.name}</title>
+  <title>{site.name}: {site.description}</title>
   <meta name="author" content={site.author} />
   <meta name="description" content={site.description} />
   <meta name="keywords" content={site.keywords} />
