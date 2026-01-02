@@ -5,6 +5,7 @@
   import FocusRing from "$/components/focus-ring.svelte";
   import Header from "$routes/(components)/header.svelte";
   import { Toaster } from "$/components/ui/sonner/index.js";
+  import { site } from "$/site";
 
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
@@ -18,6 +19,16 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
+  <title>{site.name}</title>
+  <meta name="author" content={site.author} />
+  <meta name="description" content={site.description} />
+  <meta name="keywords" content={site.keywords} />
+  <meta property="og:title" content={site.name} />
+  <meta property="og:description" content={site.description} />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:image" content={site.ogImage} />
+  <meta property="og:url" content={site.url} />
+  <meta property="og:type" content="website" />
 </svelte:head>
 
 {#if data.user && data.session}
