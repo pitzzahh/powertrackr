@@ -104,7 +104,7 @@
     </Field>
     <FieldSeparator>Or continue with</FieldSeparator>
     <Field>
-      <Button variant="outline" type="button">
+      <Button variant="outline" type="button" href="/auth/github">
         <Github />
         {action === "login" ? "Login with Github" : "Sign up with GitHub"}
       </Button>
