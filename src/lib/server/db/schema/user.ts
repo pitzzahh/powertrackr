@@ -5,6 +5,7 @@ export const user = sqliteTable(
   "user",
   (t) => ({
     id: t.text().primaryKey(),
+    githubId: t.integer().unique(),
     name: t.text().notNull(),
     email: t.text().notNull(),
     emailVerified: t
@@ -12,6 +13,7 @@ export const user = sqliteTable(
       .default(false)
       .notNull(),
     image: t.text(),
+    passwordHash: t.text("password_hash").notNull(),
     ...timestamps,
   }),
   (table) => [uniqueIndex("user_email_key").on(table.email)],

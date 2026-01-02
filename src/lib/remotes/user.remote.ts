@@ -20,15 +20,14 @@ export const getUser = query(getUserSchema, async (id) => {
   return await db.query.user.findFirst({ where: { id } });
 });
 
-// Form to create a new user
-export const createUser = form(createUserSchema, async (data) => {
-  const id = crypto.randomUUID();
-  const result = await db
-    .insert(user)
-    .values({ id, ...data })
-    .returning();
-  return result[0];
+// Query to get a single user by github id
+export const getUserFromGitHubId = query(z.number(), async (githubId) => {
+  return await db.query.user.findFirst({ where: { githubId } });
 });
+
+// Form to create a new user
+export const createUser = form(createUserSchema, createUserInternal);
+export const createUserCommand = command(createUserSchema, createUserInternal);
 
 // Form to update an existing user
 export const updateUser = form(updateUserSchema, async (data) => {
@@ -45,3 +44,14 @@ export const updateUser = form(updateUserSchema, async (data) => {
 export const deleteUser = command(deleteUserSchema, async ({ id }) => {
   await db.delete(user).where(eq(user.id, id));
 });
+
+async function createUserInternal(
+  data: Omit<z.infer<typeof createUserSchema>, "id">,
+) {
+  const id = crypto.randomUUID();
+  const result = await db
+    .insert(user)
+    .values({ id, ...data })
+    .returning();
+  return result[0];
+}

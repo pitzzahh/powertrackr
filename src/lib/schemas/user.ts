@@ -2,8 +2,10 @@ import { z } from "zod";
 
 export const createUserSchema = z.object({
   name: z.string(),
-  username: z.string(),
-  picture: z.optional(z.string()),
+  email: z.email(),
+  githubId: z.number().optional(),
+  image: z.optional(z.string()),
+  passwordHash: z.string().optional(),
 });
 
 export const updateUserSchema = createUserSchema.extend({
