@@ -5,6 +5,6 @@ export function createGitHub(url: URL) {
   return new GitHub(
     GITHUB_CLIENT_ID,
     GITHUB_CLIENT_SECRET,
-    `${url.protocol}//${url.host}/login/github/callback`,
+    `${url.protocol}//${url.host}/auth/github/callback`,
   );
 }
