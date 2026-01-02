@@ -1,9 +1,6 @@
-import { requireAuth } from "$/server/auth";
-
-export function load() {
+export function load({ locals }) {
   return {
-    user: null,
-    session: null,
+    user: locals.user,
+    session: locals.session,
   };
-  return requireAuth();
 }
