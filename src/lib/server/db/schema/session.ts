@@ -18,8 +18,8 @@ export const session = sqliteTable(
       .text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    twoFactorVerifiedAt: t
-      .integer("two_factor_verified_at", { mode: "boolean" })
+    twoFactorVerified: t
+      .integer("two_factor_verified", { mode: "boolean" })
       .notNull()
       .default(false),
   }),
