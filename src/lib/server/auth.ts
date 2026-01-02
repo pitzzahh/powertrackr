@@ -1,20 +1,10 @@
-import { betterAuth, type User, type Session } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { sveltekitCookies } from "better-auth/svelte-kit";
+import { eq } from "drizzle-orm";
+import { sha256 } from "@oslojs/crypto/sha2";
+import { encodeHexLowerCase } from "@oslojs/encoding";
+import { user, session } from "$lib/server/db/schema";
 import { db } from "$/server/db";
 import { getRequestEvent } from "$app/server";
-import { redirect } from "@sveltejs/kit";
-import { BETTER_AUTH_SECRET, BETTER_AUTH_URL } from "$env/static/private";
-import { dev } from "$app/environment";
-
-export const auth = betterAuth({
-  database: drizzleAdapter(db, { provider: "sqlite" }),
-  plugins: [sveltekitCookies(getRequestEvent)],
-  emailAndPassword: { enabled: true },
-  secret: BETTER_AUTH_SECRET,
-  baseURL: BETTER_AUTH_URL,
-  telemetry: { enabled: false, debug: dev },
-});
+import { redirect, type RequestEvent } from "@sveltejs/kit";
 
 export function requireAuth(): App.Locals {
   const { locals } = getRequestEvent();
@@ -24,7 +14,89 @@ export function requireAuth(): App.Locals {
   }
 
   return {
-    user: locals.user as User,
-    session: locals.session as Session,
+    user: locals.user,
+    session: locals.session,
   };
+}
+
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+export const sessionCookieName = "auth-session";
+
+export async function createSession(token: string, userId: string) {
+  const event = getRequestEvent();
+  return await db.insert(session).values({
+    id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
+    userId,
+    expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
+    token,
+    ipAddress: event.getClientAddress(),
+    userAgent: event.request.headers.get("user-agent"),
+  });
+}
+
+export async function validateSessionToken(token: string) {
+  const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+  const [result] = await db
+    .select({
+      // Adjust user table here to tweak returned data
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        image: user.image,
+        emailVerified: user.emailVerified,
+      },
+      session: session,
+    })
+    .from(session)
+    .innerJoin(user, eq(session.userId, user.id))
+    .where(eq(session.id, sessionId));
+
+  if (!result) {
+    return { session: null, user: null };
+  }
+  const { session: sessionResult, user: userResult } = result;
+
+  // delete expired sessions
+  if (Date.now() >= sessionResult.expiresAt.getTime()) {
+    await db.delete(session).where(eq(session.id, session.id));
+    return { session: null, user: null };
+  }
+
+  // renew session if it's within 15 days of expiry
+  if (Date.now() >= sessionResult.expiresAt.getTime() - DAY_IN_MS * 15) {
+    sessionResult.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
+    await db
+      .update(session)
+      .set({ expiresAt: session.expiresAt })
+      .where(eq(session.id, session.id));
+  }
+
+  return { session: sessionResult, user: userResult };
+}
+
+export type SessionValidationResult = Awaited<
+  ReturnType<typeof validateSessionToken>
+>;
+
+export async function invalidateSession(sessionId: string) {
+  await db.delete(session).where(eq(session.id, sessionId));
+}
+
+export function setSessionTokenCookie(
+  event: RequestEvent,
+  token: string,
+  expiresAt: Date,
+) {
+  event.cookies.set(sessionCookieName, token, {
+    expires: expiresAt,
+    path: "/",
+  });
+}
+
+export function deleteSessionTokenCookie(event: RequestEvent) {
+  event.cookies.delete(sessionCookieName, {
+    path: "/auth?act=login",
+  });
 }
