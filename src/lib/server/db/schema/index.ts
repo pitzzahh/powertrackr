@@ -6,4 +6,3 @@ export { payment } from "./payment";
 export { billingInfo } from "./billing-info";
 export { session } from "./session";
 export { account } from "./account";
-export { verification } from "./verification";
