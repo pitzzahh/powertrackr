@@ -1,5 +1,5 @@
 import { db } from "$/server/db";
-import { and, asc, count, desc, eq, not, type SQLWrapper } from "drizzle-orm";
+import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { user } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
@@ -40,6 +40,7 @@ export async function updateUserBy(
     return {
       valid: user_result.valid,
       message: user_result.message,
+      value: [],
     };
   }
 
@@ -55,13 +56,15 @@ export async function updateUserBy(
     };
   }
 
+  const whereSQL = buildWhereSQL(conditions);
   const updateDBRequest = await db
     .update(user)
     .set(changed_data)
     .returning()
-    .where(conditions.length > 0 ? and(...conditions) : undefined);
+    .where(whereSQL);
 
-  const is_valid = conditions !== undefined && updateDBRequest.length > 0;
+  const is_valid =
+    Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
     valid: is_valid,
     message: `${updateDBRequest.length} user(s) ${is_valid ? "updated" : `not updated with ${generateNotFoundMessage(query)}`}`,
@@ -72,7 +75,7 @@ export async function updateUserBy(
 export async function getUserBy(
   data: HelperParam<NewUser>,
 ): Promise<HelperResult<NewUser[] | UserDTOWithSessions[]>> {
-  const { query, options } = data;
+  const { options } = data;
   const { limit, offset, order, with_session } = options;
   const conditions = generateUserQueryConditions(data);
   const queryDBResult = (await db.query.user.findMany({
@@ -82,15 +85,10 @@ export async function getUserBy(
             sessions: true,
           }
         : undefined,
-    where: conditions.length > 0 ? and(...conditions) : undefined,
+    where: Object.keys(conditions).length > 0 ? conditions : undefined,
     limit,
     offset,
-    orderBy:
-      order === "asc"
-        ? asc(user.createdAt)
-        : order === "desc"
-          ? desc(user.createdAt)
-          : undefined,
+    orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
   })) as NewUser[] | UserDTOWithSessions[];
 
   const mappedData = queryDBResult.map((user) => ({
@@ -99,7 +97,7 @@ export async function getUserBy(
   const is_valid = mappedData.length > 0;
   return {
     valid: is_valid,
-    message: `${mappedData.length} user(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(query)}`}`,
+    message: `${mappedData.length} user(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
     value: mappedData,
   };
 }
@@ -151,9 +149,8 @@ export async function getUserCountBy(
     request_query.limit(1);
   }
 
-  const [_data] = await request_query.where(
-    conditions.length > 0 ? and(...conditions) : undefined,
-  );
+  const whereSQL = buildWhereSQL(conditions);
+  const [_data] = await request_query.where(whereSQL);
 
   const _count = _data?.count;
   const is_valid = _count > 0;
@@ -170,18 +167,38 @@ export function generateUserQueryConditions(data: HelperParam<User>) {
   const { query, options } = data;
   const { id, name, email, registeredTwoFactor, emailVerified } = query;
   const { exclude_id } = options;
-  const conditions: SQLWrapper[] = [];
+  const where: Record<string, unknown> = {};
 
-  if (id) conditions.push(eq(user.id, id));
-  if (name) conditions.push(eq(user.name, name));
-  if (email) conditions.push(eq(user.email, email));
-  if (registeredTwoFactor)
-    conditions.push(eq(user.registeredTwoFactor, registeredTwoFactor));
-  if (emailVerified) conditions.push(eq(user.emailVerified, emailVerified));
+  if (id) where.id = id;
+  if (name) where.name = name;
+  if (email) where.email = email;
+  if (registeredTwoFactor) where.registeredTwoFactor = registeredTwoFactor;
+  if (emailVerified) where.emailVerified = emailVerified;
 
   if (exclude_id) {
-    conditions.push(not(eq(user.id, exclude_id)));
+    where.NOT = { id: exclude_id };
   }
 
-  return conditions;
+  return where;
+}
+
+function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
+  const conditions: SQL[] = [];
+  for (const [key, value] of Object.entries(where)) {
+    if (key === "NOT") {
+      const notObj = value as { id: string };
+      conditions.push(not(eq(user.id, notObj.id)));
+    } else if (key === "id") {
+      conditions.push(eq(user.id, value as string));
+    } else if (key === "name") {
+      conditions.push(eq(user.name, value as string));
+    } else if (key === "email") {
+      conditions.push(eq(user.email, value as string));
+    } else if (key === "registeredTwoFactor") {
+      conditions.push(eq(user.registeredTwoFactor, value as boolean));
+    } else if (key === "emailVerified") {
+      conditions.push(eq(user.emailVerified, value as boolean));
+    }
+  }
+  return conditions.length > 0 ? and(...conditions) : undefined;
 }
