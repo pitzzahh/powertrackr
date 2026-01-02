@@ -16,6 +16,10 @@
   import { Loader, Banknote } from "$lib/assets/icons";
   import type { ExtendedBillingInfo } from "$/types/billing-info";
 
+  let { data } = $props();
+
+  const { user } = $derived(data);
+
   let {
     extendedBillingInfos,
     status,
@@ -27,14 +31,14 @@
     status: "fetching",
   });
 
-  const summary = $derived(getBillingSummary({ userId: "5wqtwauhbzkfcqo" }));
+  const summary = $derived(getBillingSummary({ userId: user.id }));
 
   onMount(async () => {
     status = "fetching";
     try {
       extendedBillingInfos = await hydratable("chart_data", () =>
         getExtendedBillingInfos({
-          userId: "5wqtwauhbzkfcqo",
+          userId: user.id,
         }),
       );
       extendedBillingInfos = extendedBillingInfos.sort(
