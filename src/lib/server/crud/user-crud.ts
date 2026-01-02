@@ -7,9 +7,19 @@ import { getChangedData } from "$/utils/mapper";
 import type { NewUser, User, UserDTO, UserDTOWithSessions } from "$/types/user";
 
 export async function addUser(
-  data: NewUser[],
+  data: Omit<NewUser, "id">[],
 ): Promise<HelperResult<NewUser[]>> {
-  const insert_result = await db.insert(user).values(data).returning();
+  const insert_result = await db
+    .insert(user)
+    .values(
+      data.map((user_data) => {
+        return {
+          id: crypto.randomUUID(),
+          ...user_data,
+        };
+      }),
+    )
+    .returning();
 
   const is_valid = insert_result.length === data.length;
   return {

@@ -1,11 +1,12 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { createUserCommand, getUserFromGitHubId } from "$/remotes/user.remote";
+import { getUserFromGitHubId } from "$/remotes/user.remote";
 import { createSession, setSessionTokenCookie } from "$/server/auth";
 
 import type { OAuth2Tokens } from "arctic";
 import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "$/server/encryption";
 import { createGitHub } from "$/server/oauth";
+import { addUser } from "$/server/crud/user-crud";
 
 export async function GET(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;
@@ -83,11 +84,15 @@ export async function GET(event: RequestEvent): Promise<Response> {
     });
   }
 
-  const user = await createUserCommand({
-    githubId: githubUserId,
-    email,
-    name: name || username,
-  });
+  const {
+    value: [user],
+  } = await addUser([
+    {
+      githubId: githubUserId,
+      email,
+      name: name || username,
+    },
+  ]);
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id);
   setSessionTokenCookie(event, sessionToken, session.expiresAt);

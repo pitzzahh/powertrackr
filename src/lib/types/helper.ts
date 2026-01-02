@@ -2,7 +2,7 @@
 export type HelperResult<T = any> = {
   valid: boolean;
   message: string;
-  value?: T;
+  value: T;
 };
 export type HelperParam<T> = {
   query: Partial<T>;
