@@ -1,4 +1,8 @@
-import { decodeBase64, encodeBase32UpperCaseNoPadding } from "@oslojs/encoding";
+import {
+  decodeBase64,
+  encodeBase32UpperCaseNoPadding,
+  encodeBase64url,
+} from "@oslojs/encoding";
 import { createCipheriv, createDecipheriv } from "crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
@@ -67,4 +71,8 @@ export async function verifyPasswordHash(
   password: string,
 ): Promise<boolean> {
   return await verify(hash, password);
+}
+
+export function generateSessionToken() {
+  return encodeBase64url(crypto.getRandomValues(new Uint8Array(18)));
 }
