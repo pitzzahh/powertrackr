@@ -10,6 +10,6 @@ export function load({ url: { searchParams, pathname } }) {
     redirect(307, `/auth?act=login`);
   }
   return {
-    action: "login",
+    action: act as (typeof actions)[number],
   };
 }
