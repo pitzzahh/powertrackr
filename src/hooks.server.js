@@ -1,22 +1,9 @@
-import { svelteKitHandler } from "better-auth/svelte-kit";
-import { building, dev } from "$app/environment";
-import { auth } from "$/server/auth";
-import { redirect } from "@sveltejs/kit";
+import * as auth from "$lib/server/auth";
+import { sequence } from "@sveltejs/kit/hooks";
+import { dev } from "$app/environment";
 
 /** @type {import('@sveltejs/kit').Handle} */
-export const handle = async ({ event, resolve }) => {
-  const session = await auth.api.getSession({
-    headers: event.request.headers,
-  });
-
-  if (!session && !event.url.pathname.startsWith("/auth"))
-    redirect(303, "/auth?act=login");
-
-  if (session) {
-    event.locals.session = session.session;
-    event.locals.user = session.user;
-  }
-
+const handleAuth = async ({ event, resolve }) => {
   if (
     dev &&
     event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
@@ -24,5 +11,27 @@ export const handle = async ({ event, resolve }) => {
     return new Response(undefined, { status: 404 });
   }
 
-  return svelteKitHandler({ event, resolve, auth, building });
+  const sessionToken = event.cookies.get(auth.sessionCookieName);
+
+  if (!sessionToken) {
+    event.locals.user = null;
+    event.locals.session = null;
+
+    return resolve(event);
+  }
+
+  const { session, user } = await auth.validateSessionToken(sessionToken);
+
+  if (session) {
+    auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  } else {
+    auth.deleteSessionTokenCookie(event);
+  }
+
+  event.locals.user = user;
+  event.locals.session = session;
+
+  return resolve(event);
 };
+
+export const handle = sequence(handleAuth);

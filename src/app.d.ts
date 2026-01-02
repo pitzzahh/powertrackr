@@ -1,11 +1,8 @@
-import type { User } from "$/server/db/schema/user.js";
-import type { Session } from "$/server/db/schema/session.js";
-
 declare global {
   namespace App {
     interface Locals {
-      session?: Session;
-      user?: User;
+      user: import("$lib/server/auth").SessionValidationResult["user"];
+      session: import("$lib/server/auth").SessionValidationResult["session"];
     }
   }
 }
