@@ -10,7 +10,7 @@ import type { Session } from "$/server/db/schema/session";
 export function requireAuth(): App.Locals {
   const { locals } = getRequestEvent();
 
-  if (!locals.user || !locals.session) {
+  if (locals.user === null || locals.session === null) {
     redirect(307, "/auth?act=login");
   }
 

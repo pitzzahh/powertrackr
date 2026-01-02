@@ -122,7 +122,7 @@ export const createBillingInfo = form(
   async (data): Promise<BillingInfo> => {
     const { session } = requireAuth();
 
-    const userId = session.userId;
+    const userId = session!.userId;
 
     const { date, totalKwh, balance, status: statusBool, subReading } = data;
 
