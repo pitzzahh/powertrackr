@@ -18,6 +18,10 @@ export const session = sqliteTable(
       .text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    twoFactorVerifiedAt: t
+      .integer("two_factor_verified_at", { mode: "boolean" })
+      .notNull()
+      .default(false),
   }),
   (table) => [
     uniqueIndex("session_id_key").on(table.id),
