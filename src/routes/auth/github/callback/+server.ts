@@ -5,7 +5,7 @@ import { createSession, setSessionTokenCookie } from "$/server/auth";
 import type { OAuth2Tokens } from "arctic";
 import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "$/server/encryption";
-import { github } from "$/server/oauth";
+import { createGitHub } from "$/server/oauth";
 
 export async function GET(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;
@@ -25,7 +25,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
 
   let tokens: OAuth2Tokens;
   try {
-    tokens = await github.validateAuthorizationCode(code);
+    tokens = await createGitHub(event.url).validateAuthorizationCode(code);
   } catch (e) {
     return new Response("Please restart the process.", {
       status: 400,

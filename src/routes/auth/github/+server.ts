@@ -1,11 +1,13 @@
-import { github } from "$lib/server/oauth";
+import { createGitHub } from "$lib/server/oauth";
 import { generateState } from "arctic";
 import type { RequestEvent } from "./$types";
 import { dev } from "$app/environment";
 
 export function GET(event: RequestEvent): Response {
   const state = generateState();
-  const url = github.createAuthorizationURL(state, ["user:email"]);
+  const url = createGitHub(event.url).createAuthorizationURL(state, [
+    "user:email",
+  ]);
 
   event.cookies.set("github_oauth_state", state, {
     httpOnly: true,
