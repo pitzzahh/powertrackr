@@ -228,3 +228,10 @@ export function dataUrlToImageFile(
 
   return new File([u8arr], filename, { type: mimeType });
 }
+
+export function mapToType<T>(value: string, allowedValues: T[]): T {
+  if (allowedValues.includes(value as T)) {
+    return value as T;
+  }
+  throw Error(`Invalid value: ${value}`);
+}
