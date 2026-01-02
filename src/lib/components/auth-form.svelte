@@ -24,6 +24,7 @@
   import { cn } from "$/utils/style.js";
   import * as Password from "$/components/password";
   import { Github, Loader } from "$/assets/icons";
+  import { onDestroy } from "svelte";
 
   let {
     action,
@@ -37,6 +38,8 @@
   });
 
   const id = $props.id();
+
+  onDestroy(() => (status = "idle"));
 </script>
 
 <form
