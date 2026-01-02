@@ -25,7 +25,10 @@ import { requireAuth } from "$/server/auth";
 export const getBillingInfos = query(
   getBillingInfosSchema,
   async ({ userId }): Promise<BillingInfo[]> => {
-    return await db.query.billingInfo.findMany({ where: { userId } });
+    return await db.query.billingInfo.findMany({
+      where: { userId },
+      orderBy: { date: "desc" },
+    });
   },
 );
 
@@ -39,6 +42,7 @@ export const getExtendedBillingInfos = query(
         payment: true,
         subPayment: true,
       },
+      orderBy: { date: "desc" },
     });
   },
 );
