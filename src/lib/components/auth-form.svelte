@@ -1,6 +1,13 @@
 <script lang="ts" module>
-  type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
+  import type { Status } from "$/types/state";
+  import type { HTMLFormAttributes } from "svelte/elements";
+  import type { WithElementRef } from "..";
+  export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
     action: "login" | "register";
+  };
+
+  type AuthFormState = {
+    status: Status;
   };
 </script>
 
@@ -15,10 +22,8 @@
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
-  import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "..";
   import * as Password from "$/components/password";
-  import { Github } from "$/assets/icons";
+  import { Github, Loader } from "$/assets/icons";
 
   let {
     action,
@@ -26,6 +31,10 @@
     class: className,
     ...restProps
   }: AuthFormProps = $props();
+
+  let { status }: AuthFormState = $state({
+    status: "idle",
+  });
 
   const id = $props.id();
 </script>
@@ -104,9 +113,18 @@
     </Field>
     <FieldSeparator>Or continue with</FieldSeparator>
     <Field>
-      <Button variant="outline" type="button" href="/auth/github">
-        <Github />
-        {action === "login" ? "Login with Github" : "Sign up with GitHub"}
+      <Button
+        variant="outline"
+        type="button"
+        href="/auth/github"
+        onclick={() => (status = "processing")}
+      >
+        {#if status === "processing"}
+          <Loader class="animate-spin size-5" />
+        {:else}
+          <Github />
+          {action === "login" ? "Login with Github" : "Sign up with GitHub"}
+        {/if}
       </Button>
       <FieldDescription class="text-center">
         {action === "login"
