@@ -13,7 +13,7 @@ export const user = sqliteTable(
       .default(false)
       .notNull(),
     image: t.text(),
-    passwordHash: t.text("password_hash").notNull(),
+    passwordHash: t.text("password_hash"),
     ...timestamps,
   }),
   (table) => [uniqueIndex("user_email_key").on(table.email)],

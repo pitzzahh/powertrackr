@@ -87,7 +87,6 @@ export async function GET(event: RequestEvent): Promise<Response> {
     githubId: githubUserId,
     email,
     name: name || username,
-    passwordHash: storedState,
   });
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id);
