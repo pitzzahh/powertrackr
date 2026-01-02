@@ -4,13 +4,6 @@ import { dev } from "$app/environment";
 
 /** @type {import('@sveltejs/kit').Handle} */
 const handleAuth = async ({ event, resolve }) => {
-  if (
-    dev &&
-    event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
-  ) {
-    return new Response(undefined, { status: 404 });
-  }
-
   const sessionToken = event.cookies.get(auth.sessionCookieName);
 
   if (!sessionToken) {
@@ -30,6 +23,13 @@ const handleAuth = async ({ event, resolve }) => {
 
   event.locals.user = user;
   event.locals.session = session;
+
+  if (
+    dev &&
+    event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
+  ) {
+    return new Response(undefined, { status: 404 });
+  }
 
   return resolve(event);
 };
