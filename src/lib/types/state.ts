@@ -1,5 +1,5 @@
-import type { User } from "$/server/db/schema/user";
 import type { ExtendedBillingInfo } from "./billing-info";
+import type { User } from "./user";
 
 export type State = {
   currentRoute: string;
@@ -7,4 +7,10 @@ export type State = {
   history: ExtendedBillingInfo[] | undefined;
 };
 
-export type Status = "loading_data" | "fetching" | "success" | "error" | "idle";
+export type Status =
+  | "processing"
+  | "loading_data"
+  | "fetching"
+  | "success"
+  | "error"
+  | "idle";
