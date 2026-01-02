@@ -52,6 +52,7 @@
     "vite": "^7.2.6"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "@oslojs/binary": "^1.0.0",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
