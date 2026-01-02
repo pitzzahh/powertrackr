@@ -1,7 +1,5 @@
 import {
   sqliteTable,
-  text,
-  integer,
   uniqueIndex,
   index,
   foreignKey,
@@ -10,16 +8,17 @@ import { user } from "./user";
 
 export const session = sqliteTable(
   "session",
-  {
-    id: text().primaryKey().notNull(),
-    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
-    token: text().notNull().unique(),
-    ipAddress: text("ip_address"),
-    userAgent: text("user_agent"),
-    userId: text("user_id")
+  (t) => ({
+    id: t.text().primaryKey().notNull(),
+    expiresAt: t.integer("expires_at", { mode: "timestamp" }).notNull(),
+    token: t.text().notNull().unique(),
+    ipAddress: t.text("ip_address"),
+    userAgent: t.text("user_agent"),
+    userId: t
+      .text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-  },
+  }),
   (table) => [
     uniqueIndex("session_id_key").on(table.id),
     index("session_user_id_idx").on(table.userId),
