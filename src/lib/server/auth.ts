@@ -5,6 +5,7 @@ import { user, session } from "$lib/server/db/schema";
 import { db } from "$/server/db";
 import { getRequestEvent } from "$app/server";
 import { redirect, type RequestEvent } from "@sveltejs/kit";
+import type { Session } from "$/server/db/schema/session";
 
 export function requireAuth(): App.Locals {
   const { locals } = getRequestEvent();
@@ -23,16 +24,23 @@ const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
 export const sessionCookieName = "auth-session";
 
-export async function createSession(token: string, userId: string) {
+export async function createSession(
+  token: string,
+  userId: string,
+): Promise<Session> {
   const event = getRequestEvent();
-  return await db.insert(session).values({
-    id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
-    userId,
-    expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
-    token,
-    ipAddress: event.getClientAddress(),
-    userAgent: event.request.headers.get("user-agent"),
-  });
+  const [inserted] = await db
+    .insert(session)
+    .values({
+      id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
+      userId,
+      expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
+      token,
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    })
+    .returning();
+  return inserted;
 }
 
 export async function validateSessionToken(token: string) {

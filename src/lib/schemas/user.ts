@@ -5,7 +5,7 @@ export const createUserSchema = z.object({
   email: z.email(),
   githubId: z.number().optional(),
   image: z.optional(z.string()),
-  passwordHash: z.string().optional(),
+  passwordHash: z.string(),
 });
 
 export const updateUserSchema = createUserSchema.extend({
