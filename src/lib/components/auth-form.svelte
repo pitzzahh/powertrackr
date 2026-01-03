@@ -51,6 +51,7 @@
 
 <form
   {...currentAction.enhance(async ({ submit }) => {
+    status = "processing";
     const toastId = toast.loading(
       action === "login" ? "Logging you in..." : "Creating your account...",
     );
@@ -68,6 +69,7 @@
       );
     } finally {
       toast.dismiss(toastId);
+      status = "idle";
     }
   })}
   class={cn("flex flex-col gap-6", className)}
@@ -147,8 +149,13 @@
       </Field>
     {/if}
     <Field>
-      <Button type="submit">
-        {action === "login" ? "Login to your account" : "Create your account"}
+      <Button type="submit" disabled={status === "processing"}>
+        {#if status === "processing"}
+          <Loader class="animate-spin size-5" />
+        {:else}
+          <Github />
+          {action === "login" ? "Login to your account" : "Create your account"}
+        {/if}
       </Button>
     </Field>
     <FieldSeparator>Or continue with</FieldSeparator>
@@ -157,6 +164,7 @@
         variant="outline"
         type="button"
         href="/auth/github"
+        disabled={status === "processing"}
         onclick={() => (status = "processing")}
       >
         {#if status === "processing"}
@@ -173,6 +181,7 @@
         <a
           href="/auth?act={action === 'login' ? 'register' : 'login'}"
           class="underline underline-offset-4"
+          onclick={() => (status = "idle")}
         >
           {action === "login" ? "Sign up" : "Login"}
         </a>
