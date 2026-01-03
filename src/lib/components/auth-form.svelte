@@ -28,7 +28,7 @@
   import { login, register } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { goto } from "$app/navigation";
+  import { loginWithGithub } from "$/api/github.remote";
 
   let {
     action,
@@ -181,7 +181,6 @@
     <Field>
       <Button
         variant="outline"
-        type="button"
         disabled={status === "processing"}
         aria-label={action === "login"
           ? "Login with GitHub"
@@ -193,7 +192,25 @@
               ? "Logging in with GitHub"
               : "Creating Account with GitHub",
           );
-          await goto("/auth/github").finally(() => toast.dismiss(toastId));
+          try {
+            const result = await loginWithGithub();
+            if (result.redirect) {
+              window.location.href = result.redirect;
+            }
+          } catch (error) {
+            const message = isHttpError(error)
+              ? error.body.message
+              : String(error);
+            toast.error(
+              message ||
+                (action === "login"
+                  ? "Failed to log you in. Please try again."
+                  : "Failed to create your account. Please try again."),
+            );
+            status = "idle";
+          } finally {
+            toast.dismiss(toastId);
+          }
         }}
       >
         {#if status === "processing"}

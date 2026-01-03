@@ -4,7 +4,7 @@ import {
 } from "$/components/data-table";
 import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
-import { getPayment } from "$/remotes/payment.remote";
+import { getPayment } from "$/api/payment.remote";
 import type { BillingInfo } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";

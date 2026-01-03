@@ -11,7 +11,7 @@
   import {
     getExtendedBillingInfos,
     getBillingSummary,
-  } from "$lib/remotes/billing-info.remote";
+  } from "$/api/billing-info.remote";
   import { hydratable, onMount } from "svelte";
   import { Loader, Banknote } from "$lib/assets/icons";
   import type { ExtendedBillingInfo } from "$/types/billing-info";
