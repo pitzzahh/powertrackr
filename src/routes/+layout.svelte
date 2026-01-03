@@ -1,3 +1,9 @@
+<script lang="ts" module>
+  type LayoutState = {
+    pendingCount: number;
+  };
+</script>
+
 <script lang="ts">
   import "./layout.css";
   import { ModeWatcher } from "mode-watcher";
@@ -9,8 +15,29 @@
 
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
+  import { pendingFetchContext } from "$/context.js";
 
   const { children, data } = $props();
+
+  let { pendingCount }: LayoutState = $state({
+    pendingCount: 0,
+  });
+
+  const ctx = pendingFetchContext;
+  ctx.set({
+    get count() {
+      return pendingCount;
+    },
+    add() {
+      pendingCount++;
+    },
+    delete() {
+      pendingCount--;
+    },
+    reset() {
+      pendingCount = 0;
+    },
+  });
 </script>
 
 <ModeWatcher />
