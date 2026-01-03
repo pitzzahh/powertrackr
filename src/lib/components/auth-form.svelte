@@ -56,7 +56,7 @@
     );
     try {
       await currentAction.validate();
-      await submit();
+      return await submit();
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
