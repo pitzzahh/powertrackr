@@ -130,7 +130,7 @@ export async function mapNewUser_to_DTO(
         return {
           ...user_info,
           sessions: _user.sessions,
-        } as UserDTO;
+        } as UserDTOWithSessions;
       }
       return user_info;
     }),
