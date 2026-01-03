@@ -28,6 +28,7 @@
   import { onDestroy } from "svelte";
   import { login } from "$/remotes/auth.remote";
   import { toast } from "svelte-sonner";
+  import { isHttpError } from "@sveltejs/kit";
 
   let {
     action,
@@ -57,7 +58,8 @@
     try {
       return await submit();
     } catch (e) {
-      const message = e instanceof Error ? e.message : String(e);
+      const message = isHttpError(e) ? e.body.message : String(e);
+      console.log({ e });
       toast.error(
         message ||
           (action === "login"
@@ -117,9 +119,13 @@
       <Password.Root
         id="password-{id}"
         enableStrengthCheck={action === "register"}
-        {...currentAction.fields.password.as("password")}
       >
-        <Password.Input required>
+        <Password.Input
+          {...{
+            ...currentAction.fields.password.as("password"),
+            value: String(currentAction.fields.password.value),
+          }}
+        >
           <Password.ToggleVisibility />
         </Password.Input>
         {#if action === "register"}

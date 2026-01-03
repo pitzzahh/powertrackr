@@ -11,12 +11,12 @@ import type { HelperResult } from "$/types/helper";
 import type { SessionFlags } from "$/types/session";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent } from "$app/server";
-import { fail, redirect } from "@sveltejs/kit";
+import { error, redirect } from "@sveltejs/kit";
 
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return fail(401);
+    return error(401, "Not authenticated");
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
@@ -27,16 +27,10 @@ export const login = form(loginSchema, async (user) => {
   const event = getRequestEvent();
   const { email, password } = user;
   if (typeof email !== "string" || typeof password !== "string") {
-    return fail(400, {
-      message: "Invalid or missing fields",
-      email: "",
-    });
+    return error(400, "Invalid or missing fields");
   }
   if (email === "" || password === "") {
-    return fail(400, {
-      message: "Please enter your email and password.",
-      email,
-    });
+    return error(400, "Please enter your email and password.");
   }
   const {
     value: [userResult],
@@ -48,12 +42,10 @@ export const login = form(loginSchema, async (user) => {
       with_session: false,
     },
   })) as HelperResult<NewUser[]>;
+  console.log({ userResult });
 
-  if (userResult === null) {
-    return fail(400, {
-      message: "Account does not exist",
-      email,
-    });
+  if (userResult === undefined || userResult === null) {
+    return error(400, "Account does not exist");
   }
 
   const validPassword = await verifyPasswordHash(
@@ -61,10 +53,7 @@ export const login = form(loginSchema, async (user) => {
     password,
   );
   if (!validPassword) {
-    return fail(400, {
-      message: "Invalid password",
-      email,
-    });
+    return error(400, "Invalid password");
   }
 
   const sessionFlags: SessionFlags = {
