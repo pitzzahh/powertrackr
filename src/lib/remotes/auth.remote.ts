@@ -20,7 +20,7 @@ export const signout = form(async () => {
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
-  throw redirect(303, "/auth");
+  redirect(303, "/auth");
 });
 
 export const login = form(loginSchema, async (user) => {
