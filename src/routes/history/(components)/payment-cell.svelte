@@ -6,10 +6,11 @@
   import { Loader } from "$lib/assets/icons";
   import { pendingFetchContext } from "$lib/context";
   import { watch } from "runed";
+  import { Button } from "$/components/ui/button";
 
   let { paymentId }: { paymentId: string | null } = $props();
 
-  const payment = $derived(paymentId ? getPayment(paymentId) : null);
+  let payment = $derived(paymentId ? getPayment(paymentId) : null);
 
   const ctx = pendingFetchContext.get();
 
@@ -26,10 +27,14 @@
 {#if paymentId && payment}
   {#if payment.loading}
     <Badge variant="secondary">
-      <Loader class="h-4 w-4 animate-spin" />
+      <Loader class="size-4 animate-spin" />
     </Badge>
   {:else if payment.error}
-    <Badge variant="secondary" title="0">0</Badge>
+    <Button
+      variant="ghost"
+      title="Retry fetching payment"
+      onclick={() => (payment = getPayment(paymentId))}>Retry</Button
+    >
   {:else}
     <Badge
       variant="secondary"
