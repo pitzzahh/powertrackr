@@ -27,7 +27,7 @@
   import {
     createBillingInfo,
     updateBillingInfo,
-  } from "$/remotes/billing-info.remote";
+  } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";

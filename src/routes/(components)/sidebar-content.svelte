@@ -14,7 +14,7 @@
   import { sidebarStore } from "$lib/stores/sidebar.svelte";
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
-  import { signout } from "$/remotes/auth.remote";
+  import { signout } from "$/api/auth.remote";
   import { Loader } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";

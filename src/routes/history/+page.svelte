@@ -6,7 +6,7 @@
 </script>
 
 <script lang="ts">
-  import { getBillingInfos } from "$/remotes/billing-info.remote";
+  import { getBillingInfos } from "$/api/billing-info.remote";
   import type { BillingInfo } from "$/types/billing-info";
   import type { Status } from "$/types/state";
   import { billingInfoToTableView } from "$/utils/mapper/billing-info";

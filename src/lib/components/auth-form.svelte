@@ -25,7 +25,7 @@
   import * as Password from "$/components/password";
   import { Github, Loader } from "$/assets/icons";
   import { onDestroy } from "svelte";
-  import { login, register } from "$/remotes/auth.remote";
+  import { login, register } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { goto } from "$app/navigation";
