@@ -50,7 +50,7 @@ export const login = form(loginSchema, async (user) => {
     },
   })) as HelperResult<NewUser[]>;
 
-  if (userResult.githubId) {
+  if (userResult?.githubId) {
     return error(
       400,
       "Account connected with GitHub, please login with GitHub",
