@@ -105,6 +105,6 @@ export function setSessionTokenCookie(
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
   event.cookies.delete(sessionCookieName, {
-    path: "/auth?act=login",
+    path: "/",
   });
 }

@@ -1,6 +1,6 @@
 import { deleteSessionTokenCookie, invalidateSession } from "$/server/auth";
 import { form, getRequestEvent } from "$app/server";
-import { fail } from "@sveltejs/kit";
+import { fail, redirect } from "@sveltejs/kit";
 
 export const signout = form(async () => {
   const event = getRequestEvent();
@@ -9,4 +9,5 @@ export const signout = form(async () => {
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
+  throw redirect(303, "/auth");
 });
