@@ -57,8 +57,12 @@
       action === "login" ? "Logging you in..." : "Creating your account...",
     );
     try {
-      await currentAction.validate();
-      return await submit();
+      await submit();
+      toast.success(
+        action === "login"
+          ? "Logged in successfully"
+          : "Account created successfully",
+      );
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
@@ -159,11 +163,16 @@
       </Field>
     {/if}
     <Field>
-      <Button type="submit" disabled={status === "processing"}>
+      <Button
+        type="submit"
+        disabled={status === "processing"}
+        aria-label={action === "login"
+          ? "Login to your account"
+          : "Create your account"}
+      >
         {#if status === "processing"}
           <Loader class="animate-spin size-5" />
         {:else}
-          <Github />
           {action === "login" ? "Login to your account" : "Create your account"}
         {/if}
       </Button>
@@ -174,6 +183,9 @@
         variant="outline"
         type="button"
         disabled={status === "processing"}
+        aria-label={action === "login"
+          ? "Login with GitHub"
+          : "Sign up with GitHub"}
         onclick={async () => {
           status = "processing";
           await goto("/auth/github");
@@ -183,7 +195,7 @@
           <Loader class="animate-spin size-5" />
         {:else}
           <Github />
-          {action === "login" ? "Login with Github" : "Sign up with GitHub"}
+          {action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
         {/if}
       </Button>
       <FieldDescription class="text-center">
