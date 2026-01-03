@@ -29,7 +29,7 @@ export type PasswordRootProps = WithoutChildren<
 
 export type PasswordInputPropsWithoutHTML = WithChildren<{
   ref?: HTMLInputElement | null;
-  value?: string;
+  value?: string | number;
 }>;
 
 export type PasswordInputProps = Omit<

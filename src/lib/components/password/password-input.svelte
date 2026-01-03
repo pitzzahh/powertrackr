@@ -7,7 +7,7 @@
 
   let {
     ref = $bindable(null),
-    value = $bindable(""),
+    value = $bindable<string | number>(""),
     class: className,
     children,
     ...rest

@@ -25,7 +25,7 @@ type PasswordRootStateProps = WritableBoxedValues<{
   }>;
 
 type PasswordState = {
-  value: string;
+  value: string | number;
   toggleMounted: boolean;
   strengthMounted: boolean;
   tainted: boolean;
@@ -46,7 +46,7 @@ class PasswordRootState {
   // only re-run when the password changes
   strength = $derived.by(() =>
     this.opts.enableStrengthCheck.current
-      ? zxcvbn(this.passwordState.value)
+      ? zxcvbn(String(this.passwordState.value))
       : {
           password: "",
           score: 4 as Score,
@@ -72,7 +72,7 @@ class PasswordRootState {
 }
 
 type PasswordInputStateProps = WritableBoxedValues<{
-  value: string;
+  value: string | number;
 }> &
   ReadableBoxedValues<{
     ref: HTMLInputElement | null;
