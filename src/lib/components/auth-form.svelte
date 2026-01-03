@@ -28,6 +28,7 @@
   import { login, register } from "$/remotes/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
+  import { goto } from "$app/navigation";
 
   let {
     action,
@@ -172,9 +173,11 @@
       <Button
         variant="outline"
         type="button"
-        href="/auth/github"
         disabled={status === "processing"}
-        onclick={() => (status = "processing")}
+        onclick={async () => {
+          status = "processing";
+          await goto("/auth/github");
+        }}
       >
         {#if status === "processing"}
           <Loader class="animate-spin size-5" />
