@@ -91,6 +91,12 @@
         {/if}
       </p>
     </div>
+    {#if action === "register"}
+      <Field>
+        <FieldLabel for="name-{id}">Name</FieldLabel>
+        <Input id="name-{id}" required {...register.fields.name.as("text")} />
+      </Field>
+    {/if}
     <Field>
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input

@@ -5,8 +5,14 @@ import {
   invalidateSession,
   setSessionTokenCookie,
 } from "$/server/auth";
-import { getUserBy } from "$/server/crud/user-crud";
-import { generateSessionToken, verifyPasswordHash } from "$/server/encryption";
+import { addUser, getUserBy } from "$/server/crud/user-crud";
+import {
+  encryptString,
+  generateRandomRecoveryCode,
+  generateSessionToken,
+  hashPassword,
+  verifyPasswordHash,
+} from "$/server/encryption";
 import type { HelperResult } from "$/types/helper";
 import type { SessionFlags } from "$/types/session";
 import type { NewUser } from "$/types/user";
@@ -90,13 +96,13 @@ export const login = form(loginSchema, async (user) => {
 
 export const register = form(registerSchema, async (newUser) => {
   const event = getRequestEvent();
-  const { email, password, confirmPassword } = newUser;
+  const { email, name, password, confirmPassword } = newUser;
 
   if (password !== confirmPassword) {
     return error(400, "Passwords do not match");
   }
   const {
-    value: [userResult],
+    value: [userEmailCheck],
   } = (await getUserBy({
     query: {
       email,
@@ -106,7 +112,50 @@ export const register = form(registerSchema, async (newUser) => {
     },
   })) as HelperResult<NewUser[]>;
 
-  if (userResult !== undefined && userResult !== null) {
-    return error(400, "Account already exist");
+  if (userEmailCheck !== undefined && userEmailCheck !== null) {
+    return error(400, "Email is already used");
   }
+  const passwordHash = await hashPassword(password);
+  const recoveryCode = generateRandomRecoveryCode();
+  const encryptedRecoveryCode = encryptString(recoveryCode);
+  const {
+    valid,
+    value: [userResult],
+  } = await addUser([
+    {
+      email,
+      name,
+      passwordHash,
+      recoveryCode: encryptedRecoveryCode,
+    },
+  ]);
+
+  if (!valid) {
+    return error(400, "Failed to create user");
+  }
+
+  // TODO: send email verification
+  // const emailVerificationRequest = createEmailVerificationRequest(
+  //   userResult.id,
+  //   userResult.email,
+  // );
+  // sendVerificationEmail(
+  //   emailVerificationRequest.email,
+  //   emailVerificationRequest.code,
+  // );
+  // setEmailVerificationRequestCookie(event, emailVerificationRequest);
+
+  const sessionFlags: SessionFlags = {
+    twoFactorVerified: false,
+    ipAddress: event.getClientAddress(),
+    userAgent: event.request.headers.get("user-agent"),
+  };
+  const sessionToken = generateSessionToken();
+  const session = await createSession(
+    sessionToken,
+    userResult.id,
+    sessionFlags,
+  );
+  setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  throw redirect(302, "/");
 });
