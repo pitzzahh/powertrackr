@@ -46,11 +46,9 @@ export const login = form(loginSchema, async (user) => {
     },
     options: {
       with_session: false,
-      fields: ["id", "githubId"],
+      fields: ["id", "passwordHash", "githubId"],
     },
   })) as HelperResult<NewUser[]>;
-
-  console.log({ userResult });
 
   if (userResult.githubId) {
     return error(
@@ -64,7 +62,7 @@ export const login = form(loginSchema, async (user) => {
   }
 
   const validPassword = await verifyPasswordHash(
-    userResult.passwordHash || "",
+    userResult.passwordHash!,
     password,
   );
   if (!validPassword) {
@@ -85,14 +83,13 @@ export const login = form(loginSchema, async (user) => {
   );
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-  // TODO: Fix redirects
   if (!userResult.emailVerified) {
-    return redirect(302, "/verify-email");
+    return redirect(302, "/auth/verify-email");
   }
   if (!userResult.registeredTwoFactor) {
-    return redirect(302, "/2fa/setup");
+    return redirect(302, "/auth/2fa/setup");
   }
-  return redirect(302, "/2fa");
+  return redirect(302, "/");
 });
 
 export const register = form(registerSchema, async (newUser) => {
@@ -116,6 +113,7 @@ export const register = form(registerSchema, async (newUser) => {
   if (userEmailCheck !== undefined && userEmailCheck !== null) {
     return error(400, "Email is already used");
   }
+
   const passwordHash = await hashPassword(password);
   const recoveryCode = generateRandomRecoveryCode();
   const encryptedRecoveryCode = encryptString(recoveryCode);
