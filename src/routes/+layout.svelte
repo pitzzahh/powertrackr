@@ -42,7 +42,7 @@
 
 <ModeWatcher />
 <FocusRing />
-<Toaster />
+<Toaster richColors />
 
 <svelte:head>
   <link rel="icon" href={favicon} />
