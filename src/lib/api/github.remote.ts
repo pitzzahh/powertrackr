@@ -1,9 +1,10 @@
-import { createGitHub } from "$lib/server/oauth";
+import { getRequestEvent, command } from "$app/server";
+import { createGitHub } from "$/server/oauth";
 import { generateState } from "arctic";
-import type { RequestEvent } from "./$types";
 import { dev } from "$app/environment";
 
-export function GET(event: RequestEvent): Response {
+export const loginWithGithub = command(async () => {
+  const event = getRequestEvent();
   const state = generateState();
   const url = createGitHub(event.url).createAuthorizationURL(state, [
     "user:email",
@@ -17,10 +18,5 @@ export function GET(event: RequestEvent): Response {
     sameSite: "lax",
   });
 
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: url.toString(),
-    },
-  });
-}
+  return { redirect: url.toString() };
+});
