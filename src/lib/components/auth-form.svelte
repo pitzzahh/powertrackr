@@ -188,7 +188,12 @@
           : "Sign up with GitHub"}
         onclick={async () => {
           status = "processing";
-          await goto("/auth/github");
+          const toastId = toast.loading(
+            action === "login"
+              ? "Logging in with GitHub"
+              : "Creating Account with GitHub",
+          );
+          await goto("/auth/github").finally(() => toast.dismiss(toastId));
         }}
       >
         {#if status === "processing"}
