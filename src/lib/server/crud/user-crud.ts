@@ -174,11 +174,13 @@ export async function getUserCountBy(
 
 export function generateUserQueryConditions(data: HelperParam<User>) {
   const { query, options } = data;
-  const { id, name, email, registeredTwoFactor, emailVerified } = query;
+  const { id, githubId, name, email, registeredTwoFactor, emailVerified } =
+    query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
+  if (githubId) where.githubId = githubId;
   if (name) where.name = name;
   if (email) where.email = email;
   if (registeredTwoFactor) where.registeredTwoFactor = registeredTwoFactor;
@@ -199,6 +201,8 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(not(eq(user.id, notObj.id)));
     } else if (key === "id") {
       conditions.push(eq(user.id, value as string));
+    } else if (key === "githubId") {
+      conditions.push(eq(user.githubId, value as number));
     } else if (key === "name") {
       conditions.push(eq(user.name, value as string));
     } else if (key === "email") {
