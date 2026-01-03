@@ -15,7 +15,6 @@
   import {
     FieldGroup,
     Field,
-    FieldError,
     FieldLabel,
     FieldDescription,
     FieldSeparator,
@@ -26,7 +25,7 @@
   import * as Password from "$/components/password";
   import { Github, Loader } from "$/assets/icons";
   import { onDestroy } from "svelte";
-  import { login } from "$/remotes/auth.remote";
+  import { login, register } from "$/remotes/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
 
@@ -38,7 +37,7 @@
   }: AuthFormProps = $props();
 
   let { currentAction } = $derived({
-    currentAction: action === "login" ? login : login,
+    currentAction: action === "login" ? login : register,
   });
 
   let { status }: AuthFormState = $state({
@@ -56,7 +55,8 @@
       action === "login" ? "Logging you in..." : "Creating your account...",
     );
     try {
-      return await submit();
+      await currentAction.validate();
+      await submit();
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
@@ -99,10 +99,6 @@
         required
         {...currentAction.fields.email.as("email")}
       />
-      <FieldError
-        errors={currentAction.fields.email.issues()}
-        fieldName="Email"
-      />
     </Field>
     <Field>
       <div class="flex items-center">
@@ -127,21 +123,17 @@
           <Password.Strength />
         {/if}
       </Password.Root>
-      <FieldError
-        errors={currentAction.fields.password.issues()}
-        fieldName="Password"
-      />
     </Field>
     {#if action === "register"}
       <Field>
         <div class="flex items-center">
           <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
         </div>
-        <Password.Root
-          id="confirm-password-{id}"
-          {...currentAction.fields.password.as("password")}
-        >
-          <Password.Input required>
+        <Password.Root id="confirm-password-{id}">
+          <Password.Input
+            required
+            {...register.fields.confirmPassword.as("password")}
+          >
             <Password.ToggleVisibility />
           </Password.Input>
           <Password.Strength />

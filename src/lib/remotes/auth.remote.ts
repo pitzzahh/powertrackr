@@ -1,4 +1,4 @@
-import { loginSchema } from "$/schemas/auth";
+import { loginSchema, registerSchema } from "$/schemas/auth";
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -77,4 +77,19 @@ export const login = form(loginSchema, async (user) => {
     return redirect(302, "/2fa/setup");
   }
   return redirect(302, "/2fa");
+});
+
+export const register = form(registerSchema, async (newUser) => {
+  const event = getRequestEvent();
+  const { email, password, confirmPassword } = newUser;
+
+  if (password !== confirmPassword) {
+    return error(400, "Passwords do not match");
+  }
+
+  console.log({
+    event,
+    email,
+    password,
+  });
 });
