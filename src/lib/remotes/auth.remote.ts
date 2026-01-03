@@ -7,6 +7,6 @@ export const signout = form(async () => {
   if (event.locals.session === null) {
     return fail(401);
   }
-  invalidateSession(event.locals.session.id);
+  await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
 });
