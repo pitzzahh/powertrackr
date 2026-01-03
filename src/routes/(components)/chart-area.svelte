@@ -82,7 +82,6 @@
         class="-ml-3 aspect-auto h-62.5 w-full"
       >
         <LineChart
-          legend
           data={filteredData}
           x="date"
           xScale={scaleUtc()}
@@ -143,6 +142,28 @@
           {/snippet}
         </LineChart>
       </ChartContainer>
+      <div class="flex flex-wrap justify-center gap-4 mt-4">
+        {#each Object.entries(CHART_CONFIG) as [key, { label, color }] (key)}
+          <button
+            class="flex items-center gap-2 text-sm"
+            style="opacity: {visibleKeys.includes(key) ? 1 : 0.5};"
+            onclick={() =>
+              (visibleKeys = visibleKeys.includes(key)
+                ? visibleKeys.filter((k) => k !== key)
+                : [...visibleKeys, key])}
+          >
+            <div
+              style="background-color: {color};"
+              class="size-3 rounded"
+            ></div>
+            <span
+              class={{
+                "line-through": !visibleKeys.includes(key),
+              }}>{label}</span
+            >
+          </button>
+        {/each}
+      </div>
     {:else}
       <p class="text-center text-muted-foreground py-8">
         No data available for the selected time range.
