@@ -6,10 +6,10 @@ export type HelperResult<T = any> = {
 };
 export type HelperParam<T> = {
   query: Partial<T>;
-  options: Partial<HelperParamOptions>;
+  options: Partial<HelperParamOptions<T>>;
 };
 
-export type HelperParamOptions = {
+export type HelperParamOptions<T> = {
   limit: number;
   offset: number;
   page: number;
@@ -25,6 +25,7 @@ export type HelperParamOptions = {
   period: "3months" | "30days" | "7days"; // Added period option for chart data
   with_user: boolean;
   connective: "and" | "or";
+  fields: (keyof T)[];
 };
 
 export type APIReturnedData<T> = {

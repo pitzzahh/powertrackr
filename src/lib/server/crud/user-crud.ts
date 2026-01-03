@@ -4,13 +4,16 @@ import { user } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type {
-  NewUser,
-  User,
-  UserDTO,
-  UserDTOWithSessions,
-  UserWithSessions,
-} from "$/types/user";
+import type { NewUser, User, UserDTO, UserDTOWithSessions } from "$/types/user";
+
+type UserQueryOptions = {
+  with?: { sessions: true };
+  where?: Record<string, unknown>;
+  limit?: number;
+  offset?: number;
+  orderBy?: { createdAt: "asc" | "desc" };
+  columns?: Record<string, true>;
+};
 
 export async function addUser(
   data: Omit<NewUser, "id">[],
@@ -40,7 +43,8 @@ export async function updateUserBy(
   data: Partial<NewUser>,
 ): Promise<HelperResult<NewUser[]>> {
   const { query } = by;
-  const user_result = await getUserBy(by);
+  const user_param = { ...by, options: { ...by.options, fields: undefined } };
+  const user_result = await getUserBy(user_param);
 
   if (!user_result.valid || !user_result.value) {
     return {
@@ -50,7 +54,7 @@ export async function updateUserBy(
     };
   }
 
-  const [old_user] = user_result.value;
+  const [old_user] = user_result.value as NewUser[];
   const conditions = generateUserQueryConditions(by);
   const changed_data = getChangedData(old_user, data);
 
@@ -80,31 +84,30 @@ export async function updateUserBy(
 
 export async function getUserBy(
   data: HelperParam<NewUser>,
-): Promise<HelperResult<User[] | UserWithSessions[]>> {
+): Promise<HelperResult<Record<string, unknown>[]>> {
   const { options } = data;
-  const { limit, offset, order, with_session } = options;
+  const { limit, offset, order, with_session, fields } = options;
   const conditions = generateUserQueryConditions(data);
-  const queryDBResult = (await db.query.user.findMany({
-    with:
-      with_session === true
-        ? {
-            sessions: true,
-          }
-        : undefined,
+  const queryOptions: UserQueryOptions = {
+    with: with_session === true ? { sessions: true } : undefined,
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     limit,
     offset,
     orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
-  })) as User[] | UserWithSessions[];
+  };
+  if (fields && fields.length > 0) {
+    queryOptions.columns = fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {},
+    );
+  }
+  const queryDBResult = await db.query.user.findMany(queryOptions);
 
-  const mappedData = queryDBResult.map((user) => ({
-    ...user,
-  }));
-  const is_valid = mappedData.length > 0;
+  const is_valid = queryDBResult.length > 0;
   return {
     valid: is_valid,
-    message: `${mappedData.length} user(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
-    value: mappedData,
+    message: `${queryDBResult.length} user(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
+    value: queryDBResult,
   };
 }
 
@@ -116,20 +119,20 @@ export async function getUsers(data: HelperParam<NewUser>): Promise<UserDTO[]> {
 }
 
 export async function mapNewUser_to_DTO(
-  data: NewUser[] | UserDTOWithSessions[],
+  data: Record<string, unknown>[],
 ): Promise<UserDTO[]> {
   return Promise.all(
     data.map(async (_user) => {
       const user_info = {
-        id: _user.id,
-        githubId: _user.githubId,
-        name: _user.name,
-        email: _user.email,
-        emailVerified: _user.emailVerified,
-        registeredTwoFactor: _user.registeredTwoFactor,
-        image: _user.image,
-        createdAt: _user.createdAt,
-        updatedAt: _user.updatedAt,
+        id: _user.id ?? "",
+        githubId: _user.githubId ?? 0,
+        name: _user.name ?? "",
+        email: _user.email ?? "",
+        emailVerified: _user.emailVerified ?? false,
+        registeredTwoFactor: _user.registeredTwoFactor ?? false,
+        image: _user.image ?? "",
+        createdAt: _user.createdAt ?? new Date(),
+        updatedAt: _user.updatedAt ?? new Date(),
       } as UserDTO;
 
       if ("sessions" in _user) {
