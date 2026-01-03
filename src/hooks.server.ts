@@ -38,4 +38,16 @@ export const handleDevTools: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleDevTools, handleAuth);
+export const log: Handle = async ({ event, resolve }) => {
+  const {
+    request: { method },
+    url: { pathname, origin },
+  } = event;
+  console.info(
+    `${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`,
+  );
+
+  return resolve(event);
+};
+
+export const handle = sequence(handleDevTools, handleAuth, log);
