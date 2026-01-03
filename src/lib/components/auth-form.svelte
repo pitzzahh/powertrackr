@@ -120,12 +120,7 @@
         id="password-{id}"
         enableStrengthCheck={action === "register"}
       >
-        <Password.Input
-          {...{
-            ...currentAction.fields.password.as("password"),
-            value: String(currentAction.fields.password.value),
-          }}
-        >
+        <Password.Input {...currentAction.fields.password.as("password")}>
           <Password.ToggleVisibility />
         </Password.Input>
         {#if action === "register"}
