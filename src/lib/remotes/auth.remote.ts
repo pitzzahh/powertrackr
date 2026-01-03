@@ -43,6 +43,15 @@ export const login = form(loginSchema, async (user) => {
     },
   })) as HelperResult<NewUser[]>;
 
+  console.log({ userResult });
+
+  if (userResult.githubId) {
+    return error(
+      400,
+      "Account connected with GitHub. Please login with GitHub",
+    );
+  }
+
   if (userResult === undefined || userResult === null) {
     return error(400, "Account does not exist");
   }
@@ -86,10 +95,18 @@ export const register = form(registerSchema, async (newUser) => {
   if (password !== confirmPassword) {
     return error(400, "Passwords do not match");
   }
+  const {
+    value: [userResult],
+  } = (await getUserBy({
+    query: {
+      email,
+    },
+    options: {
+      with_session: false,
+    },
+  })) as HelperResult<NewUser[]>;
 
-  console.log({
-    event,
-    email,
-    password,
-  });
+  if (userResult !== undefined && userResult !== null) {
+    return error(400, "Account already exist");
+  }
 });
