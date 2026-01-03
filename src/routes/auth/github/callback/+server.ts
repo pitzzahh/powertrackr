@@ -50,7 +50,11 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const existingUser = await getUserFromGitHubId(githubUserId);
   if (existingUser) {
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser.id);
+    const session = await createSession(sessionToken, existingUser.id, {
+      twoFactorVerified: userParser.getBoolean("two_factor_authentication"),
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    });
     setSessionTokenCookie(event, sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,
@@ -91,10 +95,15 @@ export async function GET(event: RequestEvent): Promise<Response> {
       githubId: githubUserId,
       email,
       name: name || username,
+      image: userParser.getString("avatar_url") || null,
     },
   ]);
   const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, user.id);
+  const session = await createSession(sessionToken, user.id, {
+    twoFactorVerified: false,
+    ipAddress: event.getClientAddress(),
+    userAgent: event.request.headers.get("user-agent"),
+  });
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
   return new Response(null, {
     status: 302,
