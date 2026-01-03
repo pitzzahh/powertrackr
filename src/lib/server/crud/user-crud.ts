@@ -4,7 +4,13 @@ import { user } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewUser, User, UserDTO, UserDTOWithSessions } from "$/types/user";
+import type {
+  NewUser,
+  User,
+  UserDTO,
+  UserDTOWithSessions,
+  UserWithSessions,
+} from "$/types/user";
 
 export async function addUser(
   data: Omit<NewUser, "id">[],
@@ -74,7 +80,7 @@ export async function updateUserBy(
 
 export async function getUserBy(
   data: HelperParam<NewUser>,
-): Promise<HelperResult<NewUser[] | UserDTOWithSessions[]>> {
+): Promise<HelperResult<User[] | UserWithSessions[]>> {
   const { options } = data;
   const { limit, offset, order, with_session } = options;
   const conditions = generateUserQueryConditions(data);
@@ -89,7 +95,7 @@ export async function getUserBy(
     limit,
     offset,
     orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
-  })) as NewUser[] | UserDTOWithSessions[];
+  })) as User[] | UserWithSessions[];
 
   const mappedData = queryDBResult.map((user) => ({
     ...user,
