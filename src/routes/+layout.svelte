@@ -1,55 +1,81 @@
-<script lang="ts">
-	import '../app.pcss';
-	import { ModeWatcher } from 'mode-watcher';
-	import Header from '$lib/components/header.svelte';
-	import Footer from '$lib/components/footer.svelte';
-	import { onNavigate } from '$app/navigation';
-	import { dev } from '$app/environment';
-	import { inject } from '@vercel/analytics';
-	import { Toaster } from '$lib/components/ui/sonner';
-	import PageProgress from '$lib/components/page-progress.svelte';
-	import type { PageData } from './$types';
-	import { setState, MAIN_STATE_CTX } from '$lib/state';
-	import { mediaQuery } from 'svelte-legos';
-	import { ParaglideJS } from '@inlang/paraglide-js-adapter-sveltekit';
-	import { i18n } from '$lib/i18n.js';
-
-	export let data: PageData;
-
-	onNavigate((navigation) => {
-		// @ts-ignore
-		if (!document.startViewTransition) return;
-
-		return new Promise((resolve) => {
-			// @ts-ignore
-			document.startViewTransition(async () => {
-				resolve();
-				await navigation.complete;
-			});
-		});
-	});
-
-	const largeScreen = mediaQuery('(min-width: 425px)');
-
-	setState(
-		{
-			currentRoute: '/',
-			isAddingBill: false,
-			user: data.user,
-			history: data.history
-		},
-		MAIN_STATE_CTX
-	);
-	inject({ mode: dev ? 'development' : 'production' });
+<script lang="ts" module>
+  type LayoutState = {
+    pendingCount: number;
+  };
 </script>
 
-<PageProgress />
+<script lang="ts">
+  import "./layout.css";
+  import { ModeWatcher } from "mode-watcher";
+  import favicon from "$/assets/favicon.svg";
+  import FocusRing from "$/components/focus-ring.svelte";
+  import Header from "$routes/(components)/header.svelte";
+  import { Toaster } from "$/components/ui/sonner/index.js";
+  import { site } from "$/site";
+
+  import SidebarContent from "$routes/(components)/sidebar-content.svelte";
+  import { scale } from "svelte/transition";
+  import { pendingFetchContext } from "$/context.js";
+
+  const { children, data } = $props();
+
+  let { pendingCount }: LayoutState = $state({
+    pendingCount: 0,
+  });
+
+  const ctx = pendingFetchContext;
+  ctx.set({
+    get count() {
+      return pendingCount;
+    },
+    add() {
+      pendingCount++;
+    },
+    delete() {
+      pendingCount--;
+    },
+    reset() {
+      pendingCount = 0;
+    },
+  });
+</script>
+
 <ModeWatcher />
-<ParaglideJS {i18n}>
-	<Toaster position={$largeScreen ? 'bottom-right' : 'top-center'} />
-	<Header />
-	<main class="container mt-2">
-		<slot />
-	</main>
-	<Footer />
-</ParaglideJS>
+<FocusRing />
+<Toaster richColors />
+
+<svelte:head>
+  <link rel="icon" href={favicon} />
+  <title>{site.name}: {site.description}</title>
+  <meta name="author" content={site.author} />
+  <meta name="description" content={site.description} />
+  <meta name="keywords" content={site.keywords} />
+  <meta property="og:title" content={site.name} />
+  <meta property="og:description" content={site.description} />
+  <meta property="og:site_name" content={site.name} />
+  <meta property="og:image" content={site.ogImage} />
+  <meta property="og:url" content={site.url} />
+  <meta property="og:type" content="website" />
+</svelte:head>
+
+{#if data.user && data.session}
+  <div class="relative h-screen w-full overflow-hidden">
+    <Header />
+
+    <div class="h-full overflow-y-auto no-scrollbar">
+      <main class="flex justify-between gap-4 p-4 pt-16 min-h-full">
+        <aside
+          in:scale={{ duration: 150 }}
+          class="sticky rounded-md top-17 h-[calc(100vh-5.5rem)] md:w-48 lg:w-54 bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto"
+        >
+          <SidebarContent open={false} />
+        </aside>
+        <div class="flex-1 flex flex-col gap-4 min-w-0 p-1">
+          {@render children()}
+        </div>
+      </main>
+    </div>
+  </div>
+{:else}
+  {@render children()}
+{/if}

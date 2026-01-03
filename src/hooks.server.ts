@@ -1,13 +1,53 @@
-import { auth } from '$lib/server/lucia';
-import type { Handle } from '@sveltejs/kit';
-import { sequence } from '@sveltejs/kit/hooks';
-import { i18n } from "$lib/i18n"
+import * as auth from "$lib/server/auth";
+import { sequence } from "@sveltejs/kit/hooks";
+import { dev } from "$app/environment";
+import type { Handle } from "@sveltejs/kit";
 
-export const handleLucia: Handle = async ({ event, resolve }) => {
-	event.locals.auth = auth.handleRequest(event);
-	return await resolve(event);
+const handleAuth: Handle = async ({ event, resolve }) => {
+  const sessionToken = event.cookies.get(auth.sessionCookieName);
+
+  if (!sessionToken) {
+    event.locals.user = null;
+    event.locals.session = null;
+
+    return resolve(event);
+  }
+
+  const { session, user } = await auth.validateSessionToken(sessionToken);
+
+  if (session) {
+    auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  } else {
+    auth.deleteSessionTokenCookie(event);
+  }
+
+  event.locals.user = user;
+  event.locals.session = session;
+
+  return resolve(event);
 };
 
-export const handleI18n = i18n.handle()
+export const handleDevTools: Handle = async ({ event, resolve }) => {
+  if (
+    dev &&
+    event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
+  ) {
+    return new Response(undefined, { status: 404 });
+  }
 
-export const handle: Handle = sequence(handleI18n, handleLucia);
+  return resolve(event);
+};
+
+export const log: Handle = async ({ event, resolve }) => {
+  const {
+    request: { method },
+    url: { pathname, origin },
+  } = event;
+  console.info(
+    `${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`,
+  );
+
+  return resolve(event);
+};
+
+export const handle = sequence(handleDevTools, handleAuth, log);
