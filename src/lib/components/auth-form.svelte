@@ -15,6 +15,7 @@
   import {
     FieldGroup,
     Field,
+    FieldError,
     FieldLabel,
     FieldDescription,
     FieldSeparator,
@@ -25,6 +26,8 @@
   import * as Password from "$/components/password";
   import { Github, Loader } from "$/assets/icons";
   import { onDestroy } from "svelte";
+  import { login } from "$/remotes/auth.remote";
+  import { toast } from "svelte-sonner";
 
   let {
     action,
@@ -32,6 +35,10 @@
     class: className,
     ...restProps
   }: AuthFormProps = $props();
+
+  let { currentAction } = $derived({
+    currentAction: action === "login" ? login : login,
+  });
 
   let { status }: AuthFormState = $state({
     status: "idle",
@@ -43,6 +50,24 @@
 </script>
 
 <form
+  {...currentAction.enhance(async ({ submit }) => {
+    const toastId = toast.loading(
+      action === "login" ? "Logging you in..." : "Creating your account...",
+    );
+    try {
+      return await submit();
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      toast.error(
+        message ||
+          (action === "login"
+            ? "Failed to log you in. Please try again."
+            : "Failed to create your account. Please try again."),
+      );
+    } finally {
+      toast.dismiss(toastId);
+    }
+  })}
   class={cn("flex flex-col gap-6", className)}
   bind:this={ref}
   {...restProps}
@@ -68,9 +93,13 @@
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input
         id="email-{id}"
-        type="email"
         placeholder="m@example.com"
         required
+        {...currentAction.fields.email.as("email")}
+      />
+      <FieldError
+        errors={currentAction.fields.email.issues()}
+        fieldName="Email"
       />
     </Field>
     <Field>
@@ -88,6 +117,7 @@
       <Password.Root
         id="password-{id}"
         enableStrengthCheck={action === "register"}
+        {...currentAction.fields.password.as("password")}
       >
         <Password.Input required>
           <Password.ToggleVisibility />
@@ -96,19 +126,27 @@
           <Password.Strength />
         {/if}
       </Password.Root>
+      <FieldError
+        errors={currentAction.fields.password.issues()}
+        fieldName="Password"
+      />
     </Field>
     {#if action === "register"}
       <Field>
         <div class="flex items-center">
           <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
         </div>
-        <Password.Root id="confirm-password-{id}">
+        <Password.Root
+          id="confirm-password-{id}"
+          {...currentAction.fields.password.as("password")}
+        >
           <Password.Input required>
             <Password.ToggleVisibility />
           </Password.Input>
           <Password.Strength />
         </Password.Root>
-      </Field>{/if}
+      </Field>
+    {/if}
     <Field>
       <Button type="submit">
         {action === "login" ? "Login to your account" : "Create your account"}
