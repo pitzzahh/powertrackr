@@ -96,7 +96,12 @@
     {#if action === "register"}
       <Field>
         <FieldLabel for="name-{id}">Name</FieldLabel>
-        <Input id="name-{id}" required {...register.fields.name.as("text")} />
+        <Input
+          id="name-{id}"
+          autocomplete="name"
+          required
+          {...register.fields.name.as("text")}
+        />
       </Field>
     {/if}
     <Field>
@@ -105,6 +110,7 @@
         id="email-{id}"
         placeholder="m@example.com"
         required
+        autocomplete="email"
         {...currentAction.fields.email.as("email")}
       />
     </Field>
@@ -120,11 +126,12 @@
           </a>
         {/if}
       </div>
-      <Password.Root
-        id="password-{id}"
-        enableStrengthCheck={action === "register"}
-      >
-        <Password.Input {...currentAction.fields.password.as("password")}>
+      <Password.Root enableStrengthCheck={action === "register"}>
+        <Password.Input
+          id="password-{id}"
+          autocomplete="current-password"
+          {...currentAction.fields.password.as("password")}
+        >
           <Password.ToggleVisibility />
         </Password.Input>
         {#if action === "register"}
@@ -137,9 +144,11 @@
         <div class="flex items-center">
           <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
         </div>
-        <Password.Root id="confirm-password-{id}">
+        <Password.Root>
           <Password.Input
+            id="confirm-password-{id}"
             required
+            autocomplete="new-password"
             {...register.fields.confirmPassword.as("password")}
           >
             <Password.ToggleVisibility />
