@@ -16,6 +16,8 @@
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/remotes/auth.remote";
   import { Loader } from "$/assets/icons";
+  import { page } from "$app/state";
+  import { onDestroy } from "svelte";
 
   let {
     open = $bindable(false),
@@ -27,23 +29,30 @@
     status: "idle",
   });
 
-  const pendingFetches = () => pendingFetchContext && pendingFetchContext.get();
+  const pendingFetches = pendingFetchContext.get();
+
+  onDestroy(() => {
+    sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+      ...navItem,
+      active: false,
+    }));
+  });
 </script>
 
 <nav class="flex flex-col gap-8">
   {#each sidebarStore.navItems as item (item.label)}
     {@const Icon = item.icon}
     <Button
-      data-active={item.active}
+      data-active={item.active || page.url.pathname === item.route}
       variant="link"
       href={item.route}
       onclick={() => {
         open = false;
-        pendingFetches().delete();
         sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
           ...navItem,
           active: navItem.label === item.label,
         }));
+        pendingFetches.delete();
       }}
       class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
     >
