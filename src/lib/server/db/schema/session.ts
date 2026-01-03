@@ -11,7 +11,6 @@ export const session = sqliteTable(
   (t) => ({
     id: t.text().primaryKey().notNull(),
     expiresAt: t.integer("expires_at", { mode: "timestamp" }).notNull(),
-    token: t.text().notNull().unique(),
     ipAddress: t.text("ip_address"),
     userAgent: t.text("user_agent"),
     userId: t
@@ -35,6 +34,3 @@ export const session = sqliteTable(
       .onDelete("cascade"),
   ],
 );
-
-export type Session = typeof session.$inferSelect;
-export type NewSession = typeof session.$inferInsert;
