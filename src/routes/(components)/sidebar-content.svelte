@@ -83,7 +83,7 @@
           Any unsaved changes will be lost. You can log back in at any time.
         </AlertDialog.Description>
       </AlertDialog.Header>
-      <AlertDialog.Footer>
+      <AlertDialog.Footer class="flex flex-row justify-end  gap-2">
         <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
         <form
           {...signout.enhance(({ submit }) => {
@@ -92,6 +92,7 @@
               status = "idle";
             });
           })}
+          class="flex"
         >
           <AlertDialog.Action type="submit" aria-busy={status === "processing"}>
             {#if status === "processing"}
