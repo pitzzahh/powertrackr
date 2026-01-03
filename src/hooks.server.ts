@@ -24,6 +24,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   event.locals.user = user;
   event.locals.session = session;
 
+  return resolve(event);
+};
+
+export const handleDevTools: Handle = async ({ event, resolve }) => {
   if (
     dev &&
     event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
@@ -34,4 +38,4 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleAuth);
+export const handle = sequence(handleDevTools, handleAuth);
