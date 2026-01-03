@@ -51,7 +51,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   if (existingUser) {
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, existingUser.id, {
-      twoFactorVerified: userParser.getBoolean("two_factor_authentication"),
+      twoFactorVerified: false,
       ipAddress: event.getClientAddress(),
       userAgent: event.request.headers.get("user-agent"),
     });
