@@ -42,7 +42,6 @@ export const login = form(loginSchema, async (user) => {
       with_session: false,
     },
   })) as HelperResult<NewUser[]>;
-  console.log({ userResult });
 
   if (userResult === undefined || userResult === null) {
     return error(400, "Account does not exist");
