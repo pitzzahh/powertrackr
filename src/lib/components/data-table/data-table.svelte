@@ -188,6 +188,12 @@
                   </Table.Cell>
                 {/each}
               </Table.Row>
+            {:else}
+              <Table.Row>
+                <Table.Cell colspan={columns.length} class="h-24 text-center">
+                  No data available.
+                </Table.Cell>
+              </Table.Row>
             {/each}
           {/if}
         </Table.Body>
