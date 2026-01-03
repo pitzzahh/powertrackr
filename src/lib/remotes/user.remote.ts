@@ -9,6 +9,8 @@ import {
   getUserSchema,
   deleteUserSchema,
 } from "$lib/schemas/user";
+import { addUser } from "$/server/crud/user-crud";
+import { error } from "@sveltejs/kit";
 
 // Query to get all users
 export const getUsers = query(z.object({}), async () => {
@@ -22,12 +24,22 @@ export const getUser = query(getUserSchema, async (id) => {
 
 // Query to get a single user by github id
 export const getUserFromGitHubId = query(z.number(), async (githubId) => {
-  return await db.query.user.findFirst({ where: { githubId } });
+  const userByGitHubId = await db.query.user.findFirst({ where: { githubId } });
+  console.log({ userByGitHubId });
+  return userByGitHubId;
 });
 
 // Form to create a new user
-export const createUser = form(createUserSchema, createUserInternal);
-export const createUserCommand = command(createUserSchema, createUserInternal);
+export const createUser = form(createUserSchema, async (user) => {
+  const {
+    valid,
+    value: [addedUser],
+  } = await addUser([user]);
+
+  if (valid) return error(400, "Failed to create user");
+
+  return addedUser;
+});
 
 // Form to update an existing user
 export const updateUser = form(updateUserSchema, async (data) => {
@@ -44,14 +56,3 @@ export const updateUser = form(updateUserSchema, async (data) => {
 export const deleteUser = command(deleteUserSchema, async ({ id }) => {
   await db.delete(user).where(eq(user.id, id));
 });
-
-async function createUserInternal(
-  data: Omit<z.infer<typeof createUserSchema>, "id">,
-) {
-  const id = crypto.randomUUID();
-  const result = await db
-    .insert(user)
-    .values({ id, ...data })
-    .returning();
-  return result[0];
-}
