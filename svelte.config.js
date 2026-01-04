@@ -12,7 +12,19 @@ const config = {
     experimental: {
       remoteFunctions: true,
     },
-    adapter: adapter(),
+    adapter: adapter({
+      config: undefined,
+      platformProxy: {
+        configPath: undefined,
+        environment: undefined,
+        persist: undefined,
+      },
+      fallback: "plaintext",
+      routes: {
+        include: ["/*"],
+        exclude: ["<all>"],
+      },
+    }),
   },
   compilerOptions: {
     experimental: {
