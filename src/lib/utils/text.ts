@@ -130,3 +130,30 @@ export function replaceTextWithMarker(
 ): string {
   return text.replaceAll(regexp, (match) => `<mark>${match}</mark>`);
 }
+
+export function toShortName(fullName: string): string {
+  if (!fullName || typeof fullName !== "string") return "";
+
+  const parts = fullName
+    .trim()
+    .replace(/\./g, " ")
+    .replace(/[^a-zA-Z0-9-]/g, " ")
+    .replace(/-/g, " ")
+    .split(/\s+/)
+    .filter((part) => part.length > 0);
+
+  if (parts.length === 0) return "";
+
+  if (parts.length === 1) {
+    return parts[0][0].toUpperCase();
+  }
+
+  const first = parts[0][0].toUpperCase();
+  const lastPart = parts[parts.length - 1];
+  const lastChar = /^[A-Za-z]/.exec(lastPart);
+  const second = lastChar
+    ? lastChar[0].toUpperCase()
+    : lastPart[0].toUpperCase();
+
+  return first + second;
+}

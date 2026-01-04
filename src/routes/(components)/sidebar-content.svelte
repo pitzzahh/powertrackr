@@ -31,6 +31,7 @@
   import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
   import CreditCardIcon from "@lucide/svelte/icons/credit-card";
   import { IsMobile } from "$/hooks/is-mobile.svelte";
+  import { toShortName } from "$/utils/text";
 
   let { open = $bindable(false), user }: SidebarContentProps = $props();
 
@@ -104,10 +105,12 @@
         <div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
           <Avatar.Root class="size-8 rounded-lg">
             <Avatar.Image src={user?.image} alt={user?.name} />
-            <Avatar.Fallback class="rounded-lg">CN</Avatar.Fallback>
+            <Avatar.Fallback class="rounded-lg">PT</Avatar.Fallback>
           </Avatar.Root>
           <div class="grid flex-1 text-start text-sm leading-tight">
-            <span class="truncate font-medium">{user?.name}</span>
+            <span class="truncate font-medium"
+              >{toShortName(user?.name ?? "PowerTrackr")}</span
+            >
             <span class="truncate text-xs">{user?.email}</span>
           </div>
         </div>
