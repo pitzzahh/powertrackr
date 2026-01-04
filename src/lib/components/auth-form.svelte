@@ -193,7 +193,14 @@
               : "Creating Account with GitHub",
           );
           try {
-            const result = await loginWithGithub();
+            const result = await loginWithGithub().finally(() => {
+              toast.dismiss(toastId);
+              toast.success(
+                action === "login"
+                  ? "Logged in successfully"
+                  : "Account created successfully",
+              );
+            });
             if (result.redirect) {
               window.location.href = result.redirect;
             }
@@ -208,8 +215,6 @@
                   : "Failed to create your account. Please try again."),
             );
             status = "idle";
-          } finally {
-            toast.dismiss(toastId);
           }
         }}
       >
