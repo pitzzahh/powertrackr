@@ -8,11 +8,12 @@
 
   type SidebarContentState = {
     status: Status;
+    logoutAttempt: boolean;
   };
 </script>
 
 <script lang="ts">
-  import { Button, buttonVariants } from "$/components/ui/button";
+  import { Button } from "$/components/ui/button";
   import { LogOut } from "@lucide/svelte";
   import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
@@ -32,11 +33,13 @@
   import CreditCardIcon from "@lucide/svelte/icons/credit-card";
   import { IsMobile } from "$/hooks/is-mobile.svelte";
   import { toShortName } from "$/utils/text";
+  import { toast } from "svelte-sonner";
 
   let { open = $bindable(false), user }: SidebarContentProps = $props();
 
-  let { status }: SidebarContentState = $state({
+  let { status, logoutAttempt }: SidebarContentState = $state({
     status: "idle",
+    logoutAttempt: false,
   });
 
   const pendingFetches = pendingFetchContext.get();
@@ -131,55 +134,47 @@
         </DropdownMenu.Item>
       </DropdownMenu.Group>
       <DropdownMenu.Separator />
-      <DropdownMenu.Item>
-        {#snippet child({ props })}
-          <AlertDialog.Root>
-            <AlertDialog.Trigger
-              class={buttonVariants({
-                variant: "hover-destructive",
-                class:
-                  "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
-              })}
-            >
-              <LogOut class="h-6 w-6" />
-              <span class="text-sm font-medium tracking-wide">LOGOUT</span>
-            </AlertDialog.Trigger>
-            <AlertDialog.Content>
-              <AlertDialog.Header>
-                <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
-                <AlertDialog.Description>
-                  Any unsaved changes will be lost. You can log back in at any
-                  time.
-                </AlertDialog.Description>
-              </AlertDialog.Header>
-              <AlertDialog.Footer class="flex flex-row justify-end gap-2">
-                <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-                <form
-                  {...signout.enhance(({ submit }) => {
-                    status = "processing";
-                    submit().finally(() => {
-                      status = "idle";
-                    });
-                  })}
-                  class="flex"
-                >
-                  <AlertDialog.Action
-                    {...props}
-                    type="submit"
-                    aria-busy={status === "processing"}
-                  >
-                    {#if status === "processing"}
-                      <Loader class="size-5 animate-spin" />
-                    {:else}
-                      Logout
-                    {/if}
-                  </AlertDialog.Action>
-                </form>
-              </AlertDialog.Footer>
-            </AlertDialog.Content>
-          </AlertDialog.Root>
-        {/snippet}
+      <DropdownMenu.Item
+        onclick={() => (logoutAttempt = true)}
+        variant="destructive"
+      >
+        <LogOut class="h-6 w-6" />
+        <span class="text-sm font-medium tracking-wide">LOGOUT</span>
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
+
+<AlertDialog.Root bind:open={logoutAttempt}>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>Are you absolutely sure?</AlertDialog.Title>
+      <AlertDialog.Description>
+        Any unsaved changes will be lost. You can log back in at any time.
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer class="flex flex-row justify-end gap-2">
+      <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+      <form
+        {...signout.enhance(({ submit }) => {
+          const toastId = toast.loading("Logging out");
+          status = "processing";
+          submit().finally(() => {
+            status = "idle";
+            toast.dismiss(toastId);
+            toast.success("Logged out successfully");
+          });
+        })}
+        class="flex"
+      >
+        <AlertDialog.Action type="submit" aria-busy={status === "processing"}>
+          {#if status === "processing"}
+            <Loader class="size-5 animate-spin" />
+          {:else}
+            Logout
+          {/if}
+        </AlertDialog.Action>
+      </form>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
