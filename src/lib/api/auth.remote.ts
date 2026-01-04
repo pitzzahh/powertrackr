@@ -17,12 +17,12 @@ import type { HelperResult } from "$/types/helper";
 import type { SessionFlags } from "$/types/session";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent } from "$app/server";
-import { error, redirect } from "@sveltejs/kit";
+import { error, invalid, redirect } from "@sveltejs/kit";
 
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return error(401, "Not authenticated");
+    error(401, "Not authenticated");
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
@@ -33,10 +33,10 @@ export const login = form(loginSchema, async (user) => {
   const event = getRequestEvent();
   const { email, password } = user;
   if (typeof email !== "string" || typeof password !== "string") {
-    return error(400, "Invalid or missing fields");
+    error(400, "Invalid or missing fields");
   }
   if (email === "" || password === "") {
-    return error(400, "Please enter your email and password.");
+    error(400, "Please enter your email and password.");
   }
   const {
     value: [userResult],
@@ -51,14 +51,11 @@ export const login = form(loginSchema, async (user) => {
   })) as HelperResult<NewUser[]>;
 
   if (userResult?.githubId) {
-    return error(
-      400,
-      "Account connected with GitHub, please login with GitHub",
-    );
+    error(400, "Account connected with GitHub, please login with GitHub");
   }
 
   if (userResult === undefined || userResult === null) {
-    return error(400, "Account does not exist");
+    error(400, "Account does not exist");
   }
 
   const validPassword = await verifyPasswordHash(
@@ -66,7 +63,7 @@ export const login = form(loginSchema, async (user) => {
     password,
   );
   if (!validPassword) {
-    return error(400, "Invalid password");
+    error(400, "Invalid password");
   }
 
   const sessionFlags: SessionFlags = {
@@ -92,12 +89,12 @@ export const login = form(loginSchema, async (user) => {
   return redirect(302, "/");
 });
 
-export const register = form(registerSchema, async (newUser) => {
+export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
 
   if (password !== confirmPassword) {
-    return error(400, "Passwords do not match");
+    invalid(issues.confirmPassword("Passwords do not match"));
   }
   const {
     value: [userEmailCheck],
@@ -111,7 +108,7 @@ export const register = form(registerSchema, async (newUser) => {
   })) as HelperResult<NewUser[]>;
 
   if (userEmailCheck !== undefined && userEmailCheck !== null) {
-    return error(400, "Email is already used");
+    error(400, "Email is already used");
   }
 
   const passwordHash = await hashPassword(password);
@@ -130,7 +127,7 @@ export const register = form(registerSchema, async (newUser) => {
   ]);
 
   if (!valid) {
-    return error(400, "Failed to create user");
+    error(400, "Failed to create user");
   }
 
   // TODO: send email verification
