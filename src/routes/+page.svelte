@@ -33,7 +33,7 @@
 
   const summary = $derived(getBillingSummary({ userId: user.id }));
 
-  onMount(async () => {
+  async function fetchData() {
     status = "fetching";
     try {
       extendedBillingInfos = await hydratable("chart_data", () =>
@@ -50,17 +50,29 @@
       status = "error";
       extendedBillingInfos = [];
     }
+  }
+  onMount(async () => {
+    fetchData();
   });
 </script>
 
 {@render Metrics()}
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-  <ChartArea chartData={extendedBillingInfos.map(toAreaChartData)} {status} />
+  <ChartArea
+    refetch={() => {
+      fetchData();
+    }}
+    chartData={extendedBillingInfos.map(toAreaChartData)}
+    {status}
+  />
 </section>
 
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
   <ChartBar
+    refetch={() => {
+      fetchData();
+    }}
     chartData={extendedBillingInfos
       .map(toBarChartData)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}

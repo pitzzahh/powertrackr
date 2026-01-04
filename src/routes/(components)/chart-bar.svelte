@@ -9,6 +9,8 @@
   export type BarChartInteractiveProps = {
     chartData: BarChartData[];
     status: "fetching" | "fetched" | "error";
+    retryStatus?: "fetching" | "fetched" | "error";
+    refetch?: (callback: () => void) => void;
   };
 
   type ChartBarState = {
@@ -39,9 +41,11 @@
   import { browser } from "$app/environment";
   import type { Total } from "$lib/workers/total-calculator";
   import { onDestroy } from "svelte";
-  import { Loader } from "$lib/assets/icons";
+  import { Loader, RefreshCw } from "$lib/assets/icons";
+  import { Button } from "$/components/ui/button";
 
-  let { chartData, status }: BarChartInteractiveProps = $props();
+  let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps =
+    $props();
 
   let {
     timeRange,
@@ -178,7 +182,24 @@
         <p class="text-muted-foreground">Fetching data...</p>
       </div>
     {:else if status === "error"}
-      <p class="text-center text-muted-foreground py-8">Error loading data.</p>
+      <div class="flex items-center flex-col justify-center">
+        <p class="text-center text-muted-foreground py-8">
+          Error loading data.
+        </p>
+        <Button
+          onclick={() => {
+            retryStatus = "fetching";
+            refetch?.(() => (retryStatus = "fetched"));
+          }}
+          ><RefreshCw
+            class={[
+              {
+                "animate-spin": retryStatus === "fetching",
+              },
+            ]}
+          /> Refetch</Button
+        >
+      </div>
     {:else if filteredData.length > 0}
       <Chart.Container config={CHART_CONFIG} class="aspect-auto h-62.5 w-full">
         <BarChart

@@ -9,6 +9,8 @@
   export type AreaChartInteractiveProps = {
     chartData: ChartData[];
     status: "fetching" | "fetched" | "error";
+    retryStatus?: "fetching" | "fetched" | "error";
+    refetch?: (callback: () => void) => void;
   };
 
   const CHART_CONFIG = {
@@ -29,9 +31,11 @@
   import { expoInOut } from "svelte/easing";
   import { formatDate, formatNumber } from "$/utils/format";
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
-  import { Loader } from "$lib/assets/icons";
+  import { Loader, RefreshCw } from "$lib/assets/icons";
+  import { Button } from "$/components/ui/button";
 
-  let { chartData, status }: AreaChartInteractiveProps = $props();
+  let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps =
+    $props();
 
   let { timeRange, visibleKeys } = $state({
     timeRange: "all",
@@ -68,14 +72,31 @@
       </Select.Content>
     </Select.Root>
   </Card.Header>
-  <Card.Content class="ml-10">
+  <Card.Content class="pl-16">
     {#if status === "fetching"}
       <div class="flex flex-col justify-center items-center py-8">
         <Loader class="animate-spin h-8 w-8 text-muted-foreground mb-2" />
         <p class="text-muted-foreground">Fetching data...</p>
       </div>
     {:else if status === "error"}
-      <p class="text-center text-muted-foreground py-8">Error loading data.</p>
+      <div class="flex items-center flex-col justify-center">
+        <p class="text-center text-muted-foreground py-8">
+          Error loading data.
+        </p>
+        <Button
+          onclick={() => {
+            retryStatus = "fetching";
+            refetch?.(() => (retryStatus = "fetched"));
+          }}
+          ><RefreshCw
+            class={[
+              {
+                "animate-spin": retryStatus === "fetching",
+              },
+            ]}
+          /> Refetch</Button
+        >
+      </div>
     {:else if filteredData.length > 0}
       <ChartContainer
         config={CHART_CONFIG}
