@@ -1,5 +1,5 @@
 import {
-  decodeBase64,
+  decodeHex,
   encodeBase32UpperCaseNoPadding,
   encodeBase64url,
 } from "@oslojs/encoding";
@@ -8,7 +8,7 @@ import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
 import { hash, verify } from "argon2";
 
-const key = decodeBase64(ENCRYPTION_KEY);
+const key = decodeHex(ENCRYPTION_KEY);
 
 export function encrypt(data: Uint8Array): Uint8Array {
   const iv = crypto.randomBytes(16);
