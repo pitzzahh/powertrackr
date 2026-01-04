@@ -120,6 +120,7 @@ export function historyTableColumns() {
       cell: ({ row }) => {
         const balance = row.original.balance;
         return renderComponent(Badge, {
+          variant: "outline",
           title: formatNumber(balance),
           children: createRawSnippet(() => {
             return {
@@ -194,6 +195,7 @@ export function historyTableColumns() {
         const status = row.original.status;
         return renderComponent(Badge, {
           title: status,
+          variant: status === "Paid" ? "default" : "destructive",
           children: createRawSnippet(() => {
             return {
               render: () => `<span>${status}</span>`,
