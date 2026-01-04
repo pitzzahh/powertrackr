@@ -2,6 +2,10 @@
   import type { Snippet } from "svelte";
   import { Icon } from "@lucide/svelte";
 
+  export type HeaderProps = {
+    user: App.Locals["user"];
+  };
+
   type HeaderState = {
     openMenu: boolean;
     quickActions: {
@@ -26,6 +30,8 @@
   import BillingInfoForm from "$routes/history/(components)/billing-info-form.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { toast } from "svelte-sonner";
+
+  let { user }: HeaderProps = $props();
 
   let { openMenu, quickActions }: HeaderState = $state({
     openMenu: false,
@@ -114,7 +120,7 @@
 
   <Sheet.Content side="left" class="bg-muted p-4 flex flex-col h-full w-full">
     {@render logo({ className: "py-6 w-fit mx-auto" })}
-    <SidebarContent bind:open={openMenu} />
+    <SidebarContent bind:open={openMenu} {user} />
   </Sheet.Content>
 </Sheet.Root>
 
