@@ -8,11 +8,14 @@ export const billFormSchema = z.object({
   totalKwh: z
     .number({ message: "must be a number" })
     .gt(0, { message: "must be greater than 0" }),
-  subReading: z
-    .number({ message: "must be a number" })
-    .gt(0, { message: "must be greater than 0" })
+  subReadings: z
+    .array(
+      z
+        .number({ message: "must be a number" })
+        .gt(0, { message: "must be greater than 0" }),
+    )
     .optional(),
-  status: z.enum(["paid", "pending"]).default("pending"),
+  status: z.enum(["Paid", "Pending"]).default("Pending"),
 });
 
 export const updateBillingInfoSchema = billFormSchema.extend({

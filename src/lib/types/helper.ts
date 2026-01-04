@@ -26,6 +26,8 @@ export type HelperParamOptions<T> = {
   with_user: boolean;
   connective: "and" | "or";
   fields: (keyof T)[];
+  with_payment: boolean;
+  with_billing_info: boolean;
 };
 
 export type APIReturnedData<T> = {

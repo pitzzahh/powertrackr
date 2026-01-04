@@ -3,6 +3,7 @@ import { query, form, command } from "$app/server";
 import { db } from "$lib/server/db/index";
 import { billingInfo } from "$lib/server/db/schema/billing-info";
 import { payment } from "$lib/server/db/schema/payment";
+import { subMeter } from "$lib/server/db/schema/sub-meter";
 import { calculatePayPerKwh } from "$lib";
 
 import {
@@ -40,7 +41,11 @@ export const getExtendedBillingInfos = query(
       where: { userId },
       with: {
         payment: true,
-        subPayment: true,
+        subMeters: {
+          with: {
+            payment: true,
+          },
+        },
       },
       orderBy: { date: "desc" },
     });
@@ -63,7 +68,11 @@ export const getBillingSummary = query(
       where: { userId },
       with: {
         payment: true,
-        subPayment: true,
+        subMeters: {
+          with: {
+            payment: true,
+          },
+        },
       },
       orderBy: { date: "desc" },
     });
@@ -84,15 +93,28 @@ export const getBillingSummary = query(
     const current = latest?.balance ?? 0;
     const invested = extendedInfos.reduce(
       (sum, info) =>
-        sum + ((info.payment?.amount ?? 0) + (info.subPayment?.amount ?? 0)),
+        sum +
+        ((info.payment?.amount ?? 0) +
+          info.subMeters.reduce(
+            (subSum, sub) => subSum + (sub.payment?.amount ?? 0),
+            0,
+          )),
       0,
     );
     const totalReturns = extendedInfos.reduce(
-      (sum, info) => sum + (info.subPayment?.amount ?? 0),
+      (sum, info) =>
+        sum +
+        info.subMeters.reduce(
+          (subSum, sub) => subSum + (sub.payment?.amount ?? 0),
+          0,
+        ),
       0,
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
-    const oneDayReturns = latest?.subPayment?.amount ?? 0;
+    const oneDayReturns = latest.subMeters.reduce(
+      (sum, sub) => sum + (sub.payment?.amount ?? 0),
+      0,
+    );
 
     const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date);
     const lastDate = new Date(latest.date);
@@ -124,40 +146,63 @@ export const createBillingInfo = form(
 
     const userId = session!.userId;
 
-    const { date, totalKwh, balance, status: statusBool, subReading } = data;
+    const { date, totalKwh, balance, status: statusBool, subReadings } = data;
 
     const payPerKwh = calculatePayPerKwh(balance, totalKwh);
 
-    // Get the latest billing info for the user
-    const latest = await db.query.billingInfo.findFirst({
-      where: { userId },
-      orderBy: { date: "desc" },
-    });
+    const subReadingOld = null; // Since subReadingLatest is now per subMeter
+    const subMetersData =
+      subReadings?.map((subReading) => {
+        const subKwh =
+          subReading && subReadingOld ? subReading - subReadingOld : null;
+        const subPaymentAmount = subKwh ? subKwh * payPerKwh : null;
+        return {
+          subReadingLatest: subReading,
+          subReadingOld,
+          subKwh,
+          paymentAmount: subPaymentAmount,
+        };
+      }) || [];
 
-    const subReadingOld = latest?.subReadingLatest ?? null;
-    const subKwh =
-      subReading && subReadingOld ? subReading - subReadingOld : null;
-    const subPaymentAmount = subKwh ? subKwh * payPerKwh : null;
+    const totalSubPaymentAmount = subMetersData.reduce(
+      (sum, sub) => sum + (sub.paymentAmount || 0),
+      0,
+    );
 
     let paymentId = null;
-    let subPaymentId = null;
+    const subMeterInserts: {
+      billingInfoId: string;
+      subKwh: number | null;
+      subReadingLatest: number | null;
+      subReadingOld: number | null;
+      paymentId: string | null;
+    }[] = [];
 
-    if (subPaymentAmount) {
-      await db.transaction(async (tx) => {
-        const subPayId = crypto.randomUUID();
-        await tx
-          .insert(payment)
-          .values({ id: subPayId, amount: subPaymentAmount });
+    await db.transaction(async (tx) => {
+      // Create main payment
+      const payId = crypto.randomUUID();
+      await tx
+        .insert(payment)
+        .values({ id: payId, amount: balance - totalSubPaymentAmount });
+      paymentId = payId;
 
-        const payId = crypto.randomUUID();
-        await tx
-          .insert(payment)
-          .values({ id: payId, amount: balance - subPaymentAmount });
-
-        paymentId = payId;
-        subPaymentId = subPayId;
-      });
-    }
+      // Create sub payments and sub meters
+      for (const subData of subMetersData) {
+        if (subData.paymentAmount) {
+          const subPayId = crypto.randomUUID();
+          await tx
+            .insert(payment)
+            .values({ id: subPayId, amount: subData.paymentAmount });
+          subMeterInserts.push({
+            billingInfoId: "", // will set after billing created
+            subKwh: subData.subKwh,
+            subReadingLatest: subData.subReadingLatest,
+            subReadingOld: subData.subReadingOld,
+            paymentId: subPayId,
+          });
+        }
+      }
+    });
 
     const id = crypto.randomUUID();
     const insertData: NewBillingInfo = {
@@ -168,16 +213,23 @@ export const createBillingInfo = form(
       balance,
       status: statusBool ? "Paid" : "Pending",
       payPerKwh,
-      subReadingLatest: subReading,
-      subReadingOld,
-      subKwh,
       paymentId,
-      subPaymentId,
     };
     const [result] = await db
       .insert(billingInfo)
       .values(insertData)
       .returning();
+
+    // Insert sub meters
+    if (subMeterInserts.length > 0) {
+      await db.insert(subMeter).values(
+        subMeterInserts.map((sub) => ({
+          ...sub,
+          id: crypto.randomUUID(),
+          billingInfoId: result.id,
+        })),
+      );
+    }
 
     return result;
   },
@@ -190,10 +242,7 @@ export const updateBillingInfo = form(
     const { id, ...updateData } = data;
     const [result] = await db
       .update(billingInfo)
-      .set({
-        ...updateData,
-        subReadingLatest: updateData.subReading!,
-      })
+      .set(updateData)
       .where(eq(billingInfo.id, id))
       .returning();
     return result;

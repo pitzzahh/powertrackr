@@ -4,4 +4,5 @@ export { timestamps } from "./timestamps";
 export { user } from "./user";
 export { payment } from "./payment";
 export { billingInfo } from "./billing-info";
+export { subMeter } from "./sub-meter";
 export { session } from "./session";
