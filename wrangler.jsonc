@@ -1,10 +1,11 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "powertrackr",
   "main": ".svelte-kit/cloudflare/_worker.js",
-  "compatibility_date": "2025-01-01",
-  "nodejs_compat": true,
-  "assets": {
-    "binding": "ASSETS",
-    "directory": ".svelte-kit/cloudflare",
+  "compatibility_date": "2026-01-03",
+  "compatibility_flags": ["nodejs_als"],
+  "pages_build_output_dir": ".svelte-kit/cloudflare",
+  "observability": {
+    "enabled": true,
   },
 }
