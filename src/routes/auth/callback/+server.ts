@@ -48,14 +48,21 @@ export async function GET(event: RequestEvent): Promise<Response> {
   const username = userParser.getString("login");
   const name = userParser.getString("name");
 
-  const existingUser = await getUserFromGitHubId(githubUserId);
-  if (existingUser) {
+  const {
+    valid,
+    value: [existingUser],
+  } = await getUserFromGitHubId(githubUserId);
+  if (valid && existingUser) {
     const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, existingUser.id, {
-      twoFactorVerified: false,
-      ipAddress: event.getClientAddress(),
-      userAgent: event.request.headers.get("user-agent"),
-    });
+    const session = await createSession(
+      sessionToken,
+      existingUser["id"] as string,
+      {
+        twoFactorVerified: false,
+        ipAddress: event.getClientAddress(),
+        userAgent: event.request.headers.get("user-agent"),
+      },
+    );
     setSessionTokenCookie(event, sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

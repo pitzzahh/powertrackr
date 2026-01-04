@@ -4,7 +4,7 @@ import { user } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewUser, User, UserDTO, UserDTOWithSessions } from "$/types/user";
+import type { NewUser, UserDTO, UserDTOWithSessions } from "$/types/user";
 
 type UserQueryOptions = {
   with?: { sessions: true };
@@ -84,7 +84,7 @@ export async function updateUserBy(
 
 export async function getUserBy(
   data: HelperParam<NewUser>,
-): Promise<HelperResult<Record<string, unknown>[]>> {
+): Promise<HelperResult<Partial<NewUser>[]>> {
   const { options } = data;
   const { limit, offset, order, with_session, fields } = options;
   const conditions = generateUserQueryConditions(data);
@@ -119,7 +119,7 @@ export async function getUsers(data: HelperParam<NewUser>): Promise<UserDTO[]> {
 }
 
 export async function mapNewUser_to_DTO(
-  data: Record<string, unknown>[],
+  data: Partial<NewUser>[],
 ): Promise<UserDTO[]> {
   return Promise.all(
     data.map(async (_user) => {
@@ -172,7 +172,7 @@ export async function getUserCountBy(
   };
 }
 
-export function generateUserQueryConditions(data: HelperParam<User>) {
+export function generateUserQueryConditions(data: HelperParam<NewUser>) {
   const { query, options } = data;
   const { id, githubId, name, email, registeredTwoFactor, emailVerified } =
     query;

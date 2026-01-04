@@ -9,7 +9,7 @@ import {
   getUserSchema,
   deleteUserSchema,
 } from "$lib/schemas/user";
-import { addUser } from "$/server/crud/user-crud";
+import { addUser, getUserBy } from "$/server/crud/user-crud";
 import { error } from "@sveltejs/kit";
 
 // Query to get all users
@@ -24,9 +24,12 @@ export const getUser = query(getUserSchema, async (id) => {
 
 // Query to get a single user by github id
 export const getUserFromGitHubId = query(z.number(), async (githubId) => {
-  const userByGitHubId = await db.query.user.findFirst({ where: { githubId } });
-  console.log({ userByGitHubId });
-  return userByGitHubId;
+  return await getUserBy({
+    query: {
+      githubId,
+    },
+    options: {},
+  });
 });
 
 // Form to create a new user
