@@ -132,7 +132,7 @@
         {@const chart = key}
         <button
           data-active={activeChart === chart}
-          class="data-[active=true]:bg-muted/50 data-[active=true]:border-2 data-[active=true]:border-primary/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
+          class="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
           onclick={() => (activeChart = key as ChartBarState["activeChart"])}
         >
           <span
@@ -144,7 +144,14 @@
               ? "All"
               : CHART_CONFIG[key as keyof typeof CHART_CONFIG].label}
           </span>
-          <span class="text-lg leading-none font-bold sm:text-3xl">
+          <span
+            class={[
+              {
+                "text-lg leading-none font-bold transition-colors sm:text-3xl": true,
+                "text-primary": activeChart === chart,
+              },
+            ]}
+          >
             {key === "all"
               ? (totalKWh + mainKWh + subKWh).toLocaleString()
               : (key === "totalKWh"
