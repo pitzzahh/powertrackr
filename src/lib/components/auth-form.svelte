@@ -193,16 +193,17 @@
               : "Creating Account with GitHub",
           );
           try {
-            const result = await loginWithGithub().finally(() => {
+            const redirect = await loginWithGithub().then(
+              ({ redirect }) => redirect,
+            );
+            if (redirect) {
               toast.dismiss(toastId);
               toast.success(
                 action === "login"
                   ? "Logged in successfully"
                   : "Account created successfully",
               );
-            });
-            if (result.redirect) {
-              window.location.href = result.redirect;
+              window.location.href = redirect;
             }
           } catch (error) {
             const message = isHttpError(error)
