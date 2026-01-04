@@ -4,8 +4,11 @@
   "main": ".svelte-kit/cloudflare/_worker.js",
   "compatibility_date": "2026-01-03",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": ".svelte-kit/cloudflare",
   "observability": {
     "enabled": true,
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare",
   },
 }
