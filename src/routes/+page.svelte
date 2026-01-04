@@ -41,9 +41,6 @@
           userId: user.id,
         }),
       );
-      extendedBillingInfos = extendedBillingInfos.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-      );
       status = "fetched";
     } catch (error) {
       console.error(error);
@@ -51,32 +48,24 @@
       extendedBillingInfos = [];
     }
   }
-  onMount(async () => {
-    fetchData();
-  });
+  onMount(() => fetchData());
 </script>
 
 {@render Metrics()}
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
   <ChartArea
-    refetch={() => {
-      fetchData();
-    }}
-    chartData={extendedBillingInfos.map(toAreaChartData)}
     {status}
+    refetch={() => fetchData()}
+    chartData={extendedBillingInfos.map(toAreaChartData)}
   />
 </section>
 
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
   <ChartBar
-    refetch={() => {
-      fetchData();
-    }}
-    chartData={extendedBillingInfos
-      .map(toBarChartData)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())}
     {status}
+    refetch={() => fetchData()}
+    chartData={extendedBillingInfos.map(toBarChartData)}
   />
 </section>
 
