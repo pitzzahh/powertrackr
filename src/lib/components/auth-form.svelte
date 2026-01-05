@@ -18,6 +18,7 @@
     FieldLabel,
     FieldDescription,
     FieldSeparator,
+    FieldError,
   } from "$/components/ui/field/index.js";
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
@@ -107,6 +108,7 @@
           required
           {...register.fields.name.as("text")}
         />
+        <FieldError errors={register.fields.name.issues()} />
       </Field>
     {/if}
     <Field>
@@ -118,6 +120,7 @@
         autocomplete="email"
         {...currentAction.fields.email.as("email")}
       />
+      <FieldError errors={currentAction.fields.email.issues()} />
     </Field>
     <Field>
       <div class="flex items-center">
@@ -143,6 +146,7 @@
           <Password.Strength />
         {/if}
       </Password.Root>
+      <FieldError errors={currentAction.fields.password.issues()} />
     </Field>
     {#if action === "register"}
       <Field>
@@ -160,6 +164,7 @@
           </Password.Input>
           <Password.Strength />
         </Password.Root>
+        <FieldError errors={register.fields.confirmPassword.issues()} />
       </Field>
     {/if}
     <Field>

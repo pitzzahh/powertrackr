@@ -93,8 +93,10 @@ export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
 
+  console.log({ newUser });
+
   if (password !== confirmPassword) {
-    invalid(issues.confirmPassword("Passwords do not match"));
+    return invalid(issues.confirmPassword("Passwords do not match"));
   }
   const {
     value: [userEmailCheck],
