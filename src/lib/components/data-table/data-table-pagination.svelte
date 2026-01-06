@@ -35,7 +35,7 @@
 </script>
 
 <div
-  class="flex items-center justify-between gap-6 px-4 py-2 bg-muted rounded-b backdrop-blur-sm w-full sticky bottom-0 z-10"
+  class="flex items-center justify-between gap-6 px-4 py-2 bg-card border rounded-b backdrop-blur-sm w-full sticky bottom-0 z-10"
 >
   <!-- Left section: Selection and loading info -->
   <div class="flex items-center gap-4">

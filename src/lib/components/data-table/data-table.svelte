@@ -130,7 +130,7 @@
 
 <div
   in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-  class="bg-muted rounded-t"
+  class="bg-card border rounded-t"
 >
   {#if data_table_toolbar}
     {@render data_table_toolbar({ table })}
@@ -146,8 +146,8 @@
         },
       ]}
     >
-      <Table.Root>
-        <Table.Header class="sticky top-0 z-10 border-b">
+      <Table.Root class="bg-card">
+        <Table.Header class="sticky top-0 bg-card border z-10 border-b">
           {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
             <Table.Row>
               {#each headerGroup.headers as header (header.id)}
@@ -163,7 +163,7 @@
             </Table.Row>
           {/each}
         </Table.Header>
-        <Table.Body>
+        <Table.Body class="bg-card border">
           {#if status === "loading_data"}
             <Table.Row>
               <Table.Cell colspan={columns.length} class="h-24 text-center">
