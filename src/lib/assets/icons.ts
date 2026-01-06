@@ -35,3 +35,5 @@ export { default as Zap } from "@lucide/svelte/icons/zap";
 export { default as Github } from "@lucide/svelte/icons/github";
 export { default as Sun } from "@lucide/svelte/icons/sun";
 export { default as Moon } from "@lucide/svelte/icons/moon";
+export { default as PanelLeftClose } from "@lucide/svelte/icons/panel-left-close";
+export { default as PanelLeftOpen } from "@lucide/svelte/icons/panel-left-open";

@@ -16,6 +16,7 @@
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
+  import { sidebarStore } from "$/stores/sidebar.svelte";
 
   const { children, data } = $props();
 
@@ -66,9 +67,11 @@
       <main class="flex justify-between gap-4 p-4 pt-16 min-h-full">
         <aside
           in:scale={{ duration: 150 }}
-          class="sticky rounded-md top-17 h-[calc(100vh-5.5rem)] md:w-48 lg:w-54 bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto"
+          class="sticky rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto transition-all duration-300 ease-in-out {sidebarStore.collapsed
+            ? 'w-16'
+            : 'md:w-48 lg:w-54'}"
         >
-          <SidebarContent open={false} user={data.user} />
+          <SidebarContent open={false} user={data.user} isMobileSheet={false} />
         </aside>
         <div class="flex-1 flex flex-col gap-4 min-w-0 p-1">
           {@render children()}

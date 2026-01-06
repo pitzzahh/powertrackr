@@ -4,6 +4,8 @@
   export type SidebarContentProps = {
     open: boolean;
     user: App.Locals["user"];
+    /** Whether this is rendered in mobile sheet (no collapse toggle) */
+    isMobileSheet?: boolean;
   };
 
   type SidebarContentState = {
@@ -13,7 +15,7 @@
 </script>
 
 <script lang="ts">
-  import { Button } from "$/components/ui/button";
+  import { Button, buttonVariants } from "$/components/ui/button";
   import { LogOut } from "@lucide/svelte";
   import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
@@ -21,7 +23,7 @@
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
-  import { Loader } from "$/assets/icons";
+  import { Loader, PanelLeftClose } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
   import * as Avatar from "$/components/ui/avatar/index.js";
@@ -34,8 +36,14 @@
   import { IsMobile } from "$/hooks/is-mobile.svelte";
   import { toast } from "svelte-sonner";
   import { toShortName } from "$/utils/text";
+  import { Settings2 } from "@lucide/svelte";
+  import * as Tooltip from "$/components/ui/tooltip/index.js";
 
-  let { open = $bindable(false), user }: SidebarContentProps = $props();
+  let {
+    open = $bindable(false),
+    user,
+    isMobileSheet = false,
+  }: SidebarContentProps = $props();
 
   let { status, logoutAttempt }: SidebarContentState = $state({
     status: "idle",
@@ -43,6 +51,12 @@
   });
 
   const pendingFetches = pendingFetchContext.get();
+
+  const collapsed = $derived(sidebarStore.collapsed && !isMobileSheet);
+
+  function toggleCollapse() {
+    sidebarStore.toggleCollapse();
+  }
 
   onDestroy(() => {
     sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
@@ -52,51 +66,140 @@
   });
 </script>
 
-<nav class="flex flex-col gap-8">
+<!-- Collapse toggle button - only show on desktop -->
+{#if !isMobileSheet}
+  <div class="flex justify-end mb-2">
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          onclick={toggleCollapse}
+          class={buttonVariants({
+            variant: "ghost",
+            size: "icon",
+            class: "size-8 transition-transform duration-300 ease-in-out",
+          })}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <span
+            class={[
+              {
+                "transition-transform duration-300 ease-in-out": true,
+                "rotate-180": collapsed,
+                "rotate-0": !collapsed,
+              },
+            ]}
+          >
+            <PanelLeftClose class="size-4" />
+          </span>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">
+          <p>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  </div>
+{/if}
+
+<nav
+  class={[
+    {
+      "flex flex-col gap-4": true,
+      "justify-center items-center": collapsed,
+    },
+  ]}
+>
   {#each sidebarStore.navItems as item (item.label)}
     {@const Icon = item.icon}
-    <Button
-      data-active={item.active || page.url.pathname === item.route}
-      variant="link"
-      href={item.route}
-      onclick={() => {
-        open = false;
-        sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
-          ...navItem,
-          active: navItem.label === item.label,
-        }));
-        pendingFetches.delete();
-      }}
-      class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
-    >
-      <Icon class="size-6" />
-      <span class="text-sm font-medium tracking-wide">{item.label}</span>
-    </Button>
+    {@const isActive = item.active || page.url.pathname === item.route}
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Button
+            data-active={isActive}
+            variant="link"
+            size={collapsed ? "icon" : "default"}
+            href={item.route}
+            onclick={() => {
+              open = false;
+              sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+                ...navItem,
+                active: navItem.label === item.label,
+              }));
+              pendingFetches.delete();
+            }}
+            class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
+          >
+            <Icon class="size-6" />
+            {#if !collapsed}
+              <span class="text-sm font-medium tracking-wide">{item.label}</span
+              >
+            {/if}
+          </Button>
+        </Tooltip.Trigger>
+        {#if collapsed}
+          <Tooltip.Content side="right">
+            <p>{item.label}</p>
+          </Tooltip.Content>
+        {/if}
+      </Tooltip.Root>
+    </Tooltip.Provider>
   {/each}
 </nav>
 
-<div class="mt-auto px flex flex-col gap-4">
+<div class="mt-auto flex flex-col gap-4">
   <Separator class="my-2" orientation="horizontal" />
-  <SettingsDialog />
+
+  <!-- Settings button with tooltip when collapsed -->
+  {#if collapsed}
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger
+          class={buttonVariants({
+            variant: "ghost",
+            class:
+              "flex items-center justify-center w-full transition-all duration-300 ease-in-out",
+          })}
+        >
+          <Settings2 class="size-6 shrink-0" />
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">
+          <p>SETTINGS</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  {:else}
+    <SettingsDialog />
+  {/if}
+
   <DropdownMenu.Root>
     <DropdownMenu.Trigger>
       {#snippet child({ props })}
         <Sidebar.MenuButton
           size="lg"
-          class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-300 ease-in-out {collapsed
+            ? 'justify-center px-2'
+            : ''}"
           {...props}
         >
-          <Avatar.Root class="size-8 rounded-lg">
+          <Avatar.Root class="size-8 rounded-lg shrink-0">
             <Avatar.Image src={user?.image} alt={user?.name} />
             <Avatar.Fallback class="rounded-lg"
               >{toShortName(user?.name || "Power Trackr")}</Avatar.Fallback
             >
           </Avatar.Root>
-          <div class="grid flex-1 text-start text-sm leading-tight">
+          <div
+            class="grid flex-1 text-start text-sm leading-tight transition-all duration-300 ease-in-out {collapsed
+              ? 'w-0 opacity-0 overflow-hidden'
+              : 'w-auto opacity-100'}"
+          >
             <span class="truncate font-medium">{user?.name}</span>
             <span class="truncate text-xs">{user?.email}</span>
           </div>
-          <ChevronsUpDownIcon class="ms-auto size-4" />
+          <ChevronsUpDownIcon
+            class="ms-auto size-4 shrink-0 transition-all duration-300 ease-in-out {collapsed
+              ? 'w-0 opacity-0 overflow-hidden'
+              : 'w-auto opacity-100'}"
+          />
         </Sidebar.MenuButton>
       {/snippet}
     </DropdownMenu.Trigger>
