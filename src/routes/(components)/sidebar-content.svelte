@@ -30,7 +30,6 @@
     Bell,
     ChevronsUpDown,
     CreditCard,
-    Settings2,
   } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
@@ -151,27 +150,7 @@
 <div class="mt-auto flex flex-col gap-4">
   <Separator class="my-2" orientation="horizontal" />
 
-  <!-- Settings button with tooltip when collapsed -->
-  {#if collapsed}
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger
-          class={buttonVariants({
-            variant: "ghost",
-            class:
-              "flex items-center justify-center w-full transition-all duration-300 ease-in-out",
-          })}
-        >
-          <Settings2 class="size-6 shrink-0" />
-        </Tooltip.Trigger>
-        <Tooltip.Content side="right">
-          <p>SETTINGS</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
-  {:else}
-    <SettingsDialog />
-  {/if}
+  <SettingsDialog {collapsed} />
 
   <DropdownMenu.Root>
     <DropdownMenu.Trigger>

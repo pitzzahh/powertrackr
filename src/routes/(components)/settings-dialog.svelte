@@ -1,9 +1,16 @@
+<script lang="ts" module>
+  export type SettingsDialogProps = {
+    collapsed?: boolean;
+  };
+</script>
+
 <script lang="ts">
   import * as Breadcrumb from "$/components/ui/breadcrumb/index.js";
   import { buttonVariants } from "$/components/ui/button/index.js";
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
-  import { Settings2 } from "@lucide/svelte";
+  import * as Tooltip from "$/components/ui/tooltip/index.js";
+  import { Settings2 } from "$/assets/icons";
   import BellIcon from "@lucide/svelte/icons/bell";
   import CheckIcon from "@lucide/svelte/icons/check";
   import GlobeIcon from "@lucide/svelte/icons/globe";
@@ -32,20 +39,43 @@
       { name: "Advanced", icon: SettingsIcon },
     ],
   };
+  let { collapsed = false }: SettingsDialogProps = $props();
+
   let open = $state(false);
 </script>
 
 <Dialog.Root bind:open>
-  <Dialog.Trigger
-    class={buttonVariants({
-      variant: "ghost",
-      class:
-        "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
-    })}
-  >
-    <Settings2 class="h-6 w-6" />
-    <span class="text-sm font-medium tracking-wide">SETTINGS</span>
-  </Dialog.Trigger>
+  {#if collapsed}
+    <Tooltip.Provider>
+      <Tooltip.Root>
+        <Tooltip.Trigger>
+          <Dialog.Trigger
+            class={buttonVariants({
+              variant: "ghost",
+              class:
+                "flex items-center justify-center w-full transition-all duration-300 ease-in-out",
+            })}
+          >
+            <Settings2 class="size-6 shrink-0" />
+          </Dialog.Trigger>
+        </Tooltip.Trigger>
+        <Tooltip.Content side="right">
+          <p>SETTINGS</p>
+        </Tooltip.Content>
+      </Tooltip.Root>
+    </Tooltip.Provider>
+  {:else}
+    <Dialog.Trigger
+      class={buttonVariants({
+        variant: "ghost",
+        class:
+          "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
+      })}
+    >
+      <Settings2 class="size-6" />
+      <span class="text-sm font-medium tracking-wide">SETTINGS</span>
+    </Dialog.Trigger>
+  {/if}
   <Dialog.Content
     class="overflow-hidden p-0 md:max-h-125 md:max-w-175 lg:max-w-200"
     trapFocus={false}
