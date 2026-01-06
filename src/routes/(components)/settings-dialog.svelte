@@ -10,33 +10,35 @@
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Settings2 } from "$/assets/icons";
-  import BellIcon from "@lucide/svelte/icons/bell";
-  import CheckIcon from "@lucide/svelte/icons/check";
-  import GlobeIcon from "@lucide/svelte/icons/globe";
-  import HouseIcon from "@lucide/svelte/icons/house";
-  import KeyboardIcon from "@lucide/svelte/icons/keyboard";
-  import LinkIcon from "@lucide/svelte/icons/link";
-  import LockIcon from "@lucide/svelte/icons/lock";
-  import MenuIcon from "@lucide/svelte/icons/menu";
-  import MessageCircleIcon from "@lucide/svelte/icons/message-circle";
-  import PaintbrushIcon from "@lucide/svelte/icons/paintbrush";
-  import SettingsIcon from "@lucide/svelte/icons/settings";
-  import VideoIcon from "@lucide/svelte/icons/video";
+  import {
+    Settings2,
+    Bell,
+    Check,
+    Globe,
+    House,
+    Keyboard,
+    Link,
+    Lock,
+    Menu,
+    MessageCircle,
+    Paintbrush,
+    Settings,
+    Video,
+  } from "$/assets/icons";
   const data = {
     nav: [
-      { name: "Notifications", icon: BellIcon },
-      { name: "Navigation", icon: MenuIcon },
-      { name: "Home", icon: HouseIcon },
-      { name: "Appearance", icon: PaintbrushIcon },
-      { name: "Messages & media", icon: MessageCircleIcon },
-      { name: "Language & region", icon: GlobeIcon },
-      { name: "Accessibility", icon: KeyboardIcon },
-      { name: "Mark as read", icon: CheckIcon },
-      { name: "Audio & video", icon: VideoIcon },
-      { name: "Connected accounts", icon: LinkIcon },
-      { name: "Privacy & visibility", icon: LockIcon },
-      { name: "Advanced", icon: SettingsIcon },
+      { name: "Notifications", icon: Bell },
+      { name: "Navigation", icon: Menu },
+      { name: "Home", icon: House },
+      { name: "Appearance", icon: Paintbrush },
+      { name: "Messages & media", icon: MessageCircle },
+      { name: "Language & region", icon: Globe },
+      { name: "Accessibility", icon: Keyboard },
+      { name: "Mark as read", icon: Check },
+      { name: "Audio & video", icon: Video },
+      { name: "Connected accounts", icon: Link },
+      { name: "Privacy & visibility", icon: Lock },
+      { name: "Advanced", icon: Settings },
     ],
   };
   let { collapsed = false }: SettingsDialogProps = $props();
