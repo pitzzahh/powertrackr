@@ -30,6 +30,7 @@
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { loginWithGithub } from "$/api/github.remote";
+  import { showError, showLoading, showSuccess } from "./toast";
 
   let {
     action,
@@ -54,12 +55,12 @@
 <form
   {...currentAction.enhance(async ({ submit }) => {
     status = "processing";
-    const toastId = toast.loading(
+    const toastId = showLoading(
       action === "login" ? "Logging you in..." : "Creating your account...",
     );
     try {
       await submit();
-      toast.success(
+      showSuccess(
         action === "login"
           ? "Logged in successfully"
           : "Account created successfully",
@@ -67,7 +68,7 @@
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
-      toast.error(
+      showError(
         message ||
           (action === "login"
             ? "Failed to log you in. Please try again."
@@ -192,7 +193,7 @@
           : "Sign up with GitHub"}
         onclick={async () => {
           status = "processing";
-          const toastId = toast.loading(
+          const toastId = showLoading(
             action === "login"
               ? "Logging in with GitHub"
               : "Creating Account with GitHub",
@@ -203,7 +204,7 @@
             );
             if (redirect) {
               toast.dismiss(toastId);
-              toast.success(
+              showSuccess(
                 action === "login"
                   ? "Logged in successfully"
                   : "Account created successfully",
