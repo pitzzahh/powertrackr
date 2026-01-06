@@ -211,6 +211,54 @@ export function historyTableColumns() {
       },
     },
     {
+      accessorKey: "createdAt",
+      header: ({ column }) =>
+        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+          column,
+          title: "Created",
+        }),
+      cell: ({ row }) =>
+        renderComponent(Badge, {
+          variant: "outline",
+          children: createRawSnippet(() => {
+            return {
+              render: () => `<span>${row.original.createdAt}</span>`,
+            };
+          }),
+        }),
+      filterFn: (row, id, value) => {
+        const dateStr = row.getValue(id) as string;
+        return (
+          dateStr === value ||
+          dateStr.toLowerCase().includes(value.toLowerCase())
+        );
+      },
+    },
+    {
+      accessorKey: "updatedAt",
+      header: ({ column }) =>
+        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+          column,
+          title: "Updated",
+        }),
+      cell: ({ row }) =>
+        renderComponent(Badge, {
+          variant: "outline",
+          children: createRawSnippet(() => {
+            return {
+              render: () => `<span>${row.original.updatedAt}</span>`,
+            };
+          }),
+        }),
+      filterFn: (row, id, value) => {
+        const dateStr = row.getValue(id) as string;
+        return (
+          dateStr === value ||
+          dateStr.toLowerCase().includes(value.toLowerCase())
+        );
+      },
+    },
+    {
       id: "actions",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
