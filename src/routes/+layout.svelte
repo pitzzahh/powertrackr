@@ -6,17 +6,17 @@
 
 <script lang="ts">
   import "./layout.css";
-  import { ModeWatcher } from "mode-watcher";
+  import { mode, ModeWatcher } from "mode-watcher";
   import favicon from "$/assets/favicon.svg";
   import FocusRing from "$/components/focus-ring.svelte";
   import Header from "$routes/(components)/header.svelte";
-  import { Toaster } from "$/components/ui/sonner/index.js";
   import { site } from "$/site";
 
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
   import { sidebarStore } from "$/stores/sidebar.svelte";
+  import { Toaster } from "svelte-sonner";
 
   const { children, data } = $props();
 
@@ -43,7 +43,7 @@
 
 <ModeWatcher />
 <FocusRing />
-<Toaster richColors />
+<Toaster theme={mode.current} position="bottom-right" closeButton={false} />
 
 <svelte:head>
   <link rel="icon" href={favicon} />
