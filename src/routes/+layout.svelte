@@ -69,7 +69,7 @@
           in:scale={{ duration: 150 }}
           class={[
             {
-              "sticky overflow-hidden rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto transition-all duration-300 ease-in-out": true,
+              "sticky rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 transition-all duration-300 ease-in-out overflow-visible": true,
               "w-16": sidebarStore.collapsed,
               "md:w-48 lg:w-54": !sidebarStore.collapsed,
             },

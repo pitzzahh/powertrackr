@@ -74,7 +74,7 @@
       "transition-all duration-300 ease-in-out",
       {
         "flex justify-center mb-2": collapsed,
-        "absolute -right-4 top-2": !collapsed,
+        "absolute -right-4 top-2 z-50": !collapsed,
       },
     ]}
   >
