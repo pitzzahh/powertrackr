@@ -29,7 +29,7 @@
   import { cubicInOut } from "svelte/easing";
   import BillingInfoForm from "$routes/history/(components)/billing-info-form.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { toast } from "svelte-sonner";
+  import { showSuccess, showError } from "$/components/toast";
 
   let { user }: HeaderProps = $props();
 
@@ -41,11 +41,14 @@
         label: "New Bill",
         content: newBill,
         callback: (valid) => {
-          let message = valid
-            ? "Bill added successfully!"
-            : "Failed to add bill. Please check the form for errors.";
-          if (valid) toast.success(message);
-          else toast.error(message);
+          if (valid) {
+            showSuccess("Bill added successfully!");
+          } else {
+            showError(
+              "Failed to add bill",
+              "Please check the form for errors.",
+            );
+          }
         },
       },
     ],
