@@ -32,7 +32,7 @@
       <HistoryDataTableToolbar
         {table}
         statuses={generateOptions(data, "status")}
-        default_hidden_columns={["id", "userId", "paymentId", "subPaymentId"]}
+        default_hidden_columns={["id", "userId", "paymentId"]}
       />
     {/snippet}
     {#snippet floating_bar({ table })}
