@@ -69,15 +69,24 @@
 
 <!-- Collapse toggle button - only show on desktop -->
 {#if !isMobileSheet}
-  <div class="flex justify-end mb-2">
+  <div
+    class={[
+      "transition-all duration-300 ease-in-out",
+      {
+        "flex justify-center mb-2": collapsed,
+        "absolute -right-4 top-2": !collapsed,
+      },
+    ]}
+  >
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger
           onclick={toggleCollapse}
           class={buttonVariants({
-            variant: "ghost",
+            variant: "outline",
             size: "icon",
-            class: "size-8 transition-transform duration-300 ease-in-out",
+            class:
+              "size-8 transition-transform duration-300 ease-in-out bg-card hover:bg-muted",
           })}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >

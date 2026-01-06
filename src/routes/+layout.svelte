@@ -67,9 +67,13 @@
       <main class="flex justify-between gap-4 p-4 pt-16 min-h-full">
         <aside
           in:scale={{ duration: 150 }}
-          class="sticky rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto transition-all duration-300 ease-in-out {sidebarStore.collapsed
-            ? 'w-16'
-            : 'md:w-48 lg:w-54'}"
+          class={[
+            {
+              "sticky overflow-hidden rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 overflow-y-auto transition-all duration-300 ease-in-out": true,
+              "w-16": sidebarStore.collapsed,
+              "md:w-48 lg:w-54": !sidebarStore.collapsed,
+            },
+          ]}
         >
           <SidebarContent open={false} user={data.user} isMobileSheet={false} />
         </aside>
