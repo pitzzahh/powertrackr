@@ -55,7 +55,12 @@
 
   const collapsed = $derived(sidebarStore.collapsed && !isMobileSheet);
 
-  function toggleCollapse() {
+  function toggleCollapse(
+    e: MouseEvent & {
+      currentTarget: EventTarget & HTMLButtonElement;
+    },
+  ) {
+    e.stopPropagation();
     sidebarStore.toggleCollapse();
   }
 
@@ -81,7 +86,7 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger
-          onclick={toggleCollapse}
+          onclick={(e) => toggleCollapse(e)}
           class={buttonVariants({
             variant: "outline",
             size: "icon",
@@ -162,35 +167,31 @@
   <SettingsDialog {collapsed} />
 
   <DropdownMenu.Root>
-    <DropdownMenu.Trigger>
-      {#snippet child({ props })}
-        <button
-          {...props}
-          class={[
-            "flex items-center rounded-lg transition-all duration-300 ease-in-out",
-            {
-              "justify-center w-full p-1 hover:bg-sidebar-accent": collapsed,
-              "w-full gap-2 p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground":
-                !collapsed,
-            },
-          ]}
-          aria-label="User menu"
+    <DropdownMenu.Trigger
+      class={[
+        buttonVariants({ variant: "secondary" }),
+        "flex items-center rounded-lg transition-all duration-300 ease-in-out",
+        {
+          "justify-center w-full p-1 hover:bg-sidebar-accent": collapsed,
+          "w-full gap-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground":
+            !collapsed,
+        },
+      ]}
+      aria-label="User menu"
+    >
+      <Avatar.Root class="size-8 rounded-lg shrink-0">
+        <Avatar.Image src={user?.image} alt={user?.name} />
+        <Avatar.Fallback class="rounded-lg"
+          >{toShortName(user?.name || "Power Trackr")}</Avatar.Fallback
         >
-          <Avatar.Root class="size-8 rounded-lg shrink-0">
-            <Avatar.Image src={user?.image} alt={user?.name} />
-            <Avatar.Fallback class="rounded-lg"
-              >{toShortName(user?.name || "Power Trackr")}</Avatar.Fallback
-            >
-          </Avatar.Root>
-          {#if !collapsed}
-            <div class="grid flex-1 text-start text-sm leading-tight">
-              <span class="truncate font-medium">{user?.name}</span>
-              <span class="truncate text-xs">{user?.email}</span>
-            </div>
-            <ChevronsUpDown class="ms-auto size-4 shrink-0" />
-          {/if}
-        </button>
-      {/snippet}
+      </Avatar.Root>
+      {#if !collapsed}
+        <div class="grid flex-1 text-start text-sm leading-tight">
+          <span class="truncate font-medium">{user?.name}</span>
+          <span class="truncate text-xs">{user?.email}</span>
+        </div>
+        <ChevronsUpDown class="ms-auto size-4 shrink-0" />
+      {/if}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content
       class="w-(--bits-dropdown-menu-anchor-width) min-w-56 rounded-lg"
