@@ -22,7 +22,7 @@ import { error, invalid, redirect } from "@sveltejs/kit";
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    error(401, "Not authenticated");
+    return redirect(303, "/auth");
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
