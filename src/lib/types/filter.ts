@@ -1,7 +1,9 @@
+import type { Icon } from "@lucide/svelte";
+
 export type FilterOption<T> = {
   value: T;
   label: T;
-  icon?: any;
+  icon?: typeof Icon;
 };
 
 export type Filter<T> = {
