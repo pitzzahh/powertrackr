@@ -37,3 +37,7 @@ export { default as Sun } from "@lucide/svelte/icons/sun";
 export { default as Moon } from "@lucide/svelte/icons/moon";
 export { default as PanelLeftClose } from "@lucide/svelte/icons/panel-left-close";
 export { default as PanelLeftOpen } from "@lucide/svelte/icons/panel-left-open";
+export { default as LogOut } from "@lucide/svelte/icons/log-out";
+export { default as BadgeCheck } from "@lucide/svelte/icons/badge-check";
+export { default as Bell } from "@lucide/svelte/icons/bell";
+export { default as Settings2 } from "@lucide/svelte/icons/settings-2";

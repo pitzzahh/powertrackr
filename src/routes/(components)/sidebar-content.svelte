@@ -16,27 +16,29 @@
 
 <script lang="ts">
   import { Button, buttonVariants } from "$/components/ui/button";
-  import { LogOut } from "@lucide/svelte";
   import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
   import { sidebarStore } from "$/stores/sidebar.svelte";
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
-  import { Loader, PanelLeftClose } from "$/assets/icons";
+  import {
+    Loader,
+    PanelLeftClose,
+    LogOut,
+    BadgeCheck,
+    Bell,
+    ChevronsUpDown,
+    CreditCard,
+    Settings2,
+  } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
   import * as Avatar from "$/components/ui/avatar/index.js";
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
-  import * as Sidebar from "$/components/ui/sidebar/index.js";
-  import BadgeCheckIcon from "@lucide/svelte/icons/badge-check";
-  import BellIcon from "@lucide/svelte/icons/bell";
-  import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-  import CreditCardIcon from "@lucide/svelte/icons/credit-card";
   import { IsMobile } from "$/hooks/is-mobile.svelte";
   import { toast } from "svelte-sonner";
   import { toShortName } from "$/utils/text";
-  import { Settings2 } from "@lucide/svelte";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
 
   let {
@@ -174,12 +176,17 @@
   <DropdownMenu.Root>
     <DropdownMenu.Trigger>
       {#snippet child({ props })}
-        <Sidebar.MenuButton
-          size="lg"
-          class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-300 ease-in-out {collapsed
-            ? 'justify-center px-2'
-            : ''}"
+        <button
           {...props}
+          class={[
+            "flex items-center rounded-lg transition-all duration-300 ease-in-out",
+            {
+              "justify-center w-full p-1 hover:bg-sidebar-accent": collapsed,
+              "w-full gap-2 p-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground":
+                !collapsed,
+            },
+          ]}
+          aria-label="User menu"
         >
           <Avatar.Root class="size-8 rounded-lg shrink-0">
             <Avatar.Image src={user?.image} alt={user?.name} />
@@ -187,20 +194,14 @@
               >{toShortName(user?.name || "Power Trackr")}</Avatar.Fallback
             >
           </Avatar.Root>
-          <div
-            class="grid flex-1 text-start text-sm leading-tight transition-all duration-300 ease-in-out {collapsed
-              ? 'w-0 opacity-0 overflow-hidden'
-              : 'w-auto opacity-100'}"
-          >
-            <span class="truncate font-medium">{user?.name}</span>
-            <span class="truncate text-xs">{user?.email}</span>
-          </div>
-          <ChevronsUpDownIcon
-            class="ms-auto size-4 shrink-0 transition-all duration-300 ease-in-out {collapsed
-              ? 'w-0 opacity-0 overflow-hidden'
-              : 'w-auto opacity-100'}"
-          />
-        </Sidebar.MenuButton>
+          {#if !collapsed}
+            <div class="grid flex-1 text-start text-sm leading-tight">
+              <span class="truncate font-medium">{user?.name}</span>
+              <span class="truncate text-xs">{user?.email}</span>
+            </div>
+            <ChevronsUpDown class="ms-auto size-4 shrink-0" />
+          {/if}
+        </button>
       {/snippet}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content
@@ -228,15 +229,15 @@
       <DropdownMenu.Separator />
       <DropdownMenu.Group>
         <DropdownMenu.Item>
-          <BadgeCheckIcon />
+          <BadgeCheck />
           Account
         </DropdownMenu.Item>
         <DropdownMenu.Item>
-          <CreditCardIcon />
+          <CreditCard />
           Billing
         </DropdownMenu.Item>
         <DropdownMenu.Item>
-          <BellIcon />
+          <Bell />
           Notifications
         </DropdownMenu.Item>
       </DropdownMenu.Group>
