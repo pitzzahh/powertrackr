@@ -36,9 +36,9 @@
   import * as Avatar from "$/components/ui/avatar/index.js";
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
   import { IsMobile } from "$/hooks/is-mobile.svelte";
-  import { toast } from "svelte-sonner";
   import { toShortName } from "$/utils/text";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
+  import { showLoading, showSuccess, toast } from "$/components/toast";
 
   let {
     open = $bindable(false),
@@ -254,12 +254,12 @@
       <AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
       <form
         {...signout.enhance(({ submit }) => {
-          const toastId = toast.loading("Logging out");
+          const toastId = showLoading("Logging out");
           status = "processing";
           submit().finally(() => {
             status = "idle";
             toast.dismiss(toastId);
-            toast.success("Logged out successfully");
+            showSuccess("Logged out successfully");
           });
         })}
         class="flex"
