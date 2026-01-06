@@ -1,10 +1,8 @@
 import Root from "./toast.svelte";
-import ToastManager from "./toast-manager.svelte";
 
 export {
   Root,
   Root as Toast,
-  ToastManager,
   //
 };
 
