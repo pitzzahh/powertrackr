@@ -1,3 +1,10 @@
+<script lang="ts" module>
+  type PageState = {
+    extendedBillingInfos: ExtendedBillingInfo[];
+    status: Status;
+  };
+</script>
+
 <script lang="ts">
   import { formatNumber } from "$/utils/format";
   import {
@@ -15,33 +22,31 @@
   import { hydratable, onMount } from "svelte";
   import { Loader, Banknote } from "$lib/assets/icons";
   import type { ExtendedBillingInfo } from "$/types/billing-info";
+  import type { Status } from "$/types/state.js";
 
   let { data } = $props();
 
   const { user } = $derived(data);
 
-  let {
-    extendedBillingInfos,
-    status,
-  }: {
-    extendedBillingInfos: ExtendedBillingInfo[];
-    status: "fetching" | "fetched" | "error";
-  } = $state({
+  let { extendedBillingInfos, status }: PageState = $state({
     extendedBillingInfos: [],
     status: "fetching",
   });
 
-  const summary = $derived(getBillingSummary({ userId: user.id }));
+  let { summary } = $derived({
+    summary: getBillingSummary({ userId: user?.id || "" }),
+  });
 
   async function fetchData() {
-    status = "fetching";
     try {
+      status = "fetching";
       extendedBillingInfos = await hydratable("chart_data", () =>
         getExtendedBillingInfos({
-          userId: user.id,
+          userId: user?.id || "",
         }),
       );
-      status = "fetched";
+      summary = getBillingSummary({ userId: user?.id || "" });
+      status = "success";
     } catch (error) {
       console.error(error);
       status = "error";

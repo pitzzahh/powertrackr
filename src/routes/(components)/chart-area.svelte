@@ -8,8 +8,8 @@
 
   export type AreaChartInteractiveProps = {
     chartData: ChartData[];
-    status: "fetching" | "fetched" | "error";
-    retryStatus?: "fetching" | "fetched" | "error";
+    status: Status;
+    retryStatus?: Status;
     refetch?: (callback: () => void) => void;
   };
 
@@ -33,6 +33,7 @@
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
+  import type { Status } from "$/types/state";
 
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps =
     $props();
@@ -86,7 +87,7 @@
         <Button
           onclick={() => {
             retryStatus = "fetching";
-            refetch?.(() => (retryStatus = "fetched"));
+            refetch?.(() => (retryStatus = "success"));
           }}
           ><RefreshCw
             class={[
