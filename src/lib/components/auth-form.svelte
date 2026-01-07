@@ -204,18 +204,13 @@
             );
             if (redirect) {
               toast.dismiss(toastId);
-              showSuccess(
-                action === "login"
-                  ? "Logged in successfully"
-                  : "Account created successfully",
-              );
               window.location.href = redirect;
             }
           } catch (error) {
             const message = isHttpError(error)
               ? error.body.message
               : String(error);
-            toast.error(
+            showError(
               message ||
                 (action === "login"
                   ? "Failed to log you in. Please try again."

@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { BillingSummary } from "$/types/billing-info";
+  import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
 
   type PageState = {
     extendedBillingInfos: ExtendedBillingInfo[];
@@ -60,6 +60,10 @@
 </script>
 
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { page } from "$app/state";
+  import { goto } from "$app/navigation";
+  import { showSuccess } from "$/components/toast";
   import { formatNumber } from "$/utils/format";
   import {
     ChartArea,
@@ -70,9 +74,8 @@
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { getExtendedBillingInfos } from "$/api/billing-info.remote";
-  import { hydratable, onMount } from "svelte";
+  import { hydratable } from "svelte";
   import { Loader, Banknote } from "$lib/assets/icons";
-  import type { ExtendedBillingInfo } from "$/types/billing-info";
   import type { Status } from "$/types/state.js";
 
   let { data } = $props();
@@ -100,7 +103,13 @@
       summary = null;
     }
   }
-  onMount(() => fetchData());
+  onMount(() => {
+    fetchData();
+    if (page.url.searchParams.get('oauth') === 'github' && data.user) {
+      showSuccess("Logged in successfully");
+      goto('/', { replaceState: true });
+    }
+  });
 </script>
 
 {@render Metrics()}

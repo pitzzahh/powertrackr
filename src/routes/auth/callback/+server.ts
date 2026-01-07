@@ -8,8 +8,7 @@ import { generateSessionToken } from "$/server/encryption";
 import { createGitHub } from "$/server/oauth";
 import { addUser } from "$/server/crud/user-crud";
 
-// TODO: oauth param check to call correct callback
-export async function GET(event: RequestEvent): Promise<Response> {
+async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;
   const code = event.url.searchParams.get("code");
   const state = event.url.searchParams.get("state");
@@ -62,7 +61,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: "/",
+        Location: "/?oauth=github",
       },
     });
   }
@@ -111,7 +110,19 @@ export async function GET(event: RequestEvent): Promise<Response> {
   return new Response(null, {
     status: 302,
     headers: {
-      Location: "/",
+      Location: "/?oauth=github",
     },
   });
+}
+
+export async function GET(event: RequestEvent): Promise<Response> {
+  const oauth = event.url.searchParams.get("oauth");
+
+  if (oauth === "github") {
+    return await handleGitHubCallback(event);
+  } else {
+    return new Response("Unsupported OAuth provider", {
+      status: 400,
+    });
+  }
 }
