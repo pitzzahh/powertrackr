@@ -154,8 +154,13 @@ export function historyTableColumns() {
         });
       },
       filterFn: (row, id, value) => {
-        const val = value as string[];
-        return val.some((v) => v.toLowerCase() === row.original.status.toLowerCase());
+        if (Array.isArray(value)) {
+          return (value as string[]).some(
+            (v) => v.toLowerCase() === row.original.status.toLowerCase(),
+          );
+        }
+        const statusStr = row.getValue(id) as string;
+        return statusStr === value || statusStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
