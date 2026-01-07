@@ -28,16 +28,16 @@
   import { convertToNormalText } from "$/utils/text";
   import { onDestroy } from "svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import type { BillingInfo } from "$/types/billing-info";
+  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 
   let {
     table,
     statuses,
     default_hidden_columns = [],
-  }: BillingInfosDataTableToolbarProps<BillingInfo> = $props();
+  }: BillingInfosDataTableToolbarProps<ExtendedBillingInfoTableView> = $props();
 
   let { search, where_to_search, timeout } = $state<
-    ComponentState<BillingInfo>
+    ComponentState<ExtendedBillingInfoTableView>
   >({
     search: "",
     where_to_search: "date",
