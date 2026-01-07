@@ -1,15 +1,15 @@
 <script lang="ts" module>
   type PageState = {
-    billingInfos: BillingInfo[];
+    billingInfos: ExtendedBillingInfo[];
     status: Status;
   };
 </script>
 
 <script lang="ts">
-  import { getBillingInfos } from "$/api/billing-info.remote";
-  import type { BillingInfo } from "$/types/billing-info";
+  import { getExtendedBillingInfos } from "$/api/billing-info.remote";
+  import type { ExtendedBillingInfo } from "$/types/billing-info";
   import type { Status } from "$/types/state";
-  import { billingInfoToTableView } from "$/utils/mapper/billing-info";
+  import { extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
   import { HistoryDataTable } from "$routes/history/(components)";
   import { hydratable, onMount } from "svelte";
 
@@ -22,11 +22,11 @@
     status: "idle",
   });
 
-  onMount(async () => {
+  async function fetchData() {
     status = "loading_data";
     try {
       billingInfos = await hydratable("billing_infos", () =>
-        getBillingInfos({ userId: user?.id ?? "" }),
+        getExtendedBillingInfos({ userId: user?.id ?? "" }),
       );
     } catch (error) {
       console.error(error);
@@ -35,7 +35,9 @@
       return;
     }
     status = "success";
-  });
+  }
+
+  onMount(() => fetchData());
 </script>
 
-<HistoryDataTable {status} data={billingInfos.map(billingInfoToTableView)} />
+<HistoryDataTable {status} data={billingInfos.map(extendedBillingInfoToTableView)} />

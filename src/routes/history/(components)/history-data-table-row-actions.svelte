@@ -1,6 +1,6 @@
 <script module lang="ts">
   export interface BillingInfoDataTableRowActionsProps {
-    row: Row<BillingInfo>;
+    row: Row<ExtendedBillingInfoTableView>;
   }
   interface ComponentState {
     app_state: "stale" | "processing";
@@ -29,12 +29,11 @@
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
-  import { toast } from "svelte-sonner";
-  import { Toast } from "$/components/toast";
+  import { showSuccess, showWarning, Toast } from "$/components/toast";
   import * as Sheet from "$/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import BillingInfoForm from "./billing-info-form.svelte";
-  import type { BillingInfo } from "$/types/billing-info";
+  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
@@ -62,13 +61,10 @@
     //     },
     //   });
     // }
-    return toast.custom(Toast, {
-      componentProps: {
-        title: "Successfully Removed Billing Info",
-        description: "Billing Info record has been successfully removed.",
-        variant: "default",
-      },
-    });
+    return showSuccess(
+      "Successfully Removed Billing Info",
+      "Billing Info record has been successfully removed.",
+    )
   }
 </script>
 
@@ -111,13 +107,10 @@
   bind:open={open_view}
   onOpenChange={(open) => {
     if (!open && app_state === "processing") {
-      toast.custom(Toast, {
-        componentProps: {
-          title: "Process Interrupted",
-          description: "The operation is still processing. Please wait...",
-          variant: "destructive",
-        },
-      });
+      showWarning(
+        "Process Interrupted",
+        "The operation is still processing. Please wait...",
+      )
       open_view = true;
     }
   }}
@@ -179,7 +172,7 @@
                 <Zap class="size-4" />
                 Total KWh:
               </span>
-              <span class="font-semibold">{row.original.totalKwh}</span>
+              <span class="font-semibold">{row.original.totalKWh}</span>
             </div>
 
             {#if row.original.subKwh}
@@ -218,8 +211,8 @@
               </span>
               <span
                 class="font-semibold"
-                class:text-green-700={row.original.status === "paid"}
-                class:text-red-700={row.original.status !== "paid"}
+                class:text-green-700={row.original.status === "Paid"}
+                class:text-red-700={row.original.status !== "Paid"}
               >
                 {row.original.status}
               </span>
@@ -353,7 +346,12 @@
         <div class="space-y-4 p-4">
           <BillingInfoForm
             action="update"
-            billingInfo={billingInfoToDto(row.original)}
+            billingInfo={billingInfoToDto({
+              ...row.original,
+              date: new Date(row.original.date),
+              createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
+              updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
+            })}
           />
         </div>
       </ScrollArea>

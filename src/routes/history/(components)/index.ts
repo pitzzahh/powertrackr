@@ -1,8 +1,8 @@
 import { DataTableCheckbox, DataTableColumnHeader } from "$/components/data-table";
 import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
-import { getPayment } from "$/api/payment.remote";
-import type { BillingInfo } from "$/types/billing-info";
+
+import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import PaymentCell from "./payment-cell.svelte";
@@ -13,7 +13,7 @@ export function historyTableColumns() {
   return [
     {
       id: "select",
-      header: ({ table }: { table: Table<BillingInfo> }) =>
+      header: ({ table }: { table: Table<ExtendedBillingInfoTableView> }) =>
         renderComponent(DataTableCheckbox, {
           checked: table.getIsAllPageRowsSelected(),
           indeterminate: table.getIsSomePageRowsSelected(),
@@ -34,7 +34,7 @@ export function historyTableColumns() {
     {
       accessorKey: "date",
       header: ({ column }) =>
-        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Date",
         }),
@@ -54,7 +54,7 @@ export function historyTableColumns() {
     {
       accessorKey: "totalKwh",
       header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Total KWh",
         });
@@ -74,7 +74,7 @@ export function historyTableColumns() {
     {
       accessorKey: "payPerKwh",
       header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Pay Per kWh",
         });
@@ -91,7 +91,7 @@ export function historyTableColumns() {
     {
       accessorKey: "balance",
       header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Balance",
         });
@@ -116,7 +116,7 @@ export function historyTableColumns() {
     {
       accessorKey: "payment",
       header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Payment",
         });
@@ -126,8 +126,8 @@ export function historyTableColumns() {
           paymentId: row.original.paymentId,
         });
       },
-      filterFn: async (row, id, value) => {
-        const payment = await getPayment(row.original.paymentId!);
+      filterFn: (row, id, value) => {
+        const payment = row.original.payment;
         if (!payment || payment.amount == null) return false;
         const paymentStr = payment.amount.toString();
         return paymentStr === value || paymentStr.toLowerCase().includes(value.toLowerCase());
@@ -136,7 +136,7 @@ export function historyTableColumns() {
     {
       accessorKey: "status",
       header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Status",
         });
@@ -161,7 +161,7 @@ export function historyTableColumns() {
     {
       accessorKey: "createdAt",
       header: ({ column }) =>
-        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Created",
         }),
@@ -182,7 +182,7 @@ export function historyTableColumns() {
     {
       accessorKey: "updatedAt",
       header: ({ column }) =>
-        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Updated",
         }),
@@ -203,7 +203,7 @@ export function historyTableColumns() {
     {
       id: "actions",
       header: ({ column }) =>
-        renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
+        renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "ACTIONS",
           class: "font-semibold text-center",
@@ -214,7 +214,7 @@ export function historyTableColumns() {
         });
       },
     },
-  ] as ColumnDef<BillingInfo, any>[];
+  ] as ColumnDef<ExtendedBillingInfoTableView, any>[];
 }
 
 export { default as HistoryDataTableToolbar } from "./history-data-table-toolbar.svelte";
