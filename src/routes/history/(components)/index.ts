@@ -9,6 +9,8 @@ import PaymentCell from "./payment-cell.svelte";
 import { HistoryDataTableRowActions } from ".";
 import { formatNumber } from "$/utils/format";
 
+import SubPaymentsButton from "./sub-payments-button.svelte";
+
 export function historyTableColumns() {
   return [
     {
@@ -109,7 +111,11 @@ export function historyTableColumns() {
         });
       },
       filterFn: (row, id, value) => {
-        const balanceStr = row.original.balance.toString();
+        console.log({
+          balance: row.getValue(id),
+          value,
+        });
+        const balanceStr = String(row.getValue(id));
         return balanceStr === value || balanceStr.toLowerCase().includes(value.toLowerCase());
       },
     },
@@ -122,6 +128,7 @@ export function historyTableColumns() {
         });
       },
       cell: ({ row }) => {
+        // we can just use row.original.payment here, but looks cooler this way, fetching by id
         return renderComponent(PaymentCell, {
           paymentId: row.original.paymentId,
         });
@@ -206,6 +213,21 @@ export function historyTableColumns() {
       },
     },
     {
+      id: "sub-payments",
+      header: ({ column }) =>
+        renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
+          column,
+          title: "Sub Payments",
+        }),
+      cell: ({ row }) => {
+        return renderComponent(SubPaymentsButton, {
+          row: row.original,
+        });
+      },
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
       id: "actions",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
@@ -225,3 +247,6 @@ export function historyTableColumns() {
 export { default as HistoryDataTableToolbar } from "./history-data-table-toolbar.svelte";
 export { default as HistoryDataTable } from "./history-data-table.svelte";
 export { default as HistoryDataTableRowActions } from "./history-data-table-row-actions.svelte";
+export { default as SubPaymentsDialog } from "./sub-payments-dialog.svelte";
+
+export { default as SubPaymentsButton } from "./sub-payments-button.svelte";
