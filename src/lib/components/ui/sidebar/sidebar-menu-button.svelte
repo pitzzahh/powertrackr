@@ -21,12 +21,8 @@
     },
   });
 
-  export type SidebarMenuButtonVariant = VariantProps<
-    typeof sidebarMenuButtonVariants
-  >["variant"];
-  export type SidebarMenuButtonSize = VariantProps<
-    typeof sidebarMenuButtonVariants
-  >["size"];
+  export type SidebarMenuButtonVariant = VariantProps<typeof sidebarMenuButtonVariants>["variant"];
+  export type SidebarMenuButtonSize = VariantProps<typeof sidebarMenuButtonVariants>["size"];
 </script>
 
 <script lang="ts">
@@ -54,9 +50,7 @@
     variant?: SidebarMenuButtonVariant;
     size?: SidebarMenuButtonSize;
     tooltipContent?: Snippet | string;
-    tooltipContentProps?: WithoutChildrenOrChild<
-      ComponentProps<typeof Tooltip.Content>
-    >;
+    tooltipContentProps?: WithoutChildrenOrChild<ComponentProps<typeof Tooltip.Content>>;
     child?: Snippet<[{ props: Record<string, unknown> }]>;
   } = $props();
 

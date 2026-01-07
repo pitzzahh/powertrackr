@@ -6,7 +6,17 @@
   import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
 
-  let { row, class: className, size = "icon", children }: { row: ExtendedBillingInfoTableView; class?: HTMLButtonAttributes['class'], size?: "icon" | "default" | "sm" | "lg" | "xl" | "icon-sm" | "icon-lg"; children?: Snippet } = $props();
+  let {
+    row,
+    class: className,
+    size = "icon",
+    children,
+  }: {
+    row: ExtendedBillingInfoTableView;
+    class?: HTMLButtonAttributes["class"];
+    size?: "icon" | "default" | "sm" | "lg" | "xl" | "icon-sm" | "icon-lg";
+    children?: Snippet;
+  } = $props();
 
   let open = $state(false);
 

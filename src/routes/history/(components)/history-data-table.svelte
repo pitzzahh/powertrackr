@@ -22,12 +22,7 @@
 </script>
 
 <section class="flex flex-col gap-2">
-  <DataTable
-    {data}
-    {status}
-    columns={historyTableColumns()}
-    {...data_table_props}
-  >
+  <DataTable {data} {status} columns={historyTableColumns()} {...data_table_props}>
     {#snippet data_table_toolbar({ table })}
       <HistoryDataTableToolbar
         {table}

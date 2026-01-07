@@ -12,10 +12,8 @@
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
   import { untrack } from "svelte";
 
-  let {
-    table,
-    default_hidden_columns = $bindable([]),
-  }: DataTableViewOptionsProps<TData> = $props();
+  let { table, default_hidden_columns = $bindable([]) }: DataTableViewOptionsProps<TData> =
+    $props();
 
   $effect(() => {
     if (!default_hidden_columns) return;
@@ -51,10 +49,7 @@
           if (
             table
               .getAllColumns()
-              .filter(
-                (col) =>
-                  typeof col.accessorFn !== "undefined" && col.getCanHide(),
-              )
+              .filter((col) => typeof col.accessorFn !== "undefined" && col.getCanHide())
               .filter((col) => col.getIsVisible()).length <= 1 &&
             !value
           ) {

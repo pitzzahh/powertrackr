@@ -19,15 +19,8 @@
   import { Input } from "$/components/ui/input";
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
-  import {
-    CalendarDate,
-    getLocalTimeZone,
-    today,
-  } from "@internationalized/date";
-  import {
-    createBillingInfo,
-    updateBillingInfo,
-  } from "$/api/billing-info.remote";
+  import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+  import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
@@ -52,11 +45,7 @@
     dateValue: (() => {
       if (action == "add" || !billingInfo) return undefined; // do not set a date for new entries
       const date = new Date(billingInfo.date);
-      return new CalendarDate(
-        date.getFullYear(),
-        date.getMonth() + 1,
-        date.getDate(),
-      );
+      return new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
     })(),
     status: action === "update" && billingInfo ? billingInfo.status : "pending",
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
@@ -66,7 +55,7 @@
 <form
   {...currentAction.enhance(async ({ submit }) => {
     const toastId = toast.loading(
-      action === "add" ? "Adding billing info..." : "Updating billing info...",
+      action === "add" ? "Adding billing info..." : "Updating billing info..."
     );
     try {
       try {
@@ -90,14 +79,8 @@
       <Popover.Root bind:open>
         <Popover.Trigger id="{identity}-date">
           {#snippet child({ props })}
-            <Button
-              {...props}
-              variant="outline"
-              class="w-full sm:w-48 justify-between font-normal"
-            >
-              {dateValue
-                ? formatDate(dateValue.toDate(getLocalTimeZone()))
-                : "Select date"}
+            <Button {...props} variant="outline" class="w-full justify-between font-normal sm:w-48">
+              {dateValue ? formatDate(dateValue.toDate(getLocalTimeZone())) : "Select date"}
               <ChevronDown />
             </Button>
           {/snippet}
@@ -140,10 +123,7 @@
         value={dateValue?.toString() || ""}
       />
       <Field.Description>Pick date</Field.Description>
-      <Field.Error
-        errors={currentAction.fields.date.issues()}
-        fieldName="Date"
-      />
+      <Field.Error errors={currentAction.fields.date.issues()} fieldName="Date" />
     </Field.Field>
     <Field.Field>
       <Field.Label for="{identity}-balance">Current Balance</Field.Label>
@@ -151,14 +131,10 @@
         {...currentAction.fields.balance.as("number")}
         id="{identity}-balance"
         placeholder="Enter current balance"
-        {...action === "update" &&
-          billingInfo && { value: billingInfo.balance.toString() }}
+        {...action === "update" && billingInfo && { value: billingInfo.balance.toString() }}
       />
       <Field.Description>Enter balance</Field.Description>
-      <Field.Error
-        errors={currentAction.fields.balance.issues()}
-        fieldName="Current Balance"
-      />
+      <Field.Error errors={currentAction.fields.balance.issues()} fieldName="Current Balance" />
     </Field.Field>
     <Field.Field>
       <Field.Label for="{identity}-totalKwh">Total KWh</Field.Label>
@@ -166,14 +142,10 @@
         {...currentAction.fields.totalKwh.as("number")}
         id="{identity}-totalKwh"
         placeholder="Enter value"
-        {...action === "update" &&
-          billingInfo && { value: billingInfo.totalKwh.toString() }}
+        {...action === "update" && billingInfo && { value: billingInfo.totalKwh.toString() }}
       />
       <Field.Description>Enter total KWh</Field.Description>
-      <Field.Error
-        errors={currentAction.fields.totalKwh.issues()}
-        fieldName="Total KWh"
-      />
+      <Field.Error errors={currentAction.fields.totalKwh.issues()} fieldName="Total KWh" />
     </Field.Field>
     <Field.Field>
       <Field.Label for="{identity}-subKwh">Sub KWh</Field.Label>
@@ -187,10 +159,7 @@
           }}
       />
       <Field.Description>Enter sub KWh</Field.Description>
-      <Field.Error
-        errors={currentAction.fields.subReading.issues()}
-        fieldName="Sub KWh"
-      />
+      <Field.Error errors={currentAction.fields.subReading.issues()} fieldName="Sub KWh" />
     </Field.Field>
     <Field.Field>
       <Field.Label for="{identity}-status">Status</Field.Label>
@@ -213,16 +182,9 @@
           </Select.Group>status
         </Select.Content>
       </Select.Root>
-      <input
-        {...currentAction.fields.status.as("text")}
-        type="hidden"
-        value={status}
-      />
+      <input {...currentAction.fields.status.as("text")} type="hidden" value={status} />
       <Field.Description>Select status</Field.Description>
-      <Field.Error
-        errors={currentAction.fields.status.issues()}
-        fieldName="Status"
-      />
+      <Field.Error errors={currentAction.fields.status.issues()} fieldName="Status" />
     </Field.Field>
   </Field.Group>
 

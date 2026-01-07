@@ -40,11 +40,7 @@
   import * as Tooltip from "$/components/ui/tooltip/index.js";
   import { showLoading, showSuccess, toast } from "$/components/toast";
 
-  let {
-    open = $bindable(false),
-    user,
-    isMobileSheet = false,
-  }: SidebarContentProps = $props();
+  let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
   let { status, logoutAttempt }: SidebarContentState = $state({
     status: "idle",
@@ -90,8 +86,7 @@
           class={buttonVariants({
             variant: "outline",
             size: "icon",
-            class:
-              "size-8 transition-transform duration-300 ease-in-out bg-card hover:bg-muted",
+            class: "size-8 bg-card transition-transform duration-300 ease-in-out hover:bg-muted",
           })}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -138,17 +133,15 @@
               href={item.route}
               onclick={() => {
                 open = false;
-                sidebarStore.navItems = sidebarStore.navItems.map(
-                  (navItem) => ({
-                    ...navItem,
-                    active: navItem.label === item.label,
-                  }),
-                );
+                sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+                  ...navItem,
+                  active: navItem.label === item.label,
+                }));
                 pendingFetches.delete();
               }}
               class={[
                 {
-                  "flex justify-center items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full": true,
+                  "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground": true,
                   "justify-start": !collapsed,
                 },
               ]}
@@ -156,9 +149,7 @@
             >
               <Icon class="size-6" />
               {#if !collapsed}
-                <span class="text-sm font-medium tracking-wide"
-                  >{item.label}</span
-                >
+                <span class="text-sm font-medium tracking-wide">{item.label}</span>
               {/if}
             </Button>
           {/snippet}
@@ -182,7 +173,7 @@
     <DropdownMenu.Trigger
       class={[
         buttonVariants({ variant: "secondary" }),
-        "flex items-center rounded-lg transition-all duration-300 ease-in-out w-full",
+        "flex w-full items-center rounded-lg transition-all duration-300 ease-in-out",
         {
           "justify-center": collapsed,
           "p-1": collapsed,
@@ -195,7 +186,7 @@
       ]}
       aria-label="User menu"
     >
-      <Avatar.Root class="size-8 rounded-lg shrink-0">
+      <Avatar.Root class="size-8 shrink-0 rounded-lg">
         <Avatar.Image src={user?.image} alt={user?.name} />
         <Avatar.Fallback class="rounded-lg"
           >{toShortName(user?.name || "Power Trackr")}</Avatar.Fallback
@@ -224,9 +215,7 @@
             >
           </Avatar.Root>
           <div class="grid flex-1 text-start text-sm leading-tight">
-            <span class="truncate font-medium"
-              >{user?.name ?? "PowerTrackr"}</span
-            >
+            <span class="truncate font-medium">{user?.name ?? "PowerTrackr"}</span>
             <span class="truncate text-xs">{user?.email}</span>
           </div>
         </div>
@@ -247,10 +236,7 @@
         </DropdownMenu.Item>
       </DropdownMenu.Group>
       <DropdownMenu.Separator />
-      <DropdownMenu.Item
-        onclick={() => (logoutAttempt = true)}
-        variant="destructive"
-      >
+      <DropdownMenu.Item onclick={() => (logoutAttempt = true)} variant="destructive">
         <LogOut class="h-6 w-6" />
         <span class="text-sm font-medium tracking-wide">LOGOUT</span>
       </DropdownMenu.Item>

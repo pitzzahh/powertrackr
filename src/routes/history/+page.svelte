@@ -26,7 +26,7 @@
     status = "loading_data";
     try {
       billingInfos = await hydratable("billing_infos", () =>
-        getExtendedBillingInfos({ userId: user?.id ?? "" }),
+        getExtendedBillingInfos({ userId: user?.id ?? "" })
       );
     } catch (error) {
       console.error(error);

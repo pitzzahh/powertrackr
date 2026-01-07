@@ -42,12 +42,11 @@
     dialog_open: false,
   });
 
-  const { entity_plural_name, selected_rows, default_dialog_description } =
-    $derived({
-      entity_plural_name: entity_name_plural || `${entity_name}s`,
-      selected_rows: table.getFilteredSelectedRowModel().rows,
-      default_dialog_description: `This action cannot be undone. This will permanently delete the ${table.getFilteredSelectedRowModel().rows.length} selected ${entity_name_plural || `${entity_name}s`}, this is not reversible.`,
-    });
+  const { entity_plural_name, selected_rows, default_dialog_description } = $derived({
+    entity_plural_name: entity_name_plural || `${entity_name}s`,
+    selected_rows: table.getFilteredSelectedRowModel().rows,
+    default_dialog_description: `This action cannot be undone. This will permanently delete the ${table.getFilteredSelectedRowModel().rows.length} selected ${entity_name_plural || `${entity_name}s`}, this is not reversible.`,
+  });
 
   async function handleDeleteSelectedRows() {
     app_state = "processing";
@@ -59,7 +58,7 @@
       if (delete_fn) {
         const [error, result] = await catchErrorTyped(delete_fn(row.original));
         console.debug(
-          `Delete function called for row: ${JSON.stringify(row.original)}, result: ${result}, error: ${error}`,
+          `Delete function called for row: ${JSON.stringify(row.original)}, result: ${result}, error: ${error}`
         );
         if (error) {
           error_count++;
@@ -109,13 +108,11 @@
   class="fixed inset-x-0 bottom-6 z-50 mx-auto w-fit rounded-lg border bg-muted p-3"
 >
   <div class="flex gap-2">
-    <div
-      class="flex h-10 items-center rounded-md border-2 border-dashed pl-4 pr-2"
-    >
-      <span class="whitespace-nowrap text-xs">
+    <div class="flex h-10 items-center rounded-md border-2 border-dashed pr-2 pl-4">
+      <span class="text-xs whitespace-nowrap">
         {selected_rows.length} selected
       </span>
-      <Separator orientation="vertical" class="ml-2 mr-1" />
+      <Separator orientation="vertical" class="mr-1 ml-2" />
 
       <Tooltip.Provider>
         <Tooltip.Root>
@@ -133,19 +130,13 @@
             class="font-mediun flex items-center border bg-accent px-2 py-1 text-foreground dark:bg-zinc-900"
           >
             <p class="mr-2">Clear selection</p>
-            <kbd class={buttonVariants({ variant: "outline", size: "sm" })}
-              >Esc</kbd
-            >
+            <kbd class={buttonVariants({ variant: "outline", size: "sm" })}>Esc</kbd>
           </Tooltip.Content>
         </Tooltip.Root>
       </Tooltip.Provider>
     </div>
 
-    <Button
-      size="icon"
-      variant="hover-text-destructive"
-      onclick={() => (dialog_open = true)}
-    >
+    <Button size="icon" variant="hover-text-destructive" onclick={() => (dialog_open = true)}>
       <Trash2 />
     </Button>
   </div>
@@ -160,21 +151,15 @@
       </Dialog.Description>
     </Dialog.Header>
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (dialog_open = false)}
-        >Cancel</Button
-      >
+      <Button variant="outline" onclick={() => (dialog_open = false)}>Cancel</Button>
       <Button variant="destructive" onclick={handleDeleteSelectedRows}>
         <RefreshCw
           class={cn("hidden h-4 w-4 animate-spin", {
             block: app_state === "processing",
           })}
         />
-        <span class={cn("block", { hidden: app_state === "processing" })}
-          >Delete</span
-        >
-        <span class={cn("hidden", { block: app_state === "processing" })}
-          >Please Wait</span
-        >
+        <span class={cn("block", { hidden: app_state === "processing" })}>Delete</span>
+        <span class={cn("hidden", { block: app_state === "processing" })}>Please Wait</span>
       </Button>
     </Dialog.Footer>
   </Dialog.Content>

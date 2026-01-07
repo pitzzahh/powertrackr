@@ -23,10 +23,7 @@
   }
 
   function handleLoadingToast() {
-    const id = showLoading(
-      "Processing your request...",
-      "This may take a few seconds",
-    );
+    const id = showLoading("Processing your request...", "This may take a few seconds");
 
     setTimeout(() => {
       dismissToast(id);
@@ -72,9 +69,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Warning with Action</Card.Title>
-        <Card.Description>
-          Shows a warning message with a "Learn more" button
-        </Card.Description>
+        <Card.Description>Shows a warning message with a "Learn more" button</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -101,9 +96,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Error with Action</Card.Title>
-        <Card.Description>
-          Shows an error message with a "Learn more" button
-        </Card.Description>
+        <Card.Description>Shows an error message with a "Learn more" button</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -130,9 +123,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Success with Action</Card.Title>
-        <Card.Description>
-          Shows a success message with a "Learn more" button
-        </Card.Description>
+        <Card.Description>Shows a success message with a "Learn more" button</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -141,8 +132,7 @@
           onclick={() =>
             showToast({
               title: "Your request was completed!",
-              description:
-                "It demonstrates that the task or request has been processed.",
+              description: "It demonstrates that the task or request has been processed.",
               variant: "success",
               action: {
                 label: "Learn more",
@@ -159,9 +149,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Info with Action</Card.Title>
-        <Card.Description>
-          Shows an info message with a "Learn more" button
-        </Card.Description>
+        <Card.Description>Shows an info message with a "Learn more" button</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -170,8 +158,7 @@
           onclick={() =>
             showToast({
               title: "Here is some helpful information!",
-              description:
-                "It aims to provide clarity or support for better decision-making.",
+              description: "It aims to provide clarity or support for better decision-making.",
               variant: "info",
               action: {
                 label: "Learn more",
@@ -188,9 +175,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Update Available</Card.Title>
-        <Card.Description>
-          Shows an update notification with action buttons
-        </Card.Description>
+        <Card.Description>Shows an update notification with action buttons</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -199,8 +184,7 @@
           onclick={() =>
             showToast({
               title: "Version 1.4 is now available!",
-              description:
-                "This update contains several bug fixes and performance improvements.",
+              description: "This update contains several bug fixes and performance improvements.",
               variant: "info",
               action: {
                 label: "Install",
@@ -220,9 +204,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Cookie Consent</Card.Title>
-        <Card.Description>
-          Shows a privacy/cookie consent message
-        </Card.Description>
+        <Card.Description>Shows a privacy/cookie consent message</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button
@@ -253,9 +235,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Loading Toast</Card.Title>
-        <Card.Description>
-          Shows a loading toast that updates to success
-        </Card.Description>
+        <Card.Description>Shows a loading toast that updates to success</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button variant="outline" class="w-full" onclick={handleLoadingToast}>
@@ -268,9 +248,7 @@
     <Card.Root>
       <Card.Header>
         <Card.Title>Loading to Error</Card.Title>
-        <Card.Description>
-          Shows a loading toast that updates to error
-        </Card.Description>
+        <Card.Description>Shows a loading toast that updates to error</Card.Description>
       </Card.Header>
       <Card.Content>
         <Button variant="outline" class="w-full" onclick={handleLoadingToError}>
@@ -303,29 +281,15 @@
       <Card.Content class="flex flex-wrap gap-2">
         <Button
           size="sm"
-          onclick={() =>
-            showSuccess("Success!", "Operation completed successfully")}
+          onclick={() => showSuccess("Success!", "Operation completed successfully")}
         >
           Success
         </Button>
-        <Button
-          size="sm"
-          onclick={() => showError("Error!", "Something went wrong")}
-        >
-          Error
-        </Button>
-        <Button
-          size="sm"
-          onclick={() => showWarning("Warning!", "Please be careful")}
-        >
+        <Button size="sm" onclick={() => showError("Error!", "Something went wrong")}>Error</Button>
+        <Button size="sm" onclick={() => showWarning("Warning!", "Please be careful")}>
           Warning
         </Button>
-        <Button
-          size="sm"
-          onclick={() => showInfo("Info", "Helpful information")}
-        >
-          Info
-        </Button>
+        <Button size="sm" onclick={() => showInfo("Info", "Helpful information")}>Info</Button>
       </Card.Content>
     </Card.Root>
   </div>

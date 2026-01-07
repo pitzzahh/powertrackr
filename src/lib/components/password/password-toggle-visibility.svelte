@@ -6,23 +6,18 @@
   import type { PasswordToggleVisibilityProps } from "./types.js";
   import { cn } from "$/utils/style.js";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-  }: PasswordToggleVisibilityProps = $props();
+  let { ref = $bindable(null), class: className }: PasswordToggleVisibilityProps = $props();
 
   const state = usePasswordToggleVisibility();
 </script>
 
 <Toggle
   bind:ref
-  aria-label={state.root.opts.hidden.current
-    ? "Show password"
-    : "Hide password"}
+  aria-label={state.root.opts.hidden.current ? "Show password" : "Hide password"}
   bind:pressed={state.root.opts.hidden.current}
   class={cn(
-    "data-[state=off]:text-muted-foreground data-[state=on]:text-muted-foreground hover:data-[state=off]:text-accent-foreground hover:data-[state=on]:text-accent-foreground absolute top-1/2 right-0 size-9 min-w-0 -translate-y-1/2 p-0 hover:bg-transparent! data-[state=on]:bg-transparent",
-    className,
+    "absolute top-1/2 right-0 size-9 min-w-0 -translate-y-1/2 p-0 hover:bg-transparent! data-[state=off]:text-muted-foreground hover:data-[state=off]:text-accent-foreground data-[state=on]:bg-transparent data-[state=on]:text-muted-foreground hover:data-[state=on]:text-accent-foreground",
+    className
   )}
   tabindex={-1}
 >

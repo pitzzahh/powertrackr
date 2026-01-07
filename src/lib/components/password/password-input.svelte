@@ -16,7 +16,7 @@
   const state = usePasswordInput({
     value: box.with(
       () => value,
-      (v) => (value = v),
+      (v) => (value = v)
     ),
     ref: box.with(() => ref),
   });
@@ -35,7 +35,7 @@
       {
         "pr-9": state.root.passwordState.toggleMounted,
       },
-      className,
+      className
     )}
   />
   {@render children?.()}

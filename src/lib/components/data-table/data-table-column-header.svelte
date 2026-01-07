@@ -12,12 +12,7 @@
     title: string;
   };
 
-  let {
-    column,
-    class: className,
-    title,
-    ...restProps
-  }: WithoutChildren<Props> = $props();
+  let { column, class: className, title, ...restProps }: WithoutChildren<Props> = $props();
 </script>
 
 {#if !column?.getCanSort()}

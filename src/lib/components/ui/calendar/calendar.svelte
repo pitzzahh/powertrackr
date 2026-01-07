@@ -51,8 +51,8 @@ get along, so we shut typescript up by casting `value` to `never`.
   {weekdayFormat}
   {disableDaysOutsideMonth}
   class={cn(
-    "bg-background group/calendar p-3 [--cell-size:--spacing(8)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
-    className,
+    "group/calendar bg-background p-3 [--cell-size:--spacing(8)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
+    className
   )}
   {locale}
   {monthFormat}

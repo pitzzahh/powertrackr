@@ -67,13 +67,13 @@
   <div class="relative h-screen w-full overflow-hidden">
     <Header user={data.user} />
 
-    <div class="h-full overflow-y-auto no-scrollbar">
-      <main class="flex justify-between gap-4 p-4 pt-16 min-h-full">
+    <div class="no-scrollbar h-full overflow-y-auto">
+      <main class="flex min-h-full justify-between gap-4 p-4 pt-16">
         <aside
           in:scale={{ duration: 150 }}
           class={[
             {
-              "sticky rounded-md top-17 h-[calc(100vh-5.5rem)] bg-card border shadow-sm hidden lg:flex flex-col p-4 transition-all duration-300 ease-in-out overflow-visible": true,
+              "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
               "w-16": sidebarStore.collapsed,
               "md:w-48 lg:w-54": !sidebarStore.collapsed,
             },
@@ -81,7 +81,7 @@
         >
           <SidebarContent open={false} user={data.user} isMobileSheet={false} />
         </aside>
-        <div class="flex-1 flex flex-col gap-4 min-w-0 p-1">
+        <div class="flex min-w-0 flex-1 flex-col gap-4 p-1">
           {@render children()}
         </div>
       </main>

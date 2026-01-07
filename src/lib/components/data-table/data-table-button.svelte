@@ -12,12 +12,7 @@
     [key: string]: any;
   }
 
-  let {
-    content,
-    href,
-    variant = "default",
-    ...rest
-  }: DataTableButtonProps = $props();
+  let { content, href, variant = "default", ...rest }: DataTableButtonProps = $props();
 </script>
 
 {#key content}
@@ -35,7 +30,7 @@
           }),
           {
             "group relative inline-flex items-center": href,
-          },
+          }
         )}
         {...rest}
       >
@@ -43,7 +38,7 @@
         {#if href}
           <ArrowUpRight
             size="1rem"
-            class="transform opacity-0 transition-all duration-300 ease-in-out group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:opacity-100"
+            class="transform opacity-0 transition-all duration-300 ease-in-out group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:opacity-100"
           />
         {/if}
       </Tooltip.Trigger>

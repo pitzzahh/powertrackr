@@ -8,10 +8,7 @@
     custom_row_count?: number;
     class?: string;
     status?: Status;
-    pagination_props?: Omit<
-      DataTablePaginationProps<TData>,
-      "table" | "pagination"
-    >;
+    pagination_props?: Omit<DataTablePaginationProps<TData>, "table" | "pagination">;
   }
 
   interface ComponentState {
@@ -96,23 +93,19 @@
     },
     enableRowSelection: true,
     onRowSelectionChange: (updater) => {
-      rowSelection =
-        typeof updater === "function" ? updater(rowSelection) : updater;
+      rowSelection = typeof updater === "function" ? updater(rowSelection) : updater;
     },
     onSortingChange: (updater) => {
       sorting = typeof updater === "function" ? updater(sorting) : updater;
     },
     onColumnFiltersChange: (updater) => {
-      columnFilters =
-        typeof updater === "function" ? updater(columnFilters) : updater;
+      columnFilters = typeof updater === "function" ? updater(columnFilters) : updater;
     },
     onColumnVisibilityChange: (updater) => {
-      columnVisibility =
-        typeof updater === "function" ? updater(columnVisibility) : updater;
+      columnVisibility = typeof updater === "function" ? updater(columnVisibility) : updater;
     },
     onPaginationChange: (updater) => {
-      pagination =
-        typeof updater === "function" ? updater(pagination) : updater;
+      pagination = typeof updater === "function" ? updater(pagination) : updater;
     },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -128,26 +121,23 @@
   {@render floating_bar({ table })}
 {/if}
 
-<div
-  in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-  class="bg-card border rounded-t"
->
+<div in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }} class="rounded-t border bg-card">
   {#if data_table_toolbar}
     {@render data_table_toolbar({ table })}
   {/if}
 </div>
 <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-  <ScrollArea class="max-h-[calc(100vh-12.25rem)] h-full">
+  <ScrollArea class="h-full max-h-[calc(100vh-12.25rem)]">
     <div
       class={[
-        "overflow-auto bg-muted h-full",
+        "h-full overflow-auto bg-muted",
         {
           className,
         },
       ]}
     >
       <Table.Root class="bg-card">
-        <Table.Header class="sticky top-0 bg-card border z-10 border-b">
+        <Table.Header class="sticky top-0 z-10 border border-b bg-card">
           {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
             <Table.Row>
               {#each headerGroup.headers as header (header.id)}
@@ -163,7 +153,7 @@
             </Table.Row>
           {/each}
         </Table.Header>
-        <Table.Body class="bg-card border">
+        <Table.Body class="border bg-card">
           {#if status === "loading_data"}
             <Table.Row>
               <Table.Cell colspan={columns.length} class="h-24 text-center">
@@ -181,10 +171,7 @@
               <Table.Row data-state={row.getIsSelected() && "selected"}>
                 {#each row.getVisibleCells() as cell (cell.id)}
                   <Table.Cell class="whitespace-nowrap">
-                    <FlexRender
-                      content={cell.column.columnDef.cell}
-                      context={cell.getContext()}
-                    />
+                    <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
                   </Table.Cell>
                 {/each}
               </Table.Row>
@@ -205,11 +192,7 @@
   {#key data.length}
     <DataTablePagination
       {table}
-      status={status === "loading_data"
-        ? status
-        : ctx.count > 0
-          ? "fetching"
-          : "idle"}
+      status={status === "loading_data" ? status : ctx.count > 0 ? "fetching" : "idle"}
       {...pagination_props}
     />
   {/key}

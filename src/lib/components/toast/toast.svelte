@@ -83,26 +83,22 @@
   role="status"
   aria-live="polite"
   class={cn(
-    "border-border bg-background z-100 max-w-100 rounded-lg border p-4 shadow-lg shadow-black/5",
+    "z-100 max-w-100 rounded-lg border border-border bg-background p-4 shadow-lg shadow-black/5",
     positionClasses[position],
-    className,
+    className
   )}
 >
   <div class="flex gap-3">
     <IconComponent
-      class={cn(
-        "shrink-0 self-start",
-        isLoading ? "animate-spin" : "",
-        config.iconClass,
-      )}
+      class={cn("shrink-0 self-start", isLoading ? "animate-spin" : "", config.iconClass)}
       size={16}
       aria-hidden="true"
     />
     <div class="flex grow flex-col gap-2">
       <div class="space-y-1">
-        <p class="text-sm font-medium leading-none">{title}</p>
+        <p class="text-sm leading-none font-medium">{title}</p>
         {#if description}
-          <p class="text-muted-foreground text-sm">
+          <p class="text-sm text-muted-foreground">
             {#if typeof description === "string"}
               {description}
             {:else}
@@ -115,7 +111,7 @@
         <div class="flex gap-2">
           <button
             type="button"
-            class="text-sm font-medium hover:underline focus-visible:outline-none focus-visible:underline"
+            class="text-sm font-medium hover:underline focus-visible:underline focus-visible:outline-none"
             onclick={action.onClick}
           >
             {action.label}
@@ -126,7 +122,7 @@
     {#if dismissible}
       <button
         type="button"
-        class="group -my-1.5 -me-2 size-8 shrink-0 rounded-sm p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        class="group -my-1.5 -me-2 size-8 shrink-0 rounded-sm p-0 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
         onclick={onDismiss}
         aria-label="Close notification"
       >

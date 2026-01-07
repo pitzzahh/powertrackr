@@ -35,8 +35,7 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
 
-  let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps =
-    $props();
+  let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
   let { timeRange, visibleKeys } = $state({
     timeRange: "all",
@@ -50,18 +49,13 @@
 </script>
 
 <Card.Root>
-  <Card.Header
-    class="flex md:items-center gap-2 space-y-0 border-b flex-col md:flex-row"
-  >
+  <Card.Header class="flex flex-col gap-2 space-y-0 border-b md:flex-row md:items-center">
     <div class="grid flex-1 gap-1">
       <Card.Title>Billing Trends</Card.Title>
       <Card.Description>Showing billing info over time</Card.Description>
     </div>
     <Select.Root type="single" bind:value={timeRange}>
-      <Select.Trigger
-        class="w-40 rounded-lg ms-auto"
-        aria-label="Select a value"
-      >
+      <Select.Trigger class="ms-auto w-40 rounded-lg" aria-label="Select a value">
         {selectedLabel}
       </Select.Trigger>
       <Select.Content class="rounded-xl">
@@ -75,15 +69,13 @@
   </Card.Header>
   <Card.Content class="pl-16">
     {#if status === "fetching"}
-      <div class="flex flex-col justify-center items-center py-8">
-        <Loader class="animate-spin h-8 w-8 text-muted-foreground mb-2" />
+      <div class="flex flex-col items-center justify-center py-8">
+        <Loader class="mb-2 h-8 w-8 animate-spin text-muted-foreground" />
         <p class="text-muted-foreground">Fetching data...</p>
       </div>
     {:else if status === "error"}
-      <div class="flex items-center flex-col justify-center">
-        <p class="text-center text-muted-foreground py-8">
-          Error loading data.
-        </p>
+      <div class="flex flex-col items-center justify-center">
+        <p class="py-8 text-center text-muted-foreground">Error loading data.</p>
         <Button
           onclick={() => {
             retryStatus = "fetching";
@@ -99,10 +91,7 @@
         >
       </div>
     {:else if filteredData.length > 0}
-      <ChartContainer
-        config={CHART_CONFIG}
-        class="-ml-3 aspect-auto h-62.5 w-full"
-      >
+      <ChartContainer config={CHART_CONFIG} class="-ml-3 aspect-auto h-62.5 w-full">
         <LineChart
           data={filteredData}
           x="date"
@@ -164,7 +153,7 @@
           {/snippet}
         </LineChart>
       </ChartContainer>
-      <div class="flex flex-wrap justify-center gap-4 mt-4">
+      <div class="mt-4 flex flex-wrap justify-center gap-4">
         {#each Object.entries(CHART_CONFIG) as [key, { label, color }] (key)}
           <button
             class="flex items-center gap-2 text-sm"
@@ -174,10 +163,7 @@
                 ? visibleKeys.filter((k) => k !== key)
                 : [...visibleKeys, key])}
           >
-            <div
-              style="background-color: {color};"
-              class="size-3 rounded"
-            ></div>
+            <div style="background-color: {color};" class="size-3 rounded"></div>
             <span
               class={{
                 "line-through": !visibleKeys.includes(key),
@@ -187,7 +173,7 @@
         {/each}
       </div>
     {:else}
-      <p class="text-center text-muted-foreground py-8">
+      <p class="py-8 text-center text-muted-foreground">
         No data available for the selected time range.
       </p>
     {/if}

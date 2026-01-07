@@ -23,7 +23,7 @@
     </div>
     <div class="flex flex-1 items-center justify-center">
       <div class="w-full max-w-xs text-center">
-        <h1 class="text-2xl font-bold mb-4">{page.status}</h1>
+        <h1 class="mb-4 text-2xl font-bold">{page.status}</h1>
         <p class="mb-6">
           {page.error?.message || "An unexpected error occurred."}
         </p>
@@ -34,10 +34,10 @@
       </div>
     </div>
   </div>
-  <div class="bg-muted relative hidden lg:block">
+  <div class="relative hidden bg-muted lg:block">
     <!-- Placeholder for error illustration or keep as is -->
     <div class="absolute inset-0 flex items-center justify-center">
-      <div class="text-muted-foreground text-lg">Error Occurred</div>
+      <div class="text-lg text-muted-foreground">Error Occurred</div>
     </div>
   </div>
 </div>

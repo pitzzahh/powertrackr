@@ -19,10 +19,7 @@
 <script lang="ts">
   import { Button } from "$/components/ui/button/index.js";
   import { Input } from "$/components/ui/input/index.js";
-  import {
-    DataTableSearchFilter,
-    DataTableViewOptions,
-  } from "$/components/data-table";
+  import { DataTableSearchFilter, DataTableViewOptions } from "$/components/data-table";
   import { DataTableFacetedFilter } from "$/components/data-table";
   import { X } from "$/assets/icons.js";
   import { convertToNormalText } from "$/utils/text";
@@ -36,9 +33,7 @@
     default_hidden_columns = [],
   }: BillingInfosDataTableToolbarProps<ExtendedBillingInfoTableView> = $props();
 
-  let { search, where_to_search, timeout } = $state<
-    ComponentState<ExtendedBillingInfoTableView>
-  >({
+  let { search, where_to_search, timeout } = $state<ComponentState<ExtendedBillingInfoTableView>>({
     search: "",
     where_to_search: "date",
   });
@@ -51,12 +46,10 @@
 </script>
 
 <ScrollArea orientation="horizontal" class="rounded-none">
-  <div class="flex items-center justify-between space-x-2 m-1">
+  <div class="m-1 flex items-center justify-between space-x-2">
     <div class="flex items-center space-x-2">
       <Input
-        placeholder="Filter BillingInfos by {convertToNormalText(
-          where_to_search,
-        )}..."
+        placeholder="Filter BillingInfos by {convertToNormalText(where_to_search)}..."
         bind:value={
           () => search,
           (v) => {
@@ -72,11 +65,7 @@
       />
       <DataTableSearchFilter {table} bind:where_to_search />
       {#if status_column}
-        <DataTableFacetedFilter
-          column={status_column}
-          title="Payment Status"
-          options={statuses}
-        />
+        <DataTableFacetedFilter column={status_column} title="Payment Status" options={statuses} />
       {/if}
       {#if is_filtered}
         <Button

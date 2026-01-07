@@ -45,17 +45,9 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
 
-  let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps =
-    $props();
+  let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
-  let {
-    timeRange,
-    activeChart,
-    context,
-    totalKWh,
-    mainKWh,
-    subKWh,
-  }: ChartBarState = $state({
+  let { timeRange, activeChart, context, totalKWh, mainKWh, subKWh }: ChartBarState = $state({
     timeRange: "all",
     activeChart: "all",
     context: null!,
@@ -89,10 +81,8 @@
         : [
             {
               key: activeChart,
-              label:
-                CHART_CONFIG[activeChart as keyof typeof CHART_CONFIG].label,
-              color:
-                CHART_CONFIG[activeChart as keyof typeof CHART_CONFIG].color,
+              label: CHART_CONFIG[activeChart as keyof typeof CHART_CONFIG].label,
+              color: CHART_CONFIG[activeChart as keyof typeof CHART_CONFIG].color,
             },
           ],
   });
@@ -100,9 +90,7 @@
   let worker: Worker | null = null;
 
   if (browser) {
-    worker = new Worker(
-      new URL("$lib/workers/total-calculator.ts", import.meta.url),
-    );
+    worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url));
 
     worker.onmessage = (e: MessageEvent<Total>) => {
       totalKWh = e.data.totalKWh;
@@ -120,30 +108,24 @@
   onDestroy(() => worker?.terminate());
 </script>
 
-<Card.Root class="pb-6 pt-0">
+<Card.Root class="pt-0 pb-6">
   <Card.Header
-    class="flex flex-col items-stretch space-y-0 border-b [.border-b]:pb-0 p-0 sm:flex-row h-fit"
+    class="flex h-fit flex-col items-stretch space-y-0 border-b p-0 sm:flex-row [.border-b]:pb-0"
   >
     <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
       <Card.Title>Energy Usage</Card.Title>
       <Card.Description>Showing kWh usage over time</Card.Description>
     </div>
-    <div class="grid sm:grid-cols-2 md:grid-cols-4 h-fit">
+    <div class="grid h-fit sm:grid-cols-2 md:grid-cols-4">
       {#each ["totalKWh", "mainKWh", "subKWh", "all"] as key (key)}
         {@const chart = key}
         <button
           data-active={activeChart === chart}
-          class="data-[active=true]:bg-muted/50 relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
+          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s data-[active=true]:bg-muted/50 sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
           onclick={() => (activeChart = key as ChartBarState["activeChart"])}
         >
-          <span
-            class="text-xs {activeChart === chart
-              ? 'text-primary'
-              : 'text-muted-foreground'}"
-          >
-            {key === "all"
-              ? "All"
-              : CHART_CONFIG[key as keyof typeof CHART_CONFIG].label}
+          <span class="text-xs {activeChart === chart ? 'text-primary' : 'text-muted-foreground'}">
+            {key === "all" ? "All" : CHART_CONFIG[key as keyof typeof CHART_CONFIG].label}
           </span>
           <span
             class={[
@@ -167,12 +149,9 @@
     </div>
   </Card.Header>
   <Card.Content>
-    <div class="flex justify-end mb-4">
+    <div class="mb-4 flex justify-end">
       <Select.Root type="single" bind:value={timeRange}>
-        <Select.Trigger
-          class="w-40 rounded-lg"
-          aria-label="Select a time range"
-        >
+        <Select.Trigger class="w-40 rounded-lg" aria-label="Select a time range">
           {selectedLabel}
         </Select.Trigger>
         <Select.Content class="rounded-xl">
@@ -185,15 +164,13 @@
       </Select.Root>
     </div>
     {#if status === "fetching"}
-      <div class="flex flex-col justify-center items-center py-8">
-        <Loader class="animate-spin h-8 w-8 text-muted-foreground mb-2" />
+      <div class="flex flex-col items-center justify-center py-8">
+        <Loader class="mb-2 h-8 w-8 animate-spin text-muted-foreground" />
         <p class="text-muted-foreground">Fetching data...</p>
       </div>
     {:else if status === "error"}
-      <div class="flex items-center flex-col justify-center">
-        <p class="text-center text-muted-foreground py-8">
-          Error loading data.
-        </p>
+      <div class="flex flex-col items-center justify-center">
+        <p class="py-8 text-center text-muted-foreground">Error loading data.</p>
         <Button
           onclick={() => {
             retryStatus = "fetching";
@@ -257,15 +234,12 @@
             />
           {/snippet}
           {#snippet tooltip()}
-            <Chart.Tooltip
-              nameKey="kWh"
-              labelFormatter={(v: Date) => formatDate(v)}
-            />
+            <Chart.Tooltip nameKey="kWh" labelFormatter={(v: Date) => formatDate(v)} />
           {/snippet}
         </BarChart>
       </Chart.Container>
     {:else}
-      <p class="text-center text-muted-foreground py-8">
+      <p class="py-8 text-center text-muted-foreground">
         No data available for the selected time range.
       </p>
     {/if}

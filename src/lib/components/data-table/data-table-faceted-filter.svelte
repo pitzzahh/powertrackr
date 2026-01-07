@@ -18,16 +18,10 @@
   import { Badge } from "$/components/ui/badge/index.js";
   import type { FilterOption } from "$/types/filter";
 
-  let {
-    column,
-    title,
-    options,
-  }: DataTableFacetedFilterProps<TData, TValue, FilterType> = $props();
+  let { column, title, options }: DataTableFacetedFilterProps<TData, TValue, FilterType> = $props();
   const { facets, selectedValues } = $derived({
     facets: column?.getFacetedUniqueValues(),
-    selectedValues: new SvelteSet(
-      (column?.getFilterValue() as FilterType[]) || [],
-    ),
+    selectedValues: new SvelteSet((column?.getFilterValue() as FilterType[]) || []),
   });
 </script>
 
@@ -39,10 +33,7 @@
         {title}
         {#if options.some((opt) => selectedValues.has(opt.value))}
           <Separator orientation="vertical" class="mx-2 h-4" />
-          <Badge
-            variant="secondary"
-            class="rounded-sm px-1 font-normal lg:hidden"
-          >
+          <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
             {selectedValues.size}
           </Badge>
           <div class="hidden space-x-1 lg:flex">
@@ -51,7 +42,7 @@
                 {selectedValues.size} selected
               </Badge>
             {:else}
-              {#each options.filter( (opt) => selectedValues.has(opt.value), ) as option (option.label)}
+              {#each options.filter( (opt) => selectedValues.has(opt.value) ) as option (option.label)}
                 <Badge variant="secondary" class="rounded-sm px-1 font-normal">
                   {option.label}
                 </Badge>
@@ -78,17 +69,13 @@
                   selectedValues.add(option.value);
                 }
                 const filterValues = Array.from(selectedValues);
-                column?.setFilterValue(
-                  filterValues.length ? filterValues : undefined,
-                );
+                column?.setFilterValue(filterValues.length ? filterValues : undefined);
               }}
             >
               <div
                 class={cn(
                   "mr-2 flex size-4 items-center justify-center rounded-sm border border-primary",
-                  isSelected
-                    ? "bg-primary text-primary-foreground"
-                    : "opacity-50 [&_svg]:invisible",
+                  isSelected ? "bg-primary text-primary-foreground" : "opacity-50 [&_svg]:invisible"
                 )}
               >
                 <Check class="size-4" />
@@ -100,9 +87,7 @@
 
               <span>{option.label}</span>
               {#if facets?.get(option.value)}
-                <span
-                  class="ml-auto flex size-4 items-center justify-center font-mono text-xs"
-                >
+                <span class="ml-auto flex size-4 items-center justify-center font-mono text-xs">
                   {Number(facets.get(option.value))}
                 </span>
               {/if}

@@ -32,12 +32,7 @@
   import { loginWithGithub } from "$/api/github.remote";
   import { showError, showLoading, showSuccess } from "./toast";
 
-  let {
-    action,
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: AuthFormProps = $props();
+  let { action, ref = $bindable(null), class: className, ...restProps }: AuthFormProps = $props();
 
   let { currentAction } = $derived({
     currentAction: action === "login" ? login : register,
@@ -56,15 +51,11 @@
   {...currentAction.enhance(async ({ submit }) => {
     status = "processing";
     const toastId = showLoading(
-      action === "login" ? "Logging you in..." : "Creating your account...",
+      action === "login" ? "Logging you in..." : "Creating your account..."
     );
     try {
       await submit();
-      showSuccess(
-        action === "login"
-          ? "Logged in successfully"
-          : "Account created successfully",
-      );
+      showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
@@ -72,7 +63,7 @@
         message ||
           (action === "login"
             ? "Failed to log you in. Please try again."
-            : "Failed to create your account. Please try again."),
+            : "Failed to create your account. Please try again.")
       );
     } finally {
       toast.dismiss(toastId);
@@ -92,7 +83,7 @@
           Create an account to get started!
         {/if}
       </h1>
-      <p class="text-muted-foreground text-sm text-balance">
+      <p class="text-sm text-balance text-muted-foreground">
         {#if action === "login"}
           Enter your email and password to access your account.
         {:else}
@@ -103,12 +94,7 @@
     {#if action === "register"}
       <Field>
         <FieldLabel for="name-{id}">Name</FieldLabel>
-        <Input
-          id="name-{id}"
-          autocomplete="name"
-          required
-          {...register.fields.name.as("text")}
-        />
+        <Input id="name-{id}" autocomplete="name" required {...register.fields.name.as("text")} />
         <FieldError errors={register.fields.name.issues()} />
       </Field>
     {/if}
@@ -127,10 +113,7 @@
       <div class="flex items-center">
         <FieldLabel for="password-{id}">Password</FieldLabel>
         {#if action === "login"}
-          <a
-            href="##"
-            class="ms-auto text-sm underline-offset-4 hover:underline"
-          >
+          <a href="##" class="ms-auto text-sm underline-offset-4 hover:underline">
             Forgot your password?
           </a>
         {/if}
@@ -172,12 +155,10 @@
       <Button
         type="submit"
         disabled={status === "processing"}
-        aria-label={action === "login"
-          ? "Login to your account"
-          : "Create your account"}
+        aria-label={action === "login" ? "Login to your account" : "Create your account"}
       >
         {#if status === "processing"}
-          <Loader class="animate-spin size-5" />
+          <Loader class="size-5 animate-spin" />
         {:else}
           {action === "login" ? "Login to your account" : "Create your account"}
         {/if}
@@ -188,49 +169,39 @@
       <Button
         variant="outline"
         disabled={status === "processing"}
-        aria-label={action === "login"
-          ? "Login with GitHub"
-          : "Sign up with GitHub"}
+        aria-label={action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
         onclick={async () => {
           status = "processing";
           const toastId = showLoading(
-            action === "login"
-              ? "Logging in with GitHub"
-              : "Creating Account with GitHub",
+            action === "login" ? "Logging in with GitHub" : "Creating Account with GitHub"
           );
           try {
-            const redirect = await loginWithGithub().then(
-              ({ redirect }) => redirect,
-            );
+            const redirect = await loginWithGithub().then(({ redirect }) => redirect);
             if (redirect) {
               toast.dismiss(toastId);
               window.location.href = redirect;
             }
           } catch (error) {
-            const message = isHttpError(error)
-              ? error.body.message
-              : String(error);
+            const message = isHttpError(error) ? error.body.message : String(error);
             showError(
               message ||
                 (action === "login"
                   ? "Failed to log you in. Please try again."
-                  : "Failed to create your account. Please try again."),
+                  : "Failed to create your account. Please try again.")
             );
             status = "idle";
           }
         }}
       >
         {#if status === "processing"}
-          <Loader class="animate-spin size-5" />
+          <Loader class="size-5 animate-spin" />
         {:else}
           <Github />
           {action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
         {/if}
       </Button>
       <FieldDescription class="text-center">
-        {action === "login"
-          ? "Don't have an account? "
-          : "Already have an account? "}
+        {action === "login" ? "Don't have an account? " : "Already have an account? "}
         <a
           href="/auth?act={action === 'login' ? 'register' : 'login'}"
           class="underline underline-offset-4"

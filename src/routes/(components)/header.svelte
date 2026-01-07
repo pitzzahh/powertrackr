@@ -44,10 +44,7 @@
           if (valid) {
             showSuccess("Bill added successfully!");
           } else {
-            showError(
-              "Failed to add bill",
-              "Please check the form for errors.",
-            );
+            showError("Failed to add bill", "Please check the form for errors.");
           }
         },
       },
@@ -57,9 +54,9 @@
 
 <Sheet.Root bind:open={openMenu}>
   <header
-    class="absolute top-0 left-0 right-0 z-5 flex items-center justify-between p-4 backdrop-blur-xs"
+    class="absolute top-0 right-0 left-0 z-5 flex items-center justify-between p-4 backdrop-blur-xs"
   >
-    <div class="flex items-center gap-4 w-full md:justify-between">
+    <div class="flex w-full items-center gap-4 md:justify-between">
       <Sheet.Trigger
         class={buttonVariants({
           variant: "outline",
@@ -75,7 +72,7 @@
       })}
 
       <div class="flex items-center justify-center gap-4">
-        <div class="items-center justify-center gap-2 hidden md:flex">
+        <div class="hidden items-center justify-center gap-2 md:flex">
           {#each quickActions as quickAction, index (quickAction.label)}
             {@const Icon = quickAction.icon}
             <span
@@ -95,7 +92,7 @@
                   </span>
                 </Sheet.Trigger>
                 <Sheet.Portal>
-                  <Sheet.Content class="md:min-w-[60%] w-full" side="left">
+                  <Sheet.Content class="w-full md:min-w-[60%]" side="left">
                     <Sheet.Header>
                       <Sheet.Title>Add new Bill</Sheet.Title>
                       <Sheet.Description>Enter billing info</Sheet.Description>
@@ -121,7 +118,7 @@
     </div>
   </header>
 
-  <Sheet.Content side="left" class="bg-muted p-4 flex flex-col h-full w-full">
+  <Sheet.Content side="left" class="flex h-full w-full flex-col bg-muted p-4">
     {@render logo({ className: "py-6 w-fit mx-auto" })}
     <SidebarContent bind:open={openMenu} {user} isMobileSheet={true} />
   </Sheet.Content>
@@ -132,7 +129,7 @@
 {/snippet}
 
 {#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
-  <ScrollArea class="overflow-y-auto h-[calc(100vh-50px)] pr-2.5">
+  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
     <div class="space-y-4 p-4">
       <BillingInfoForm action="add" {callback} />
     </div>

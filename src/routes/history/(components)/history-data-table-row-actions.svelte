@@ -11,15 +11,9 @@
 </script>
 
 <script lang="ts">
-  import {
-    Loader,
-    Trash2,
-    View,
-    Pencil,
-    Ticket,
-  } from "$/assets/icons";
-  import { Table, TableBody, TableCell, TableRow } from '$lib/components/ui/table';
-  import {SubPaymentsButton, BillingInfoForm } from ".";
+  import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
+  import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
+  import { SubPaymentsButton, BillingInfoForm } from ".";
   import { formatDate } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
@@ -32,13 +26,12 @@
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
-  let { app_state, active_dialog_content, open_view, open_edit } =
-    $state<ComponentState>({
-      app_state: "stale",
-      active_dialog_content: "view",
-      open_view: false,
-      open_edit: false,
-    });
+  let { app_state, active_dialog_content, open_view, open_edit } = $state<ComponentState>({
+    app_state: "stale",
+    active_dialog_content: "view",
+    open_view: false,
+    open_edit: false,
+  });
 
   async function handle_remove_billing_info() {
     app_state = "processing";
@@ -57,8 +50,8 @@
     // }
     return showSuccess(
       "Successfully Removed Billing Info",
-      "Billing Info record has been successfully removed.",
-    )
+      "Billing Info record has been successfully removed."
+    );
   }
 </script>
 
@@ -102,10 +95,7 @@
   bind:open={open_view}
   onOpenChange={(open) => {
     if (!open && app_state === "processing") {
-      showWarning(
-        "Process Interrupted",
-        "The operation is still processing. Please wait...",
-      )
+      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
       open_view = true;
     }
   }}
@@ -113,19 +103,17 @@
   {#if active_dialog_content === "view"}
     <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-250">
       <Dialog.Header>
-        <Dialog.Title class="text-3xl font-bold flex items-center gap-2">
+        <Dialog.Title class="flex items-center gap-2 text-3xl font-bold">
           <Ticket class="size-6" />
           Billing Info Details
         </Dialog.Title>
-        <Dialog.Description class="text-lg text-muted-foreground mt-2">
+        <Dialog.Description class="mt-2 text-lg text-muted-foreground">
           Comprehensive billing information for
-          <span class="font-mono text-primary"
-            >{formatDate(new Date(row.original.date))}</span
-          >
+          <span class="font-mono text-primary">{formatDate(new Date(row.original.date))}</span>
         </Dialog.Description>
       </Dialog.Header>
       <div class="p-4">
-        <div class="bg-background overflow-hidden rounded-md border">
+        <div class="overflow-hidden rounded-md border bg-background">
           <Table>
             <TableBody>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
@@ -138,7 +126,9 @@
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Date</TableCell>
-                <TableCell class="py-2 font-mono">{formatDate(new Date(row.original.date))}</TableCell>
+                <TableCell class="py-2 font-mono"
+                  >{formatDate(new Date(row.original.date))}</TableCell
+                >
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Total KWh</TableCell>
@@ -146,18 +136,28 @@
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Balance</TableCell>
-                <TableCell class="py-2 font-bold text-lg text-green-700">₱{row.original.balance.toFixed(2)}</TableCell>
+                <TableCell class="py-2 text-lg font-bold text-green-700"
+                  >₱{row.original.balance.toFixed(2)}</TableCell
+                >
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Status</TableCell>
-                <TableCell class="py-2 font-semibold {row.original.status === "Paid" ? "text-green-700" : "text-red-700"}">{row.original.status}</TableCell>
+                <TableCell
+                  class="py-2 font-semibold {row.original.status === 'Paid'
+                    ? 'text-green-700'
+                    : 'text-red-700'}">{row.original.status}</TableCell
+                >
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Pay Per KWh</TableCell>
-                <TableCell class="py-2 font-semibold">₱{row.original.payPerKwh.toFixed(2)}</TableCell>
+                <TableCell class="py-2 font-semibold"
+                  >₱{row.original.payPerKwh.toFixed(2)}</TableCell
+                >
               </TableRow>
               {#if row.original.paymentId}
-                <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableRow
+                  class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
+                >
                   <TableCell class="bg-muted/50 py-2 font-medium">Payment ID</TableCell>
                   <TableCell class="py-2 font-mono">{row.original.paymentId}</TableCell>
                 </TableRow>
@@ -165,7 +165,9 @@
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Sub Payments</TableCell>
                 <TableCell class="py-2">
-                  <SubPaymentsButton class="w-full" row={row.original} size="sm" >View Sub Payments</SubPaymentsButton>
+                  <SubPaymentsButton class="w-full" row={row.original} size="sm"
+                    >View Sub Payments</SubPaymentsButton
+                  >
                 </TableCell>
               </TableRow>
             </TableBody>
@@ -180,8 +182,7 @@
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>
         <Dialog.Description>
-          Are you sure you want to remove this billing info record? This action
-          cannot be undone.
+          Are you sure you want to remove this billing info record? This action cannot be undone.
         </Dialog.Description>
       </Dialog.Header>
       <Dialog.Footer>
@@ -201,12 +202,12 @@
           title="Confirm Delete Billing Info {currentDate}"
         >
           {#if app_state === "processing"}
-            <Loader class="size-4 mr-2 animate-spin" />
+            <Loader class="mr-2 size-4 animate-spin" />
             Removing
             <span class="ml-1">
-              <span class="animate-pulse animation-delay-0">.</span>
-              <span class="animate-pulse animation-delay-500">.</span>
-              <span class="animate-pulse animation-delay-1000">.</span>
+              <span class="animation-delay-0 animate-pulse">.</span>
+              <span class="animation-delay-500 animate-pulse">.</span>
+              <span class="animation-delay-1000 animate-pulse">.</span>
             </span>
           {:else}
             Delete {currentDate}
@@ -217,17 +218,11 @@
   {/if}
 </Dialog.Root>
 
-
-
 <Sheet.Root bind:open={open_edit}>
   <Sheet.Portal>
     <Sheet.Content class="min-w-[60%]" side="left">
       <Sheet.Header>
-        <Sheet.Title
-          >Edit billing info of {formatDate(
-            new Date(row.original.date),
-          )}</Sheet.Title
-        >
+        <Sheet.Title>Edit billing info of {formatDate(new Date(row.original.date))}</Sheet.Title>
         <Sheet.Description>
           Update the billing info details for billing info with id
           <span class="font-mono text-primary">
@@ -236,16 +231,16 @@
         </Sheet.Description>
       </Sheet.Header>
 
-      <ScrollArea class="overflow-y-auto h-[calc(100vh-50px)] pr-2.5">
+      <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
         <div class="space-y-4 p-4">
           <BillingInfoForm
             action="update"
             billingInfo={billingInfoToDto({
-                ...row.original,
-                date: row.original.date,
-                createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
-                updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
-              })}
+              ...row.original,
+              date: row.original.date,
+              createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
+              updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
+            })}
           />
         </div>
       </ScrollArea>

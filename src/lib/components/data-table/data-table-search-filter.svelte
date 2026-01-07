@@ -33,9 +33,7 @@
   const comp_state = $derived<ComponentState>({
     all_columns: table
       .getAllColumns()
-      .filter(
-        (col) => typeof col.accessorFn !== "undefined" && col.getCanHide(),
-      )
+      .filter((col) => typeof col.accessorFn !== "undefined" && col.getCanHide())
       .filter((col) => {
         if (typeof default_hidden_options !== "undefined") {
           return !default_hidden_options.includes(col.id as keyof TData);
@@ -75,15 +73,10 @@
             value={column.label as string}
             class={cn({
               "cursor-not-allowed data-highlighted:bg-destructive":
-                column.selected &&
-                comp_state.all_columns.filter((c) => c.selected).length <= 1,
+                column.selected && comp_state.all_columns.filter((c) => c.selected).length <= 1,
             })}
           >
-            {convertToNormalText(
-              column.label.toString().replace("_id", ""),
-              true,
-              ["_"],
-            )}
+            {convertToNormalText(column.label.toString().replace("_id", ""), true, ["_"])}
           </DropdownMenu.RadioItem>
         {/each}
       </DropdownMenu.RadioGroup>

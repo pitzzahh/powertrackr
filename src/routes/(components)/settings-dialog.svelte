@@ -57,7 +57,7 @@
                 <Button
                   {...triggerProps}
                   variant="ghost"
-                  class="flex items-center justify-center w-full transition-all duration-300 ease-in-out"
+                  class="flex w-full items-center justify-center transition-all duration-300 ease-in-out"
                 >
                   <Settings2 class="size-6 shrink-0" />
                 </Button>
@@ -76,7 +76,7 @@
         <Button
           {...props}
           variant="ghost"
-          class="flex items-center gap-4 no-underline! cursor-pointer w-full justify-start"
+          class="flex w-full cursor-pointer items-center justify-start gap-4 no-underline!"
         >
           <Settings2 class="size-6" />
           <span class="text-sm font-medium tracking-wide">SETTINGS</span>
@@ -89,9 +89,7 @@
     trapFocus={false}
   >
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
-    <Dialog.Description class="sr-only"
-      >Customize your settings here.</Dialog.Description
-    >
+    <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
     <Sidebar.Provider class="items-start">
       <Sidebar.Root collapsible="none" class="hidden md:flex">
         <Sidebar.Content>
@@ -100,9 +98,7 @@
               <Sidebar.Menu>
                 {#each data.nav as item (item.name)}
                   <Sidebar.MenuItem>
-                    <Sidebar.MenuButton
-                      isActive={item.name === "Messages & media"}
-                    >
+                    <Sidebar.MenuButton isActive={item.name === "Messages & media"}>
                       {#snippet child({ props })}
                         <a href="##" {...props}>
                           <item.icon />
@@ -137,7 +133,7 @@
         </header>
         <div class="flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
           {#each { length: 10 }, i (i)}
-            <div class="bg-muted/50 aspect-video max-w-3xl rounded-xl"></div>
+            <div class="aspect-video max-w-3xl rounded-xl bg-muted/50"></div>
           {/each}
         </div>
       </main>

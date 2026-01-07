@@ -16,7 +16,7 @@
   usePassword({
     hidden: box.with(
       () => hidden,
-      (v) => (hidden = v),
+      (v) => (hidden = v)
     ),
     minScore: box.with(() => minScore),
     enableStrengthCheck: box.with(() => enableStrengthCheck),

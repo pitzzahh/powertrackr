@@ -12,6 +12,4 @@
   let { value, className, variant = "default" }: Props = $props();
 </script>
 
-<Badge {variant} class={cn("text-ellipsis whitespace-nowrap", className)}
-  >{value}</Badge
->
+<Badge {variant} class={cn("text-ellipsis whitespace-nowrap", className)}>{value}</Badge>

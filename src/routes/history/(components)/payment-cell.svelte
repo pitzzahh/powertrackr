@@ -27,7 +27,7 @@
           ctx.delete();
           wasLoading = false;
         }
-      }),
+      })
   );
 
   onDestroy(() => {
@@ -49,10 +49,7 @@
       onclick={() => (payment = getPayment(paymentId))}>Retry</Button
     >
   {:else}
-    <Badge
-      variant="secondary"
-      title={formatNumber(payment.current?.amount || 0)}
-    >
+    <Badge variant="secondary" title={formatNumber(payment.current?.amount || 0)}>
       {formatNumber(payment.current?.amount || 0)}
     </Badge>
   {/if}

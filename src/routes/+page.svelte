@@ -26,23 +26,23 @@
         sum +
         ((info.payment?.amount ?? 0) +
           info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
-      0,
+      0
     );
     const totalReturns = infos.reduce(
       (sum, info) =>
         sum + info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
-      0,
+      0
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
     const oneDayReturns = latest.subMeters.reduce(
       (sum, sub) => sum + (sub.payment?.amount ?? 0),
-      0,
+      0
     );
     const firstDate = new Date(infos[infos.length - 1].date);
     const lastDate = new Date(latest.date);
     const totalDays = Math.max(
       1,
-      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24),
+      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     const averageDailyReturn = totalReturns / totalDays;
     const totalMonths = totalDays / 30;
@@ -65,12 +65,7 @@
   import { goto } from "$app/navigation";
   import { showSuccess } from "$/components/toast";
   import { formatNumber } from "$/utils/format";
-  import {
-    ChartArea,
-    ChartBar,
-    toAreaChartData,
-    toBarChartData,
-  } from "$routes/(components)";
+  import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { getExtendedBillingInfos } from "$/api/billing-info.remote";
@@ -92,7 +87,7 @@
       extendedBillingInfos = await hydratable("chart_data", () =>
         getExtendedBillingInfos({
           userId: data?.user?.id || "",
-        }),
+        })
       );
       summary = computeSummary(extendedBillingInfos);
       status = "success";
@@ -105,9 +100,9 @@
   }
   onMount(() => {
     fetchData();
-    if (page.url.searchParams.get('oauth') === 'github' && data.user) {
+    if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
-      goto('/', { replaceState: true });
+      goto("/", { replaceState: true });
     }
   });
 </script>
@@ -133,7 +128,7 @@
 {#snippet Metrics()}
   <section
     in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col xl:flex-row gap-8 xl:items-center justify-between p-6 bg-card border shadow-sm text-muted-foreground rounded-md"
+    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
@@ -143,23 +138,23 @@
       {#if status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
       {:else if status === "error"}
-        <div class="text-5xl md:text-4xl lg:text-5xl font-bold">0</div>
+        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
       {:else}
-        <div class="text-5xl md:text-4xl lg:text-5xl font-bold">
+        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
           {formatNumber(summary?.current || 0)}
         </div>
       {/if}
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 xl:gap-16">
+    <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Cost</span>
         {#if status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if status === "error"}
-          <span class="text-2xl md:text-xl lg:text-2xl font-semibold">0</span>
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
         {:else}
-          <span class="text-2xl md:text-xl lg:text-2xl font-semibold"
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
             >{formatNumber(summary?.invested || 0)}</span
           >
         {/if}
@@ -169,13 +164,9 @@
         {#if status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if status === "error"}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
-            >+0</span
-          >
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
         {:else}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
             >+{formatNumber(summary?.totalReturns || 0)}</span
           >
         {/if}
@@ -185,13 +176,9 @@
         {#if status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if status === "error"}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
-            >+0%</span
-          >
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0%</span>
         {:else}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
             >+{formatNumber(summary?.netReturns || 0)}%</span
           >
         {/if}
@@ -201,13 +188,9 @@
         {#if status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if status === "error"}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
-            >+0</span
-          >
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
         {:else}
-          <span
-            class="text-2xl md:text-xl lg:text-2xl font-semibold text-green-600"
+          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
             >+{formatNumber(summary?.oneDayReturns || 0)}</span
           >
         {/if}
