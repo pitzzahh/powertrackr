@@ -27,7 +27,7 @@ export const sessionCookieName = "auth-session";
 export async function createSession(
   token: string,
   userId: string,
-  flags: SessionFlags,
+  flags: SessionFlags
 ): Promise<Session> {
   const [sess] = await db
     .insert(session)

@@ -161,7 +161,7 @@ export function historyTableColumns() {
       filterFn: (row, id, value) => {
         if (Array.isArray(value)) {
           return (value as string[]).some(
-            (v) => v.toLowerCase() === row.original.status.toLowerCase(),
+            (v) => v.toLowerCase() === row.original.status.toLowerCase()
           );
         }
         const statusStr = row.getValue(id) as string;

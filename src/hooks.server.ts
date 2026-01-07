@@ -44,7 +44,7 @@ export const log: Handle = async ({ event, resolve }) => {
     url: { pathname, origin },
   } = event;
   console.info(
-    `${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`,
+    `${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
   );
 
   return resolve(event);

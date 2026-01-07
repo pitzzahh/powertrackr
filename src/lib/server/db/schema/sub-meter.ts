@@ -30,5 +30,5 @@ export const subMeter = sqliteTable(
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
-  ],
+  ]
 );

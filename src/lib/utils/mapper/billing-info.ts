@@ -33,7 +33,7 @@ export function billingInfoToTableView(original: BillingInfo): BillingInfoTableV
 }
 
 export function extendedBillingInfoToTableView(
-  original: ExtendedBillingInfo,
+  original: ExtendedBillingInfo
 ): ExtendedBillingInfoTableView {
   return {
     ...original,

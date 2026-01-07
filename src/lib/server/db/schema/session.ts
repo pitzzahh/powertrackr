@@ -27,5 +27,5 @@ export const session = sqliteTable(
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
-  ],
+  ]
 );

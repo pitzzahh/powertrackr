@@ -21,7 +21,7 @@ export class RenderComponentConfig<TComponent extends Component> {
   props: ComponentProps<TComponent> | Record<string, never>;
   constructor(
     component: TComponent,
-    props: ComponentProps<TComponent> | Record<string, never> = {},
+    props: ComponentProps<TComponent> | Record<string, never> = {}
   ) {
     this.component = component;
     this.props = props;
@@ -76,7 +76,7 @@ export class RenderSnippetConfig<TProps> {
  */
 export function renderComponent<T extends Component<any>, Props extends ComponentProps<T>>(
   component: T,
-  props: Props = {} as Props,
+  props: Props = {} as Props
 ) {
   return new RenderComponentConfig(component, props);
 }

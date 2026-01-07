@@ -32,7 +32,7 @@ export function sanitize(value: unknown): string {
 export function convertToNormalText(
   text: unknown,
   include_separators: boolean = false,
-  separators: string[] = [],
+  separators: string[] = []
 ): string {
   const textStr = String(text);
   let trimmedText = textStr.trim().replaceAll("_", " ").replaceAll("-", " ");
@@ -56,7 +56,7 @@ export function generateFullName(
     prefix: string;
     postfix: string;
     include_last_name: boolean;
-  }>,
+  }>
 ): string {
   const { first_name, last_name, middle_name } = data;
   const { prefix, postfix, include_last_name } = options;

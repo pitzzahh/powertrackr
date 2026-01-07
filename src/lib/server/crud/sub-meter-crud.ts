@@ -24,7 +24,7 @@ type SubMeterQueryOptions = {
 };
 
 export async function addSubMeter(
-  data: Omit<NewSubMeter, "id">[],
+  data: Omit<NewSubMeter, "id">[]
 ): Promise<HelperResult<NewSubMeter[]>> {
   const insert_result = await db
     .insert(subMeter)
@@ -34,7 +34,7 @@ export async function addSubMeter(
           id: crypto.randomUUID(),
           ...sub_meter_data,
         };
-      }),
+      })
     )
     .returning();
 
@@ -48,7 +48,7 @@ export async function addSubMeter(
 
 export async function updateSubMeterBy(
   by: HelperParam<NewSubMeter>,
-  data: Partial<NewSubMeter>,
+  data: Partial<NewSubMeter>
 ): Promise<HelperResult<NewSubMeter[]>> {
   const { query } = by;
   const sub_meter_param = {
@@ -89,7 +89,7 @@ export async function updateSubMeterBy(
 }
 
 export async function getSubMeterBy(
-  data: HelperParam<NewSubMeter>,
+  data: HelperParam<NewSubMeter>
 ): Promise<HelperResult<Record<string, unknown>[]>> {
   const { options } = data;
   const { limit, offset, order, with_payment, with_billing_info, fields } = options;
@@ -125,7 +125,7 @@ export async function getSubMeters(data: HelperParam<NewSubMeter>): Promise<SubM
 }
 
 export async function mapNewSubMeter_to_DTO(
-  data: Record<string, unknown>[],
+  data: Record<string, unknown>[]
 ): Promise<SubMeterDTO[]> {
   return Promise.all(
     data.map(async (_sub_meter) => {
@@ -153,12 +153,12 @@ export async function mapNewSubMeter_to_DTO(
         } as SubMeterDTOWithBillingInfo;
       }
       return sub_meter_info;
-    }),
+    })
   );
 }
 
 export async function getSubMeterCountBy(
-  data: HelperParam<NewSubMeter>,
+  data: HelperParam<NewSubMeter>
 ): Promise<HelperResult<number>> {
   const { query } = data;
   const { id, billingInfoId } = query;

@@ -19,5 +19,5 @@ export const user = sqliteTable(
     passwordHash: t.text("password_hash"),
     ...timestamps,
   }),
-  (table) => [uniqueIndex("user_email_key").on(table.email)],
+  (table) => [uniqueIndex("user_email_key").on(table.email)]
 );

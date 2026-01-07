@@ -24,7 +24,7 @@ export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult
           id: crypto.randomUUID(),
           ...user_data,
         };
-      }),
+      })
     )
     .returning();
 
@@ -38,7 +38,7 @@ export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult
 
 export async function updateUserBy(
   by: HelperParam<NewUser>,
-  data: Partial<NewUser>,
+  data: Partial<NewUser>
 ): Promise<HelperResult<NewUser[]>> {
   const { query } = by;
   const user_param = { ...by, options: { ...by.options, fields: undefined } };
@@ -76,7 +76,7 @@ export async function updateUserBy(
 }
 
 export async function getUserBy(
-  data: HelperParam<NewUser>,
+  data: HelperParam<NewUser>
 ): Promise<HelperResult<Partial<NewUser>[]>> {
   const { options } = data;
   const { limit, offset, order, with_session, fields } = options;
@@ -128,7 +128,7 @@ export async function mapNewUser_to_DTO(data: Partial<NewUser>[]): Promise<UserD
         } as UserDTOWithSessions;
       }
       return user_info;
-    }),
+    })
   );
 }
 

@@ -67,7 +67,7 @@ class PasswordRootState {
             offlineFastHashing1e10PerSecond: "less than a second",
           },
           sequence: [],
-        },
+        }
   );
 }
 
@@ -81,7 +81,7 @@ type PasswordInputStateProps = WritableBoxedValues<{
 class PasswordInputState {
   constructor(
     readonly root: PasswordRootState,
-    readonly opts: PasswordInputStateProps,
+    readonly opts: PasswordInputStateProps
   ) {
     watch(
       () => this.opts.value.current,
@@ -90,7 +90,7 @@ class PasswordInputState {
           this.root.passwordState.tainted = true;
           this.root.passwordState.value = this.opts.value.current;
         }
-      },
+      }
     );
 
     $effect(() => {

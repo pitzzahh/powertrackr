@@ -1,6 +1,6 @@
 export const formatNumber = (
   num: number,
-  options: { currency?: string; locale?: string } = {},
+  options: { currency?: string; locale?: string } = {}
 ): string => {
   const { currency = "PHP", locale = "en-PH" } = options;
   const locales = [locale];
@@ -15,7 +15,7 @@ export enum DateFormat {
 
 export const formatDate = (
   date: Date,
-  options: { format?: DateFormat; locale?: string } = {},
+  options: { format?: DateFormat; locale?: string } = {}
 ): string => {
   const { format = DateFormat.DateOnly, locale = "en-PH" } = options;
   const intlOptions: Intl.DateTimeFormatOptions =

@@ -32,5 +32,5 @@ export const billingInfo = sqliteTable(
     })
       .onUpdate("cascade")
       .onDelete("cascade"),
-  ],
+  ]
 );

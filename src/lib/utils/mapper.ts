@@ -76,7 +76,7 @@ export function generateOptions<T, FilterType = string>(
     icon_matcher?: FilterOption<FilterType>[];
     label_prefix?: string;
     convert_to_normal_text?: boolean;
-  },
+  }
 ): FilterOption<string | FilterType>[] {
   const { icon_matcher, label_prefix, convert_to_normal_text } = options || {};
   return Array.from(
@@ -98,8 +98,8 @@ export function generateOptions<T, FilterType = string>(
             icon: icon_matcher ? getIcon(icon_matcher, stringValue) : undefined,
           },
         ];
-      }),
-    ).values(),
+      })
+    ).values()
   ).sort((a, b) => {
     const aLabel = typeof a.label === "boolean" ? String(a.label) : a.label;
     const bLabel = typeof b.label === "boolean" ? String(b.label) : b.label;

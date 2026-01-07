@@ -132,7 +132,7 @@ export function showPromise<T>(
     error:
       | { title: string; description?: string }
       | ((error: unknown) => { title: string; description?: string });
-  },
+  }
 ) {
   // Show loading toast
   const loadingId = showLoading(options.loading.title, options.loading.description);

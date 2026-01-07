@@ -30,7 +30,7 @@ export const getBillingInfos = query(
       where: { userId },
       orderBy: { date: "desc" },
     });
-  },
+  }
 );
 
 // Query to get extended billing infos with payments for a user
@@ -49,7 +49,7 @@ export const getExtendedBillingInfos = query(
       },
       orderBy: { date: "desc" },
     });
-  },
+  }
 );
 
 // Query to get a single billing info by id
@@ -57,7 +57,7 @@ export const getBillingInfo = query(
   getBillingInfoSchema,
   async (id): Promise<BillingInfo | undefined> => {
     return await db.query.billingInfo.findFirst({ where: { id } });
-  },
+  }
 );
 
 // Query to get billing summary for a user
@@ -96,24 +96,24 @@ export const getBillingSummary = query(
         sum +
         ((info.payment?.amount ?? 0) +
           info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
-      0,
+      0
     );
     const totalReturns = extendedInfos.reduce(
       (sum, info) =>
         sum + info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
-      0,
+      0
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
     const oneDayReturns = latest.subMeters.reduce(
       (sum, sub) => sum + (sub.payment?.amount ?? 0),
-      0,
+      0
     );
 
     const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date);
     const lastDate = new Date(latest.date);
     const totalDays = Math.max(
       1,
-      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24),
+      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     const averageDailyReturn = totalReturns / totalDays;
     const totalMonths = totalDays / 30;
@@ -128,7 +128,7 @@ export const getBillingSummary = query(
       averageDailyReturn,
       averageMonthlyReturn,
     };
-  },
+  }
 );
 
 // Form to create a new billing info
@@ -156,7 +156,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 
   const totalSubPaymentAmount = subMetersData.reduce(
     (sum, sub) => sum + (sub.paymentAmount || 0),
-    0,
+    0
   );
 
   let paymentId = null;
@@ -210,7 +210,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
         ...sub,
         id: crypto.randomUUID(),
         billingInfoId: result.id,
-      })),
+      }))
     );
   }
 
@@ -228,7 +228,7 @@ export const updateBillingInfo = form(
       .where(eq(billingInfo.id, id))
       .returning();
     return result;
-  },
+  }
 );
 
 // Command to delete a billing info

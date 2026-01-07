@@ -1,6 +1,6 @@
 export async function catchErrorTyped<T, E extends new (message?: string) => Error>(
   promise: Promise<T>,
-  errorsToCatch?: E[],
+  errorsToCatch?: E[]
 ): Promise<[undefined, T] | [InstanceType<E>]> {
   if (!promise) {
     throw new TypeError("Promise is undefined");
