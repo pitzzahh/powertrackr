@@ -214,7 +214,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "billingInfoId") {
       conditions.push(eq(subMeter.billingInfoId, value as string));
     } else if (key === "subKwh") {
-      conditions.push(eq(subMeter.subKwh, value as number));
+      conditions.push(eq(subMeter.subKWh, value as number));
     } else if (key === "subReadingLatest") {
       conditions.push(eq(subMeter.subReadingLatest, value as number));
     } else if (key === "subReadingOld") {

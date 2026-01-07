@@ -8,7 +8,7 @@ export const subMeter = sqliteTable(
   {
     id: text().primaryKey().notNull(),
     billingInfoId: text("billing_info_id").notNull(),
-    subKwh: integer("sub_kwh"),
+    subKWh: integer("sub_kWh"),
     subReadingLatest: integer("sub_reading_latest"),
     subReadingOld: integer("sub_reading_old"),
     paymentId: text("payment_id"),

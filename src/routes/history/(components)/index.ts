@@ -60,14 +60,14 @@ export function historyTableColumns() {
         });
       },
       cell: ({ row }) => {
-        const totalKWh = row.original.totalKwh;
+        const totalKWh = row.original.totalKWh;
         return totalKWh ? `${totalKWh}KWh` : "N/A";
       },
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.totalKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
-          row.original.totalKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
+          row.original.totalKWh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.totalKWh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },
@@ -76,7 +76,7 @@ export function historyTableColumns() {
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
           column,
-          title: "Pay Per KWh",
+          title: "Pay Per kWh",
         });
       },
       cell: ({ row }) => formatNumber(row.original.payPerKwh),
@@ -129,8 +129,8 @@ export function historyTableColumns() {
       filterFn: async (row, id, value) => {
         const payment = await getPayment(row.original.paymentId!);
         if (!payment || payment.amount == null) return false;
-        const amountStr = payment.amount.toString();
-        return amountStr === value || amountStr.toLowerCase().includes(value.toLowerCase());
+        const paymentStr = payment.amount.toString();
+        return paymentStr === value || paymentStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {

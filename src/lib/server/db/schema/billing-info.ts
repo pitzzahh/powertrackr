@@ -9,10 +9,10 @@ export const billingInfo = sqliteTable(
     id: text().primaryKey().notNull(),
     userId: text("user_id").notNull(),
     date: text().notNull(), // Use text for timestamp in sqlite
-    totalKwh: integer("total_kwh").notNull(),
+    totalKWh: integer("total_kWh").notNull(),
     balance: real().notNull(),
     status: text().notNull(),
-    payPerKwh: real("pay_per_kwh").notNull(),
+    payPerKwh: real("pay_per_kWh").notNull(),
     paymentId: text("payment_id"),
     ...timestamps,
   },
