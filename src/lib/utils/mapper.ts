@@ -13,10 +13,7 @@ import { convertToNormalText } from "$/utils/text";
  *
  * @template T - The type of the objects being compared.
  */
-export function getChangedData<T>(
-  originalData: T,
-  newData: Partial<T>,
-): Partial<T> {
+export function getChangedData<T>(originalData: T, newData: Partial<T>): Partial<T> {
   const changedData: Partial<T> = {};
 
   // If newData is empty, filter non-nullish properties from originalData
@@ -88,9 +85,7 @@ export function generateOptions<T, FilterType = string>(
         // Convert value to string first, especially if it's a number
         const rawValue = option[key];
         const stringValue =
-          typeof rawValue === "number"
-            ? String(rawValue)
-            : (rawValue as unknown as string);
+          typeof rawValue === "number" ? String(rawValue) : (rawValue as unknown as string);
         const _value = convert_to_normal_text
           ? convertToNormalText(stringValue as unknown as FilterType)
           : stringValue;
@@ -131,10 +126,7 @@ export function generateOptions<T, FilterType = string>(
   });
 }
 
-export function getIcon<FilterType>(
-  items: Array<FilterOption<FilterType>>,
-  value: string,
-) {
+export function getIcon<FilterType>(items: Array<FilterOption<FilterType>>, value: string) {
   const status = items.find((s) => s.value === value);
   return status?.icon;
 }
@@ -154,19 +146,13 @@ export function getIcon<FilterType>(
  * const partialObj = omit(anotherObj, ['city', 'country']);
  * // partialObj will be { name: 'John', age: 30 }
  */
-export function omit<T extends object, K extends keyof T>(
-  obj: T,
-  keysToOmit: K[],
-): Omit<T, K> {
+export function omit<T extends object, K extends keyof T>(obj: T, keysToOmit: K[]): Omit<T, K> {
   const newObj: Partial<T> = {};
   const keysToOmitStr = keysToOmit.map(String);
 
   // Handle string keys
   for (const key in obj) {
-    if (
-      Object.prototype.hasOwnProperty.call(obj, key) &&
-      !keysToOmitStr.includes(String(key))
-    ) {
+    if (Object.prototype.hasOwnProperty.call(obj, key) && !keysToOmitStr.includes(String(key))) {
       newObj[key] = obj[key];
     }
   }
@@ -202,10 +188,7 @@ export async function imageFileToDataUrl(file: File) {
   });
 }
 
-export function dataUrlToImageFile(
-  dataUrl: string,
-  filename = "image.png",
-): File {
+export function dataUrlToImageFile(dataUrl: string, filename = "image.png"): File {
   if (!dataUrl.startsWith("data:")) {
     throw new Error("Invalid data URL");
   }

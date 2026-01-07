@@ -78,14 +78,9 @@ export async function updateSubMeterBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db
-    .update(subMeter)
-    .set(changed_data)
-    .returning()
-    .where(whereSQL);
+  const updateDBRequest = await db.update(subMeter).set(changed_data).returning().where(whereSQL);
 
-  const is_valid =
-    Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
+  const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
     valid: is_valid,
     message: `${updateDBRequest.length} sub meter(s) ${is_valid ? "updated" : `not updated with ${generateNotFoundMessage(query)}`}`,
@@ -97,8 +92,7 @@ export async function getSubMeterBy(
   data: HelperParam<NewSubMeter>,
 ): Promise<HelperResult<Record<string, unknown>[]>> {
   const { options } = data;
-  const { limit, offset, order, with_payment, with_billing_info, fields } =
-    options;
+  const { limit, offset, order, with_payment, with_billing_info, fields } = options;
   const conditions = generateSubMeterQueryConditions(data);
   const queryOptions: SubMeterQueryOptions = {
     with: {
@@ -111,10 +105,7 @@ export async function getSubMeterBy(
     orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
   };
   if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce(
-      (acc, key) => ({ ...acc, [key as string]: true }),
-      {},
-    );
+    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
   }
   const queryDBResult = await db.query.subMeter.findMany(queryOptions);
 
@@ -126,9 +117,7 @@ export async function getSubMeterBy(
   };
 }
 
-export async function getSubMeters(
-  data: HelperParam<NewSubMeter>,
-): Promise<SubMeterDTO[]> {
+export async function getSubMeters(data: HelperParam<NewSubMeter>): Promise<SubMeterDTO[]> {
   const subMetersResult = await getSubMeterBy(data);
   return !subMetersResult.valid || !subMetersResult.value
     ? []
@@ -196,14 +185,7 @@ export async function getSubMeterCountBy(
 
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
-  const {
-    id,
-    billingInfoId,
-    subKwh,
-    subReadingLatest,
-    subReadingOld,
-    paymentId,
-  } = query;
+  const { id, billingInfoId, subKwh, subReadingLatest, subReadingOld, paymentId } = query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 

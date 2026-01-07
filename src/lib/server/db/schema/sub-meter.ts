@@ -1,10 +1,4 @@
-import {
-  sqliteTable,
-  index,
-  foreignKey,
-  text,
-  integer,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, index, foreignKey, text, integer } from "drizzle-orm/sqlite-core";
 import { payment } from "./payment";
 import { billingInfo } from "./billing-info";
 import { timestamps } from ".";

@@ -6,9 +6,7 @@ import { dev } from "$app/environment";
 export const loginWithGithub = command(async () => {
   const event = getRequestEvent();
   const state = generateState();
-  const url = createGitHub(event.url).createAuthorizationURL(state, [
-    "user:email",
-  ]);
+  const url = createGitHub(event.url).createAuthorizationURL(state, ["user:email"]);
 
   event.cookies.set("github_oauth_state", state, {
     httpOnly: true,

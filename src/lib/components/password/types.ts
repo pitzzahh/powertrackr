@@ -22,9 +22,7 @@ export type PasswordRootPropsWithoutHTML = WithChildren<{
   enableStrengthCheck?: boolean;
 }>;
 
-export type PasswordRootProps = WithoutChildren<
-  HTMLAttributes<HTMLDivElement>
-> &
+export type PasswordRootProps = WithoutChildren<HTMLAttributes<HTMLDivElement>> &
   PasswordRootPropsWithoutHTML;
 
 export type PasswordInputPropsWithoutHTML = WithChildren<{

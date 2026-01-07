@@ -31,10 +31,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 };
 
 export const handleDevTools: Handle = async ({ event, resolve }) => {
-  if (
-    dev &&
-    event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json"
-  ) {
+  if (dev && event.url.pathname === "/.well-known/appspecific/com.chrome.devtools.json") {
     return new Response(undefined, { status: 404 });
   }
 

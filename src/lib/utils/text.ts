@@ -43,9 +43,7 @@ export function convertToNormalText(
     }
   }
 
-  return (
-    trimmedText.charAt(0).toUpperCase() + trimmedText.slice(1).toLowerCase()
-  );
+  return trimmedText.charAt(0).toUpperCase() + trimmedText.slice(1).toLowerCase();
 }
 
 export function generateFullName(
@@ -63,13 +61,7 @@ export function generateFullName(
   const { first_name, last_name, middle_name } = data;
   const { prefix, postfix, include_last_name } = options;
   const _data = include_last_name
-    ? [
-        prefix?.trim(),
-        first_name.trim(),
-        middle_name?.trim(),
-        last_name.trim(),
-        postfix?.trim(),
-      ]
+    ? [prefix?.trim(), first_name.trim(), middle_name?.trim(), last_name.trim(), postfix?.trim()]
     : [prefix?.trim(), first_name.trim(), middle_name?.trim(), postfix?.trim()];
 
   return _data.filter(Boolean).join(" ").replace(/\s+/g, " ");
@@ -123,11 +115,7 @@ export function generateNotFoundMessage<T extends object>(query: T): string {
   return `${fields.join(" or ")} not found.`;
 }
 
-export function replaceTextWithMarker(
-  text: string,
-  match: string,
-  regexp: RegExp,
-): string {
+export function replaceTextWithMarker(text: string, match: string, regexp: RegExp): string {
   return text.replaceAll(regexp, (match) => `<mark>${match}</mark>`);
 }
 
@@ -151,9 +139,7 @@ export function toShortName(fullName: string): string {
   const first = parts[0][0].toUpperCase();
   const lastPart = parts[parts.length - 1];
   const lastChar = /^[A-Za-z]/.exec(lastPart);
-  const second = lastChar
-    ? lastChar[0].toUpperCase()
-    : lastPart[0].toUpperCase();
+  const second = lastChar ? lastChar[0].toUpperCase() : lastPart[0].toUpperCase();
 
   return first + second;
 }

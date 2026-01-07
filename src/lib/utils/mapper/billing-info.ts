@@ -1,8 +1,4 @@
-import type {
-  BillingInfo,
-  BillingInfoDTO,
-  BillingInfoTableView,
-} from "$/types/billing-info";
+import type { BillingInfo, BillingInfoDTO, BillingInfoTableView } from "$/types/billing-info";
 import { DateFormat, formatDate } from "$/utils/format";
 
 export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
@@ -23,9 +19,7 @@ export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
   };
 }
 
-export function billingInfoToTableView(
-  original: BillingInfo,
-): BillingInfoTableView {
+export function billingInfoToTableView(original: BillingInfo): BillingInfoTableView {
   return {
     ...original,
     date: formatDate(new Date(original.date)),

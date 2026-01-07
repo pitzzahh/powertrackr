@@ -33,11 +33,7 @@ export const createPayment = form(createPaymentSchema, async (data) => {
 // Form to update an existing payment
 export const updatePayment = form(updatePaymentSchema, async (data) => {
   const { id, ...updateData } = data;
-  const result = await db
-    .update(payment)
-    .set(updateData)
-    .where(eq(payment.id, id))
-    .returning();
+  const result = await db.update(payment).set(updateData).where(eq(payment.id, id)).returning();
   return result[0];
 });
 

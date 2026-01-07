@@ -47,11 +47,7 @@ export const createUser = form(createUserSchema, async (user) => {
 // Form to update an existing user
 export const updateUser = form(updateUserSchema, async (data) => {
   const { id, ...updateData } = data;
-  const result = await db
-    .update(user)
-    .set(updateData)
-    .where(eq(user.id, id))
-    .returning();
+  const result = await db.update(user).set(updateData).where(eq(user.id, id)).returning();
   return result[0];
 });
 

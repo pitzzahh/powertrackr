@@ -1,7 +1,4 @@
-import {
-  DataTableCheckbox,
-  DataTableColumnHeader,
-} from "$/components/data-table";
+import { DataTableCheckbox, DataTableColumnHeader } from "$/components/data-table";
 import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
 import { getPayment } from "$/api/payment.remote";
@@ -51,10 +48,7 @@ export function historyTableColumns() {
         }),
       filterFn: (row, id, value) => {
         const dateStr = row.getValue(id) as string;
-        return (
-          dateStr === value ||
-          dateStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return dateStr === value || dateStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
@@ -72,14 +66,8 @@ export function historyTableColumns() {
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.totalKwh
-            ?.toString()
-            ?.toLowerCase()
-            .includes(value.toLowerCase()) ||
-          row.original.totalKwh
-            ?.toString()
-            ?.toLowerCase()
-            .startsWith(value.toLowerCase())
+          row.original.totalKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.totalKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },
@@ -98,14 +86,8 @@ export function historyTableColumns() {
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.subKwh
-            ?.toString()
-            ?.toLowerCase()
-            .includes(value.toLowerCase()) ||
-          row.original.subKwh
-            ?.toString()
-            ?.toLowerCase()
-            .startsWith(value.toLowerCase())
+          row.original.subKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.subKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },
@@ -131,10 +113,7 @@ export function historyTableColumns() {
       },
       filterFn: (row, id, value) => {
         const balanceStr = row.original.balance.toString();
-        return (
-          balanceStr === value ||
-          balanceStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return balanceStr === value || balanceStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
@@ -154,10 +133,7 @@ export function historyTableColumns() {
         const payment = await getPayment(row.original.paymentId!);
         if (!payment || payment.amount == null) return false;
         const amountStr = payment.amount.toString();
-        return (
-          amountStr === value ||
-          amountStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return amountStr === value || amountStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
@@ -177,10 +153,7 @@ export function historyTableColumns() {
         const subPayment = await getPayment(row.original.subPaymentId!);
         if (!subPayment || subPayment.amount == null) return false;
         const amountStr = subPayment.amount.toString();
-        return (
-          amountStr === value ||
-          amountStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return amountStr === value || amountStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
@@ -205,9 +178,7 @@ export function historyTableColumns() {
       },
       filterFn: (row, id, value) => {
         const val = value as string[];
-        return val.some(
-          (v) => v.toLowerCase() === row.original.status.toLowerCase(),
-        );
+        return val.some((v) => v.toLowerCase() === row.original.status.toLowerCase());
       },
     },
     {
@@ -228,10 +199,7 @@ export function historyTableColumns() {
         }),
       filterFn: (row, id, value) => {
         const dateStr = row.getValue(id) as string;
-        return (
-          dateStr === value ||
-          dateStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return dateStr === value || dateStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {
@@ -252,10 +220,7 @@ export function historyTableColumns() {
         }),
       filterFn: (row, id, value) => {
         const dateStr = row.getValue(id) as string;
-        return (
-          dateStr === value ||
-          dateStr.toLowerCase().includes(value.toLowerCase())
-        );
+        return dateStr === value || dateStr.toLowerCase().includes(value.toLowerCase());
       },
     },
     {

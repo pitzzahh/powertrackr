@@ -83,19 +83,13 @@ export async function validateSessionToken(token: string) {
   return { session: sessionResult, user: userResult };
 }
 
-export type SessionValidationResult = Awaited<
-  ReturnType<typeof validateSessionToken>
->;
+export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;
 
 export async function invalidateSession(sessionId: string) {
   await db.delete(session).where(eq(session.id, sessionId));
 }
 
-export function setSessionTokenCookie(
-  event: RequestEvent,
-  token: string,
-  expiresAt: Date,
-) {
+export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
   event.cookies.set(sessionCookieName, token, {
     expires: expiresAt,
     path: "/",

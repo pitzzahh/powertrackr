@@ -30,10 +30,7 @@ export function getSelectedLabel(timeRange: string): string {
   }
 }
 
-export function getFilteredData<T extends { date: Date }>(
-  data: T[],
-  timeRange: string,
-): T[] {
+export function getFilteredData<T extends { date: Date }>(data: T[], timeRange: string): T[] {
   if (timeRange === "all") return data;
   let daysToSubtract = 90;
   if (timeRange === "30d") {
@@ -47,12 +44,8 @@ export function getFilteredData<T extends { date: Date }>(
   }
 
   const maxDate =
-    data.length > 0
-      ? new Date(Math.max(...data.map((d) => d.date.getTime())))
-      : new Date();
-  const referenceDate = new Date(
-    maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000,
-  );
+    data.length > 0 ? new Date(Math.max(...data.map((d) => d.date.getTime()))) : new Date();
+  const referenceDate = new Date(maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000);
   return data.filter((item) => item.date >= referenceDate);
 }
 
@@ -61,18 +54,12 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
     date: new Date(original.date),
     balance: original.balance,
     payment: original.payment?.amount || 0,
-    subPayment: original.subMeters.reduce(
-      (sum, sub) => sum + (sub.payment?.amount || 0),
-      0,
-    ),
+    subPayment: original.subMeters.reduce((sum, sub) => sum + (sub.payment?.amount || 0), 0),
   };
 }
 
 export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
-  const subKWh = original.subMeters.reduce(
-    (sum, sub) => sum + (sub.subKwh || 0),
-    0,
-  );
+  const subKWh = original.subMeters.reduce((sum, sub) => sum + (sub.subKwh || 0), 0);
   return {
     date: new Date(original.date),
     totalKWh: original.totalKwh,

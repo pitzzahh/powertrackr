@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "f49995bb-ce3b-4994-9b1b-908815361ed6",
-  "prevIds": [
-    "ffa1ccac-44d2-4d68-a4b0-a1183fb01044"
-  ],
+  "prevIds": ["ffa1ccac-44d2-4d68-a4b0-a1183fb01044"],
   "ddl": [
     {
       "name": "billing_info",
@@ -393,13 +391,9 @@
       "table": "user"
     },
     {
-      "columns": [
-        "payment_id"
-      ],
+      "columns": ["payment_id"],
       "tableTo": "payment",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -408,13 +402,9 @@
       "table": "billing_info"
     },
     {
-      "columns": [
-        "sub_payment_id"
-      ],
+      "columns": ["sub_payment_id"],
       "tableTo": "payment",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -423,13 +413,9 @@
       "table": "billing_info"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -438,13 +424,9 @@
       "table": "billing_info"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "nameExplicit": false,
@@ -453,13 +435,9 @@
       "table": "session"
     },
     {
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "CASCADE",
       "onDelete": "CASCADE",
       "nameExplicit": true,
@@ -468,36 +446,28 @@
       "table": "session"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "billing_info_pk",
       "table": "billing_info",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "Payment_pk",
       "table": "payment",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pk",
       "table": "session",
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pk",
       "table": "user",
@@ -574,9 +544,7 @@
       "table": "user"
     },
     {
-      "columns": [
-        "github_id"
-      ],
+      "columns": ["github_id"],
       "nameExplicit": false,
       "name": "user_githubId_unique",
       "entityType": "uniques",

@@ -1,9 +1,4 @@
-import {
-  sqliteTable,
-  uniqueIndex,
-  index,
-  foreignKey,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, uniqueIndex, index, foreignKey } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
 export const session = sqliteTable(

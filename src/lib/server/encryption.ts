@@ -1,8 +1,4 @@
-import {
-  decodeHex,
-  encodeBase32UpperCaseNoPadding,
-  encodeBase64url,
-} from "@oslojs/encoding";
+import { decodeHex, encodeBase32UpperCaseNoPadding, encodeBase64url } from "@oslojs/encoding";
 import crypto from "node:crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
@@ -29,16 +25,10 @@ export function decrypt(encrypted: Uint8Array): Uint8Array {
   if (encrypted.byteLength < 33) {
     throw new Error("Invalid data");
   }
-  const decipher = crypto.createDecipheriv(
-    "aes-128-gcm",
-    key,
-    encrypted.slice(0, 16),
-  );
+  const decipher = crypto.createDecipheriv("aes-128-gcm", key, encrypted.slice(0, 16));
   decipher.setAuthTag(encrypted.slice(encrypted.byteLength - 16));
   const decrypted = new DynamicBuffer(0);
-  decrypted.write(
-    decipher.update(encrypted.slice(16, encrypted.byteLength - 16)),
-  );
+  decrypted.write(decipher.update(encrypted.slice(16, encrypted.byteLength - 16)));
   decrypted.write(decipher.final());
   return decrypted.bytes();
 }
@@ -67,10 +57,7 @@ export async function hashPassword(password: string): Promise<string> {
   });
 }
 
-export async function verifyPasswordHash(
-  hash: string,
-  password: string,
-): Promise<boolean> {
+export async function verifyPasswordHash(hash: string, password: string): Promise<boolean> {
   return await verify(hash, password);
 }
 

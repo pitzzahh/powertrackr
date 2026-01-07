@@ -2,18 +2,10 @@ import { z } from "zod";
 
 export const billFormSchema = z.object({
   date: z.string().refine((v) => v, { message: "is required" }),
-  balance: z
-    .number({ message: "must be a number" })
-    .gt(0, { message: "must be greater than 0" }),
-  totalKwh: z
-    .number({ message: "must be a number" })
-    .gt(0, { message: "must be greater than 0" }),
+  balance: z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }),
+  totalKwh: z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }),
   subReadings: z
-    .array(
-      z
-        .number({ message: "must be a number" })
-        .gt(0, { message: "must be greater than 0" }),
-    )
+    .array(z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }))
     .optional(),
   status: z.enum(["Paid", "Pending"]).default("Pending"),
 });

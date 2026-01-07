@@ -58,10 +58,7 @@ export const login = form(loginSchema, async (user) => {
     error(400, "Account does not exist");
   }
 
-  const validPassword = await verifyPasswordHash(
-    userResult.passwordHash!,
-    password,
-  );
+  const validPassword = await verifyPasswordHash(userResult.passwordHash!, password);
   if (!validPassword) {
     error(400, "Invalid password");
   }
@@ -73,11 +70,7 @@ export const login = form(loginSchema, async (user) => {
   };
 
   const sessionToken = generateSessionToken();
-  const session = await createSession(
-    sessionToken,
-    userResult.id,
-    sessionFlags,
-  );
+  const session = await createSession(sessionToken, userResult.id, sessionFlags);
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
   if (!userResult.emailVerified) {
@@ -149,11 +142,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
     userAgent: event.request.headers.get("user-agent"),
   };
   const sessionToken = generateSessionToken();
-  const session = await createSession(
-    sessionToken,
-    userResult.id,
-    sessionFlags,
-  );
+  const session = await createSession(sessionToken, userResult.id, sessionFlags);
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
   throw redirect(302, "/");
 });

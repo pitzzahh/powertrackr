@@ -15,9 +15,7 @@ type UserQueryOptions = {
   columns?: Record<string, true>;
 };
 
-export async function addUser(
-  data: Omit<NewUser, "id">[],
-): Promise<HelperResult<NewUser[]>> {
+export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult<NewUser[]>> {
   const insert_result = await db
     .insert(user)
     .values(
@@ -67,14 +65,9 @@ export async function updateUserBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db
-    .update(user)
-    .set(changed_data)
-    .returning()
-    .where(whereSQL);
+  const updateDBRequest = await db.update(user).set(changed_data).returning().where(whereSQL);
 
-  const is_valid =
-    Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
+  const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
     valid: is_valid,
     message: `${updateDBRequest.length} user(s) ${is_valid ? "updated" : `not updated with ${generateNotFoundMessage(query)}`}`,
@@ -96,10 +89,7 @@ export async function getUserBy(
     orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
   };
   if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce(
-      (acc, key) => ({ ...acc, [key as string]: true }),
-      {},
-    );
+    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
   }
   const queryDBResult = await db.query.user.findMany(queryOptions);
 
@@ -113,14 +103,10 @@ export async function getUserBy(
 
 export async function getUsers(data: HelperParam<NewUser>): Promise<UserDTO[]> {
   const usersResult = await getUserBy(data);
-  return !usersResult.valid || !usersResult.value
-    ? []
-    : mapNewUser_to_DTO(usersResult.value);
+  return !usersResult.valid || !usersResult.value ? [] : mapNewUser_to_DTO(usersResult.value);
 }
 
-export async function mapNewUser_to_DTO(
-  data: Partial<NewUser>[],
-): Promise<UserDTO[]> {
+export async function mapNewUser_to_DTO(data: Partial<NewUser>[]): Promise<UserDTO[]> {
   return Promise.all(
     data.map(async (_user) => {
       const user_info = {
@@ -146,9 +132,7 @@ export async function mapNewUser_to_DTO(
   );
 }
 
-export async function getUserCountBy(
-  data: HelperParam<NewUser>,
-): Promise<HelperResult<number>> {
+export async function getUserCountBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
   const { query } = data;
   const { id, email } = query;
   const conditions = generateUserQueryConditions(data);
@@ -174,8 +158,7 @@ export async function getUserCountBy(
 
 export function generateUserQueryConditions(data: HelperParam<NewUser>) {
   const { query, options } = data;
-  const { id, githubId, name, email, registeredTwoFactor, emailVerified } =
-    query;
+  const { id, githubId, name, email, registeredTwoFactor, emailVerified } = query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 

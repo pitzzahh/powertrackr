@@ -87,44 +87,28 @@ export function showToast(options: ShowToastOptions) {
 /**
  * Show a success toast
  */
-export function showSuccess(
-  title: string,
-  description?: string,
-  duration?: number,
-) {
+export function showSuccess(title: string, description?: string, duration?: number) {
   return showToast({ title, description, variant: "success", duration });
 }
 
 /**
  * Show an error toast
  */
-export function showError(
-  title: string,
-  description?: string,
-  duration?: number,
-) {
+export function showError(title: string, description?: string, duration?: number) {
   return showToast({ title, description, variant: "error", duration });
 }
 
 /**
  * Show a warning toast
  */
-export function showWarning(
-  title: string,
-  description?: string,
-  duration?: number,
-) {
+export function showWarning(title: string, description?: string, duration?: number) {
   return showToast({ title, description, variant: "warning", duration });
 }
 
 /**
  * Show an info toast
  */
-export function showInfo(
-  title: string,
-  description?: string,
-  duration?: number,
-) {
+export function showInfo(title: string, description?: string, duration?: number) {
   return showToast({ title, description, variant: "info", duration });
 }
 
@@ -151,17 +135,12 @@ export function showPromise<T>(
   },
 ) {
   // Show loading toast
-  const loadingId = showLoading(
-    options.loading.title,
-    options.loading.description,
-  );
+  const loadingId = showLoading(options.loading.title, options.loading.description);
 
   promise
     .then((data) => {
       const successOptions =
-        typeof options.success === "function"
-          ? options.success(data)
-          : options.success;
+        typeof options.success === "function" ? options.success(data) : options.success;
 
       // Dismiss loading and show success
       dismissToast(loadingId);
@@ -169,9 +148,7 @@ export function showPromise<T>(
     })
     .catch((error) => {
       const errorOptions =
-        typeof options.error === "function"
-          ? options.error(error)
-          : options.error;
+        typeof options.error === "function" ? options.error(error) : options.error;
 
       // Dismiss loading and show error
       dismissToast(loadingId);

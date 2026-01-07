@@ -31,8 +31,7 @@ export async function GET(event: RequestEvent): Promise<Response> {
   } catch (e) {
     return new Response("Please restart the process.", {
       status: 400,
-      statusText:
-        e instanceof Error ? e.message : "Please restart the process.",
+      statusText: e instanceof Error ? e.message : "Please restart the process.",
     });
   }
 
@@ -54,15 +53,11 @@ export async function GET(event: RequestEvent): Promise<Response> {
   } = await getUserFromGitHubId(githubUserId);
   if (valid && existingUser) {
     const sessionToken = generateSessionToken();
-    const session = await createSession(
-      sessionToken,
-      existingUser["id"] as string,
-      {
-        twoFactorVerified: false,
-        ipAddress: event.getClientAddress(),
-        userAgent: event.request.headers.get("user-agent"),
-      },
-    );
+    const session = await createSession(sessionToken, existingUser["id"] as string, {
+      twoFactorVerified: false,
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    });
     setSessionTokenCookie(event, sessionToken, session.expiresAt);
     return new Response(null, {
       status: 302,

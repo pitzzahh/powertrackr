@@ -14,10 +14,7 @@ export type BillingInfoDTO = {
   status: "Pending" | "Paid";
 };
 
-export type BillingInfoTableView = Omit<
-  BillingInfo,
-  "date" | "createdAt" | "updatedAt"
-> & {
+export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
   date: string;
   createdAt: string;
   updatedAt: string;

@@ -33,11 +33,7 @@ export const createSession = form(createSessionSchema, async (data) => {
 // Form to update an existing session
 export const updateSession = form(updateSessionSchema, async (data) => {
   const { id, ...updateData } = data;
-  const result = await db
-    .update(session)
-    .set(updateData)
-    .where(eq(session.id, id))
-    .returning();
+  const result = await db.update(session).set(updateData).where(eq(session.id, id)).returning();
   return result[0];
 });
 

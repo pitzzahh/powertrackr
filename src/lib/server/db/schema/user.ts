@@ -8,10 +8,7 @@ export const user = sqliteTable(
     githubId: t.integer("github_id").unique(),
     name: t.text().notNull(),
     email: t.text().notNull(),
-    emailVerified: t
-      .integer("email_verified", { mode: "boolean" })
-      .default(false)
-      .notNull(),
+    emailVerified: t.integer("email_verified", { mode: "boolean" }).default(false).notNull(),
     totpKey: t.blob("totp_key"),
     recoveryCode: t.blob("recovery_code"),
     registeredTwoFactor: t
