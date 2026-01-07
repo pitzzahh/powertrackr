@@ -17,8 +17,12 @@
   import { pendingFetchContext } from "$/context.js";
   import { sidebarStore } from "$/stores/sidebar.svelte";
   import { Toaster } from "svelte-sonner";
+  import { untrack } from "svelte";
 
   const { children, data } = $props();
+
+  // Initialize sidebar state from server data immediately
+  untrack(() => sidebarStore.init(data.sidebarCollapsed));
 
   let { pendingCount }: LayoutState = $state({
     pendingCount: 0,
