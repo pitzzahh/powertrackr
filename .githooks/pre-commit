@@ -1,13 +1,13 @@
 #!/bin/sh
 
-# Pre-commit hook to run oxfmt and oxlint
+# Pre-commit hook to run format and oxlint
 
-echo "Running oxfmt..."
-bun run oxfmt --no-error-on-unmatched-pattern
-OXFMT_EXIT=$?
+echo "Running format..."
+bun run format
+FORMAT_EXIT=$?
 
-if [ $OXFMT_EXIT -ne 0 ]; then
-  echo "❌ oxfmt failed. Please fix formatting issues."
+if [ $FORMAT_EXIT -ne 0 ]; then
+  echo "❌ Formatting failed. Please fix formatting issues."
   exit 1
 fi
 
