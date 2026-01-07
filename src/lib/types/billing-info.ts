@@ -8,7 +8,7 @@ export type NewBillingInfo = typeof billingInfo.$inferInsert;
 export type BillingInfoDTO = {
   id: string;
   date: Date;
-  totalKWh: number;
+  totalkWh: number;
   balance: number;
   payPerkWh: number;
   status: "Pending" | "Paid";
