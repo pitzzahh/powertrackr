@@ -55,16 +55,6 @@
 
   const collapsed = $derived(sidebarStore.collapsed && !isMobileSheet);
 
-  function toggleCollapse(
-    e: MouseEvent & {
-      currentTarget: EventTarget & HTMLButtonElement;
-    },
-  ) {
-    e.stopPropagation();
-    e.preventDefault();
-    sidebarStore.toggleCollapse();
-  }
-
   onDestroy(() => {
     sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
       ...navItem,
@@ -92,7 +82,11 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger
-          onclick={(e) => toggleCollapse(e)}
+          onclick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            sidebarStore.toggleCollapse();
+          }}
           class={buttonVariants({
             variant: "outline",
             size: "icon",
