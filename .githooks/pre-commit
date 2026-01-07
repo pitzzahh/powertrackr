@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Pre-commit hook to run oxfmt and lint
+# Pre-commit hook to run oxfmt and oxlint
 
 echo "Running oxfmt..."
 bun run oxfmt --no-error-on-unmatched-pattern
@@ -11,7 +11,7 @@ if [ $OXFMT_EXIT -ne 0 ]; then
   exit 1
 fi
 
-echo "Running lint..."
+echo "Running oxlint..."
 bun run lint
 LINT_EXIT=$?
 
