@@ -4,14 +4,14 @@
   import SubPaymentsDialog from "./sub-payments-dialog.svelte";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 
-  let { row }: { row: ExtendedBillingInfoTableView } = $props();
+  let { row, size = "icon" }: { row: ExtendedBillingInfoTableView; size?: "icon" | "default" | "sm" | "lg" | "xl" | "icon-sm" | "icon-lg" } = $props();
 
   let open = $state(false);
 </script>
 
 <Button
   variant="outline"
-  size="icon"
+  {size}
   title="View Sub Payments"
   onclick={() => (open = true)}
 >

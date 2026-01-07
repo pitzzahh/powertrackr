@@ -222,6 +222,7 @@ export function historyTableColumns() {
       cell: ({ row }) => {
         return renderComponent(SubPaymentsButton, {
           row: row.original,
+          size: "sm",
         });
       },
       enableSorting: false,

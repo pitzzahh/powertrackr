@@ -177,17 +177,7 @@
               <span class="font-semibold">{row.original.totalKWh}</span>
             </div>
 
-            {#if row.original.subKwh}
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-semibold text-muted-foreground flex items-center gap-1"
-                >
-                  <Zap class="size-4" />
-                  Sub KWh:
-                </span>
-                <span class="font-semibold">{row.original.subKwh}</span>
-              </div>
-            {/if}
+
 
             <div class="flex items-center gap-2">
               <span
@@ -232,29 +222,9 @@
               >
             </div>
 
-            {#if row.original.subReadingLatest}
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-semibold text-muted-foreground flex items-center gap-1"
-                >
-                  <Hash class="size-4" />
-                  Sub Reading Latest:
-                </span>
-                <span class="font-mono">{row.original.subReadingLatest}</span>
-              </div>
-            {/if}
 
-            {#if row.original.subReadingOld}
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-semibold text-muted-foreground flex items-center gap-1"
-                >
-                  <Hash class="size-4" />
-                  Sub Reading Old:
-                </span>
-                <span class="font-mono">{row.original.subReadingOld}</span>
-              </div>
-            {/if}
+
+
 
             {#if row.original.paymentId}
               <div class="flex items-center gap-2">
@@ -268,17 +238,7 @@
               </div>
             {/if}
 
-            {#if row.original.subPaymentId}
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-semibold text-muted-foreground flex items-center gap-1"
-                >
-                  <CreditCard class="size-4" />
-                  Sub Payment ID:
-                </span>
-                <span class="font-mono">{row.original.subPaymentId}</span>
-              </div>
-            {/if}
+
           </div>
         </div>
       </div>
@@ -351,11 +311,11 @@
           <BillingInfoForm
             action="update"
             billingInfo={billingInfoToDto({
-              ...row.original,
-              date: new Date(row.original.date),
-              createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
-              updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
-            })}
+                ...row.original,
+                date: row.original.date,
+                createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
+                updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
+              })}
           />
         </div>
       </ScrollArea>
