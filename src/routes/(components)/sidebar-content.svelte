@@ -78,8 +78,13 @@
     class={[
       "transition-all duration-300 ease-in-out",
       {
-        "flex justify-center mb-2": collapsed,
-        "absolute -right-4 top-2 z-50": !collapsed,
+        flex: collapsed,
+        "justify-center": collapsed,
+        "mb-2": collapsed,
+        absolute: !collapsed,
+        "-right-4": !collapsed,
+        "top-2": !collapsed,
+        "z-50": !collapsed,
       },
     ]}
   >
@@ -97,8 +102,8 @@
         >
           <span
             class={[
+              "transition-transform duration-300 ease-in-out",
               {
-                "transition-transform duration-300 ease-in-out": true,
                 "rotate-180": collapsed,
                 "rotate-0": !collapsed,
               },
@@ -117,9 +122,10 @@
 
 <nav
   class={[
+    "flex flex-col gap-4",
     {
-      "flex flex-col gap-4": true,
-      "justify-center items-center": collapsed,
+      "justify-center": collapsed,
+      "items-center": collapsed,
     },
   ]}
 >
@@ -170,11 +176,15 @@
     <DropdownMenu.Trigger
       class={[
         buttonVariants({ variant: "secondary" }),
-        "flex items-center rounded-lg transition-all duration-300 ease-in-out",
+        "flex items-center rounded-lg transition-all duration-300 ease-in-out w-full",
         {
-          "justify-center w-full p-1 hover:bg-sidebar-accent": collapsed,
-          "w-full gap-2 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground":
-            !collapsed,
+          "justify-center": collapsed,
+          "p-1": collapsed,
+          "hover:bg-sidebar-accent": true,
+          "gap-2": !collapsed,
+          "hover:text-sidebar-accent-foreground": !collapsed,
+          "data-[state=open]:bg-sidebar-accent": !collapsed,
+          "data-[state=open]:text-sidebar-accent-foreground": !collapsed,
         },
       ]}
       aria-label="User menu"
