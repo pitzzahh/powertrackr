@@ -11,7 +11,6 @@
     import type { WithoutChildren, WithElementRef } from "$/index.js";
     import { formatNumber } from "$lib/utils/format.js";
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function defaultFormatter(value: unknown, _payload: TooltipPayload[]) {
         return `${value}`;
     }
@@ -41,7 +40,6 @@
         labelClassName?: string;
         labelFormatter?:
             | ((
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   value: any,
                   payload: TooltipPayload[],
               ) => string | number | Snippet)
@@ -49,7 +47,6 @@
         formatter?: Snippet<
             [
                 {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     value: any;
                     name: string;
                     item: TooltipPayload;

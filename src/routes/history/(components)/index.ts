@@ -237,7 +237,6 @@ export function historyTableColumns() {
         });
       },
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ] as ColumnDef<BillingInfo, any>[];
 }
 

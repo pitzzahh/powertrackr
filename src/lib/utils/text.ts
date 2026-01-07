@@ -103,7 +103,6 @@ export const extractMainRoute = (path: string): string => {
 // TODO: Test generateNotFoundMessage function
 export function generateNotFoundMessage<T extends object>(query: T): string {
   const fields = Object.entries(query)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .filter(([_, value]) => value !== undefined && value !== null)
     .map(([key, value]) => {
       if (value instanceof Date) {
