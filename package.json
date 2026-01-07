@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "build:preview": "bun run build && bun preview",
     "prepare": "svelte-kit sync || echo ''",
+    "postinstall": "git config core.hooksPath .githooks 2>/dev/null || echo 'Git hooks setup skipped'",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "eslint .",
