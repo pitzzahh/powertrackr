@@ -61,6 +61,7 @@
     },
   ) {
     e.stopPropagation();
+    e.preventDefault();
     sidebarStore.toggleCollapse();
   }
 
