@@ -1,11 +1,9 @@
 import { DataTableCheckbox, DataTableColumnHeader } from "$/components/data-table";
 import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
-
 import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
-import PaymentCell from "./payment-cell.svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
 import { formatNumber } from "$/utils/format";
 
@@ -96,18 +94,7 @@ export function historyTableColumns() {
           title: "Balance",
         });
       },
-      cell: ({ row }) => {
-        const balance = row.original.balance;
-        return renderComponent(Badge, {
-          variant: "outline",
-          title: formatNumber(balance),
-          children: createRawSnippet(() => {
-            return {
-              render: () => `<span>${balance}</span>`,
-            };
-          }),
-        });
-      },
+      cell: ({ row }) => formatNumber(row.original.balance),
       filterFn: (row, id, value) => {
         console.log({
           balance: row.getValue(id),
@@ -125,12 +112,7 @@ export function historyTableColumns() {
           title: "Payment",
         });
       },
-      cell: ({ row }) => {
-        // we can just use row.original.payment here, but looks cooler this way, fetching by id
-        return renderComponent(PaymentCell, {
-          paymentId: row.original.paymentId,
-        });
-      },
+      cell: ({ row }) => formatNumber(row.original.payment?.amount ?? 0),
       filterFn: (row, id, value) => {
         const payment = row.original.payment;
         if (!payment || payment.amount == null) return false;
