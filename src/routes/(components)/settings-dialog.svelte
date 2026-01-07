@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import * as Breadcrumb from "$/components/ui/breadcrumb/index.js";
-  import { buttonVariants } from "$/components/ui/button/index.js";
+  import { Button } from "$/components/ui/button/index.js";
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
@@ -51,15 +51,19 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <Dialog.Trigger
-            class={buttonVariants({
-              variant: "ghost",
-              class:
-                "flex items-center justify-center w-full transition-all duration-300 ease-in-out",
-            })}
-          >
-            <Settings2 class="size-6 shrink-0" />
-          </Dialog.Trigger>
+          {#snippet child({ props })}
+            <Dialog.Trigger {...props}>
+              {#snippet child({ props: triggerProps })}
+                <Button
+                  {...triggerProps}
+                  variant="ghost"
+                  class="flex items-center justify-center w-full transition-all duration-300 ease-in-out"
+                >
+                  <Settings2 class="size-6 shrink-0" />
+                </Button>
+              {/snippet}
+            </Dialog.Trigger>
+          {/snippet}
         </Tooltip.Trigger>
         <Tooltip.Content side="right">
           <p>SETTINGS</p>
@@ -67,15 +71,17 @@
       </Tooltip.Root>
     </Tooltip.Provider>
   {:else}
-    <Dialog.Trigger
-      class={buttonVariants({
-        variant: "ghost",
-        class:
-          "flex items-center gap-4 no-underline! cursor-pointer w-full justify-start",
-      })}
-    >
-      <Settings2 class="size-6" />
-      <span class="text-sm font-medium tracking-wide">SETTINGS</span>
+    <Dialog.Trigger>
+      {#snippet child({ props })}
+        <Button
+          {...props}
+          variant="ghost"
+          class="flex items-center gap-4 no-underline! cursor-pointer w-full justify-start"
+        >
+          <Settings2 class="size-6" />
+          <span class="text-sm font-medium tracking-wide">SETTINGS</span>
+        </Button>
+      {/snippet}
     </Dialog.Trigger>
   {/if}
   <Dialog.Content

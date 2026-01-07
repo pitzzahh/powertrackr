@@ -130,27 +130,38 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger>
-          <Button
-            data-active={isActive}
-            variant="link"
-            size={collapsed ? "icon" : "default"}
-            href={item.route}
-            onclick={() => {
-              open = false;
-              sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
-                ...navItem,
-                active: navItem.label === item.label,
-              }));
-              pendingFetches.delete();
-            }}
-            class="flex items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full justify-start"
-          >
-            <Icon class="size-6" />
-            {#if !collapsed}
-              <span class="text-sm font-medium tracking-wide">{item.label}</span
-              >
-            {/if}
-          </Button>
+          {#snippet child({ props })}
+            <Button
+              data-active={isActive}
+              variant="link"
+              size={collapsed ? "icon" : "default"}
+              href={item.route}
+              onclick={() => {
+                open = false;
+                sidebarStore.navItems = sidebarStore.navItems.map(
+                  (navItem) => ({
+                    ...navItem,
+                    active: navItem.label === item.label,
+                  }),
+                );
+                pendingFetches.delete();
+              }}
+              class={[
+                {
+                  "flex justify-center items-center gap-4 no-underline! cursor-pointer data-[active=false]:hover:text-foreground data-[active=false]:text-muted-foreground w-full": true,
+                  "justify-start": !collapsed,
+                },
+              ]}
+              {...props}
+            >
+              <Icon class="size-6" />
+              {#if !collapsed}
+                <span class="text-sm font-medium tracking-wide"
+                  >{item.label}</span
+                >
+              {/if}
+            </Button>
+          {/snippet}
         </Tooltip.Trigger>
         {#if collapsed}
           <Tooltip.Content side="right">
