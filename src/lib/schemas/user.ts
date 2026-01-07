@@ -1,21 +1,26 @@
-import { z } from "zod";
+import * as v from "valibot";
 
-export const createUserSchema = z.object({
-  name: z.string(),
-  email: z.email(),
-  githubId: z.number().optional(),
-  image: z.optional(z.string()),
-  passwordHash: z.string().optional(),
+const baseUserSchema = v.object({
+  name: v.string(),
+  email: v.pipe(v.string(), v.email()),
+  githubId: v.optional(v.number()),
+  image: v.optional(v.string()),
+  passwordHash: v.optional(v.string()),
 });
 
-export const updateUserSchema = createUserSchema.extend({
-  id: z.string(),
+export const createUserSchema = baseUserSchema;
+
+export const updateUserSchema = v.object({
+  name: v.string(),
+  email: v.pipe(v.string(), v.email()),
+  githubId: v.optional(v.number()),
+  image: v.optional(v.string()),
+  passwordHash: v.optional(v.string()),
+  id: v.string(),
 });
 
 export const userSchema = updateUserSchema;
 
-export const getUsersSchema = z.object({}); // Get all users, or perhaps by id
+export const getUserSchema = v.string();
 
-export const getUserSchema = z.string();
-
-export const deleteUserSchema = z.object({ id: z.string() });
+export const deleteUserSchema = v.object({ id: v.string() });

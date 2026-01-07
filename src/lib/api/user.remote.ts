@@ -1,6 +1,6 @@
 import { query, form, command } from "$app/server";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import * as v from "valibot";
 import { db } from "$lib/server/db/index";
 import { user } from "$lib/server/db/schema/user";
 import {
@@ -13,7 +13,7 @@ import { addUser, getUserBy } from "$/server/crud/user-crud";
 import { error } from "@sveltejs/kit";
 
 // Query to get all users
-export const getUsers = query(z.object({}), async () => {
+export const getUsers = query(v.object({}), async () => {
   return await db.query.user.findMany();
 });
 
@@ -23,7 +23,7 @@ export const getUser = query(getUserSchema, async (id) => {
 });
 
 // Query to get a single user by github id
-export const getUserFromGitHubId = query(z.number(), async (githubId) => {
+export const getUserFromGitHubId = query(v.number(), async (githubId) => {
   return await getUserBy({
     query: {
       githubId,

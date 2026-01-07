@@ -1,6 +1,6 @@
 import { query, form, command } from "$app/server";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import * as v from "valibot";
 import { db } from "$lib/server/db/index";
 import { payment } from "$lib/server/db/schema/payment";
 import {
@@ -11,7 +11,7 @@ import {
 } from "$lib/schemas/payment";
 
 // Query to get all payments
-export const getPayments = query(z.object({}), async () => {
+export const getPayments = query(v.object({}), async () => {
   return await db.query.payment.findMany();
 });
 

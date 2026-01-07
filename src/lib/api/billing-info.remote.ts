@@ -137,22 +137,22 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 
   const userId = session!.userId;
 
-  const { date, totalKwh, balance, status: statusBool, subReadings } = data;
+  const { date, totalKWh, balance, status: statusBool, subReading } = data;
 
-  const payPerKwh = calculatePayPerKwh(balance, totalKwh);
+  const payPerKwh = calculatePayPerKwh(balance, totalKWh);
 
   const subReadingOld = null; // Since subReadingLatest is now per subMeter
-  const subMetersData =
-    subReadings?.map((subReading) => {
-      const subKwh = subReading && subReadingOld ? subReading - subReadingOld : null;
-      const subPaymentAmount = subKwh ? subKwh * payPerKwh : null;
-      return {
-        subReadingLatest: subReading,
-        subReadingOld,
-        subKwh,
-        paymentAmount: subPaymentAmount,
-      };
-    }) || [];
+  const subMetersData = subReading
+    ? [
+        {
+          subReadingLatest: subReading,
+          subReadingOld,
+          subKwh: subReading && subReadingOld ? subReading - subReadingOld : null,
+          paymentAmount:
+            subReading && subReadingOld ? (subReading - subReadingOld) * payPerKwh : null,
+        },
+      ]
+    : [];
 
   const totalSubPaymentAmount = subMetersData.reduce(
     (sum, sub) => sum + (sub.paymentAmount || 0),
@@ -195,7 +195,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     id,
     userId,
     date,
-    totalKwh,
+    totalKWh,
     balance,
     status: statusBool ? "Paid" : "Pending",
     payPerKwh,

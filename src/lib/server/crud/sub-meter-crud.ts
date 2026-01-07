@@ -185,13 +185,13 @@ export async function getSubMeterCountBy(
 
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
-  const { id, billingInfoId, subKwh, subReadingLatest, subReadingOld, paymentId } = query;
+  const { id, billingInfoId, subKWh, subReadingLatest, subReadingOld, paymentId } = query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
   if (billingInfoId) where.billingInfoId = billingInfoId;
-  if (subKwh !== undefined) where.subKwh = subKwh;
+  if (subKWh !== undefined) where.subKWh = subKWh;
   if (subReadingLatest !== undefined) where.subReadingLatest = subReadingLatest;
   if (subReadingOld !== undefined) where.subReadingOld = subReadingOld;
   if (paymentId) where.paymentId = paymentId;
@@ -213,7 +213,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(subMeter.id, value as string));
     } else if (key === "billingInfoId") {
       conditions.push(eq(subMeter.billingInfoId, value as string));
-    } else if (key === "subKwh") {
+    } else if (key === "subKWh") {
       conditions.push(eq(subMeter.subKWh, value as number));
     } else if (key === "subReadingLatest") {
       conditions.push(eq(subMeter.subReadingLatest, value as number));

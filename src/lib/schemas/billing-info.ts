@@ -1,23 +1,36 @@
-import { z } from "zod";
+import * as v from "valibot";
 
-export const billFormSchema = z.object({
-  date: z.string().refine((v) => v, { message: "is required" }),
-  balance: z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }),
-  totalKwh: z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }),
-  subReadings: z
-    .array(z.number({ message: "must be a number" }).gt(0, { message: "must be greater than 0" }))
-    .optional(),
-  status: z.enum(["Paid", "Pending"]).default("Pending"),
+export const billFormSchema = v.object({
+  date: v.pipe(
+    v.string(),
+    v.check((val) => !!val, "is required")
+  ),
+  balance: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
+  totalKWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
+  subReading: v.optional(
+    v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0"))
+  ),
+  status: v.fallback(v.picklist(["Paid", "Pending"]), "Pending"),
 });
 
-export const updateBillingInfoSchema = billFormSchema.extend({
-  id: z.string(),
+export const updateBillingInfoSchema = v.object({
+  id: v.string(),
+  date: v.pipe(
+    v.string(),
+    v.check((val) => !!val, "is required")
+  ),
+  balance: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
+  totalKWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
+  subReading: v.optional(
+    v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0"))
+  ),
+  status: v.fallback(v.picklist(["Paid", "Pending"]), "Pending"),
 });
 
 export const billingInfoSchema = updateBillingInfoSchema;
 
-export const getBillingInfosSchema = z.object({ userId: z.string() });
+export const getBillingInfosSchema = v.object({ userId: v.string() });
 
-export const getBillingInfoSchema = z.string();
+export const getBillingInfoSchema = v.string();
 
-export const deleteBillingInfoSchema = z.object({ id: z.string() });
+export const deleteBillingInfoSchema = v.object({ id: v.string() });

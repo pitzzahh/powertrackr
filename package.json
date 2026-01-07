@@ -35,7 +35,7 @@
     "dotenv": "^17.2.3",
     "mode-watcher": "^1.1.0",
     "runed": "^0.37.1",
-    "zod": "^4.3.5"
+    "valibot": "^1.2.0"
   },
   "devDependencies": {
     "@lucide/svelte": "^0.562.0",

@@ -137,18 +137,18 @@
       <Field.Error errors={currentAction.fields.balance.issues()} fieldName="Current Balance" />
     </Field.Field>
     <Field.Field>
-      <Field.Label for="{identity}-totalKwh">Total KWh</Field.Label>
+      <Field.Label for="{identity}-totalKWh">Total kWh</Field.Label>
       <Input
-        {...currentAction.fields.totalKwh.as("number")}
-        id="{identity}-totalKwh"
+        {...currentAction.fields.totalKWh.as("number")}
+        id="{identity}-totalKWh"
         placeholder="Enter value"
-        {...action === "update" && billingInfo && { value: billingInfo.totalKwh.toString() }}
+        {...action === "update" && billingInfo && { value: billingInfo.totalkWh.toString() }}
       />
-      <Field.Description>Enter total KWh</Field.Description>
-      <Field.Error errors={currentAction.fields.totalKwh.issues()} fieldName="Total KWh" />
+      <Field.Description>Enter total kWh</Field.Description>
+      <Field.Error errors={currentAction.fields.totalKWh.issues()} fieldName="Total kWh" />
     </Field.Field>
     <Field.Field>
-      <Field.Label for="{identity}-subKwh">Sub KWh</Field.Label>
+      <Field.Label for="{identity}-subKwh">Sub kWh</Field.Label>
       <Input
         {...currentAction.fields.subReading.as("number")}
         id="{identity}-subKwh"
@@ -158,8 +158,8 @@
             value: billingInfo.subReadingLatest.toString(),
           }}
       />
-      <Field.Description>Enter sub KWh</Field.Description>
-      <Field.Error errors={currentAction.fields.subReading.issues()} fieldName="Sub KWh" />
+      <Field.Description>Enter sub kWh</Field.Description>
+      <Field.Error errors={currentAction.fields.subReading.issues()} fieldName="Sub kWh" />
     </Field.Field>
     <Field.Field>
       <Field.Label for="{identity}-status">Status</Field.Label>

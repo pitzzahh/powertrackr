@@ -56,12 +56,12 @@ export function historyTableColumns() {
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
-          title: "Total KWh",
+          title: "Total kWh",
         });
       },
       cell: ({ row }) => {
         const totalKWh = row.original.totalKWh;
-        return totalKWh ? `${totalKWh}KWh` : "N/A";
+        return totalKWh ? `${totalKWh}kWh` : "N/A";
       },
       filterFn: (row, id, value) => {
         return (

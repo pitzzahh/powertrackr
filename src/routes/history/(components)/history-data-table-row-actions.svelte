@@ -131,7 +131,7 @@
                 >
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Total KWh</TableCell>
+                <TableCell class="bg-muted/50 py-2 font-medium">Total kWh</TableCell>
                 <TableCell class="py-2 font-semibold">{row.original.totalKWh}</TableCell>
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
@@ -149,7 +149,7 @@
                 >
               </TableRow>
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Pay Per KWh</TableCell>
+                <TableCell class="bg-muted/50 py-2 font-medium">Pay Per kWh</TableCell>
                 <TableCell class="py-2 font-semibold"
                   >₱{row.original.payPerKwh.toFixed(2)}</TableCell
                 >

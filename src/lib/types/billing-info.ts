@@ -12,7 +12,7 @@ export type BillingInfoDTO = {
   balance: number;
   payPerkWh: number;
   status: "Pending" | "Paid";
-  subReadingLatest?: number;
+  subReadingLatest: number;
 };
 
 export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
