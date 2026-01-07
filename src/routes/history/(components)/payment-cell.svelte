@@ -14,13 +14,26 @@
 
   const ctx = pendingFetchContext.get();
 
+  let wasLoading = false;
+
   watch(
     () => payment?.loading,
-    (loading) => untrack(() => (loading ? ctx.add() : ctx.delete())),
+    (loading) =>
+      untrack(() => {
+        if (loading && !wasLoading) {
+          ctx.add();
+          wasLoading = true;
+        } else if (!loading && wasLoading) {
+          ctx.delete();
+          wasLoading = false;
+        }
+      }),
   );
 
   onDestroy(() => {
-    if (payment?.loading) ctx.delete();
+    if (wasLoading) {
+      ctx.delete();
+    }
   });
 </script>
 
