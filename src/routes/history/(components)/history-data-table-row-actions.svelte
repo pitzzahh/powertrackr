@@ -25,6 +25,8 @@
     CheckCircle,
     Zap,
   } from "$/assets/icons";
+  import { Table, TableBody, TableCell, TableRow } from '$lib/components/ui/table';
+  import SubPaymentsButton from "./sub-payments-button.svelte";
 
   import { formatDate } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
@@ -131,115 +133,52 @@
           >
         </Dialog.Description>
       </Dialog.Header>
-      <div class="p-4 h-72 overflow-y-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Left Column -->
-          <div class="space-y-4">
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <Hash class="size-4" />
-                ID:
-              </span>
-              <span class="font-mono text-primary">{row.original.id}</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <User class="size-4" />
-                User ID:
-              </span>
-              <span class="font-mono">{row.original.userId}</span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <Clock class="size-4" />
-                Date:
-              </span>
-              <span class="font-mono"
-                >{formatDate(new Date(row.original.date))}</span
-              >
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <Zap class="size-4" />
-                Total KWh:
-              </span>
-              <span class="font-semibold">{row.original.totalKWh}</span>
-            </div>
-
-
-
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <PhilippinePeso class="size-4" />
-                Balance:
-              </span>
-              <span class="font-bold text-lg text-green-700"
-                >₱{row.original.balance.toFixed(2)}</span
-              >
-            </div>
-          </div>
-
-          <!-- Right Column -->
-          <div class="space-y-4">
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <CheckCircle class="size-4" />
-                Status:
-              </span>
-              <span
-                class="font-semibold"
-                class:text-green-700={row.original.status === "Paid"}
-                class:text-red-700={row.original.status !== "Paid"}
-              >
-                {row.original.status}
-              </span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span
-                class="font-semibold text-muted-foreground flex items-center gap-1"
-              >
-                <PhilippinePeso class="size-4" />
-                Pay Per KWh:
-              </span>
-              <span class="font-semibold"
-                >₱{row.original.payPerKwh.toFixed(2)}</span
-              >
-            </div>
-
-
-
-
-
-            {#if row.original.paymentId}
-              <div class="flex items-center gap-2">
-                <span
-                  class="font-semibold text-muted-foreground flex items-center gap-1"
-                >
-                  <CreditCard class="size-4" />
-                  Payment ID:
-                </span>
-                <span class="font-mono">{row.original.paymentId}</span>
-              </div>
-            {/if}
-
-
-          </div>
+      <div class="p-4">
+        <div class="bg-background overflow-hidden rounded-md border">
+          <Table>
+            <TableBody>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">ID</TableCell>
+                <TableCell class="py-2 font-mono text-primary">{row.original.id}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">User ID</TableCell>
+                <TableCell class="py-2 font-mono">{row.original.userId}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Date</TableCell>
+                <TableCell class="py-2 font-mono">{formatDate(new Date(row.original.date))}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Total KWh</TableCell>
+                <TableCell class="py-2 font-semibold">{row.original.totalKWh}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Balance</TableCell>
+                <TableCell class="py-2 font-bold text-lg text-green-700">₱{row.original.balance.toFixed(2)}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Status</TableCell>
+                <TableCell class="py-2 font-semibold {row.original.status === "Paid" ? "text-green-700" : "text-red-700"}">{row.original.status}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Pay Per KWh</TableCell>
+                <TableCell class="py-2 font-semibold">₱{row.original.payPerKwh.toFixed(2)}</TableCell>
+              </TableRow>
+              {#if row.original.paymentId}
+                <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                  <TableCell class="bg-muted/50 py-2 font-medium">Payment ID</TableCell>
+                  <TableCell class="py-2 font-mono">{row.original.paymentId}</TableCell>
+                </TableRow>
+              {/if}
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="bg-muted/50 py-2 font-medium">Sub Payments</TableCell>
+                <TableCell class="py-2">
+                  <SubPaymentsButton class="w-full" row={row.original} size="sm" >View Sub Payments</SubPaymentsButton>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </Dialog.Content>
