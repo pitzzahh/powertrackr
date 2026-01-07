@@ -72,22 +72,19 @@ export function historyTableColumns() {
       },
     },
     {
-      accessorKey: "subKwh",
+      accessorKey: "payPerKwh",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
           column,
-          title: "Sub KWh",
+          title: "Pay Per KWh",
         });
       },
-      cell: ({ row }) => {
-        const subKwh = row.original.subKwh;
-        return subKwh ? `${subKwh}KWh` : "N/A";
-      },
+      cell: ({ row }) => formatNumber(row.original.payPerKwh),
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.subKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
-          row.original.subKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
+          row.original.payPerKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.payPerKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },
@@ -133,26 +130,6 @@ export function historyTableColumns() {
         const payment = await getPayment(row.original.paymentId!);
         if (!payment || payment.amount == null) return false;
         const amountStr = payment.amount.toString();
-        return amountStr === value || amountStr.toLowerCase().includes(value.toLowerCase());
-      },
-    },
-    {
-      accessorKey: "subPayment",
-      header: ({ column }) => {
-        return renderComponent(DataTableColumnHeader<BillingInfo, unknown>, {
-          column,
-          title: "Sub Payment",
-        });
-      },
-      cell: ({ row }) => {
-        return renderComponent(PaymentCell, {
-          paymentId: row.original.subPaymentId,
-        });
-      },
-      filterFn: async (row, id, value) => {
-        const subPayment = await getPayment(row.original.subPaymentId!);
-        if (!subPayment || subPayment.amount == null) return false;
-        const amountStr = subPayment.amount.toString();
         return amountStr === value || amountStr.toLowerCase().includes(value.toLowerCase());
       },
     },
