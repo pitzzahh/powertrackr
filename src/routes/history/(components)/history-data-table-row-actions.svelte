@@ -13,29 +13,20 @@
 <script lang="ts">
   import {
     Loader,
-    PhilippinePeso,
     Trash2,
     View,
     Pencil,
     Ticket,
-    CreditCard,
-    User,
-    Clock,
-    Hash,
-    CheckCircle,
-    Zap,
   } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from '$lib/components/ui/table';
-  import SubPaymentsButton from "./sub-payments-button.svelte";
-
+  import {SubPaymentsButton, BillingInfoForm } from ".";
   import { formatDate } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
-  import { showSuccess, showWarning, Toast } from "$/components/toast";
+  import { showSuccess, showWarning } from "$/components/toast";
   import * as Sheet from "$/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import BillingInfoForm from "./billing-info-form.svelte";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
 

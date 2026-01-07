@@ -6,10 +6,8 @@ import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import PaymentCell from "./payment-cell.svelte";
-import { HistoryDataTableRowActions } from ".";
+import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
 import { formatNumber } from "$/utils/format";
-
-import SubPaymentsButton from "./sub-payments-button.svelte";
 
 export function historyTableColumns() {
   return [
@@ -251,3 +249,4 @@ export { default as HistoryDataTableRowActions } from "./history-data-table-row-
 export { default as SubPaymentsDialog } from "./sub-payments-dialog.svelte";
 
 export { default as SubPaymentsButton } from "./sub-payments-button.svelte";
+export { default as BillingInfoForm } from "./billing-info-form.svelte";
