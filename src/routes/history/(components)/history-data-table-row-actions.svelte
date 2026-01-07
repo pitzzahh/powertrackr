@@ -14,7 +14,7 @@
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import { SubPaymentsButton, BillingInfoForm } from ".";
-  import { formatDate } from "$/utils/format";
+  import { formatDate, formatNumber } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
@@ -32,6 +32,49 @@
     open_view: false,
     open_edit: false,
   });
+
+  let billingDetails = $derived([
+    {
+      label: "ID",
+      value: row.original.id,
+      class: "font-mono text-primary",
+    },
+    {
+      label: "User ID",
+      value: row.original.userId,
+      class: "font-mono",
+    },
+    {
+      label: "Date",
+      value: formatDate(new Date(row.original.date)),
+      class: "font-mono",
+    },
+    {
+      label: "Total kWh",
+      value: `${row.original.totalKWh} kWh`,
+      class: "font-semibold",
+    },
+    {
+      label: "Balance",
+      value: formatNumber(row.original.balance),
+      class: `font-semibold ${row.original.balance > 2000 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`,
+    },
+    {
+      label: "Status",
+      value: row.original.status,
+      class: `font-semibold ${row.original.status === "Paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`,
+    },
+    {
+      label: "Pay Per kWh",
+      value: formatNumber(row.original.payPerKwh),
+      class: "font-semibold",
+    },
+    {
+      label: "Main Payment",
+      value: row.original.payment?.amount ? formatNumber(row.original.payment.amount) : "N/A",
+      class: "font-mono",
+    },
+  ]);
 
   async function handle_remove_billing_info() {
     app_state = "processing";
@@ -116,56 +159,18 @@
         <div class="overflow-hidden rounded-md border bg-background">
           <Table>
             <TableBody>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">ID</TableCell>
-                <TableCell class="py-2 font-mono text-primary">{row.original.id}</TableCell>
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">User ID</TableCell>
-                <TableCell class="py-2 font-mono">{row.original.userId}</TableCell>
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Date</TableCell>
-                <TableCell class="py-2 font-mono"
-                  >{formatDate(new Date(row.original.date))}</TableCell
-                >
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Total kWh</TableCell>
-                <TableCell class="py-2 font-semibold">{row.original.totalKWh}</TableCell>
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Balance</TableCell>
-                <TableCell class="py-2 text-lg font-bold text-green-700"
-                  >₱{row.original.balance.toFixed(2)}</TableCell
-                >
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Status</TableCell>
-                <TableCell
-                  class="py-2 font-semibold {row.original.status === 'Paid'
-                    ? 'text-green-700'
-                    : 'text-red-700'}">{row.original.status}</TableCell
-                >
-              </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Pay Per kWh</TableCell>
-                <TableCell class="py-2 font-semibold"
-                  >₱{row.original.payPerKwh.toFixed(2)}</TableCell
-                >
-              </TableRow>
-              {#if row.original.paymentId}
+              {#each billingDetails as item}
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
-                  <TableCell class="bg-muted/50 py-2 font-medium">Payment ID</TableCell>
-                  <TableCell class="py-2 font-mono">{row.original.paymentId}</TableCell>
+                  <TableCell class="bg-muted/50 py-2 font-medium">{item.label}</TableCell>
+                  <TableCell class="py-2 {item.class}">{item.value}</TableCell>
                 </TableRow>
-              {/if}
+              {/each}
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell class="bg-muted/50 py-2 font-medium">Sub Payments</TableCell>
                 <TableCell class="py-2">
-                  <SubPaymentsButton class="w-full" row={row.original} size="sm"
+                  <SubPaymentsButton class="w-full" row={row.original} size="xs"
                     >View Sub Payments</SubPaymentsButton
                   >
                 </TableCell>

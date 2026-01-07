@@ -1,6 +1,9 @@
 <script lang="ts">
   import { CreditCard } from "$/assets/icons";
-  import Button from "$/components/ui/button/button.svelte";
+  import Button, {
+    type ButtonProps,
+    type ButtonVariant,
+  } from "$/components/ui/button/button.svelte";
   import SubPaymentsDialog from "./sub-payments-dialog.svelte";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import type { Snippet } from "svelte";
@@ -11,11 +14,9 @@
     class: className,
     size = "icon",
     children,
-  }: {
+    ...rest
+  }: ButtonProps & {
     row: ExtendedBillingInfoTableView;
-    class?: HTMLButtonAttributes["class"];
-    size?: "icon" | "default" | "sm" | "lg" | "xl" | "icon-sm" | "icon-lg";
-    children?: Snippet;
   } = $props();
 
   let open = $state(false);
@@ -29,6 +30,7 @@
   title="View Sub Payments"
   onclick={() => (open = true)}
   class={className}
+  {...rest}
 >
   <CreditCard />
   {@render children?.()}
