@@ -93,7 +93,7 @@
                 </Sheet.Trigger>
                 <Sheet.Portal>
                   <Sheet.Content class="w-full md:min-w-[60%]" side="left">
-                    <Sheet.Header>
+                    <Sheet.Header class="border-b">
                       <Sheet.Title>Add new Bill</Sheet.Title>
                       <Sheet.Description>Enter billing info</Sheet.Description>
                     </Sheet.Header>
