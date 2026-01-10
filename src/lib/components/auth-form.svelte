@@ -189,7 +189,9 @@
                   ? "Failed to log you in. Please try again."
                   : "Failed to create your account. Please try again.")
             );
+          } finally {
             status = "idle";
+            toast.dismiss(toastId);
           }
         }}
       >
