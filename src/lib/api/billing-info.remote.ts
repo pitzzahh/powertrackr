@@ -131,28 +131,25 @@ export const getBillingSummary = query(
   }
 );
 
-// Form to create a new billing info
+// Form to create a new billing info with multiple sub meters
 export const createBillingInfo = form(billFormSchema, async (data): Promise<BillingInfo> => {
   const { session } = requireAuth();
 
   const userId = session!.userId;
 
-  const { date, totalKWh, balance, status: statusBool, subReading } = data;
+  const { date, totalKWh, balance, status: statusBool, subMeters = [] } = data;
 
   const payPerKwh = calculatePayPerKwh(balance, totalKWh);
 
-  const subReadingOld = null; // Since subReadingLatest is now per subMeter
-  const subMetersData = subReading
-    ? [
-        {
-          subReadingLatest: subReading,
-          subReadingOld,
-          subKwh: subReading && subReadingOld ? subReading - subReadingOld : null,
-          paymentAmount:
-            subReading && subReadingOld ? (subReading - subReadingOld) * payPerKwh : null,
-        },
-      ]
-    : [];
+  // Process multiple sub meters
+  const subMetersData = subMeters.map((sub) => ({
+    subReadingLatest: sub.subReadingLatest,
+    subReadingOld: sub.subReadingOld ?? null,
+    subKwh: sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null,
+    paymentAmount: sub.subReadingOld
+      ? (sub.subReadingLatest - sub.subReadingOld) * payPerKwh
+      : null,
+  }));
 
   const totalSubPaymentAmount = subMetersData.reduce(
     (sum, sub) => sum + (sub.paymentAmount || 0),
@@ -174,9 +171,9 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     await tx.insert(payment).values({ id: payId, amount: balance - totalSubPaymentAmount });
     paymentId = payId;
 
-    // Create sub payments and sub meters
+    // Create sub payments and prepare sub meters
     for (const subData of subMetersData) {
-      if (subData.paymentAmount) {
+      if (subData.paymentAmount && subData.paymentAmount > 0) {
         const subPayId = crypto.randomUUID();
         await tx.insert(payment).values({ id: subPayId, amount: subData.paymentAmount });
         subMeterInserts.push({
@@ -185,6 +182,15 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
           subReadingLatest: subData.subReadingLatest,
           subReadingOld: subData.subReadingOld,
           paymentId: subPayId,
+        });
+      } else {
+        // Sub meter without payment (just tracking)
+        subMeterInserts.push({
+          billingInfoId: "", // will set after billing created
+          subKwh: subData.subKwh,
+          subReadingLatest: subData.subReadingLatest,
+          subReadingOld: subData.subReadingOld,
+          paymentId: null,
         });
       }
     }
@@ -203,7 +209,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
   };
   const [result] = await db.insert(billingInfo).values(insertData).returning();
 
-  // Insert sub meters
+  // Insert sub meters (if any)
   if (subMeterInserts.length > 0) {
     await db.insert(subMeter).values(
       subMeterInserts.map((sub) => ({
@@ -217,16 +223,59 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
   return result;
 });
 
-// Form to update an existing billing info
+// Form to update an existing billing info with multiple sub meters
 export const updateBillingInfo = form(
   updateBillingInfoSchema,
   async (data): Promise<BillingInfo> => {
-    const { id, ...updateData } = data;
+    const { id, subMeters, ...updateData } = data;
+
+    // Update the main billing info
     const [result] = await db
       .update(billingInfo)
       .set(updateData)
       .where(eq(billingInfo.id, id))
       .returning();
+
+    // Handle sub meters update if provided
+    if (subMeters !== undefined) {
+      // For simplicity, we'll replace all sub meters for this billing info
+      // In a more complex implementation, you might want to do diff-based updates
+      await db.delete(subMeter).where(eq(subMeter.billingInfoId, id));
+
+      if (subMeters.length > 0) {
+        const payPerKwh = calculatePayPerKwh(result.balance, result.totalKWh);
+
+        const subMeterInserts = subMeters.map((sub) => {
+          const subKwh = sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null;
+          const paymentAmount = subKwh ? subKwh * payPerKwh : null;
+
+          return {
+            id: crypto.randomUUID(),
+            billingInfoId: id,
+            subKwh,
+            subReadingLatest: sub.subReadingLatest,
+            subReadingOld: sub.subReadingOld ?? null,
+            paymentId: paymentAmount ? crypto.randomUUID() : null,
+          };
+        });
+
+        // Insert new sub meters
+        await db.insert(subMeter).values(subMeterInserts);
+
+        // Create payments for sub meters that have payment amounts
+        for (const sub of subMeterInserts) {
+          if (sub.paymentId) {
+            const subKwh = sub.subKwh!;
+            const paymentAmount = subKwh * payPerKwh;
+            await db.insert(payment).values({
+              id: sub.paymentId,
+              amount: paymentAmount,
+            });
+          }
+        }
+      }
+    }
+
     return result;
   }
 );
