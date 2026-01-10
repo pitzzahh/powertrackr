@@ -11,8 +11,8 @@
     quickActions: {
       icon: typeof Icon;
       label: string;
-      content: (callback: (valid: boolean) => void) => ReturnType<Snippet<[]>>;
-      callback: (valid: boolean) => void;
+      content: (callback: BillingInfoWithSubMetersFormProps["callback"]) => ReturnType<Snippet<[]>>;
+      callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
 </script>
@@ -27,7 +27,9 @@
   import { toggleMode } from "mode-watcher";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import BillingInfoForm from "$routes/history/(components)/billing-info-form.svelte";
+  import BillingInfoForm, {
+    type BillingInfoWithSubMetersFormProps,
+  } from "$routes/history/(components)/billing-info-form.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { showSuccess, showError } from "$/components/toast";
 
@@ -40,11 +42,18 @@
         icon: PhilippinePeso,
         label: "New Bill",
         content: newBill,
-        callback: (valid) => {
+        callback: (valid, action, metaData) => {
           if (valid) {
-            showSuccess("Bill added successfully!");
+            showSuccess(
+              action === "add"
+                ? "Billing info created successfully!"
+                : "Billing info updated successfully!"
+            );
           } else {
-            showError("Failed to add bill", "Please check the form for errors.");
+            showError(
+              action === "add" ? "Failed to create billing info" : "Failed to update billing info",
+              metaData?.error
+            );
           }
         },
       },

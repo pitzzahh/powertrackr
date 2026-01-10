@@ -86,7 +86,7 @@
       status = "fetching";
       extendedBillingInfos = await hydratable("chart_data", () =>
         getExtendedBillingInfos({
-          userId: data?.user?.id || "",
+          userId: data.user.id,
         })
       );
       summary = computeSummary(extendedBillingInfos);

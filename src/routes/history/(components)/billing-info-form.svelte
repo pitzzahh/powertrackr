@@ -5,7 +5,13 @@
     /**
      * Callback to be called when the form is submitted.
      */
-    callback?: (valid: boolean) => void;
+    callback?: (
+      valid: boolean,
+      action: "add" | "update",
+      metaData?: {
+        error?: string;
+      }
+    ) => void;
   };
 
   type SubMeterForm = {
@@ -16,8 +22,6 @@
 
   type BillingInfoFormState = {
     dateValue: CalendarDate | undefined;
-    balance: number;
-    totalKWh: number;
     status: string;
     subMeters: SubMeterForm[];
     open: boolean;
@@ -43,16 +47,14 @@
   import { convertToNormalText } from "$/utils/text";
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
-  import { showError, showLoading, showSuccess } from "$/components/toast";
+  import { showLoading } from "$/components/toast";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
   const identity = $props.id();
 
-  let { dateValue, balance, totalKWh, status, open, subMeters } = $state<BillingInfoFormState>({
+  let { dateValue, status, open, subMeters } = $state<BillingInfoFormState>({
     dateValue: undefined,
-    balance: 0,
-    totalKWh: 0,
     status: "pending",
     subMeters: [],
     open: false,
@@ -86,8 +88,6 @@
       dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
 
       // Set other fields
-      balance = billingInfo.balance;
-      totalKWh = billingInfo.totalkWh; // Note: using totalkWh as per existing data
       status = billingInfo.status;
 
       // Initialize sub meters if they exist
@@ -105,8 +105,6 @@
     } else {
       // Add mode - initialize with defaults
       dateValue = today(getLocalTimeZone());
-      balance = 0;
-      totalKWh = 0;
       status = "pending";
       subMeters.length = 0; // Start with no sub meters
     }
@@ -114,48 +112,18 @@
 </script>
 
 <form
-  {...currentAction.enhance(async () => {
+  {...currentAction.enhance(async ({ data, submit }) => {
     const toastId = showLoading(
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );
     try {
-      // Prepare form data
-      const formData = new FormData();
-
-      // Add main billing info fields
-      if (action === "update" && billingInfo) {
-        formData.append("id", billingInfo.id);
-      }
-
-      if (dateValue) {
-        formData.append("date", dateValue.toString());
-      }
-      formData.append("balance", balance.toString());
-      formData.append("totalKWh", totalKWh.toString());
-      formData.append("status", status);
-
-      // Add sub meters as JSON array (filter out empty ones)
-      const validSubMeters = subMeters.filter((sub) => sub.subReadingLatest > 0);
-
-      if (validSubMeters.length > 0) {
-        formData.append("subMeters", JSON.stringify(validSubMeters));
-      }
-
-      // The form will automatically submit with the FormData
-      // No need to manually call currentAction
-      callback?.(true);
-      showSuccess(
-        action === "add"
-          ? "Billing info created successfully!"
-          : "Billing info updated successfully!"
-      );
+      console.log({
+        data,
+      });
+      await submit();
+      callback?.(true, action);
     } catch (error) {
-      callback?.(false);
-      showError(
-        action === "add" ? "Failed to create billing info" : "Failed to update billing info",
-        (error as Error).message
-      );
-      throw error;
+      callback?.(false, action, { error: (error as Error).message });
     } finally {
       toast.dismiss(toastId);
     }
@@ -212,6 +180,7 @@
             </Card.Root>
           </Popover.Content>
         </Popover.Root>
+        <input hidden name="date" value={dateValue ? dateValue.toString() : ""} required />
         <Field.Description>Pick billing date</Field.Description>
       </Field.Field>
 
@@ -219,12 +188,11 @@
         <Field.Label for="{identity}-balance">Total Balance</Field.Label>
         <Input
           id="{identity}-balance"
-          type="number"
           placeholder="Enter total balance"
-          bind:value={balance}
           required
-          min="0"
-          step="0.01"
+          min={0}
+          step={0.01}
+          {...currentAction.fields.balance.as("number")}
         />
         <Field.Description>Total billing amount</Field.Description>
       </Field.Field>
@@ -233,12 +201,11 @@
         <Field.Label for="{identity}-totalKWh">Total kWh</Field.Label>
         <Input
           id="{identity}-totalKWh"
-          type="number"
           placeholder="Enter total kWh"
-          bind:value={totalKWh}
           required
-          min="0"
-          step="0.01"
+          min={0}
+          step={0.01}
+          {...currentAction.fields.totalKWh.as("number")}
         />
         <Field.Description>Total electricity consumption</Field.Description>
       </Field.Field>
@@ -249,7 +216,7 @@
           <Select.Trigger id="{identity}-status" class="w-full">
             {convertToNormalText(status) || "Select status"}
           </Select.Trigger>
-          <Select.Content>
+          <Select.Content {...currentAction.fields.status.as("select")}>
             <Select.Group>
               <Select.Label>Status</Select.Label>
               {#each [{ value: "paid", label: "Paid" }, { value: "pending", label: "Pending" }] as option (option.value)}
@@ -300,11 +267,10 @@
               <Field.Label for="sub-latest-{subMeter.id}">Current Reading</Field.Label>
               <Input
                 id="sub-latest-{subMeter.id}"
-                type="number"
                 placeholder="Enter current reading"
-                bind:value={subMeter.subReadingLatest}
-                min="0"
-                step="0.01"
+                min={0}
+                step={0.01}
+                {...currentAction.fields.subMeters[subIndex]["subReadingLatest"].as("number")}
               />
               <Field.Description>Latest meter reading</Field.Description>
             </Field.Field>
@@ -313,11 +279,10 @@
               <Field.Label for="sub-old-{subMeter.id}">Previous Reading (Optional)</Field.Label>
               <Input
                 id="sub-old-{subMeter.id}"
-                type="number"
                 placeholder="Enter previous reading"
-                bind:value={subMeter.subReadingOld}
-                min="0"
-                step="0.01"
+                min={0}
+                step={0.01}
+                {...currentAction.fields.subMeters[subIndex]["subReadingOld"].as("number")}
               />
               <Field.Description>Previous meter reading for calculation</Field.Description>
             </Field.Field>
