@@ -23,7 +23,8 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
     event.locals.user = user;
     event.locals.session = session;
-  } catch {
+  } catch (error) {
+    console.error("Auth error:", error);
     event.locals.user = null;
     event.locals.session = null;
   }
@@ -50,4 +51,4 @@ export const log: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleDevTools, handleAuth, log);
+export const handle = sequence(handleAuth, handleDevTools, log);
