@@ -62,10 +62,7 @@ class BillingStore {
   }
 
   refresh() {
-    if (this.query) {
-      console.debug("Refreshing data");
-      this.query.refresh();
-    }
+    return this.fetchData();
   }
 
   async fetchData() {
