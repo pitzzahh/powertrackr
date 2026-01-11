@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { goto } from "$app/navigation";
   import { showSuccess } from "$/components/toast";
   import { formatNumber } from "$/utils/format";
   import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
@@ -17,7 +16,6 @@
     billingStore.fetchData();
     if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
-      goto("/", { replaceState: true });
     }
   });
 </script>
