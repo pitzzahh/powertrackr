@@ -1,11 +1,11 @@
-import { loginSchema, registerSchema } from "$/schemas/auth";
+import { loginSchema, registerSchema, verifyEmailSchema, setup2FASchema } from "$/schemas/auth";
 import {
   createSession,
   deleteSessionTokenCookie,
   invalidateSession,
   setSessionTokenCookie,
 } from "$/server/auth";
-import { addUser, getUserBy } from "$/server/crud/user-crud";
+import { addUser, getUserBy, updateUserBy } from "$/server/crud/user-crud";
 import {
   encryptString,
   generateRandomRecoveryCode,
@@ -46,7 +46,7 @@ export const login = form(loginSchema, async (user) => {
     },
     options: {
       with_session: false,
-      fields: ["id", "passwordHash", "githubId"],
+      fields: ["id", "passwordHash", "githubId", "emailVerified", "registeredTwoFactor"],
     },
   })) as HelperResult<NewUser[]>;
 
@@ -74,6 +74,7 @@ export const login = form(loginSchema, async (user) => {
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
   if (!userResult.emailVerified) {
+    console.log("Redirecting to verify email");
     return redirect(302, "/auth/verify-email");
   }
   if (!userResult.registeredTwoFactor) {
@@ -145,4 +146,40 @@ export const register = form(registerSchema, async (newUser, issues) => {
   const session = await createSession(sessionToken, userResult.id, sessionFlags);
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
   throw redirect(302, "/");
+});
+
+export const verifyEmail = form(verifyEmailSchema, async (data) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null) {
+    error(401, "Not authenticated");
+  }
+  const { code: _code } = data;
+  // TODO: Implement proper verification
+  // For now, assume code is correct and set emailVerified
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    { emailVerified: true }
+  );
+  if (!updateResult.valid) {
+    error(400, "Failed to verify email");
+  }
+  return redirect(302, "/");
+});
+
+export const setup2FA = form(setup2FASchema, async (data) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null) {
+    error(401, "Not authenticated");
+  }
+  const { code: _code } = data;
+  // TODO: Implement TOTP verification
+  // For now, assume code is correct and set registeredTwoFactor
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    { registeredTwoFactor: true }
+  );
+  if (!updateResult.valid) {
+    error(400, "Failed to set up 2FA");
+  }
+  return redirect(302, "/");
 });

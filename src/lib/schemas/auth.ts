@@ -11,3 +11,11 @@ export const loginSchema = v.object({
   email: v.pipe(v.string(), v.email()),
   password: v.pipe(v.string(), v.minLength(8)),
 });
+
+export const verifyEmailSchema = v.object({
+  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+});
+
+export const setup2FASchema = v.object({
+  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+});
