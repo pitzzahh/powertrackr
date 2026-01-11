@@ -125,16 +125,11 @@
       console.log({
         data,
       });
-      await submit().updates(
-        getExtendedBillingInfos({
-          userId,
-        })
-      );
+      await submit();
       callback?.(true, action);
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {
-      open = false;
       form.reset();
       toast.dismiss(toastId);
     }
