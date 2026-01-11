@@ -39,6 +39,7 @@
   import { toShortName } from "$/utils/text";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
   import { showLoading, showSuccess, toast } from "$/components/toast";
+  import { goto } from "$app/navigation";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
@@ -124,28 +125,31 @@
     {@const isActive = item.active || page.url.pathname === item.route}
     <Tooltip.Provider>
       <Tooltip.Root>
-        <Tooltip.Trigger>
+        <Tooltip.Trigger
+          onclick={(e) => {
+            e.preventDefault();
+            open = false;
+            showSuccess(`Navigating to ${item.route}\nOpen: ${open}`);
+            pendingFetches.delete();
+            sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+              ...navItem,
+              active: navItem.label === item.label,
+            }));
+            goto(item.route);
+          }}
+        >
           {#snippet child({ props })}
             <Button
+              {...props}
               data-active={isActive}
               variant="link"
               size={collapsed ? "icon" : "default"}
-              href={item.route}
-              onclick={() => {
-                open = false;
-                sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
-                  ...navItem,
-                  active: navItem.label === item.label,
-                }));
-                pendingFetches.delete();
-              }}
               class={[
                 {
                   "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground": true,
                   "justify-start": !collapsed,
                 },
               ]}
-              {...props}
             >
               <Icon class="size-6" />
               {#if !collapsed}
