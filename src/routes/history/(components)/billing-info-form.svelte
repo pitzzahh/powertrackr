@@ -1,5 +1,6 @@
 <script lang="ts" module>
   export type BillingInfoWithSubMetersFormProps = {
+    userId: string;
     action: "add" | "update";
     billingInfo?: BillingInfoDTO;
     /**
@@ -37,7 +38,11 @@
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
   import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
-  import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
+  import {
+    createBillingInfo,
+    getExtendedBillingInfos,
+    updateBillingInfo,
+  } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
@@ -49,7 +54,7 @@
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
 
-  let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
+  let { userId, action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
   const identity = $props.id();
 
@@ -112,7 +117,7 @@
 </script>
 
 <form
-  {...currentAction.enhance(async ({ data, submit }) => {
+  {...currentAction.enhance(async ({ data, form, submit }) => {
     const toastId = showLoading(
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );
@@ -120,11 +125,17 @@
       console.log({
         data,
       });
-      await submit();
+      await submit().updates(
+        getExtendedBillingInfos({
+          userId,
+        })
+      );
       callback?.(true, action);
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {
+      open = false;
+      form.reset();
       toast.dismiss(toastId);
     }
   })}
