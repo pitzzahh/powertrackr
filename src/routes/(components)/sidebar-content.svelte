@@ -126,10 +126,8 @@
     <Tooltip.Provider>
       <Tooltip.Root>
         <Tooltip.Trigger
-          onclick={(e) => {
-            e.preventDefault();
+          onclick={() => {
             open = false;
-            showSuccess(`Navigating to ${item.route}\nOpen: ${open}`);
             pendingFetches.delete();
             sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
               ...navItem,
