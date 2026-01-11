@@ -32,6 +32,7 @@
   } from "$routes/history/(components)/billing-info-form.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { showSuccess, showError } from "$/components/toast";
+  import { billingStore } from "$lib/stores/billing.svelte.js";
 
   let { user }: HeaderProps = $props();
 
@@ -43,7 +44,9 @@
         label: "New Bill",
         content: newBill,
         callback: (valid, action, metaData) => {
+          openMenu = false;
           if (valid) {
+            billingStore.fetchData();
             showSuccess(
               action === "add"
                 ? "Billing info created successfully!"
