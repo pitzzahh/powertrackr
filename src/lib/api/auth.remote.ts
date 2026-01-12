@@ -63,21 +63,18 @@ export const login = form(loginSchema, async (user) => {
     error(400, "Invalid password");
   }
 
-  const sessionFlags: SessionFlags = {
+  const sessionToken = generateSessionToken();
+  const session = await createSession(sessionToken, userResult.id, {
     twoFactorVerified: false,
     ipAddress: event.getClientAddress(),
     userAgent: event.request.headers.get("user-agent"),
-  };
-
-  const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, userResult.id, sessionFlags);
+  });
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
   if (!userResult.emailVerified) {
-    console.log("Redirecting to verify email");
     return redirect(302, "/auth/verify-email");
   }
-  if (!userResult.registeredTwoFactor) {
+  if (userResult.registeredTwoFactor) {
     return redirect(302, "/auth/2fa/setup");
   }
   return redirect(302, "/");
@@ -137,15 +134,22 @@ export const register = form(registerSchema, async (newUser, issues) => {
   // );
   // setEmailVerificationRequestCookie(event, emailVerificationRequest);
 
-  const sessionFlags: SessionFlags = {
+  const sessionToken = generateSessionToken();
+
+  const session = await createSession(sessionToken, userResult.id, {
     twoFactorVerified: false,
     ipAddress: event.getClientAddress(),
     userAgent: event.request.headers.get("user-agent"),
-  };
-  const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, userResult.id, sessionFlags);
+  });
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
-  throw redirect(302, "/");
+
+  if (!userResult.emailVerified) {
+    return redirect(302, "/auth/verify-email");
+  }
+  if (!userResult.registeredTwoFactor) {
+    return redirect(302, "/auth/2fa/setup");
+  }
+  return redirect(302, "/");
 });
 
 export const verifyEmail = form(verifyEmailSchema, async (data) => {
@@ -162,6 +166,16 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   );
   if (!updateResult.valid) {
     error(400, "Failed to verify email");
+  }
+  // Check if 2FA is registered
+  const {
+    value: [updatedUser],
+  } = (await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { with_session: false, fields: ["registeredTwoFactor"] },
+  })) as HelperResult<NewUser[]>;
+  if (!updatedUser.registeredTwoFactor) {
+    return redirect(302, "/auth/2fa/setup");
   }
   return redirect(302, "/");
 });

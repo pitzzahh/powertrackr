@@ -11,7 +11,17 @@ export function requireAuth() {
   const { locals } = getRequestEvent();
 
   if (locals.user === null || locals.session === null) {
-    redirect(307, "/auth?act=login");
+    return redirect(307, "/auth?act=login");
+  }
+
+  if (!locals.user.emailVerified) {
+    return redirect(302, "/auth/verify-email");
+  }
+  if (locals.user.registeredTwoFactor) {
+    return redirect(302, "/auth/2fa/setup");
+  }
+  if (locals.user.registeredTwoFactor && !locals.session.twoFactorVerified) {
+    return redirect(302, "/auth/2fa");
   }
 
   return {
@@ -53,6 +63,7 @@ export async function validateSessionToken(token: string) {
         name: user.name,
         image: user.image,
         emailVerified: user.emailVerified,
+        registeredTwoFactor: user.registeredTwoFactor,
       },
       session: session,
     })
