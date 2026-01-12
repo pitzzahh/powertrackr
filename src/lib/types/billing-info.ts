@@ -7,12 +7,15 @@ export type NewBillingInfo = typeof billingInfo.$inferInsert;
 
 export type BillingInfoDTO = {
   id: string;
-  date: Date;
-  totalkWh: number;
+  userId: string;
+  date: string;
+  totalKWh: number;
   balance: number;
-  payPerkWh: number;
-  status: "Pending" | "Paid";
-  subReadingLatest: number;
+  status: "Paid" | "Pending" | "N/A";
+  payPerKwh: number;
+  paymentId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
