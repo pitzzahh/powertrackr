@@ -11,6 +11,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.session.userId,
     }),
+    emailVerificationRequests: r.many.emailVerificationRequest({
+      from: r.user.id,
+      to: r.emailVerificationRequest.userId,
+    }),
   },
   billingInfo: {
     payment: r.one.payment({
@@ -39,6 +43,12 @@ export const relations = defineRelations(schema, (r) => ({
   session: {
     user: r.one.user({
       from: r.session.userId,
+      to: r.user.id,
+    }),
+  },
+  emailVerificationRequest: {
+    user: r.one.user({
+      from: r.emailVerificationRequest.userId,
       to: r.user.id,
     }),
   },

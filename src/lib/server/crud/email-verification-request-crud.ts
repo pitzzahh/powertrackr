@@ -10,6 +10,7 @@ import type {
 } from "$/types/email-verification-request";
 
 type EmailVerificationRequestQueryOptions = {
+  with?: { user: true };
   where?: Record<string, unknown>;
   limit?: number;
   offset?: number;
@@ -20,6 +21,14 @@ type EmailVerificationRequestQueryOptions = {
 export async function addEmailVerificationRequest(
   data: Omit<NewEmailVerificationRequest, "id">[]
 ): Promise<HelperResult<NewEmailVerificationRequest[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 email verification request(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(emailVerificationRequest)
     .values(
@@ -87,9 +96,10 @@ export async function getEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<Partial<NewEmailVerificationRequest>[]>> {
   const { options } = data;
-  const { limit, offset, order, fields } = options;
+  const { limit, offset, order, fields, with_user } = options;
   const conditions = generateEmailVerificationRequestQueryConditions(data);
   const queryOptions: EmailVerificationRequestQueryOptions = {
+    with: with_user ? { user: true } : undefined,
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     limit,
     offset,
@@ -126,6 +136,7 @@ export async function mapNewEmailVerificationRequest_to_DTO(
     email: _request.email ?? "",
     code: _request.code ?? "",
     expiresAt: _request.expiresAt ?? 0,
+    ...("user" in _request ? { user: (_request as any).user } : {}),
   }));
 }
 

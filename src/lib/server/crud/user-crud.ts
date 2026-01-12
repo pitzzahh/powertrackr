@@ -16,6 +16,14 @@ type UserQueryOptions = {
 };
 
 export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult<NewUser[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 user(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(user)
     .values(
@@ -111,12 +119,12 @@ export async function mapNewUser_to_DTO(data: Partial<NewUser>[]): Promise<UserD
     data.map(async (_user) => {
       const user_info = {
         id: _user.id ?? "",
-        githubId: _user.githubId ?? 0,
+        githubId: _user.githubId ?? null,
         name: _user.name ?? "",
         email: _user.email ?? "",
         emailVerified: _user.emailVerified ?? false,
         registeredTwoFactor: _user.registeredTwoFactor ?? false,
-        image: _user.image ?? "",
+        image: _user.image ?? null,
         createdAt: _user.createdAt ?? new Date(),
         updatedAt: _user.updatedAt ?? new Date(),
       } as UserDTO;
@@ -163,11 +171,11 @@ export function generateUserQueryConditions(data: HelperParam<NewUser>) {
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
-  if (githubId) where.githubId = githubId;
+  if (githubId !== undefined) where.githubId = githubId;
   if (name) where.name = name;
   if (email) where.email = email;
-  if (registeredTwoFactor) where.registeredTwoFactor = registeredTwoFactor;
-  if (emailVerified) where.emailVerified = emailVerified;
+  if (registeredTwoFactor !== undefined) where.registeredTwoFactor = registeredTwoFactor;
+  if (emailVerified !== undefined) where.emailVerified = emailVerified;
 
   if (exclude_id) {
     where.NOT = { id: exclude_id };
