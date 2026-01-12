@@ -14,7 +14,6 @@ import {
   verifyPasswordHash,
 } from "$/server/encryption";
 import type { HelperResult } from "$/types/helper";
-import type { SessionFlags } from "$/types/session";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
