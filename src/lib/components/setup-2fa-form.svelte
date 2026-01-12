@@ -18,7 +18,7 @@
   import { cn } from "$/utils/style.js";
   import { Loader, BadgeCheck } from "$/assets/icons";
   import { onDestroy } from "svelte";
-  import { setup2FA } from "$/api/auth.remote";
+  import { setup2FA, signout } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { showError, showLoading, showSuccess } from "./toast";
@@ -94,3 +94,29 @@
     </Field>
   </FieldGroup>
 </form>
+
+<div class="mt-4 flex justify-center">
+  <form
+    {...signout.enhance(async ({ submit }) => {
+      const toastId = showLoading("Logging out...");
+      try {
+        await submit();
+        showSuccess("Logged out successfully");
+      } catch (e) {
+        showError("Failed to logout. Please try again.");
+      } finally {
+        toast.dismiss(toastId);
+      }
+    })}
+    class="flex"
+  >
+    <Button
+      type="submit"
+      variant="outline"
+      disabled={status === "processing"}
+      aria-label="Login with another account"
+    >
+      Login with another account
+    </Button>
+  </form>
+</div>

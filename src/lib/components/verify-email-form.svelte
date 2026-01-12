@@ -22,6 +22,7 @@
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { showError, showLoading, showSuccess } from "./toast";
+  import { signout } from "$/api/auth.remote";
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
@@ -114,3 +115,29 @@
     </Field>
   </FieldGroup>
 </form>
+
+<div class="mt-4 flex justify-center">
+  <form
+    {...signout.enhance(async ({ submit }) => {
+      const toastId = showLoading("Logging out...");
+      try {
+        await submit();
+        showSuccess("Logged out successfully");
+      } catch (e) {
+        showError("Failed to logout. Please try again.");
+      } finally {
+        toast.dismiss(toastId);
+      }
+    })}
+    class="flex"
+  >
+    <Button
+      type="submit"
+      variant="link"
+      disabled={status === "processing"}
+      aria-label="Login with another account"
+    >
+      Login with another account
+    </Button>
+  </form>
+</div>
