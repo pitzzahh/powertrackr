@@ -17,6 +17,14 @@ type BillingInfoQueryOptions = {
 export async function addBillingInfo(
   data: Omit<NewBillingInfo, "id">[]
 ): Promise<HelperResult<NewBillingInfo[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 billing info(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(billingInfo)
     .values(
