@@ -34,7 +34,6 @@
   onDestroy(() => (status = "idle"));
 </script>
 
-powertrackr/src/lib/components/setup-2fa-form.svelte
 <form
   {...setup2FA.enhance(async ({ submit }) => {
     status = "processing";

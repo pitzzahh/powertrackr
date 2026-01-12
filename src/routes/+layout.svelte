@@ -63,12 +63,12 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-{#if data.user && data.session}
+{#if data.user?.emailVerified && data.session && (!data.user?.registeredTwoFactor || data.session?.twoFactorVerified)}
   <div class="relative h-screen w-full overflow-hidden">
     <Header user={data.user} />
 
     <div class="no-scrollbar h-full overflow-y-auto">
-      <main class="flex min-h-full justify-between gap-4 p-4 pt-16">
+      <main class="flex min-h-full justify-between gap-4 pt-16 pr-2 pl-4">
         <aside
           in:scale={{ duration: 150 }}
           class={[
@@ -81,7 +81,7 @@
         >
           <SidebarContent open={false} user={data.user} isMobileSheet={false} />
         </aside>
-        <div class="flex min-w-0 flex-1 flex-col gap-4 p-1">
+        <div class="flex min-w-0 flex-1 flex-col gap-4 py-1">
           {@render children()}
         </div>
       </main>
