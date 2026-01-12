@@ -70,7 +70,7 @@ export const login = form(loginSchema, async (user) => {
   });
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-  if (!userResult.emailVerified) {
+  if (!userResult.githubId && !userResult.emailVerified) {
     return redirect(302, "/auth/verify-email");
   }
   if (userResult.registeredTwoFactor) {

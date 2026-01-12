@@ -6,6 +6,7 @@ import { db } from "$/server/db";
 import { getRequestEvent } from "$app/server";
 import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { Session, SessionFlags } from "$/types/session";
+import { omit } from "$/utils/mapper";
 
 export function requireAuth() {
   const { locals } = getRequestEvent();
@@ -14,7 +15,7 @@ export function requireAuth() {
     return redirect(307, "/auth?act=login");
   }
 
-  if (!locals.user.emailVerified) {
+  if (!locals.user.isOauthUser && !locals.user.emailVerified) {
     return redirect(302, "/auth/verify-email");
   }
   if (locals.user.registeredTwoFactor) {
@@ -64,6 +65,7 @@ export async function validateSessionToken(token: string) {
         image: user.image,
         emailVerified: user.emailVerified,
         registeredTwoFactor: user.registeredTwoFactor,
+        githubId: user.githubId,
       },
       session: session,
     })
@@ -91,7 +93,16 @@ export async function validateSessionToken(token: string) {
       .where(eq(session.id, session.id));
   }
 
-  return { session: sessionResult, user: userResult };
+  return {
+    session: sessionResult,
+    user: omit(
+      {
+        ...userResult,
+        isOauthUser: Boolean(userResult.githubId),
+      },
+      ["githubId"]
+    ),
+  };
 }
 
 export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;
