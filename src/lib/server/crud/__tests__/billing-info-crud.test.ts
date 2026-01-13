@@ -1129,7 +1129,6 @@ describe("Billing Info CRUD Operations", () => {
       const billingData = {
         id: undefined,
         userId: undefined,
-        date: undefined,
         totalkWh: undefined,
         balance: undefined,
         status: undefined,
@@ -1144,14 +1143,14 @@ describe("Billing Info CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe("");
       expect(result[0].userId).toBe("");
-      expect(result[0].date).toBeUndefined();
+      expect(result[0].date).toBeInstanceOf(Date); // We create new date if not present
       expect(result[0].totalkWh).toBe(0);
       expect(result[0].balance).toBe(0);
       expect(result[0].status).toBe("N/A");
       expect(result[0].payPerkWh).toBe(0);
       expect(result[0].paymentId).toBeNull();
-      expect(result[0].createdAt).toBeUndefined();
-      expect(result[0].updatedAt).toBeUndefined();
+      expect(result[0].createdAt).toBeInstanceOf(Date); // We create new date if not present
+      expect(result[0].updatedAt).toBeInstanceOf(Date); // We create new date if not present
     });
 
     it("should handle empty array input", async () => {
