@@ -17,6 +17,14 @@ type SessionQueryOptions = {
 export async function addSession(
   data: Omit<NewSession, "id">[]
 ): Promise<HelperResult<NewSession[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 session(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(session)
     .values(
