@@ -136,7 +136,9 @@ export async function getSubMeterBy(
   };
 }
 
-export async function getSubMeters(data: HelperParam<NewSubMeter>): Promise<SubMeterDTO[]> {
+export async function getSubMeters(
+  data: HelperParam<NewSubMeter>
+): Promise<Partial<SubMeterDTO>[]> {
   const subMetersResult = await getSubMeterBy(data);
   return !subMetersResult.valid || !subMetersResult.value
     ? []
@@ -152,18 +154,18 @@ export async function mapNewSubMeter_to_DTO(
       billingInfo?: BillingInfo;
     }
   >[]
-): Promise<SubMeterDTO[]> {
+): Promise<Partial<SubMeterDTO>[]> {
   return Promise.all(
     data.map(async (_sub_meter) => {
       const sub_meter_info = {
-        id: _sub_meter.id ?? "",
-        billingInfoId: _sub_meter.billingInfoId ?? "",
-        subKwh: _sub_meter.subKwh ?? _sub_meter.subkWh ?? null,
-        subReadingLatest: _sub_meter.subReadingLatest ?? null,
-        subReadingOld: _sub_meter.subReadingOld ?? null,
-        paymentId: _sub_meter.paymentId ?? null,
-        createdAt: _sub_meter.createdAt ?? new Date(),
-        updatedAt: _sub_meter.updatedAt ?? new Date(),
+        id: _sub_meter.id,
+        billingInfoId: _sub_meter.billingInfoId,
+        subKwh: _sub_meter.subKwh ?? _sub_meter.subkWh,
+        subReadingLatest: _sub_meter.subReadingLatest,
+        subReadingOld: _sub_meter.subReadingOld,
+        paymentId: _sub_meter.paymentId,
+        createdAt: _sub_meter.createdAt,
+        updatedAt: _sub_meter.updatedAt,
       } as SubMeterDTO;
 
       if ("payment" in _sub_meter) {
