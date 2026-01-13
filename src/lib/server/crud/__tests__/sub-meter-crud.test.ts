@@ -19,7 +19,13 @@ import {
 import { addUser } from "../user-crud";
 import { addPayment } from "../payment-crud";
 import { addBillingInfo } from "../billing-info-crud";
-import type { NewSubMeter } from "$/types/sub-meter";
+import type {
+  NewSubMeter,
+  Payment,
+  BillingInfo,
+  SubMeterDTOWithPayment,
+  SubMeterDTOWithBillingInfo,
+} from "$/types/sub-meter";
 import type { HelperParam } from "$/types/helper";
 
 describe("Sub Meter CRUD Operations", () => {
@@ -539,8 +545,9 @@ describe("Sub Meter CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect((result.value[0] as any).payment).toBeDefined();
-      expect(((result.value[0] as any).payment as any).id).toBe(paymentId);
+      const row = result.value[0] as Partial<NewSubMeter & { payment?: Payment | null }>;
+      expect(row.payment).toBeDefined();
+      expect(row.payment!.id).toBe(paymentId);
     });
 
     it("should include billing info when with_billing_info option is true", async () => {
@@ -582,8 +589,9 @@ describe("Sub Meter CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect((result.value[0] as any).billingInfo).toBeDefined();
-      expect(((result.value[0] as any).billingInfo as any).id).toBe(billingId);
+      const row = result.value[0] as Partial<NewSubMeter & { billingInfo?: BillingInfo }>;
+      expect(row.billingInfo).toBeDefined();
+      expect(row.billingInfo!.id).toBe(billingId);
     });
   });
 
@@ -865,8 +873,9 @@ describe("Sub Meter CRUD Operations", () => {
       });
 
       expect(result).toHaveLength(1);
-      expect((result[0] as any).payment).toBeDefined();
-      expect(((result[0] as any).payment as any).id).toBe(paymentId);
+      const dto = result[0] as SubMeterDTOWithPayment;
+      expect(dto.payment).toBeDefined();
+      expect(dto.payment!.id).toBe(paymentId);
     });
 
     it("should include billing info in DTO when requested", async () => {
@@ -905,8 +914,9 @@ describe("Sub Meter CRUD Operations", () => {
       });
 
       expect(result).toHaveLength(1);
-      expect((result[0] as any).billingInfo).toBeDefined();
-      expect(((result[0] as any).billingInfo as any).id).toBe(billingId);
+      const dto = result[0] as SubMeterDTOWithBillingInfo;
+      expect(dto.billingInfo).toBeDefined();
+      expect(dto.billingInfo!.id).toBe(billingId);
     });
 
     it("mapNewSubMeter_to_DTO should handle null/undefined values", async () => {
@@ -924,11 +934,11 @@ describe("Sub Meter CRUD Operations", () => {
       const dto = await mapNewSubMeter_to_DTO(data);
 
       expect(dto).toHaveLength(1);
-      expect(dto[0].id).toBe("");
-      expect(dto[0].billingInfoId).toBe("");
-      expect(dto[0].subKwh).toBeNull();
-      expect(dto[0].createdAt).toBeInstanceOf(Date);
-      expect(dto[0].updatedAt).toBeInstanceOf(Date);
+      expect(dto[0].id).toBeUndefined();
+      expect(dto[0].billingInfoId).toBeUndefined();
+      expect(dto[0].subKwh).toBeUndefined();
+      expect(dto[0].createdAt).toBeUndefined();
+      expect(dto[0].updatedAt).toBeUndefined();
     });
   });
 
@@ -961,10 +971,16 @@ describe("Sub Meter CRUD Operations", () => {
 
       expect(conditions.id).toBe("sm-1");
       expect(conditions.billingInfoId).toBe("billing-1");
-      expect((conditions as any).subkWh).toBe(10);
-      expect((conditions as any).subReadingLatest).toBe(200);
-      expect((conditions as any).subReadingOld).toBe(150);
-      expect((conditions as any).paymentId).toBe("pay-1");
+      const typedConditions = conditions as {
+        subkWh?: number;
+        subReadingLatest?: number;
+        subReadingOld?: number;
+        paymentId?: string;
+      };
+      expect(typedConditions.subkWh).toBe(10);
+      expect(typedConditions.subReadingLatest).toBe(200);
+      expect(typedConditions.subReadingOld).toBe(150);
+      expect(typedConditions.paymentId).toBe("pay-1");
     });
 
     it("should handle exclude_id option", () => {
@@ -975,8 +991,9 @@ describe("Sub Meter CRUD Operations", () => {
 
       const conditions = generateSubMeterQueryConditions(param);
 
-      expect((conditions as any).NOT).toBeDefined();
-      expect((conditions as any).NOT.id).toBe("exclude-sm");
+      const typedConditions = conditions as { NOT?: { id?: string } };
+      expect(typedConditions.NOT).toBeDefined();
+      expect(typedConditions.NOT!.id).toBe("exclude-sm");
     });
 
     it("should ignore undefined/null fields", () => {

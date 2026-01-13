@@ -431,8 +431,9 @@ describe("Payment CRUD Operations", () => {
         options: { exclude_id: "exclude-this-id" },
       };
       const conditions = generatePaymentQueryConditions(param);
-      expect((conditions as any).NOT).toBeDefined();
-      expect((conditions as any).NOT.id).toBe("exclude-this-id");
+      const typedConditions = conditions as { NOT?: { id?: string } };
+      expect(typedConditions.NOT).toBeDefined();
+      expect(typedConditions.NOT!.id).toBe("exclude-this-id");
     });
 
     it("should ignore undefined/null fields", () => {

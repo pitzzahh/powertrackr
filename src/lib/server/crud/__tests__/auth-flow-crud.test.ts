@@ -14,8 +14,10 @@ import {
   addEmailVerificationRequest,
   getEmailVerificationRequestBy,
 } from "../email-verification-request-crud";
+import type { EmailVerificationRequestDTO } from "$/types/email-verification-request";
 
 import { createUser, createEmailVerificationRequest, resetSequence } from "./helpers/factories";
+import type { UserDTO } from "$/types/user";
 
 describe("Auth Flow CRUD Operations", () => {
   beforeEach(() => {
@@ -58,7 +60,8 @@ describe("Auth Flow CRUD Operations", () => {
     });
     expect(found.valid).toBe(true);
     expect(found.value.length).toBeGreaterThanOrEqual(1);
-    expect((found.value[0] as any).email).toBe(user.email);
+    const foundRow = found.value[0] as EmailVerificationRequestDTO;
+    expect(foundRow.email).toBe(user.email);
 
     // Create a session for the user (mimics login immediately after signup)
     const token = `test-token-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -75,7 +78,8 @@ describe("Auth Flow CRUD Operations", () => {
     expect(validated.session).not.toBeNull();
     expect(validated.user).not.toBeNull();
     expect(validated.user!.emailVerified).toBe(false);
-    expect((validated.user as any).isOauthUser).toBe(false);
+    const vUser = validated.user as UserDTO & { isOauthUser?: boolean };
+    expect(vUser.isOauthUser).toBe(false);
 
     // Set locals for requireAuth and assert it redirects to verify-email for non-oauth unverified users
     fakeLocals.user = validated.user;
@@ -122,7 +126,8 @@ describe("Auth Flow CRUD Operations", () => {
     expect(validated.session).not.toBeNull();
     expect(validated.user).not.toBeNull();
     // Since user has a githubId, validateSessionToken exposes isOauthUser=true
-    expect((validated.user as any).isOauthUser).toBe(true);
+    const vUser = validated.user as UserDTO & { isOauthUser?: boolean };
+    expect(vUser.isOauthUser).toBe(true);
     // Email verification is irrelevant for oauth users in requireAuth
     expect(validated.user!.emailVerified).toBe(false);
 

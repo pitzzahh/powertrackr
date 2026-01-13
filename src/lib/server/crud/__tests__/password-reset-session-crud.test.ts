@@ -675,9 +675,14 @@ describe("Password Reset Session CRUD Operations", () => {
       const cond = generatePasswordResetSessionQueryConditions(param);
       expect(cond.id).toBe("p-1");
       expect(cond.userId).toBe("user-1");
-      expect((cond as any).email).toBe("e@x");
-      expect((cond as any).expiresAt).toBe(1234);
-      expect((cond as any).emailVerified).toBe(true);
+      const typedCond = cond as {
+        email?: string;
+        expiresAt?: number;
+        emailVerified?: boolean;
+      };
+      expect(typedCond.email).toBe("e@x");
+      expect(typedCond.expiresAt).toBe(1234);
+      expect(typedCond.emailVerified).toBe(true);
     });
 
     it("should handle exclude_id option", () => {
@@ -686,7 +691,9 @@ describe("Password Reset Session CRUD Operations", () => {
         options: { exclude_id: "exclude-me" },
       };
       const cond = generatePasswordResetSessionQueryConditions(param);
-      expect((cond as any).NOT.id).toBe("exclude-me");
+      const typedCond = cond as { NOT?: { id?: string } };
+      expect(typedCond.NOT).toBeDefined();
+      expect(typedCond.NOT!.id).toBe("exclude-me");
     });
 
     it("should ignore undefined/null fields", () => {
