@@ -31,7 +31,7 @@
                 >
                   <TableCell class="bg-muted/50 py-2 font-medium">Sub kWh</TableCell>
                   <TableCell class="py-2"
-                    >{subMeter?.subKWh ? `${subMeter?.subKWh}kWh` : "N/A"}</TableCell
+                    >{subMeter?.subkWh ? `${subMeter?.subkWh}kWh` : "N/A"}</TableCell
                   >
                 </TableRow>
                 <TableRow

@@ -59,12 +59,12 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
 }
 
 export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
-  const subKWh = original.subMeters.reduce((sum, sub) => sum + (sub.subKWh || 0), 0);
+  const subkWh = original.subMeters.reduce((sum, sub) => sum + (sub.subkWh || 0), 0);
   return {
     date: new Date(original.date),
     totalKWh: original.totalKWh,
-    mainKWh: original.totalKWh - subKWh,
-    subKWh,
+    mainKWh: original.totalKWh - subkWh,
+    subkWh,
   };
 }
 

@@ -85,12 +85,12 @@ export async function updateSubMeterBy(
     };
   }
 
-  // Normalize alternate subKwh key to schema key subKWh (handles both variants)
+  // Normalize alternate subKwh key to schema key subkWh (handles both variants)
   if (
     Object.prototype.hasOwnProperty.call(changed_data, "subKwh") &&
-    !Object.prototype.hasOwnProperty.call(changed_data, "subKWh")
+    !Object.prototype.hasOwnProperty.call(changed_data, "subkWh")
   ) {
-    (changed_data as any).subKWh = (changed_data as any).subKwh;
+    (changed_data as any).subkWh = (changed_data as any).subKwh;
     delete (changed_data as any).subKwh;
   }
 
@@ -149,7 +149,7 @@ export async function mapNewSubMeter_to_DTO(
       const sub_meter_info = {
         id: _sub_meter.id ?? "",
         billingInfoId: _sub_meter.billingInfoId ?? "",
-        subKwh: _sub_meter.subKwh ?? (_sub_meter as any).subKWh ?? null,
+        subKwh: _sub_meter.subKwh ?? (_sub_meter as any).subkWh ?? null,
         subReadingLatest: _sub_meter.subReadingLatest ?? null,
         subReadingOld: _sub_meter.subReadingOld ?? null,
         paymentId: _sub_meter.paymentId ?? null,
@@ -202,13 +202,13 @@ export async function getSubMeterCountBy(
 
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
-  const { id, billingInfoId, subKWh, subReadingLatest, subReadingOld, paymentId } = query;
+  const { id, billingInfoId, subkWh, subReadingLatest, subReadingOld, paymentId } = query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
   if (billingInfoId) where.billingInfoId = billingInfoId;
-  if (subKWh !== undefined) where.subKWh = subKWh;
+  if (subkWh !== undefined) where.subkWh = subkWh;
   if (subReadingLatest !== undefined) where.subReadingLatest = subReadingLatest;
   if (subReadingOld !== undefined) where.subReadingOld = subReadingOld;
   if (paymentId) where.paymentId = paymentId;
@@ -230,8 +230,8 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(subMeter.id, value as string));
     } else if (key === "billingInfoId") {
       conditions.push(eq(subMeter.billingInfoId, value as string));
-    } else if (key === "subKWh") {
-      conditions.push(eq(subMeter.subKWh, value as number));
+    } else if (key === "subkWh") {
+      conditions.push(eq(subMeter.subkWh, value as number));
     } else if (key === "subReadingLatest") {
       conditions.push(eq(subMeter.subReadingLatest, value as number));
     } else if (key === "subReadingOld") {

@@ -73,7 +73,7 @@ export function createSubMeter(overrides: FactoryOverrides<NewSubMeter> = {}): N
   return {
     id: generateId(),
     billingInfoId: `billing-${sequence}`,
-    subKWh: 50 + sequence,
+    subkWh: 50 + sequence,
     subReadingLatest: 1500 + sequence,
     subReadingOld: 1450 + sequence,
     paymentId: null,

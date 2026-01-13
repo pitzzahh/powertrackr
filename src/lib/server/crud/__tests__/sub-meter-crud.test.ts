@@ -52,7 +52,7 @@ describe("Sub Meter CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createSubMeter({
             billingInfoId: billingId,
-            subKWh: 77,
+            subkWh: 77,
             subReadingLatest: 2000,
             subReadingOld: 1950,
           });
@@ -145,7 +145,7 @@ describe("Sub Meter CRUD Operations", () => {
           const { id: _, ...rest } = createSubMeter({
             billingInfoId: billingId,
             paymentId,
-            subKWh: 42,
+            subkWh: 42,
           });
           return rest;
         })(),
@@ -474,13 +474,13 @@ describe("Sub Meter CRUD Operations", () => {
 
       const { id: _, ...subMeterDataWithoutId } = createSubMeter({
         billingInfoId: billingId,
-        subKWh: 99,
+        subkWh: 99,
       });
       await addSubMeter([subMeterDataWithoutId]);
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { billingInfoId: billingId },
-        options: { fields: ["id", "billingInfoId", "subKWh"] as (keyof NewSubMeter)[] },
+        options: { fields: ["id", "billingInfoId", "subkWh"] as (keyof NewSubMeter)[] },
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -611,7 +611,7 @@ describe("Sub Meter CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createSubMeter({
             billingInfoId: billingId,
-            subKWh: 20,
+            subkWh: 20,
           });
           return rest;
         })(),
@@ -624,11 +624,11 @@ describe("Sub Meter CRUD Operations", () => {
         options: {},
       };
 
-      const result = await updateSubMeterBy(updateParam, { subKWh: 888 });
+      const result = await updateSubMeterBy(updateParam, { subkWh: 888 });
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 sub meter(s) updated");
-      expect(result.value[0].subKWh).toBe(888);
+      expect(result.value[0].subkWh).toBe(888);
     });
 
     it("should handle no data changed scenario", async () => {
@@ -654,7 +654,7 @@ describe("Sub Meter CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createSubMeter({
             billingInfoId: billingId,
-            subKWh: 44,
+            subkWh: 44,
           });
           return rest;
         })(),
@@ -667,7 +667,7 @@ describe("Sub Meter CRUD Operations", () => {
         options: {},
       };
 
-      const result = await updateSubMeterBy(updateParam, { subKWh: 44 });
+      const result = await updateSubMeterBy(updateParam, { subkWh: 44 });
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("No data changed");
@@ -680,7 +680,7 @@ describe("Sub Meter CRUD Operations", () => {
         options: {},
       };
 
-      const result = await updateSubMeterBy(updateParam, { subKWh: 1 });
+      const result = await updateSubMeterBy(updateParam, { subkWh: 1 });
 
       expect(result.valid).toBe(false);
       expect(result.value).toHaveLength(0);
@@ -759,9 +759,9 @@ describe("Sub Meter CRUD Operations", () => {
       const billingId = billingResult.value[0].id;
 
       const subMetersData = [
-        createSubMeter({ billingInfoId: billingId, subKWh: 11 }),
-        createSubMeter({ billingInfoId: billingId, subKWh: 11 }),
-        createSubMeter({ billingInfoId: billingId, subKWh: 22 }),
+        createSubMeter({ billingInfoId: billingId, subkWh: 11 }),
+        createSubMeter({ billingInfoId: billingId, subkWh: 11 }),
+        createSubMeter({ billingInfoId: billingId, subkWh: 22 }),
       ].map((s) => {
         const { id: _, ...rest } = s;
         return rest;
@@ -770,7 +770,7 @@ describe("Sub Meter CRUD Operations", () => {
       await addSubMeter(subMetersData);
 
       const countParam: HelperParam<NewSubMeter> = {
-        query: { subKWh: 11 } as unknown as NewSubMeter, // query key uses subKWh in generate function
+        query: { subkWh: 11 } as unknown as NewSubMeter, // query key uses subkWh in generate function
         options: {},
       };
 
@@ -805,7 +805,7 @@ describe("Sub Meter CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createSubMeter({
             billingInfoId: billingId,
-            subKWh: 333,
+            subkWh: 333,
           });
           return rest;
         })(),
@@ -952,7 +952,7 @@ describe("Sub Meter CRUD Operations", () => {
         query: {
           id: "sm-1",
           billingInfoId: "billing-1",
-          subKWh: 10,
+          subkWh: 10,
           subReadingLatest: 200,
           subReadingOld: 150,
           paymentId: "pay-1",
@@ -964,7 +964,7 @@ describe("Sub Meter CRUD Operations", () => {
 
       expect(conditions.id).toBe("sm-1");
       expect(conditions.billingInfoId).toBe("billing-1");
-      expect((conditions as any).subKWh).toBe(10);
+      expect((conditions as any).subkWh).toBe(10);
       expect((conditions as any).subReadingLatest).toBe(200);
       expect((conditions as any).subReadingOld).toBe(150);
       expect((conditions as any).paymentId).toBe("pay-1");
