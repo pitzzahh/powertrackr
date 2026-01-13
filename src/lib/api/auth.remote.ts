@@ -7,6 +7,11 @@ import {
 } from "$/server/auth";
 import { addUser, getUserBy, updateUserBy } from "$/server/crud/user-crud";
 import {
+  getEmailVerificationRequestBy,
+  updateEmailVerificationRequestBy,
+} from "$/server/crud/email-verification-request-crud";
+import { createAndSendEmailVerification } from "$/server/email";
+import {
   encryptString,
   generateRandomRecoveryCode,
   generateSessionToken,
@@ -122,16 +127,13 @@ export const register = form(registerSchema, async (newUser, issues) => {
     error(400, "Failed to create user");
   }
 
-  // TODO: send email verification
-  // const emailVerificationRequest = createEmailVerificationRequest(
-  //   userResult.id,
-  //   userResult.email,
-  // );
-  // sendVerificationEmail(
-  //   emailVerificationRequest.email,
-  //   emailVerificationRequest.code,
-  // );
-  // setEmailVerificationRequestCookie(event, emailVerificationRequest);
+  // Attempt to create and send an email verification (best-effort)
+  try {
+    await createAndSendEmailVerification(userResult.id, userResult.email);
+  } catch (e) {
+    // Don't block registration for email failures; just log.
+    console.warn("Failed to create or send email verification", e);
+  }
 
   const sessionToken = generateSessionToken();
 
@@ -158,17 +160,36 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   }
   const { code } = data;
 
-  if (code != "012345") {
-    error(400, "Invalid verification code");
+  // Validate code against DB
+  const requestResult = await getEmailVerificationRequestBy({
+    query: { userId: event.locals.session.userId, code },
+    options: { limit: 1 },
+  });
+
+  if (!requestResult.valid || !requestResult.value || requestResult.value.length === 0) {
+    error(400, "Invalid or expired verification code");
   }
-  // TODO: Implement proper verification
-  // For now, assume code is correct and set emailVerified
+
+  const [request] = requestResult.value;
+  if (!request || (request.expiresAt ?? 0) < Date.now()) {
+    error(400, "Invalid or expired verification code");
+  }
+
+  // Mark the user's email as verified
   const updateResult = await updateUserBy(
     { query: { id: event.locals.session.userId }, options: { with_session: false } },
     { emailVerified: true }
   );
   if (!updateResult.valid) {
     error(400, "Failed to verify email");
+  }
+
+  // Expire the verification request to prevent reuse (best-effort)
+  if (request.id) {
+    updateEmailVerificationRequestBy(
+      { query: { id: request.id }, options: {} },
+      { expiresAt: Date.now() - 1 }
+    ).catch(() => null);
   }
   // Check if 2FA is registered
   const {
