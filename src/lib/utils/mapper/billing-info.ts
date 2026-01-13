@@ -10,12 +10,15 @@ import { DateFormat, formatDate } from "$/utils/format";
 export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
   return {
     id: original.id,
+    userId: original.userId,
     date: new Date(original.date),
-    totalkWh: original.totalKWh,
+    totalkWh: original.totalkWh,
     balance: original.balance,
-    payPerkWh: original.payPerKwh,
+    payPerkWh: original.payPerkWh,
     status: original.status as "Pending" | "Paid",
-    subReadingLatest: 0,
+    createdAt: original.createdAt ?? new Date(),
+    updatedAt: original.updatedAt ?? new Date(),
+    paymentId: original.paymentId,
   };
 }
 

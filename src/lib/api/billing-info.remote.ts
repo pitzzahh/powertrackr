@@ -137,9 +137,9 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 
   const userId = session!.userId;
 
-  const { date, totalKWh, balance, status: statusBool, subMeters = [] } = data;
+  const { date, totalkWh, balance, status: statusBool, subMeters = [] } = data;
 
-  const payPerKwh = calculatePayPerKwh(balance, totalKWh);
+  const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 
   // Process multiple sub meters
   const subMetersData = subMeters.map((sub) => ({
@@ -147,7 +147,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     subReadingOld: sub.subReadingOld ?? null,
     subKwh: sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null,
     paymentAmount: sub.subReadingOld
-      ? (sub.subReadingLatest - sub.subReadingOld) * payPerKwh
+      ? (sub.subReadingLatest - sub.subReadingOld) * payPerkWh
       : null,
   }));
 
@@ -201,10 +201,10 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     id,
     userId,
     date,
-    totalKWh,
+    totalkWh,
     balance,
     status: statusBool ? "Paid" : "Pending",
-    payPerKwh,
+    payPerkWh,
     paymentId,
   };
   const [result] = await db.insert(billingInfo).values(insertData).returning();
@@ -243,11 +243,11 @@ export const updateBillingInfo = form(
       await db.delete(subMeter).where(eq(subMeter.billingInfoId, id));
 
       if (subMeters.length > 0) {
-        const payPerKwh = calculatePayPerKwh(result.balance, result.totalKWh);
+        const payPerkWh = calculatePayPerKwh(result.balance, result.totalkWh);
 
         const subMeterInserts = subMeters.map((sub) => {
           const subKwh = sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null;
-          const paymentAmount = subKwh ? subKwh * payPerKwh : null;
+          const paymentAmount = subKwh ? subKwh * payPerkWh : null;
 
           return {
             id: crypto.randomUUID(),
@@ -266,7 +266,7 @@ export const updateBillingInfo = form(
         for (const sub of subMeterInserts) {
           if (sub.paymentId) {
             const subKwh = sub.subKwh!;
-            const paymentAmount = subKwh * payPerKwh;
+            const paymentAmount = subKwh * payPerkWh;
             await db.insert(payment).values({
               id: sub.paymentId,
               amount: paymentAmount,

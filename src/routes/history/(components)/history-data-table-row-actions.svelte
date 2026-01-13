@@ -51,7 +51,7 @@
     },
     {
       label: "Total kWh",
-      value: `${row.original.totalKWh} kWh`,
+      value: `${row.original.totalkWh} kWh`,
       class: "font-semibold",
     },
     {
@@ -66,7 +66,7 @@
     },
     {
       label: "Pay Per kWh",
-      value: formatNumber(row.original.payPerKwh),
+      value: formatNumber(row.original.payPerkWh),
       class: "font-semibold",
     },
     {
@@ -243,8 +243,8 @@
             billingInfo={billingInfoToDto({
               ...row.original,
               date: row.original.date,
-              createdAt: row.original.createdAt ? new Date(row.original.createdAt) : null,
-              updatedAt: row.original.updatedAt ? new Date(row.original.updatedAt) : null,
+              createdAt: new Date(row.original.createdAt),
+              updatedAt: new Date(row.original.updatedAt),
             })}
           />
         </div>

@@ -562,7 +562,7 @@ describe("Sub Meter CRUD Operations", () => {
 
       const billingData = [
         (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalKWh: 999 });
+          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 999 });
           return rest;
         })(),
       ];
@@ -890,7 +890,7 @@ describe("Sub Meter CRUD Operations", () => {
 
       const billingData = [
         (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalKWh: 2000 });
+          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 2000 });
           return rest;
         })(),
       ];

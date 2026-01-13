@@ -128,14 +128,16 @@ export async function mapNewBillingInfo_to_DTO(
   return data.map((_billing_info) => ({
     id: _billing_info.id ?? "",
     userId: _billing_info.userId ?? "",
-    date: _billing_info.date ?? "",
-    totalKWh: _billing_info.totalKWh ?? 0,
+    ...(_billing_info.date && {
+      date: new Date(_billing_info.date),
+    }),
+    totalkWh: _billing_info.totalkWh ?? 0,
     balance: _billing_info.balance ?? 0,
     status: (_billing_info.status as BillingInfoDTO["status"]) ?? "N/A",
-    payPerKwh: _billing_info.payPerKwh ?? 0,
+    payPerkWh: _billing_info.payPerkWh ?? 0,
     paymentId: _billing_info.paymentId ?? null,
-    createdAt: _billing_info.createdAt ?? new Date(),
-    updatedAt: _billing_info.updatedAt ?? new Date(),
+    createdAt: _billing_info.createdAt ? new Date(_billing_info.createdAt) : new Date(),
+    updatedAt: _billing_info.updatedAt ? new Date(_billing_info.updatedAt) : new Date(),
   }));
 }
 
@@ -167,17 +169,17 @@ export async function getBillingInfoCountBy(
 
 export function generateBillingInfoQueryConditions(data: HelperParam<NewBillingInfo>) {
   const { query, options } = data;
-  const { id, userId, date, totalKWh, balance, status, payPerKwh, paymentId } = query;
+  const { id, userId, date, totalkWh, balance, status, payPerkWh, paymentId } = query;
   const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
   if (userId) where.userId = userId;
   if (date) where.date = date;
-  if (totalKWh !== undefined) where.totalKWh = totalKWh;
+  if (totalkWh !== undefined) where.totalkWh = totalkWh;
   if (balance !== undefined) where.balance = balance;
   if (status) where.status = status;
-  if (payPerKwh !== undefined) where.payPerKwh = payPerKwh;
+  if (payPerkWh !== undefined) where.payPerkWh = payPerkWh;
   if (paymentId) where.paymentId = paymentId;
 
   if (exclude_id) {
@@ -199,14 +201,14 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(billingInfo.userId, value as string));
     } else if (key === "date") {
       conditions.push(eq(billingInfo.date, value as string));
-    } else if (key === "totalKWh") {
-      conditions.push(eq(billingInfo.totalKWh, value as number));
+    } else if (key === "totalkWh") {
+      conditions.push(eq(billingInfo.totalkWh, value as number));
     } else if (key === "balance") {
       conditions.push(eq(billingInfo.balance, value as number));
     } else if (key === "status") {
       conditions.push(eq(billingInfo.status, value as string));
-    } else if (key === "payPerKwh") {
-      conditions.push(eq(billingInfo.payPerKwh, value as number));
+    } else if (key === "payPerkWh") {
+      conditions.push(eq(billingInfo.payPerkWh, value as number));
     } else if (key === "paymentId") {
       conditions.push(eq(billingInfo.paymentId, value as string));
     }

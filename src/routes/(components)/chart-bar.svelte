@@ -1,7 +1,7 @@
 <script lang="ts" module>
   export type BarChartData = {
     date: Date;
-    totalKWh: number;
+    totalkWh: number;
     mainKWh: number;
     subkWh: number;
   };
@@ -15,15 +15,15 @@
 
   type ChartBarState = {
     timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
-    activeChart: "totalKWh" | "mainKWh" | "subkWh" | "all";
+    activeChart: "totalkWh" | "mainKWh" | "subkWh" | "all";
     context: ChartContextValue;
-    totalKWh: number;
+    totalkWh: number;
     mainKWh: number;
     subkWh: number;
   };
 
   const CHART_CONFIG = {
-    totalKWh: { label: "Total kWh", color: "var(--chart-1)" },
+    totalkWh: { label: "Total kWh", color: "var(--chart-1)" },
     mainKWh: { label: "Main kWh", color: "var(--chart-2)" },
     subkWh: { label: "Sub kWh", color: "var(--chart-3)" },
   } satisfies Chart.ChartConfig;
@@ -47,11 +47,11 @@
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
-  let { timeRange, activeChart, context, totalKWh, mainKWh, subkWh }: ChartBarState = $state({
+  let { timeRange, activeChart, context, totalkWh, mainKWh, subkWh }: ChartBarState = $state({
     timeRange: "all",
     activeChart: "all",
     context: null!,
-    totalKWh: 0,
+    totalkWh: 0,
     mainKWh: 0,
     subkWh: 0,
   });
@@ -63,9 +63,9 @@
       activeChart === "all"
         ? [
             {
-              key: "totalKWh",
+              key: "totalkWh",
               label: "Total kWh",
-              color: CHART_CONFIG.totalKWh.color,
+              color: CHART_CONFIG.totalkWh.color,
             },
             {
               key: "mainKWh",
@@ -93,7 +93,7 @@
     worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url));
 
     worker.onmessage = (e: MessageEvent<Total>) => {
-      totalKWh = e.data.totalKWh;
+      totalkWh = e.data.totalkWh;
       mainKWh = e.data.mainKWh;
       subkWh = e.data.subkWh;
     };
@@ -117,7 +117,7 @@
       <Card.Description>Showing kWh usage over time</Card.Description>
     </div>
     <div class="grid h-fit sm:grid-cols-2 md:grid-cols-4">
-      {#each ["totalKWh", "mainKWh", "subkWh", "all"] as key (key)}
+      {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
         {@const chart = key}
         <button
           data-active={activeChart === chart}
@@ -136,9 +136,9 @@
             ]}
           >
             {key === "all"
-              ? (totalKWh + mainKWh + subkWh).toLocaleString()
-              : (key === "totalKWh"
-                  ? totalKWh
+              ? (totalkWh + mainKWh + subkWh).toLocaleString()
+              : (key === "totalkWh"
+                  ? totalkWh
                   : key === "mainKWh"
                     ? mainKWh
                     : subkWh

@@ -58,31 +58,31 @@ export function historyTableColumns() {
         });
       },
       cell: ({ row }) => {
-        const totalKWh = row.original.totalKWh;
-        return totalKWh ? `${totalKWh}kWh` : "N/A";
+        const totalkWh = row.original.totalkWh;
+        return totalkWh ? `${totalkWh}kWh` : "N/A";
       },
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.totalKWh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
-          row.original.totalKWh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
+          row.original.totalkWh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.totalkWh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },
     {
-      accessorKey: "payPerKwh",
+      accessorKey: "payPerkWh",
       header: ({ column }) => {
         return renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
           title: "Pay Per kWh",
         });
       },
-      cell: ({ row }) => formatNumber(row.original.payPerKwh),
+      cell: ({ row }) => formatNumber(row.original.payPerkWh),
       filterFn: (row, id, value) => {
         return (
           value.includes(row.getValue(id)) ||
-          row.original.payPerKwh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
-          row.original.payPerKwh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
+          row.original.payPerkWh?.toString()?.toLowerCase().includes(value.toLowerCase()) ||
+          row.original.payPerkWh?.toString()?.toLowerCase().startsWith(value.toLowerCase())
         );
       },
     },

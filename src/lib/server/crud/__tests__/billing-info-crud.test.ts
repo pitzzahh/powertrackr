@@ -45,10 +45,10 @@ describe("Billing Info CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
-            totalKWh: 1000,
+            totalkWh: 1000,
             balance: 500.75,
             status: "Pending",
-            payPerKwh: 0.15,
+            payPerkWh: 0.15,
             date: "2024-01-15",
           });
           return rest;
@@ -62,10 +62,10 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.value).toHaveLength(1);
       expect(result.value[0]).toHaveProperty("id");
       expect(result.value[0].userId).toBe(userId);
-      expect(result.value[0].totalKWh).toBe(1000);
+      expect(result.value[0].totalkWh).toBe(1000);
       expect(result.value[0].balance).toBe(500.75);
       expect(result.value[0].status).toBe("Pending");
-      expect(result.value[0].payPerKwh).toBe(0.15);
+      expect(result.value[0].payPerkWh).toBe(0.15);
     });
 
     it("should successfully add multiple billing infos", async () => {
@@ -124,7 +124,7 @@ describe("Billing Info CRUD Operations", () => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
             paymentId,
-            totalKWh: 800,
+            totalkWh: 800,
             balance: 400.25,
           });
           return rest;
@@ -205,7 +205,7 @@ describe("Billing Info CRUD Operations", () => {
 
       const billingData = [
         (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalKWh: 1200 });
+          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1200 });
           return rest;
         })(),
       ];
@@ -223,7 +223,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.message).toBe("1 billing info(s) found");
       expect(result.value).toHaveLength(1);
       expect(result.value[0].id).toBe(addedBilling.id);
-      expect(result.value[0].totalKWh).toBe(1200);
+      expect(result.value[0].totalkWh).toBe(1200);
     });
 
     it("should find billing info by user ID", async () => {
@@ -299,7 +299,7 @@ describe("Billing Info CRUD Operations", () => {
         const userId = userResult.value[0].id;
 
         const date = "2024-04-01";
-        const totalKWh = 1000;
+        const totalkWh = 1000;
         const balance = 1000;
 
         const subMeters = [
@@ -307,7 +307,7 @@ describe("Billing Info CRUD Operations", () => {
           { subReadingLatest: 2050, subReadingOld: 2000 },
         ];
 
-        const payPer = calculatePayPerKwh(balance, totalKWh);
+        const payPer = calculatePayPerKwh(balance, totalkWh);
 
         const expectedSubAmounts = subMeters.map((s) => {
           const subkWh = s.subReadingLatest - s.subReadingOld;
@@ -340,10 +340,10 @@ describe("Billing Info CRUD Operations", () => {
             const { id: _, ...rest } = createBillingInfo({
               userId,
               date,
-              totalKWh,
+              totalkWh,
               balance,
               status: "Paid",
-              payPerKwh: payPer,
+              payPerkWh: payPer,
               paymentId: mainPaymentId,
             });
             return rest;
@@ -402,10 +402,10 @@ describe("Billing Info CRUD Operations", () => {
         const userId = userResult.value[0].id;
 
         const date = "2024-04-15";
-        const totalKWh = 1000;
+        const totalkWh = 1000;
         const balance = 250;
 
-        const payPer = calculatePayPerKwh(balance, totalKWh);
+        const payPer = calculatePayPerKwh(balance, totalkWh);
 
         // No sub-meter payments; main payment equals full balance
         const mainPayment = await addPayment([{ amount: balance, date: new Date().toISOString() }]);
@@ -416,10 +416,10 @@ describe("Billing Info CRUD Operations", () => {
             const { id: _, ...rest } = createBillingInfo({
               userId,
               date,
-              totalKWh,
+              totalkWh,
               balance,
               status: "Pending",
-              payPerKwh: payPer,
+              payPerkWh: payPer,
               paymentId: mainPaymentId,
             });
             return rest;
@@ -449,10 +449,10 @@ describe("Billing Info CRUD Operations", () => {
         const userId = userResult.value[0].id;
 
         const date = "2024-05-01";
-        const totalKWh = 500;
+        const totalkWh = 500;
         const balance = 200;
 
-        const payPer = calculatePayPerKwh(balance, totalKWh);
+        const payPer = calculatePayPerKwh(balance, totalkWh);
 
         // create initial sub-payment and billing
         const initialSubKwh = 10;
@@ -472,10 +472,10 @@ describe("Billing Info CRUD Operations", () => {
             const { id: _, ...rest } = createBillingInfo({
               userId,
               date,
-              totalKWh,
+              totalkWh,
               balance,
               status: "Paid",
-              payPerKwh: payPer,
+              payPerkWh: payPer,
               paymentId: mainPaymentId,
             });
             return rest;
@@ -564,7 +564,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.value[0].status).toBe("Paid");
     });
 
-    it("should find billing info by totalKWh", async () => {
+    it("should find billing info by totalkWh", async () => {
       const userData = [
         (() => {
           const { id: _, ...rest } = createUser();
@@ -576,14 +576,14 @@ describe("Billing Info CRUD Operations", () => {
 
       const billingData = [
         (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalKWh: 1500 });
+          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1500 });
           return rest;
         })(),
       ];
       await addBillingInfo(billingData);
 
       const searchParam: HelperParam<NewBillingInfo> = {
-        query: { totalKWh: 1500 },
+        query: { totalkWh: 1500 },
         options: {},
       };
 
@@ -591,7 +591,7 @@ describe("Billing Info CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].totalKWh).toBe(1500);
+      expect(result.value[0].totalkWh).toBe(1500);
     });
 
     it("should find billing info by balance", async () => {
@@ -711,7 +711,7 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { userId },
-        options: { fields: ["id", "userId", "totalKWh"] as (keyof NewBillingInfo)[] },
+        options: { fields: ["id", "userId", "totalkWh"] as (keyof NewBillingInfo)[] },
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -720,7 +720,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.value).toHaveLength(1);
       expect(result.value[0]).toHaveProperty("id");
       expect(result.value[0]).toHaveProperty("userId");
-      expect(result.value[0]).toHaveProperty("totalKWh");
+      expect(result.value[0]).toHaveProperty("totalkWh");
     });
 
     it("should exclude specified ID", async () => {
@@ -768,7 +768,7 @@ describe("Billing Info CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
-            totalKWh: 1000,
+            totalkWh: 1000,
             balance: 500.0,
             status: "Pending",
           });
@@ -784,20 +784,20 @@ describe("Billing Info CRUD Operations", () => {
       };
 
       const updateData = {
-        totalKWh: 1200,
+        totalkWh: 1200,
         balance: 600.0,
         status: "Paid" as const,
-        payPerKwh: 0.2,
+        payPerkWh: 0.2,
       };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 billing info(s) updated");
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].totalKWh).toBe(1200);
+      expect(result.value[0].totalkWh).toBe(1200);
       expect(result.value[0].balance).toBe(600.0);
       expect(result.value[0].status).toBe("Paid");
-      expect(result.value[0].payPerKwh).toBe(0.2);
+      expect(result.value[0].payPerkWh).toBe(0.2);
     });
 
     it("should handle no data changed scenario", async () => {
@@ -812,7 +812,7 @@ describe("Billing Info CRUD Operations", () => {
 
       const billingData = [
         (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalKWh: 1000 });
+          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1000 });
           return rest;
         })(),
       ];
@@ -824,7 +824,7 @@ describe("Billing Info CRUD Operations", () => {
         options: {},
       };
 
-      const updateData = { totalKWh: 1000 };
+      const updateData = { totalkWh: 1000 };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
@@ -838,7 +838,7 @@ describe("Billing Info CRUD Operations", () => {
         options: {},
       };
 
-      const updateData = { totalKWh: 1500 };
+      const updateData = { totalkWh: 1500 };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
       expect(result.valid).toBe(false);
@@ -911,19 +911,19 @@ describe("Billing Info CRUD Operations", () => {
       };
 
       const updateData = {
-        totalKWh: 2000,
+        totalkWh: 2000,
         balance: 1000.0,
         status: "Paid" as const,
-        payPerKwh: 0.25,
+        payPerkWh: 0.25,
         date: "2024-03-01",
       };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].totalKWh).toBe(2000);
+      expect(result.value[0].totalkWh).toBe(2000);
       expect(result.value[0].balance).toBe(1000.0);
       expect(result.value[0].status).toBe("Paid");
-      expect(result.value[0].payPerKwh).toBe(0.25);
+      expect(result.value[0].payPerkWh).toBe(0.25);
       expect(result.value[0].date).toBe("2024-03-01");
     });
   });
@@ -1047,7 +1047,7 @@ describe("Billing Info CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
-            totalKWh: 1500,
+            totalkWh: 1500,
             balance: 750.5,
             status: "Paid",
           });
@@ -1067,15 +1067,15 @@ describe("Billing Info CRUD Operations", () => {
       expect(result[0]).toHaveProperty("id");
       expect(result[0]).toHaveProperty("userId");
       expect(result[0]).toHaveProperty("date");
-      expect(result[0]).toHaveProperty("totalKWh");
+      expect(result[0]).toHaveProperty("totalkWh");
       expect(result[0]).toHaveProperty("balance");
       expect(result[0]).toHaveProperty("status");
-      expect(result[0]).toHaveProperty("payPerKwh");
+      expect(result[0]).toHaveProperty("payPerkWh");
       expect(result[0]).toHaveProperty("paymentId");
       expect(result[0]).toHaveProperty("createdAt");
       expect(result[0]).toHaveProperty("updatedAt");
       expect(result[0].userId).toBe(userId);
-      expect(result[0].totalKWh).toBe(1500);
+      expect(result[0].totalkWh).toBe(1500);
       expect(result[0].balance).toBe(750.5);
       expect(result[0].status).toBe("Paid");
     });
@@ -1096,10 +1096,10 @@ describe("Billing Info CRUD Operations", () => {
     it("should correctly map billing info data to DTO format", async () => {
       const billingData = createBillingInfo({
         userId: "test-user-id",
-        totalKWh: 1800,
+        totalkWh: 1800,
         balance: 900.25,
         status: "Pending",
-        payPerKwh: 0.18,
+        payPerkWh: 0.18,
         paymentId: "test-payment-id",
       });
 
@@ -1107,10 +1107,10 @@ describe("Billing Info CRUD Operations", () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].userId).toBe("test-user-id");
-      expect(result[0].totalKWh).toBe(1800);
+      expect(result[0].totalkWh).toBe(1800);
       expect(result[0].balance).toBe(900.25);
       expect(result[0].status).toBe("Pending");
-      expect(result[0].payPerKwh).toBe(0.18);
+      expect(result[0].payPerkWh).toBe(0.18);
       expect(result[0].paymentId).toBe("test-payment-id");
     });
 
@@ -1130,10 +1130,10 @@ describe("Billing Info CRUD Operations", () => {
         id: undefined,
         userId: undefined,
         date: undefined,
-        totalKWh: undefined,
+        totalkWh: undefined,
         balance: undefined,
         status: undefined,
-        payPerKwh: undefined,
+        payPerkWh: undefined,
         paymentId: undefined,
         createdAt: undefined,
         updatedAt: undefined,
@@ -1144,14 +1144,14 @@ describe("Billing Info CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe("");
       expect(result[0].userId).toBe("");
-      expect(result[0].date).toBe("");
-      expect(result[0].totalKWh).toBe(0);
+      expect(result[0].date).toBeUndefined();
+      expect(result[0].totalkWh).toBe(0);
       expect(result[0].balance).toBe(0);
       expect(result[0].status).toBe("N/A");
-      expect(result[0].payPerKwh).toBe(0);
+      expect(result[0].payPerkWh).toBe(0);
       expect(result[0].paymentId).toBeNull();
-      expect(result[0].createdAt).toBeInstanceOf(Date);
-      expect(result[0].updatedAt).toBeInstanceOf(Date);
+      expect(result[0].createdAt).toBeUndefined();
+      expect(result[0].updatedAt).toBeUndefined();
     });
 
     it("should handle empty array input", async () => {
@@ -1162,9 +1162,9 @@ describe("Billing Info CRUD Operations", () => {
 
     it("should handle multiple billing infos", async () => {
       const billingData = [
-        createBillingInfo({ status: "Paid", totalKWh: 1000 }),
-        createBillingInfo({ status: "Pending", totalKWh: 1500 }),
-        createBillingInfo({ status: "N/A", totalKWh: 2000 }),
+        createBillingInfo({ status: "Paid", totalkWh: 1000 }),
+        createBillingInfo({ status: "Pending", totalkWh: 1500 }),
+        createBillingInfo({ status: "N/A", totalkWh: 2000 }),
       ];
 
       const result = await mapNewBillingInfo_to_DTO(billingData);
@@ -1173,9 +1173,9 @@ describe("Billing Info CRUD Operations", () => {
       expect(result[0].status).toBe("Paid");
       expect(result[1].status).toBe("Pending");
       expect(result[2].status).toBe("N/A");
-      expect(result[0].totalKWh).toBe(1000);
-      expect(result[1].totalKWh).toBe(1500);
-      expect(result[2].totalKWh).toBe(2000);
+      expect(result[0].totalkWh).toBe(1000);
+      expect(result[1].totalkWh).toBe(1500);
+      expect(result[2].totalkWh).toBe(2000);
     });
   });
 
@@ -1196,7 +1196,7 @@ describe("Billing Info CRUD Operations", () => {
         query: {
           userId: "test-user-id",
           status: "Paid",
-          totalKWh: 1000,
+          totalkWh: 1000,
         },
         options: {},
       };
@@ -1206,7 +1206,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(conditions).toEqual({
         userId: "test-user-id",
         status: "Paid",
-        totalKWh: 1000,
+        totalkWh: 1000,
       });
     });
 
@@ -1227,9 +1227,9 @@ describe("Billing Info CRUD Operations", () => {
     it("should handle numeric fields with zero values", () => {
       const param: HelperParam<NewBillingInfo> = {
         query: {
-          totalKWh: 0,
+          totalkWh: 0,
           balance: 0,
-          payPerKwh: 0,
+          payPerkWh: 0,
         },
         options: {},
       };
@@ -1237,9 +1237,9 @@ describe("Billing Info CRUD Operations", () => {
       const conditions = generateBillingInfoQueryConditions(param);
 
       expect(conditions).toEqual({
-        totalKWh: 0,
+        totalkWh: 0,
         balance: 0,
-        payPerKwh: 0,
+        payPerkWh: 0,
       });
     });
 
@@ -1247,7 +1247,7 @@ describe("Billing Info CRUD Operations", () => {
       const param: HelperParam<NewBillingInfo> = {
         query: {
           userId: "test-user-id",
-          totalKWh: undefined,
+          totalkWh: undefined,
           balance: undefined,
           status: undefined,
         },
@@ -1267,10 +1267,10 @@ describe("Billing Info CRUD Operations", () => {
           id: "test-id",
           userId: "test-user-id",
           date: "2024-01-15",
-          totalKWh: 1000,
+          totalkWh: 1000,
           balance: 500.75,
           status: "Paid",
-          payPerKwh: 0.15,
+          payPerkWh: 0.15,
           paymentId: "test-payment-id",
         },
         options: {},
@@ -1282,10 +1282,10 @@ describe("Billing Info CRUD Operations", () => {
         id: "test-id",
         userId: "test-user-id",
         date: "2024-01-15",
-        totalKWh: 1000,
+        totalkWh: 1000,
         balance: 500.75,
         status: "Paid",
-        payPerKwh: 0.15,
+        payPerkWh: 0.15,
         paymentId: "test-payment-id",
       });
     });
@@ -1308,7 +1308,7 @@ describe("Billing Info CRUD Operations", () => {
         (() => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
-            totalKWh: largeKWh,
+            totalkWh: largeKWh,
             balance: largeBalance,
           });
           return rest;
@@ -1318,7 +1318,7 @@ describe("Billing Info CRUD Operations", () => {
       const result = await addBillingInfo(billingData);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].totalKWh).toBe(largeKWh);
+      expect(result.value[0].totalkWh).toBe(largeKWh);
       expect(result.value[0].balance).toBe(largeBalance);
     });
 
@@ -1339,7 +1339,7 @@ describe("Billing Info CRUD Operations", () => {
           const { id: _, ...rest } = createBillingInfo({
             userId,
             balance: smallBalance,
-            payPerKwh: smallPayPerKwh,
+            payPerkWh: smallPayPerKwh,
           });
           return rest;
         })(),
@@ -1349,7 +1349,7 @@ describe("Billing Info CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.value[0].balance).toBe(smallBalance);
-      expect(result.value[0].payPerKwh).toBe(smallPayPerKwh);
+      expect(result.value[0].payPerkWh).toBe(smallPayPerKwh);
     });
 
     it("should handle special date formats", async () => {
@@ -1394,7 +1394,7 @@ describe("Billing Info CRUD Operations", () => {
           (() => {
             const { id: _, ...rest } = createBillingInfo({
               userId,
-              totalKWh: i * 100,
+              totalkWh: i * 100,
             });
             return rest;
           })(),

@@ -1,14 +1,14 @@
 import type { BarChartData } from "$routes/(components)/chart-bar.svelte";
 
 export type Total = {
-  totalKWh: number;
+  totalkWh: number;
   mainKWh: number;
   subkWh: number;
 };
 
 function calculateTotal(data: BarChartData[]): Total {
   return {
-    totalKWh: data.reduce((acc, curr) => acc + curr.totalKWh, 0),
+    totalkWh: data.reduce((acc, curr) => acc + curr.totalkWh, 0),
     mainKWh: data.reduce((acc, curr) => acc + curr.mainKWh, 0),
     subkWh: data.reduce((acc, curr) => acc + curr.subkWh, 0),
   };

@@ -203,14 +203,14 @@
       </Field.Field>
 
       <Field.Field>
-        <Field.Label for="{identity}-totalKWh">Total kWh</Field.Label>
+        <Field.Label for="{identity}-totalkWh">Total kWh</Field.Label>
         <Input
-          id="{identity}-totalKWh"
+          id="{identity}-totalkWh"
           placeholder="Enter total kWh"
           required
           min={0}
           step={0.01}
-          {...currentAction.fields.totalKWh.as("number")}
+          {...currentAction.fields.totalkWh.as("number")}
         />
         <Field.Description>Total electricity consumption</Field.Description>
       </Field.Field>
