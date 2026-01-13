@@ -1,12 +1,10 @@
 <script lang="ts">
-  import AuthForm from "$lib/components/auth-form.svelte";
+  import { AuthForm, VerifyEmailForm, Setup2FAForm } from "$routes/auth/(components)";
   import Logo from "$/components/logo.svelte";
   import hero from "$/assets/illustrations/hero.svg";
   import { Button } from "$/components/ui/button/index.js";
   import { Moon, Sun } from "$/assets/icons";
   import { toggleMode } from "mode-watcher";
-  import VerifyEmailForm from "$/components/verify-email-form.svelte";
-  import Setup2FAForm from "$/components/setup-2fa-form.svelte";
 
   let { data } = $props();
 </script>

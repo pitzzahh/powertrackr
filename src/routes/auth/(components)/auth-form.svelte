@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import type { Status } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "..";
+  import type { WithElementRef } from "$/index";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
     action: "login" | "register" | "verify-email" | "2fa-setup" | "reset-password";
   };
@@ -30,7 +30,7 @@
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { loginWithGithub } from "$/api/github.remote";
-  import { showError, showLoading, showSuccess } from "./toast";
+  import { showError, showLoading, showSuccess } from "$/components/toast";
 
   let { action, ref = $bindable(null), class: className, ...restProps }: AuthFormProps = $props();
 

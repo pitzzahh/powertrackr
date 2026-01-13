@@ -1,7 +1,8 @@
 <script lang="ts" module>
   import type { Status } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "..";
+  import type { WithElementRef } from "$/index";
+
   export type Setup2FAFormProps = WithElementRef<HTMLFormAttributes>;
 </script>
 
@@ -21,7 +22,7 @@
   import { setup2FA, signout } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { showError, showLoading, showSuccess } from "./toast";
+  import { showError, showLoading, showSuccess } from "$/components/toast";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
