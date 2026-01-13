@@ -1,6 +1,5 @@
 <script lang="ts" module>
   export type BillingInfoWithSubMetersFormProps = {
-    userId: string;
     action: "add" | "update";
     billingInfo?: BillingInfoDTO;
     /**
@@ -54,7 +53,7 @@
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
 
-  let { userId, action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
+  let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
   const identity = $props.id();
 

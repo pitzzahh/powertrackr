@@ -143,7 +143,7 @@
 {#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
   <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
     <div class="space-y-4 p-4">
-      <BillingInfoForm action="add" {callback} userId={user?.id || ""} />
+      <BillingInfoForm action="add" {callback} />
     </div>
   </ScrollArea>
 {/snippet}
