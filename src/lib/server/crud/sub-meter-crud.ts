@@ -107,7 +107,9 @@ export async function updateSubMeterBy(
 
 export async function getSubMeterBy(
   data: HelperParam<NewSubMeter>
-): Promise<HelperResult<Record<string, unknown>[]>> {
+): Promise<
+  HelperResult<Partial<NewSubMeter & { payment?: Payment | null; billingInfo?: BillingInfo }>[]>
+> {
   const { options } = data;
   const { limit, offset, order, with_payment, with_billing_info, fields } = options;
   const conditions = generateSubMeterQueryConditions(data);
@@ -142,14 +144,21 @@ export async function getSubMeters(data: HelperParam<NewSubMeter>): Promise<SubM
 }
 
 export async function mapNewSubMeter_to_DTO(
-  data: Record<string, unknown>[]
+  data: Partial<
+    NewSubMeter & {
+      subKwh?: number | null;
+      subkWh?: number | null;
+      payment?: Payment | null;
+      billingInfo?: BillingInfo;
+    }
+  >[]
 ): Promise<SubMeterDTO[]> {
   return Promise.all(
     data.map(async (_sub_meter) => {
       const sub_meter_info = {
         id: _sub_meter.id ?? "",
         billingInfoId: _sub_meter.billingInfoId ?? "",
-        subKwh: _sub_meter.subKwh ?? (_sub_meter as any).subkWh ?? null,
+        subKwh: _sub_meter.subKwh ?? _sub_meter.subkWh ?? null,
         subReadingLatest: _sub_meter.subReadingLatest ?? null,
         subReadingOld: _sub_meter.subReadingOld ?? null,
         paymentId: _sub_meter.paymentId ?? null,
@@ -160,13 +169,13 @@ export async function mapNewSubMeter_to_DTO(
       if ("payment" in _sub_meter) {
         return {
           ...sub_meter_info,
-          payment: _sub_meter.payment as Payment | null,
+          payment: _sub_meter.payment,
         } as SubMeterDTOWithPayment;
       }
       if ("billingInfo" in _sub_meter) {
         return {
           ...sub_meter_info,
-          billingInfo: _sub_meter.billingInfo as BillingInfo,
+          billingInfo: _sub_meter.billingInfo,
         } as SubMeterDTOWithBillingInfo;
       }
       return sub_meter_info;
