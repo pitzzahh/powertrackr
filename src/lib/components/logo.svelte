@@ -24,6 +24,7 @@
 </script>
 
 <Button
+  href="/"
   class={cn(
     "space-between flex cursor-pointer items-center justify-center rounded-sm text-primary",
     className
