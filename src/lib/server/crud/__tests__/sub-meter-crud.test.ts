@@ -810,7 +810,6 @@ describe("Sub Meter CRUD Operations", () => {
       await addSubMeter(subMeterData);
 
       const result = await getSubMeters({ query: {}, options: {} });
-      console.log({ result });
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBeDefined();
