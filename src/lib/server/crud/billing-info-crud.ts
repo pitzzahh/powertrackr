@@ -128,9 +128,7 @@ export async function mapNewBillingInfo_to_DTO(
   return data.map((_billing_info) => ({
     id: _billing_info.id ?? "",
     userId: _billing_info.userId ?? "",
-    ...(_billing_info.date && {
-      date: new Date(_billing_info.date),
-    }),
+    date: _billing_info.date ? new Date(_billing_info.date) : new Date(),
     totalkWh: _billing_info.totalkWh ?? 0,
     balance: _billing_info.balance ?? 0,
     status: (_billing_info.status as BillingInfoDTO["status"]) ?? "N/A",
