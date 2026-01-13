@@ -17,6 +17,14 @@ type PaymentQueryOptions = {
 export async function addPayment(
   data: Omit<NewPayment, "id">[]
 ): Promise<HelperResult<NewPayment[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 payment(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(payment)
     .values(
