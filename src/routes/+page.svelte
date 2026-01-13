@@ -8,6 +8,7 @@
   import { cubicInOut } from "svelte/easing";
   import { billingStore } from "$lib/stores/billing.svelte.js";
   import { Loader, Banknote } from "$lib/assets/icons";
+  import { goto } from "$app/navigation";
 
   let { data } = $props();
 
@@ -16,6 +17,7 @@
     billingStore.fetchData();
     if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
+      goto(page.url.pathname, { replaceState: true });
     }
   });
 </script>
