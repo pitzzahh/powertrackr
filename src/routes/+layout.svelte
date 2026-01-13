@@ -74,7 +74,7 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-{#if data.session && data.user && (data.user?.isOauthUser || (data.user?.emailVerified && data.user?.registeredTwoFactor && data.session?.twoFactorVerified))}
+{#if data.session && data.user && (data.user?.isOauthUser || data.user?.emailVerified || (data.user?.registeredTwoFactor && data.session?.twoFactorVerified))}
   <div class="relative h-screen w-full overflow-hidden">
     <Header user={data.user} />
 
