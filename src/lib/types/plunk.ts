@@ -81,16 +81,14 @@ export type PlunkContact = {
 export type PlunkTemplate = {
   id: string;
   name: string;
+  description?: string;
   subject?: string;
-  /**
-   * HTML content for the template (if available)
-   */
-  html?: string;
-  /**
-   * Alternate content field names that may appear in responses
-   */
-  content?: string;
   body?: string;
+  from?: string;
+  fromName?: string | null;
+  replyTo?: string | null;
+  type?: "TRANSACTIONAL" | "MARKETING" | string;
+  projectId?: string;
   createdAt?: string;
   updatedAt?: string;
   [k: string]: unknown;

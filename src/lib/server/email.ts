@@ -18,8 +18,8 @@ import { env } from "$env/dynamic/private";
 import { addEmailVerificationRequest } from "$/server/crud/email-verification-request-crud";
 import type { NewEmailVerificationRequest } from "$/types/email-verification-request";
 
-const PLUNK_BASE = "https://next-api.useplunk.com";
-const PLUNK_KEY = env.PLUNK_SECRET_KEY ?? env.PLUNK_API_KEY ?? undefined;
+const PLUNK_BASE = env.PLUNK_BASE_URL ?? "https://api.plunk.com";
+const PLUNK_KEY = env.PLUNK_SECRET_KEY ?? undefined;
 
 import type { PlunkTemplate, PlunkContact } from "$/types/plunk";
 
@@ -113,29 +113,75 @@ export async function sendVerificationEmail(email: string, code: string, timeout
   try {
     const tplResp = await plunkRequest("/templates?limit=100", { method: "GET" });
     const tplJson = await tplResp.json().catch(() => null);
-    if (tplJson && tplJson.success && Array.isArray(tplJson.data?.items)) {
-      const items = tplJson.data.items as PlunkTemplate[];
-      console.log({ items });
-      const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "email verification");
-      if (tpl) {
-        // Try to use template content if possible (best-effort string replacement).
-        const subject = (tpl.subject as string) ?? `Verify your email`;
-        const raw = (tpl.html as string) ?? (tpl.content as string) ?? (tpl.body as string) ?? "";
-        const body = raw
-          ? applyTemplateVariables(raw, { code, timeout: timeoutMinutes })
-          : `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
+    // Normalize different possible response shapes:
+    // - { data: { items: [...] } }
+    // - { data: [...] }
+    // - direct array
+    const rawData = tplJson?.data ?? tplJson;
+    const items: PlunkTemplate[] = Array.isArray(rawData?.items)
+      ? rawData.items
+      : Array.isArray(rawData)
+        ? (rawData as PlunkTemplate[])
+        : [];
+    const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "email verification");
+    if (tpl && tpl.id) {
+      // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
+      const payload: Record<string, unknown> = {
+        to: email,
+        template: tpl.id,
+        data: { code, timeout: `${timeoutMinutes} minutes` },
+      };
 
-        // Send using the public transactional endpoint with inline content
+      try {
         const sendResp = await plunkRequest("/v1/send", {
           method: "POST",
-          body: JSON.stringify({ to: email, subject, body }),
+          body: JSON.stringify(payload),
         });
         const sendJson = await sendResp.json().catch(() => null);
-        if (!sendJson || sendJson.success === false) {
-          console.warn("Plunk send (template path) failed:", sendJson?.error ?? sendJson);
+
+        // If Plunk complains about a missing sender ('from') retry with the default sender
+        if (
+          sendJson &&
+          sendJson.success === false &&
+          sendJson.error?.code === "VALIDATION_ERROR" &&
+          Array.isArray(sendJson.error?.errors) &&
+          (sendJson.error.errors as any[]).some((e) => e.field === "from")
+        ) {
+          const sendResp2 = await plunkRequest("/v1/send", {
+            method: "POST",
+            body: JSON.stringify({ ...payload, from: tpl.from }),
+          });
+          const sendJson2 = await sendResp2.json().catch(() => null);
+          if (sendJson2 && sendJson2.success) return sendJson2;
+          console.warn("Plunk send (template + from retry) failed:", sendJson2?.error ?? sendJson2);
         }
-        return sendJson;
+
+        if (sendJson && sendJson.success) return sendJson;
+        console.warn("Plunk send (template id) failed:", sendJson?.error ?? sendJson);
+      } catch (e) {
+        console.warn("Error sending with Plunk template id:", e);
       }
+
+      // Fallback: if the template send fails, render the template content locally (if available)
+      // and send a simple inline message while including a default `from`.
+      const subject = (tpl.subject as string) ?? `Verify your email`;
+      const raw = (tpl.html as string) ?? (tpl.content as string) ?? (tpl.body as string) ?? "";
+      const body = raw
+        ? applyTemplateVariables(raw, { code, timeout: `${timeoutMinutes} minutes` })
+        : `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
+
+      const sendRespFallback = await plunkRequest("/v1/send", {
+        method: "POST",
+        body: JSON.stringify({ to: email, subject, body, from: tpl.from }),
+      });
+      const sendJsonFallback = await sendRespFallback.json().catch(() => null);
+      if (!sendJsonFallback || sendJsonFallback.success === false) {
+        console.warn(
+          "Plunk send (template fallback) failed:",
+          sendJsonFallback?.error ?? sendJsonFallback
+        );
+      }
+      return sendJsonFallback;
     }
   } catch (e) {
     console.warn("Error while fetching templates from Plunk:", e);
