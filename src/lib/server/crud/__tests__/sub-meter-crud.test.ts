@@ -802,17 +802,15 @@ describe("Sub Meter CRUD Operations", () => {
       const billingId = billingResult.value[0].id;
 
       const subMeterData = [
-        (() => {
-          const { id: _, ...rest } = createSubMeter({
-            billingInfoId: billingId,
-            subkWh: 333,
-          });
-          return rest;
-        })(),
+        createSubMeter({
+          billingInfoId: billingId,
+          subkWh: 333,
+        }),
       ];
       await addSubMeter(subMeterData);
 
       const result = await getSubMeters({ query: {}, options: {} });
+      console.log({ result });
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBeDefined();
@@ -913,11 +911,11 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("mapNewSubMeter_to_DTO should handle null/undefined values", async () => {
-      const data: Record<string, unknown>[] = [
+      const data: Partial<NewSubMeter>[] = [
         {
           id: undefined,
           billingInfoId: undefined,
-          subKwh: undefined,
+          subkWh: undefined,
           subReadingLatest: undefined,
           subReadingOld: undefined,
           paymentId: undefined,
