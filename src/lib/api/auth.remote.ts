@@ -145,7 +145,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   if (!userResult.emailVerified) {
     return redirect(302, "/auth?act=verify-email");
   }
-  if (!userResult.registeredTwoFactor) {
+  if (userResult.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
   return redirect(302, "/");
@@ -177,7 +177,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
     query: { id: event.locals.session.userId },
     options: { with_session: false, fields: ["registeredTwoFactor"] },
   })) as HelperResult<NewUser[]>;
-  if (!updatedUser.registeredTwoFactor) {
+  if (updatedUser.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
   return redirect(302, "/");
