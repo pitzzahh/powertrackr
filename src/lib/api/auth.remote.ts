@@ -21,11 +21,11 @@ import { error, invalid, redirect } from "@sveltejs/kit";
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return redirect(303, "/auth");
+    return redirect(303, "/auth?act=login");
   }
   await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
-  redirect(303, "/auth");
+  redirect(303, "/auth?act=login");
 });
 
 export const login = form(loginSchema, async (user) => {
@@ -71,10 +71,10 @@ export const login = form(loginSchema, async (user) => {
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
   if (!userResult.githubId && !userResult.emailVerified) {
-    return redirect(302, "/auth/verify-email");
+    return redirect(302, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
-    return redirect(302, "/auth/2fa/setup");
+    return redirect(302, "/auth?act=2fa-setup");
   }
   return redirect(302, "/");
 });
@@ -143,10 +143,10 @@ export const register = form(registerSchema, async (newUser, issues) => {
   setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
   if (!userResult.emailVerified) {
-    return redirect(302, "/auth/verify-email");
+    return redirect(302, "/auth?act=verify-email");
   }
   if (!userResult.registeredTwoFactor) {
-    return redirect(302, "/auth/2fa/setup");
+    return redirect(302, "/auth?act=2fa-setup");
   }
   return redirect(302, "/");
 });
@@ -156,7 +156,11 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   if (event.locals.session === null) {
     error(401, "Not authenticated");
   }
-  const { code: _code } = data;
+  const { code } = data;
+
+  if (code != "012345") {
+    error(400, "Invalid verification code");
+  }
   // TODO: Implement proper verification
   // For now, assume code is correct and set emailVerified
   const updateResult = await updateUserBy(
@@ -174,7 +178,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
     options: { with_session: false, fields: ["registeredTwoFactor"] },
   })) as HelperResult<NewUser[]>;
   if (!updatedUser.registeredTwoFactor) {
-    return redirect(302, "/auth/2fa/setup");
+    return redirect(302, "/auth?act=2fa-setup");
   }
   return redirect(302, "/");
 });

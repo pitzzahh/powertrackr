@@ -3,7 +3,7 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "..";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
-    action: "login" | "register";
+    action: "login" | "register" | "verify-email" | "2fa-setup" | "reset-password";
   };
 
   type AuthFormState = {
