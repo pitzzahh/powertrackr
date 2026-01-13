@@ -12,6 +12,8 @@ env:
   ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
   GITHUB_CLIENT_ID: ${{ secrets.CLIENT_ID }}
   GITHUB_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+  PLUNK_BASE_URL: ${{ secrets.PLUNK_BASE_URL }}
+  PLUNK_SECRET_KEY: ${{ secrets.PLUNK_SECRET_KEY }}
 
 jobs:
   build-and-test:
