@@ -15,8 +15,10 @@ import {
   createPayment,
   resetSequence,
 } from "./helpers/factories";
+import { calculatePayPerKwh } from "$lib";
 import { addUser } from "../user-crud";
-import { addPayment } from "../payment-crud";
+import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
+import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/types/helper";
 
@@ -281,6 +283,250 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0].date).toBe(testDate);
+    });
+
+    describe("Billing Info CRUD Integration (payments & sub-meters) - manual CRUD flow", () => {
+      it("should create main and sub payments correctly with multiple sub-meters (manual CRUD flow)", async () => {
+        const userData = [
+          (() => {
+            const { id: _, ...rest } = createUser();
+            return rest;
+          })(),
+        ];
+        const userResult = await addUser(userData);
+        const userId = userResult.value[0].id;
+
+        const date = "2024-04-01";
+        const totalKWh = 1000;
+        const balance = 1000;
+
+        const subMeters = [
+          { subReadingLatest: 1100, subReadingOld: 1000 },
+          { subReadingLatest: 2050, subReadingOld: 2000 },
+        ];
+
+        const payPer = calculatePayPerKwh(balance, totalKWh);
+
+        const expectedSubAmounts = subMeters.map((s) => {
+          const subkWh = s.subReadingLatest - s.subReadingOld;
+          return Number((subkWh * payPer).toFixed(2));
+        });
+
+        const totalSub = expectedSubAmounts.reduce((acc, x) => acc + x, 0);
+        const expectedMain = Number((balance - totalSub).toFixed(2));
+
+        // Create payments for sub meters
+        const subPaymentIds: (string | null)[] = [];
+        for (const amount of expectedSubAmounts) {
+          if (amount > 0) {
+            const p = await addPayment([{ amount, date: new Date().toISOString() }]);
+            subPaymentIds.push(p.value[0].id);
+          } else {
+            subPaymentIds.push(null);
+          }
+        }
+
+        // Create main payment
+        const mainPayment = await addPayment([
+          { amount: expectedMain, date: new Date().toISOString() },
+        ]);
+        const mainPaymentId = mainPayment.value[0].id;
+
+        // Insert billing info referencing main payment id
+        const billingData = [
+          (() => {
+            const { id: _, ...rest } = createBillingInfo({
+              userId,
+              date,
+              totalKWh,
+              balance,
+              status: "Paid",
+              payPerKwh: payPer,
+              paymentId: mainPaymentId,
+            });
+            return rest;
+          })(),
+        ];
+        const billingResult = await addBillingInfo(billingData);
+        expect(billingResult.valid).toBe(true);
+        const billingId = billingResult.value[0].id;
+
+        // Insert sub meters
+        const subMeterData = subMeters.map((s, idx) => ({
+          billingInfoId: billingId,
+          subkWh: s.subReadingLatest - s.subReadingOld,
+          subReadingLatest: s.subReadingLatest,
+          subReadingOld: s.subReadingOld,
+          paymentId: subPaymentIds[idx],
+        }));
+        await addSubMeter(subMeterData);
+
+        // Assertions
+        const billing = (await getBillingInfoBy({ query: { id: billingId }, options: {} }))
+          .value[0];
+        expect(billing.paymentId).toBe(mainPaymentId);
+
+        const mainPay = (await getPaymentBy({ query: { id: mainPaymentId }, options: {} }))
+          .value[0];
+        expect((mainPay as any).amount).toBeCloseTo(expectedMain, 2);
+
+        const subs = await getSubMeterBy({
+          query: { billingInfoId: billingId },
+          options: { with_payment: true },
+        });
+        expect(subs.valid).toBe(true);
+        expect(subs.value).toHaveLength(subMeters.length);
+
+        for (let i = 0; i < subs.value.length; i++) {
+          const s = subs.value[i] as any;
+          if (expectedSubAmounts[i] > 0) {
+            expect((s.payment as any).amount).toBeCloseTo(expectedSubAmounts[i], 2);
+          } else {
+            expect(s.payment).toBeNull();
+          }
+        }
+      });
+
+      it("should create main payment equal to balance when zero sub-meters (manual CRUD flow)", async () => {
+        const userData = [
+          (() => {
+            const { id: _, ...rest } = createUser();
+            return rest;
+          })(),
+        ];
+        const userResult = await addUser(userData);
+        const userId = userResult.value[0].id;
+
+        const date = "2024-04-15";
+        const totalKWh = 1000;
+        const balance = 250;
+
+        const payPer = calculatePayPerKwh(balance, totalKWh);
+
+        // No sub-meter payments; main payment equals full balance
+        const mainPayment = await addPayment([{ amount: balance, date: new Date().toISOString() }]);
+        const mainPaymentId = mainPayment.value[0].id;
+
+        const billingData = [
+          (() => {
+            const { id: _, ...rest } = createBillingInfo({
+              userId,
+              date,
+              totalKWh,
+              balance,
+              status: "Pending",
+              payPerKwh: payPer,
+              paymentId: mainPaymentId,
+            });
+            return rest;
+          })(),
+        ];
+        const billingResult = await addBillingInfo(billingData);
+        expect(billingResult.valid).toBe(true);
+        const billingId = billingResult.value[0].id;
+
+        const subs = await getSubMeterBy({ query: { billingInfoId: billingId }, options: {} });
+        expect(subs.valid).toBe(false);
+        expect(subs.value).toHaveLength(0);
+
+        const mainPay = (await getPaymentBy({ query: { id: mainPaymentId }, options: {} }))
+          .value[0];
+        expect((mainPay as any).amount).toBeCloseTo(balance, 2);
+      });
+
+      it("should update sub-meter and corresponding payment via CRUDs", async () => {
+        const userData = [
+          (() => {
+            const { id: _, ...rest } = createUser();
+            return rest;
+          })(),
+        ];
+        const userResult = await addUser(userData);
+        const userId = userResult.value[0].id;
+
+        const date = "2024-05-01";
+        const totalKWh = 500;
+        const balance = 200;
+
+        const payPer = calculatePayPerKwh(balance, totalKWh);
+
+        // create initial sub-payment and billing
+        const initialSubKwh = 10;
+        const initialAmount = Number((initialSubKwh * payPer).toFixed(2));
+        const subPayment = await addPayment([
+          { amount: initialAmount, date: new Date().toISOString() },
+        ]);
+        const subPaymentId = subPayment.value[0].id;
+
+        const mainPayment = await addPayment([
+          { amount: balance - initialAmount, date: new Date().toISOString() },
+        ]);
+        const mainPaymentId = mainPayment.value[0].id;
+
+        const billingData = [
+          (() => {
+            const { id: _, ...rest } = createBillingInfo({
+              userId,
+              date,
+              totalKWh,
+              balance,
+              status: "Paid",
+              payPerKwh: payPer,
+              paymentId: mainPaymentId,
+            });
+            return rest;
+          })(),
+        ];
+        const billingResult = await addBillingInfo(billingData);
+        const billingId = billingResult.value[0].id;
+
+        // create sub meter referencing the sub payment
+        const addSub = await addSubMeter([
+          {
+            billingInfoId: billingId,
+            subkWh: initialSubKwh,
+            subReadingLatest: 1500,
+            subReadingOld: 1490,
+            paymentId: subPaymentId,
+          },
+        ]);
+        expect(addSub.valid).toBe(true);
+        const subId = addSub.value[0].id;
+
+        // Now update the sub-meter's readings -> new kwh and payment
+        const newSubKwh = 20;
+        const newAmount = Number((newSubKwh * payPer).toFixed(2));
+
+        const updateSubParam = {
+          query: { id: subId },
+          options: {},
+        };
+        const updatedSub = await updateSubMeterBy(updateSubParam, {
+          subkWh: newSubKwh,
+          subReadingLatest: 1520,
+          subReadingOld: 1500,
+        });
+        expect(updatedSub.valid).toBe(true);
+        expect(updatedSub.value[0].subkWh).toBe(newSubKwh);
+
+        // Update associated payment accordingly
+        const updatedPayment = await updatePaymentBy(
+          { query: { id: subPaymentId }, options: {} },
+          { amount: newAmount }
+        );
+        expect(updatedPayment.valid).toBe(true);
+        expect((updatedPayment.value[0] as any).amount).toBeCloseTo(newAmount, 2);
+
+        // Fetch sub with payment and verify
+        const fetched = await getSubMeterBy({
+          query: { id: subId },
+          options: { with_payment: true },
+        });
+        expect(fetched.valid).toBe(true);
+        const fetchedSub = fetched.value[0] as any;
+        expect(fetchedSub.subkWh).toBe(newSubKwh);
+        expect((fetchedSub.payment as any).amount).toBeCloseTo(newAmount, 2);
+      });
     });
 
     it("should find billing info by status", async () => {
