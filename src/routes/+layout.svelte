@@ -18,6 +18,7 @@
   import { sidebarStore } from "$/stores/sidebar.svelte";
   import { Toaster } from "svelte-sonner";
   import { untrack } from "svelte";
+  import { onNavigate } from "$app/navigation";
 
   const { children, data } = $props();
 
@@ -43,6 +44,16 @@
       pendingCount = 0;
     },
   });
+
+  onNavigate((navigation) => {
+    if (!document.startViewTransition) return;
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 </script>
 
 <ModeWatcher />
@@ -63,7 +74,7 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-{#if (data.user?.isOauthUser || data.user?.emailVerified) && data.session && (!data.user?.registeredTwoFactor || data.session?.twoFactorVerified)}
+{#if data.session && data.user && (data.user?.isOauthUser || (data.user?.emailVerified && data.user?.registeredTwoFactor && data.session?.twoFactorVerified))}
   <div class="relative h-screen w-full overflow-hidden">
     <Header user={data.user} />
 
