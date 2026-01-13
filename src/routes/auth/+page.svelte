@@ -5,6 +5,8 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Moon, Sun } from "$/assets/icons";
   import { toggleMode } from "mode-watcher";
+  import VerifyEmailForm from "$/components/verify-email-form.svelte";
+  import Setup2FAForm from "$/components/setup-2fa-form.svelte";
 
   let { data } = $props();
 </script>
@@ -25,7 +27,13 @@
     </div>
     <div class="flex flex-1 items-center justify-center">
       <div class="w-full max-w-xs">
-        <AuthForm action={data.action} />
+        {#if ["login", "register"].includes(data.action)}
+          <AuthForm action={data.action} />
+        {:else if data.action === "verify-email"}
+          <VerifyEmailForm />
+        {:else if data.action === "2fa-setup"}
+          <Setup2FAForm />
+        {/if}
       </div>
     </div>
   </div>
