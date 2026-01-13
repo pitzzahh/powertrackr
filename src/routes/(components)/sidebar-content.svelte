@@ -144,7 +144,7 @@
               size={collapsed ? "icon" : "default"}
               class={[
                 {
-                  "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground": true,
+                  "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground data-[active=true]:text-primary": true,
                   "justify-start": !collapsed,
                 },
               ]}
