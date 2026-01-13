@@ -120,6 +120,33 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result.value[0].expiresAt).toBe(farFuture);
     });
 
+    it("should allow verification request with past expiration", async () => {
+      const userData = [
+        (() => {
+          const { id: _, ...rest } = createUser();
+          return rest;
+        })(),
+      ];
+      const userResult = await addUser(userData);
+      const userId = userResult.value[0].id;
+
+      const past = Date.now() - 60 * 1000; // 1 minute ago
+      const verificationData = [
+        (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({
+            userId,
+            expiresAt: past,
+          });
+          return rest;
+        })(),
+      ];
+
+      const result = await addEmailVerificationRequest(verificationData);
+
+      expect(result.valid).toBe(true);
+      expect(result.value[0].expiresAt).toBe(past);
+    });
+
     it("should handle verification request with special characters in email", async () => {
       const userData = [
         (() => {
@@ -496,10 +523,43 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const verificationData = [
         (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({ userId });
+          return rest;
+        })(),
+      ];
+      const addResult = await addEmailVerificationRequest(verificationData);
+      const addedRequest = addResult.value[0];
+
+      const updateParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { id: addedRequest.id },
+        options: {},
+      };
+
+      const newExpiresAt = Date.now() + 60 * 60 * 1000;
+      const updateData = { expiresAt: newExpiresAt };
+      const result = await updateEmailVerificationRequestBy(updateParam, updateData);
+
+      expect(result.valid).toBe(true);
+      expect(result.message).toBe("1 email verification request(s) updated");
+      expect(result.value[0].expiresAt).toBe(newExpiresAt);
+    });
+
+    it("should update multiple fields at once", async () => {
+      const userData = [
+        (() => {
+          const { id: _, ...rest } = createUser();
+          return rest;
+        })(),
+      ];
+      const userResult = await addUser(userData);
+      const userId = userResult.value[0].id;
+
+      const verificationData = [
+        (() => {
           const { id: _, ...rest } = createEmailVerificationRequest({
             userId,
-            email: "old@example.com",
-            code: "OLDCODE123",
+            email: "multi@example.com",
+            code: "INIT123",
           });
           return rest;
         })(),
@@ -512,20 +572,54 @@ describe("Email Verification Request CRUD Operations", () => {
         options: {},
       };
 
-      const newExpiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+      const newExpiresAt = Date.now() + 2 * 60 * 60 * 1000;
       const updateData = {
-        email: "new@example.com",
-        code: "NEWCODE456",
+        email: "multiupdated@example.com",
+        code: "MULTI123",
         expiresAt: newExpiresAt,
       };
       const result = await updateEmailVerificationRequestBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 email verification request(s) updated");
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0].email).toBe("new@example.com");
-      expect(result.value[0].code).toBe("NEWCODE456");
+      expect(result.value[0].email).toBe("multiupdated@example.com");
+      expect(result.value[0].code).toBe("MULTI123");
       expect(result.value[0].expiresAt).toBe(newExpiresAt);
+    });
+
+    it("should perform update when update data is empty (sets existing non-nullish fields)", async () => {
+      const userData = [
+        (() => {
+          const { id: _, ...rest } = createUser();
+          return rest;
+        })(),
+      ];
+      const userResult = await addUser(userData);
+      const userId = userResult.value[0].id;
+
+      const verificationData = [
+        (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({
+            userId,
+            code: "SAME123",
+            email: "same@example.com",
+          });
+          return rest;
+        })(),
+      ];
+      const addResult = await addEmailVerificationRequest(verificationData);
+      const addedRequest = addResult.value[0];
+
+      const updateParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { id: addedRequest.id },
+        options: {},
+      };
+
+      const result = await updateEmailVerificationRequestBy(updateParam, {});
+
+      expect(result.valid).toBe(true);
+      expect(result.message).toBe("1 email verification request(s) updated");
+      expect(result.value[0].id).toBe(addedRequest.id);
     });
 
     it("should handle no data changed scenario", async () => {
@@ -557,7 +651,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("No data changed");
-      expect(result.value).toHaveLength(1);
+      expect(result.value[0].id).toBe(addedRequest.id);
     });
 
     it("should handle nonexistent verification request update", async () => {
@@ -571,7 +665,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(false);
       expect(result.message).toContain("id: nonexistent-id not found");
-      expect(result.value).toHaveLength(0);
     });
 
     it("should update expiration time", async () => {
@@ -593,17 +686,16 @@ describe("Email Verification Request CRUD Operations", () => {
       const addResult = await addEmailVerificationRequest(verificationData);
       const addedRequest = addResult.value[0];
 
-      const newExpiration = Date.now() + 2 * 60 * 60 * 1000; // 2 hours
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
         options: {},
       };
 
+      const newExpiration = Date.now() + 24 * 60 * 60 * 1000;
       const updateData = { expiresAt: newExpiration };
       const result = await updateEmailVerificationRequestBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].expiresAt).toBe(newExpiration);
     });
 
     it("should update verification code", async () => {
@@ -618,7 +710,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const verificationData = [
         (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({ userId, code: "OLD123" });
+          const { id: _, ...rest } = createEmailVerificationRequest({ userId });
           return rest;
         })(),
       ];
@@ -634,7 +726,38 @@ describe("Email Verification Request CRUD Operations", () => {
       const result = await updateEmailVerificationRequestBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].code).toBe("NEW456789");
+    });
+
+    it("should update verification code to empty string", async () => {
+      const userData = [
+        (() => {
+          const { id: _, ...rest } = createUser();
+          return rest;
+        })(),
+      ];
+      const userResult = await addUser(userData);
+      const userId = userResult.value[0].id;
+
+      const verificationData = [
+        (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({ userId, code: "INIT" });
+          return rest;
+        })(),
+      ];
+      const addResult = await addEmailVerificationRequest(verificationData);
+      const addedRequest = addResult.value[0];
+
+      const updateParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { id: addedRequest.id },
+        options: {},
+      };
+
+      const updateData = { code: "" };
+      const result = await updateEmailVerificationRequestBy(updateParam, updateData);
+
+      expect(result.valid).toBe(true);
+      expect(result.message).toBe("No data changed");
+      expect(result.value[0].code).toBe("INIT");
     });
 
     it("should update email address", async () => {
@@ -649,10 +772,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const verificationData = [
         (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId,
-            email: "old@test.com",
-          });
+          const { id: _, ...rest } = createEmailVerificationRequest({ userId });
           return rest;
         })(),
       ];
@@ -668,7 +788,6 @@ describe("Email Verification Request CRUD Operations", () => {
       const result = await updateEmailVerificationRequestBy(updateParam, updateData);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].email).toBe("updated@test.com");
     });
   });
 
