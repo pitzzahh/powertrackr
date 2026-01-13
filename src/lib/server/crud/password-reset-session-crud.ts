@@ -20,6 +20,14 @@ type PasswordResetSessionQueryOptions = {
 export async function addPasswordResetSession(
   data: Omit<NewPasswordResetSession, "id">[]
 ): Promise<HelperResult<NewPasswordResetSession[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 password reset session(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(passwordResetSession)
     .values(
