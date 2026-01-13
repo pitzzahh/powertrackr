@@ -21,6 +21,8 @@ import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
 import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/types/helper";
+import type { Payment } from "$/types/payment";
+import type { SubMeter } from "$/types/sub-meter";
 
 describe("Billing Info CRUD Operations", () => {
   beforeEach(() => {
@@ -378,9 +380,11 @@ describe("Billing Info CRUD Operations", () => {
         expect(subs.value).toHaveLength(subMeters.length);
 
         for (let i = 0; i < subs.value.length; i++) {
-          const s = subs.value[i] as any;
+          const s = subs.value[i] as Partial<SubMeter> & {
+            payment: Record<keyof Payment, unknown>;
+          };
           if (expectedSubAmounts[i] > 0) {
-            expect((s.payment as any).amount).toBeCloseTo(expectedSubAmounts[i], 2);
+            expect(s.payment.amount).toBeCloseTo(expectedSubAmounts[i], 2);
           } else {
             expect(s.payment).toBeNull();
           }
