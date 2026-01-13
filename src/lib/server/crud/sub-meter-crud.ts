@@ -26,6 +26,14 @@ type SubMeterQueryOptions = {
 export async function addSubMeter(
   data: Omit<NewSubMeter, "id">[]
 ): Promise<HelperResult<NewSubMeter[]>> {
+  if (data.length === 0) {
+    return {
+      valid: true,
+      message: "0 sub meter(s) added",
+      value: [],
+    };
+  }
+
   const insert_result = await db
     .insert(subMeter)
     .values(
@@ -75,6 +83,15 @@ export async function updateSubMeterBy(
       message: "No data changed",
       value: [old_sub_meter],
     };
+  }
+
+  // Normalize alternate subKwh key to schema key subKWh (handles both variants)
+  if (
+    Object.prototype.hasOwnProperty.call(changed_data, "subKwh") &&
+    !Object.prototype.hasOwnProperty.call(changed_data, "subKWh")
+  ) {
+    (changed_data as any).subKWh = (changed_data as any).subKwh;
+    delete (changed_data as any).subKwh;
   }
 
   const whereSQL = buildWhereSQL(conditions);
@@ -132,7 +149,7 @@ export async function mapNewSubMeter_to_DTO(
       const sub_meter_info = {
         id: _sub_meter.id ?? "",
         billingInfoId: _sub_meter.billingInfoId ?? "",
-        subKwh: _sub_meter.subKwh ?? null,
+        subKwh: _sub_meter.subKwh ?? (_sub_meter as any).subKWh ?? null,
         subReadingLatest: _sub_meter.subReadingLatest ?? null,
         subReadingOld: _sub_meter.subReadingOld ?? null,
         paymentId: _sub_meter.paymentId ?? null,
