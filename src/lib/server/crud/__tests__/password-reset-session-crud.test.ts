@@ -255,6 +255,7 @@ describe("Password Reset Session CRUD Operations", () => {
       });
 
       expect(result.valid).toBe(true);
+      expect(added).toBeDefined();
       expect(result.value[0].expiresAt).toBe(ts);
     });
 
