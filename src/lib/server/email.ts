@@ -22,6 +22,7 @@ const PLUNK_BASE = env.PLUNK_BASE_URL ?? "https://api.plunk.com";
 const PLUNK_KEY = env.PLUNK_SECRET_KEY ?? undefined;
 
 import type { PlunkTemplate, PlunkContact } from "$/types/plunk";
+import { generateRandomOTP } from "./encryption";
 
 /** Whether the Plunk client is configured (secret key present) */
 export const isPlunkConfigured = Boolean(PLUNK_KEY);
@@ -216,9 +217,10 @@ export async function createAndSendEmailVerification(
   email: string,
   timeoutMinutes = Number(env.EMAIL_VERIFICATION_TIMEOUT_MINUTES ?? 15)
 ) {
-  // Generate a 6-digit numeric code
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Math.floor((Date.now() + timeoutMinutes * 60 * 1000) / 1000);
+  const code = generateRandomOTP();
+  // Store expiration as milliseconds since epoch so comparisons with Date.now()
+  // are straightforward and consistent across the codebase.
+  const expiresAt = Date.now() + timeoutMinutes * 60 * 1000;
 
   // Add to DB
   const added = await addEmailVerificationRequest([{ userId, email, code, expiresAt }]);
@@ -229,8 +231,8 @@ export async function createAndSendEmailVerification(
 
   const verification = added.value[0] as NewEmailVerificationRequest;
 
-  // Best-effort send
-  await sendVerificationEmail(email, verification.code, timeoutMinutes);
+  // Best-effort send (do not throw if sending fails)
+  await sendVerificationEmail(email, verification.code, timeoutMinutes).catch(() => null);
 
   return verification;
 }
