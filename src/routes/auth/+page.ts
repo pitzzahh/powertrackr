@@ -1,5 +1,5 @@
-import type { AuthFormProps } from "$/components/auth-form.svelte";
 import { redirect } from "@sveltejs/kit";
+import type { AuthFormProps } from "$routes/auth/(components)/auth-form.svelte";
 
 // TODO: Validate if user is already authenticated and redirect accordingly
 export function load({ url: { searchParams, pathname } }) {
@@ -18,6 +18,6 @@ export function load({ url: { searchParams, pathname } }) {
     redirect(307, `/auth?act=${act}`);
   }
   return {
-    action: act as (typeof actions)[number],
+    action: act as AuthFormProps["action"],
   };
 }
