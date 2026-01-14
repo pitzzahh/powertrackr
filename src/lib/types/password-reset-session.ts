@@ -8,7 +8,7 @@ export type PasswordResetSessionDTO = {
   userId: string;
   email: string;
   code: string;
-  expiresAt: number;
+  expiresAt: string;
   emailVerified: boolean;
   twoFactorVerified: boolean;
 };
