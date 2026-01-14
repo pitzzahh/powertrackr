@@ -218,9 +218,8 @@ export async function createAndSendEmailVerification(
   timeoutMinutes = Number(env.EMAIL_VERIFICATION_TIMEOUT_MINUTES ?? 15)
 ) {
   const code = generateRandomOTP();
-  // Store expiration as milliseconds since epoch so comparisons with Date.now()
-  // are straightforward and consistent across the codebase.
-  const expiresAt = Date.now() + timeoutMinutes * 60 * 1000;
+  // Store expiration as an ISO 8601 string so it's easy to read and parse.
+  const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000).toISOString();
 
   // Add to DB
   const added = await addEmailVerificationRequest([{ userId, email, code, expiresAt }]);
