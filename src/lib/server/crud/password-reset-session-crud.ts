@@ -32,9 +32,26 @@ export async function addPasswordResetSession(
     .insert(passwordResetSession)
     .values(
       data.map((session_data) => {
+        // Normalize expiresAt to an ISO 8601 string (TEXT) so callers may pass
+        // a number (seconds or ms), a Date, or a string and the DB will keep a
+        // consistent string representation.
+        const normalized = { ...session_data } as any;
+        if (normalized.expiresAt !== undefined) {
+          const raw = normalized.expiresAt;
+          if (typeof raw === "number") {
+            normalized.expiresAt =
+              raw < 1_000_000_000_000
+                ? new Date(raw * 1000).toISOString()
+                : new Date(raw).toISOString();
+          } else if (raw instanceof Date) {
+            normalized.expiresAt = raw.toISOString();
+          } else {
+            normalized.expiresAt = String(raw);
+          }
+        }
         return {
           id: crypto.randomUUID(),
-          ...session_data,
+          ...normalized,
         };
       })
     )
@@ -74,6 +91,22 @@ export async function updatePasswordResetSessionBy(
       message: "No data changed",
       value: [old_session],
     };
+  }
+
+  // Normalize any expiresAt update to an ISO 8601 string
+  if ("expiresAt" in changed_data && changed_data.expiresAt !== undefined) {
+    const raw = changed_data.expiresAt as unknown;
+    if (typeof raw === "number") {
+      changed_data.expiresAt =
+        (raw as number) < 1_000_000_000_000
+          ? new Date((raw as number) * 1000).toISOString()
+          : new Date(raw as number).toISOString();
+    } else if (raw instanceof Date) {
+      changed_data.expiresAt = raw.toISOString();
+    } else {
+      // assume it's already a string
+      changed_data.expiresAt = raw as any;
+    }
   }
 
   const whereSQL = buildWhereSQL(conditions);
@@ -133,7 +166,8 @@ export async function mapNewPasswordResetSession_to_DTO(
     userId: _session.userId ?? "",
     email: _session.email ?? "",
     code: _session.code ?? "",
-    expiresAt: _session.expiresAt ?? 0,
+    // expiresAt is stored as an ISO 8601 string (TEXT)
+    expiresAt: _session.expiresAt ?? "",
     emailVerified: _session.emailVerified ?? false,
     twoFactorVerified: _session.twoFactorVerified ?? false,
   }));
@@ -203,7 +237,18 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "code") {
       conditions.push(eq(passwordResetSession.code, value as string));
     } else if (key === "expiresAt") {
-      conditions.push(eq(passwordResetSession.expiresAt, value as number));
+      // Accept either a string (ISO) or number (seconds/ms) for convenience,
+      // normalizing numeric values to an ISO 8601 string before comparison.
+      if (typeof value === "number") {
+        const num = value as number;
+        const normalized =
+          num < 1_000_000_000_000
+            ? new Date(num * 1000).toISOString()
+            : new Date(num).toISOString();
+        conditions.push(eq(passwordResetSession.expiresAt, normalized));
+      } else {
+        conditions.push(eq(passwordResetSession.expiresAt, value as string));
+      }
     } else if (key === "emailVerified") {
       conditions.push(eq(passwordResetSession.emailVerified, value as boolean));
     } else if (key === "twoFactorVerified") {
