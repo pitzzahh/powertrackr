@@ -57,7 +57,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
       ipAddress: event.getClientAddress(),
       userAgent: event.request.headers.get("user-agent"),
     });
-    setSessionTokenCookie(event, sessionToken, session.expiresAt);
+    setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
     return new Response(null, {
       status: 302,
       headers: {
@@ -106,7 +106,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
     ipAddress: event.getClientAddress(),
     userAgent: event.request.headers.get("user-agent"),
   });
-  setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
   return new Response(null, {
     status: 302,
     headers: {
