@@ -121,8 +121,15 @@ export async function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Promise
     id: _payment.id ?? "",
     amount: _payment.amount ?? null,
     date: _payment.date ?? "",
-    createdAt: _payment.createdAt ?? new Date(),
-    updatedAt: _payment.updatedAt ?? new Date(),
+    // Convert stored ISO strings to Date objects for DTO consumers
+    createdAt:
+      typeof _payment.createdAt === "string"
+        ? new Date(_payment.createdAt)
+        : (_payment.createdAt ?? new Date()),
+    updatedAt:
+      typeof _payment.updatedAt === "string"
+        ? new Date(_payment.updatedAt)
+        : (_payment.updatedAt ?? new Date()),
   }));
 }
 
