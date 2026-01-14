@@ -16,8 +16,8 @@ export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
     balance: original.balance,
     payPerkWh: original.payPerkWh,
     status: original.status as "Pending" | "Paid",
-    createdAt: original.createdAt ?? new Date(),
-    updatedAt: original.updatedAt ?? new Date(),
+    createdAt: new Date(original.createdAt),
+    updatedAt: new Date(original.updatedAt),
     paymentId: original.paymentId,
   };
 }
@@ -26,10 +26,10 @@ export function billingInfoToTableView(original: BillingInfo): BillingInfoTableV
   return {
     ...original,
     date: formatDate(new Date(original.date)),
-    createdAt: formatDate(original.createdAt ?? new Date(), {
+    createdAt: formatDate(new Date(original.createdAt), {
       format: DateFormat.DateTime,
     }),
-    updatedAt: formatDate(original.updatedAt ?? new Date(), {
+    updatedAt: formatDate(new Date(original.updatedAt), {
       format: DateFormat.DateTime,
     }),
   };
@@ -41,10 +41,10 @@ export function extendedBillingInfoToTableView(
   return {
     ...original,
     date: formatDate(new Date(original.date)),
-    createdAt: formatDate(original.createdAt ?? new Date(), {
+    createdAt: formatDate(new Date(original.createdAt), {
       format: DateFormat.DateTime,
     }),
-    updatedAt: formatDate(original.updatedAt ?? new Date(), {
+    updatedAt: formatDate(new Date(original.updatedAt), {
       format: DateFormat.DateTime,
     }),
   };
