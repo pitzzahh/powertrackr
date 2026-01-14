@@ -5,7 +5,7 @@ export const session = sqliteTable(
   "session",
   (t) => ({
     id: t.text().primaryKey().notNull(),
-    expiresAt: t.integer("expires_at", { mode: "timestamp" }).notNull(),
+    expiresAt: t.text("expires_at").notNull(),
     ipAddress: t.text("ip_address"),
     userAgent: t.text("user_agent"),
     userId: t

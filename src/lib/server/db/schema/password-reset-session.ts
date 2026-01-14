@@ -11,7 +11,7 @@ export const passwordResetSession = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     email: t.text().notNull(),
     code: t.text().notNull(),
-    expiresAt: t.integer("expires_at").notNull(),
+    expiresAt: t.text("expires_at").notNull(),
     emailVerified: t.integer("email_verified", { mode: "boolean" }).default(false).notNull(),
     twoFactorVerified: t
       .integer("two_factor_verified", { mode: "boolean" })
