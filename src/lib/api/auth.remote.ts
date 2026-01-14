@@ -74,7 +74,7 @@ export const login = form(loginSchema, async (user) => {
     ipAddress: event.getClientAddress(),
     userAgent: event.request.headers.get("user-agent"),
   });
-  setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
   if (!userResult.githubId && !userResult.emailVerified) {
     return redirect(302, "/auth?act=verify-email");
@@ -141,7 +141,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
     ipAddress: event.getClientAddress(),
     userAgent: event.request.headers.get("user-agent"),
   });
-  setSessionTokenCookie(event, sessionToken, session.expiresAt);
+  setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
   if (!userResult.emailVerified) {
     await resendVerification();
@@ -174,13 +174,32 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   if (!request) {
     error(400, "Invalid or expired verification code");
   }
-  // The DB historically stored expiration in seconds in some places. Normalize
-  // to milliseconds to avoid mismatches when comparing to Date.now().
-  const expiresAtRaw = request.expiresAt ?? 0;
-  const expiresAtMs = new Date(expiresAtRaw).getMilliseconds();
-  if (new Date(expiresAtRaw).getMilliseconds() < Date.now()) {
+  // Accept multiple stored formats (ISO string, seconds, milliseconds, or Date).
+  // Normalize to milliseconds for comparison with Date.now().
+  // The DB may store expiration as an ISO string (TEXT) or as a numeric
+  // timestamp (seconds or milliseconds). Normalize to milliseconds.
+  const rawExpiresAt = request.expiresAt;
+  let expiresAtMs = 0;
+  if (typeof rawExpiresAt === "string") {
+    expiresAtMs = Date.parse(rawExpiresAt);
+  } else if (typeof rawExpiresAt === "number") {
+    expiresAtMs = rawExpiresAt < 1_000_000_000_000 ? rawExpiresAt * 1000 : rawExpiresAt;
+  } else {
+    // Don't rely on `instanceof Date` (TS may not allow it here). If callers
+    // passed a Date-like value or another representation, try to coerce it
+    // gracefully to a numeric timestamp or parse a stringified form.
+    const asNumber = Number((rawExpiresAt as any) ?? NaN);
+    if (!Number.isNaN(asNumber)) {
+      expiresAtMs = asNumber < 1_000_000_000_000 ? asNumber * 1000 : asNumber;
+    } else {
+      const asString = rawExpiresAt ? String(rawExpiresAt as any) : "";
+      expiresAtMs = asString ? Date.parse(asString) : 0;
+    }
+  }
+
+  if (!expiresAtMs || expiresAtMs < Date.now()) {
     console.warn("Email verification code expired or invalid", {
-      expiresAt: expiresAtRaw,
+      expiresAtRaw: request.expiresAt,
       expiresAtMs,
       now: Date.now(),
     });
@@ -200,7 +219,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   if (request.id) {
     updateEmailVerificationRequestBy(
       { query: { id: request.id }, options: {} },
-      { expiresAt: Date.now() - 1 }
+      { expiresAt: new Date(Date.now() - 1).toISOString() }
     ).catch(() => null);
   }
   // Check if 2FA is registered

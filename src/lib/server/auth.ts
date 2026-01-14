@@ -40,12 +40,16 @@ export async function createSession(
   userId: string,
   flags: SessionFlags
 ): Promise<Session> {
+  // Create an ISO string for the DB (store dates as ISO strings). We return
+  // a Session object with `expiresAt` as a Date to preserve existing runtime
+  // expectations for callers.
+  const expires = new Date(Date.now() + DAY_IN_MS * 30);
   const [sess] = await db
     .insert(session)
     .values({
       id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
       userId,
-      expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+      expiresAt: expires.toISOString(),
       ...flags,
     })
     .returning();
@@ -78,19 +82,34 @@ export async function validateSessionToken(token: string) {
   }
   const { session: sessionResult, user: userResult } = result;
 
+  // Normalize the stored expiresAt into milliseconds (do NOT mutate
+  // `sessionResult.expiresAt`). Supports ISO strings (TEXT) or numeric
+  // timestamps (seconds or milliseconds).
+  let expiresAtMs = 0;
+  if (typeof sessionResult.expiresAt === "string") {
+    expiresAtMs = Date.parse(sessionResult.expiresAt);
+  } else if (typeof sessionResult.expiresAt === "number") {
+    const raw = sessionResult.expiresAt as number;
+    expiresAtMs = raw < 1_000_000_000_000 ? raw * 1000 : raw;
+  } else {
+    expiresAtMs = 0;
+  }
+
   // delete expired sessions
-  if (Date.now() >= sessionResult.expiresAt.getTime()) {
+  if (Date.now() >= expiresAtMs) {
     await db.delete(session).where(eq(session.id, session.id));
     return { session: null, user: null };
   }
 
   // renew session if it's within 15 days of expiry
-  if (Date.now() >= sessionResult.expiresAt.getTime() - DAY_IN_MS * 15) {
-    sessionResult.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
+  if (Date.now() >= expiresAtMs - DAY_IN_MS * 15) {
+    const newExpires = new Date(Date.now() + DAY_IN_MS * 30);
     await db
       .update(session)
-      .set({ expiresAt: session.expiresAt })
+      .set({ expiresAt: newExpires.toISOString() })
       .where(eq(session.id, session.id));
+    // reflect the updated ISO string in the returned session object
+    sessionResult.expiresAt = newExpires.toISOString();
   }
 
   return {
