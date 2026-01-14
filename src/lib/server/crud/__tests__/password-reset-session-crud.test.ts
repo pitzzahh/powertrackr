@@ -29,7 +29,8 @@ describe("Password Reset Session CRUD Operations", () => {
       const userResult = await addUser(userData);
       const userId = userResult.value[0].id;
 
-      const expiresAt = Date.now() + 15 * 60 * 1000;
+      const expiresAtMs = Date.now() + 15 * 60 * 1000;
+      const expiresAt = new Date(expiresAtMs).toISOString();
       const sessionData = [
         (() => {
           const { id: _, ...rest } = createPasswordResetSession({
@@ -51,7 +52,8 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(result.value[0].userId).toBe(userId);
       expect(result.value[0].email).toBe("reset@example.com");
       expect(result.value[0].code).toBe("RESET123");
-      expect(result.value[0].expiresAt).toBe(expiresAt);
+      // expiresAt is now stored as an ISO string; compare parsed milliseconds
+      expect(Date.parse(result.value[0].expiresAt!)).toBe(expiresAtMs);
     });
 
     it("should successfully add multiple password reset sessions", async () => {
@@ -240,13 +242,16 @@ describe("Password Reset Session CRUD Operations", () => {
       ]);
       const userId = userResult.value[0].id;
 
-      const ts = Date.now() + 60 * 60 * 1000;
-      const addResult = await addPasswordResetSession([
+      const tsMs = Date.now() + 15 * 60 * 1000;
+      const ts = new Date(tsMs).toISOString();
+      const sessionData = [
         (() => {
           const { id: _, ...rest } = createPasswordResetSession({ userId, expiresAt: ts });
           return rest;
         })(),
-      ]);
+      ];
+
+      const addResult = await addPasswordResetSession(sessionData);
       const added = addResult.value[0];
 
       const result = await getPasswordResetSessionBy({
@@ -256,7 +261,8 @@ describe("Password Reset Session CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(added).toBeDefined();
-      expect(result.value[0].expiresAt).toBe(ts);
+      // expiresAt stored as ISO string; compare parsed milliseconds
+      expect(Date.parse(result.value[0].expiresAt!)).toBe(tsMs);
     });
 
     it("should find by emailVerified and twoFactorVerified flags", async () => {
@@ -619,7 +625,10 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].email).toBe("dto@example.com");
       expect(result[0].code).toBe("DTO");
-      expect(typeof result[0].expiresAt).toBe("number");
+      // expiresAt should be returned as an ISO string (TEXT)
+      expect(typeof result[0].expiresAt).toBe("string");
+      // sanity check it's parseable
+      expect(Date.parse(result[0].expiresAt)).toBeGreaterThan(0);
     });
 
     it("should return empty array when none found", async () => {
@@ -643,7 +652,8 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(dto[0].id).toBe("");
       expect(dto[0].email).toBe("");
       expect(dto[0].code).toBe("");
-      expect(dto[0].expiresAt).toBe(0);
+      // missing expiresAt should be represented as empty string now
+      expect(dto[0].expiresAt).toBe("");
       expect(dto[0].emailVerified).toBe(false);
     });
   });

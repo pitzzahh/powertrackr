@@ -232,7 +232,8 @@ describe("Session CRUD Operations", () => {
       ]);
       const userId = userResult.value[0].id;
 
-      const expDate = new Date(Date.now() + 60 * 1000);
+      const expDateMs = Date.now() + 60 * 1000;
+      const expDate = new Date(expDateMs).toISOString();
       const addResult = await addSession([
         (() => {
           const { id: _, ...rest } = createSession({ userId, expiresAt: expDate });
@@ -250,8 +251,8 @@ describe("Session CRUD Operations", () => {
       const resultByNumber = await getSessionBy({
         query: {
           expiresAt:
-            added.expiresAt instanceof Date
-              ? added.expiresAt.getTime()
+            (added.expiresAt as any) instanceof Date
+              ? (added.expiresAt as any).getTime()
               : (added.expiresAt as unknown as number),
         } as unknown as NewSession,
         options: {},
@@ -487,9 +488,9 @@ describe("Session CRUD Operations", () => {
         options: {},
       };
 
-      const newExpiration = Date.now() + 1000 * 60 * 60; // 1 hour
+      const newExpirationMs = Date.now() + 24 * 60 * 60 * 1000;
       const result = await updateSessionBy(updateParam, {
-        expiresAt: newExpiration as unknown as Date,
+        expiresAt: new Date(newExpirationMs).toISOString(),
       });
 
       expect(result.valid).toBe(true);
@@ -610,7 +611,9 @@ describe("Session CRUD Operations", () => {
       const input: Partial<NewSession>[] = [
         {
           id: undefined as unknown as string,
-          expiresAt: undefined as unknown as Date,
+          // DB types use string for expiresAt; provide undefined as a
+          // string-typed value so the mapper can normalize it to a Date.
+          expiresAt: undefined as unknown as string,
           ipAddress: undefined,
           userAgent: undefined,
           userId: undefined,
