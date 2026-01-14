@@ -19,7 +19,7 @@ export const getSessions = query(getSessionsSchema, async ({ userId }) => {
 
 // Query to get a single session by id
 export const getSession = query(getSessionSchema, async (id) => {
-  return await db.query.session.findFirst({ where: { id } });
+  return await getSessionBy({ query: { id }, options: {} });
 });
 
 // Form to create a new session
