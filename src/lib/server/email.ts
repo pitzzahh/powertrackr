@@ -107,7 +107,7 @@ export async function sendVerificationEmail(email: string, code: string, timeout
   }
 
   // Ensure the contact exists (best-effort)
-  await createContact(email).catch(() => undefined);
+  await createContact(email);
 
   // Try to fetch templates and find the one we want
   try {
@@ -218,7 +218,7 @@ export async function createAndSendEmailVerification(
 ) {
   // Generate a 6-digit numeric code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + timeoutMinutes * 60 * 1000;
+  const expiresAt = Math.floor((Date.now() + timeoutMinutes * 60 * 1000) / 1000);
 
   // Add to DB
   const added = await addEmailVerificationRequest([{ userId, email, code, expiresAt }]);
