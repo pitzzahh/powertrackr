@@ -23,6 +23,7 @@
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { signout } from "$/api/auth.remote";
+  import { resendVerification } from "$/api/email.remote";
   import { showError, showLoading, showSuccess } from "$/components/toast";
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
@@ -98,11 +99,21 @@
           status = "processing";
           const toastId = showLoading("Resending verification code...");
           try {
-            // Assume resend action exists
-            await fetch("/api/auth/resend-verification", { method: "POST" });
-            showSuccess("Verification code sent");
+            const res = await resendVerification();
+            if (res?.success) {
+              if (res.alreadyVerified) {
+                showSuccess("Email already verified");
+              } else if (res.sent) {
+                showSuccess("Verification code sent");
+              } else {
+                showError("Failed to send verification code. Please try again.");
+              }
+            } else {
+              showError("Failed to resend code. Please try again.");
+            }
           } catch (e) {
-            showError("Failed to resend code. Please try again.");
+            const message = isHttpError(e) ? e.body.message : String(e);
+            showError(message || "Failed to resend code. Please try again.");
           } finally {
             toast.dismiss(toastId);
             status = "idle";
