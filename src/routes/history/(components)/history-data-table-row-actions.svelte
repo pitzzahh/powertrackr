@@ -238,15 +238,7 @@
 
       <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
         <div class="space-y-4 p-4">
-          <BillingInfoForm
-            action="update"
-            billingInfo={billingInfoToDto({
-              ...row.original,
-              date: row.original.date,
-              createdAt: new Date(row.original.createdAt),
-              updatedAt: new Date(row.original.updatedAt),
-            })}
-          />
+          <BillingInfoForm action="update" billingInfo={billingInfoToDto(row.original)} />
         </div>
       </ScrollArea>
     </Sheet.Content>
