@@ -85,7 +85,7 @@
         componentProps: {
           title: "Deletion Failed",
           description: `Failed to delete selected ${entity_plural_name}. Please try again.`,
-          variant: "destructive",
+          variant: "error",
         },
       });
       return callback?.(false);
