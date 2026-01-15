@@ -137,7 +137,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 
   const userId = session!.userId;
 
-  const { date, totalkWh, balance, status: statusBool, subMeters = [] } = data;
+  const { date, totalkWh, balance, status: statusBool, subMeters } = data;
 
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 

@@ -1,7 +1,7 @@
 <script lang="ts" module>
   export type BillingInfoWithSubMetersFormProps = {
     action: "add" | "update";
-    billingInfo?: BillingInfoDTO;
+    billingInfo?: BillingInfoDTOWithSubMeters;
     /**
      * Callback to be called when the form is submitted.
      */
@@ -29,9 +29,7 @@
 </script>
 
 <script lang="ts">
-  // Field Components
   import * as Field from "$/components/ui/field";
-  // UI Components
   import { Button } from "$/components/ui/button";
   import { Input } from "$/components/ui/input";
   import * as Popover from "$/components/ui/popover";
@@ -46,7 +44,7 @@
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type { BillingInfoDTO } from "$/types/billing-info";
+  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import { toast } from "svelte-sonner";
@@ -98,7 +96,7 @@
       // Initialize sub meters if they exist
       // Note: This assumes billingInfo has subMeters property, adjust if needed
       subMeters.length = 0;
-      if ((billingInfo as any).subMeters) {
+      if (billingInfo.subMeters) {
         subMeters.push(
           ...(billingInfo as any).subMeters.map((sub: any) => ({
             id: crypto.randomUUID(),
