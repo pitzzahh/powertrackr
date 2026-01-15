@@ -13,10 +13,15 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
 } from "$lib/schemas/billing-info";
-import type { NewBillingInfo, BillingInfo, BillingSummary } from "$/types/billing-info";
+import type { BillingInfo, BillingSummary } from "$/types/billing-info";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
-import { getBillingInfoBy as getBillingInfoByCrud } from "$/server/crud/billing-info-crud";
+import {
+  addBillingInfo,
+  getBillingInfoBy as getBillingInfoByCrud,
+} from "$/server/crud/billing-info-crud";
+import { addPayment } from "$/server/crud/payment-crud";
+import { error } from "@sveltejs/kit";
 
 const COMMON_FIELDS: (keyof BillingInfo)[] = [
   "id",
@@ -165,7 +170,34 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     0
   );
 
-  let paymentId = null;
+  let {
+    valid: validMainPayment,
+    value: [mainPayment],
+  } = await addPayment([{ amount: balance - totalSubPaymentAmount }]);
+
+  if (!validMainPayment) {
+    error(400, "Failed to add billing info, main payment not processed");
+  }
+
+  const {
+    valid: validBillingInfo,
+    value: [result],
+  } = await addBillingInfo([
+    {
+      userId,
+      date,
+      totalkWh,
+      balance,
+      status: statusBool ? "Paid" : "Pending",
+      payPerkWh,
+      paymentId: mainPayment.id,
+    },
+  ]);
+
+  if (!validBillingInfo) {
+    error(400, "Failed to add billing info, billing info not processed");
+  }
+
   const subMeterInserts: {
     billingInfoId: string;
     subKwh: number | null;
@@ -173,18 +205,14 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     subReadingOld: number | null;
     paymentId: string | null;
   }[] = [];
-
   await db.transaction(async (tx) => {
-    // Create main payment
-    const payId = crypto.randomUUID();
-    await tx.insert(payment).values({ id: payId, amount: balance - totalSubPaymentAmount });
-    paymentId = payId;
-
     // Create sub payments and prepare sub meters
     for (const subData of subMetersData) {
       if (subData.paymentAmount && subData.paymentAmount > 0) {
         const subPayId = crypto.randomUUID();
-        await tx.insert(payment).values({ id: subPayId, amount: subData.paymentAmount });
+        const addResult = await tx
+          .insert(payment)
+          .values({ id: subPayId, amount: subData.paymentAmount });
         subMeterInserts.push({
           billingInfoId: "", // will set after billing created
           subKwh: subData.subKwh,
@@ -192,6 +220,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
           subReadingOld: subData.subReadingOld,
           paymentId: subPayId,
         });
+        if (addResult.rowsAffected === 0) tx.rollback();
       } else {
         // Sub meter without payment (just tracking)
         subMeterInserts.push({
@@ -204,19 +233,6 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
       }
     }
   });
-
-  const id = crypto.randomUUID();
-  const insertData: NewBillingInfo = {
-    id,
-    userId,
-    date,
-    totalkWh,
-    balance,
-    status: statusBool ? "Paid" : "Pending",
-    payPerkWh,
-    paymentId,
-  };
-  const [result] = await db.insert(billingInfo).values(insertData).returning();
 
   // Insert sub meters (if any)
   if (subMeterInserts.length > 0) {
