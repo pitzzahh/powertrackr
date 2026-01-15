@@ -3,13 +3,12 @@ import type { AuthFormProps } from "$routes/auth/(components)/auth-form.svelte";
 import { createAndSendEmailVerification } from "$/server/email";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
 
-export async function load({ url: { searchParams, pathname }, parent }) {
-  const data = await parent();
+export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
   if (
-    data.session &&
-    data.user &&
-    (data.user.isOauthUser || data.user.emailVerified) &&
-    (!data.user.registeredTwoFactor || data.session.twoFactorVerified)
+    session &&
+    user &&
+    (user.isOauthUser || user.emailVerified) &&
+    (!user.registeredTwoFactor || session.twoFactorVerified)
   ) {
     redirect(302, "/");
   }
@@ -21,28 +20,27 @@ export async function load({ url: { searchParams, pathname }, parent }) {
     "reset-password",
   ];
   const act = searchParams.get("act");
+
+  // Send email verification on first visit to verify-email page
+  if (act === "verify-email" && user && !user.emailVerified) {
+    const existing = await getEmailVerificationRequestBy({
+      query: { userId: user.id },
+      options: { limit: 1 },
+    });
+    if (!existing.valid || !existing.value || existing.value.length === 0) {
+      try {
+        await createAndSendEmailVerification(user.id, user.email);
+      } catch (e) {
+        console.warn("Failed to send email verification on page load", e);
+      }
+    }
+  }
   if (
     (!act || !actions.includes(act as AuthFormProps["action"])) &&
     !(pathname === "/auth" && actions.includes(act as AuthFormProps["action"]))
   ) {
     redirect(307, `/auth?act=${act}`);
   }
-
-  // Send email verification on first visit to verify-email page
-  if (act === "verify-email" && data.user && !data.user.emailVerified) {
-    const existing = await getEmailVerificationRequestBy({
-      query: { userId: data.user.id },
-      options: { limit: 1 },
-    });
-    if (!existing.valid || !existing.value || existing.value.length === 0) {
-      try {
-        await createAndSendEmailVerification(data.user.id, data.user.email);
-      } catch (e) {
-        console.warn("Failed to send email verification on page load", e);
-      }
-    }
-  }
-
   return {
     action: act as AuthFormProps["action"],
   };
