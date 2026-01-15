@@ -5,12 +5,14 @@ import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewBillingInfo, BillingInfoDTO } from "$/types/billing-info";
+import type { Payment } from "$/types/payment";
+import type { SubMeter } from "$/types/sub-meter";
 
 type BillingInfoQueryOptions = {
   where?: Record<string, unknown>;
   limit?: number;
   offset?: number;
-  orderBy?: { createdAt: "asc" | "desc" };
+  orderBy?: { date: "asc" | "desc" };
   columns?: Record<string, true>;
 };
 
@@ -88,9 +90,16 @@ export async function updateBillingInfoBy(
   };
 }
 
-export async function getBillingInfoBy(
-  data: HelperParam<NewBillingInfo>
-): Promise<HelperResult<Partial<NewBillingInfo>[]>> {
+export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promise<
+  HelperResult<
+    Partial<
+      NewBillingInfo & {
+        payment?: Payment | null;
+        subMeters?: SubMeter[];
+      }
+    >[]
+  >
+> {
   const { options } = data;
   const conditions = generateBillingInfoQueryConditions(data);
   const queryOptions: BillingInfoQueryOptions = {
@@ -98,7 +107,7 @@ export async function getBillingInfoBy(
     ...(options && {
       limit: options.limit,
       offset: options.offset,
-      orderBy: options.order ? { createdAt: options.order } : undefined,
+      orderBy: options.order ? { date: options.order } : undefined,
     }),
   };
   if (options && options.fields && options.fields.length > 0) {
@@ -107,7 +116,22 @@ export async function getBillingInfoBy(
       {}
     );
   }
-  const queryDBResult = await db.query.billingInfo.findMany(queryOptions);
+  const queryDBResult = await db.query.billingInfo.findMany({
+    ...queryOptions,
+    with: {
+      payment: options?.with_payment,
+      ...(options?.with_sub_meters && {
+        subMeters: true,
+      }),
+      ...(options?.with_sub_meters_with_payment && {
+        subMeters: {
+          with: {
+            payment: true,
+          },
+        },
+      }),
+    },
+  });
 
   const is_valid = queryDBResult.length > 0;
   return {

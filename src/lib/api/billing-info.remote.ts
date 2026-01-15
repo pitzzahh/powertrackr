@@ -13,69 +13,72 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
 } from "$lib/schemas/billing-info";
-import type {
-  NewBillingInfo,
-  BillingInfo,
-  ExtendedBillingInfo,
-  BillingSummary,
-} from "$/types/billing-info";
+import type { NewBillingInfo, BillingInfo, BillingSummary } from "$/types/billing-info";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
+import { getBillingInfoBy as getBillingInfoByCrud } from "$/server/crud/billing-info-crud";
 
+const COMMON_FIELDS: (keyof BillingInfo)[] = [
+  "id",
+  "userId",
+  "date",
+  "totalkWh",
+  "balance",
+  "status",
+  "payPerkWh",
+  "paymentId",
+  "createdAt",
+  "updatedAt",
+] as const;
 // Query to get all billing infos for a user
-export const getBillingInfos = query(
-  getBillingInfosSchema,
-  async ({ userId }): Promise<BillingInfo[]> => {
-    return await db.query.billingInfo.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
-    });
-  }
-);
+export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) => {
+  return await getBillingInfoByCrud({
+    query: { userId },
+    options: {
+      fields: COMMON_FIELDS,
+    },
+  });
+});
 
 // Query to get extended billing infos with payments for a user
-export const getExtendedBillingInfos = query(
-  getBillingInfosSchema,
-  async ({ userId }): Promise<ExtendedBillingInfo[]> => {
-    return await db.query.billingInfo.findMany({
-      where: { userId },
-      with: {
-        payment: true,
-        subMeters: {
-          with: {
-            payment: true,
-          },
-        },
-      },
-      orderBy: { date: "desc" },
-    });
-  }
-);
+export const getExtendedBillingInfos = query(getBillingInfosSchema, async ({ userId }) => {
+  return await getBillingInfoByCrud({
+    query: { userId },
+    options: {
+      fields: COMMON_FIELDS,
+      with_payment: true,
+      with_sub_meters_with_payment: true,
+    },
+  });
+});
 
 // Query to get a single billing info by id
-export const getBillingInfo = query(
-  getBillingInfoSchema,
-  async (id): Promise<BillingInfo | undefined> => {
-    return await db.query.billingInfo.findFirst({ where: { id } });
-  }
-);
+export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
+  return await getBillingInfoByCrud({
+    query: { id },
+    options: {
+      fields: [
+        "id",
+        "userId",
+        "date",
+        "totalkWh",
+        "balance",
+        "status",
+        "payPerkWh",
+        "paymentId",
+        "createdAt",
+        "updatedAt",
+      ],
+    },
+  });
+});
 
 // Query to get billing summary for a user
 export const getBillingSummary = query(
   getBillingInfosSchema,
   async ({ userId }): Promise<BillingSummary> => {
-    const extendedInfos = await db.query.billingInfo.findMany({
-      where: { userId },
-      with: {
-        payment: true,
-        subMeters: {
-          with: {
-            payment: true,
-          },
-        },
-      },
-      orderBy: { date: "desc" },
-    });
+    const result = await getExtendedBillingInfos({ userId });
+    const extendedInfos = result.value as any;
 
     if (extendedInfos.length === 0) {
       return {
@@ -89,28 +92,32 @@ export const getBillingSummary = query(
       };
     }
 
-    const latest = extendedInfos[0];
+    const latest: any = extendedInfos[0];
     const current = latest?.balance ?? 0;
     const invested = extendedInfos.reduce(
-      (sum, info) =>
+      (sum: number, info: any) =>
         sum +
         ((info.payment?.amount ?? 0) +
-          info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
+          info.subMeters?.reduce(
+            (subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0),
+            0
+          )),
       0
     );
     const totalReturns = extendedInfos.reduce(
-      (sum, info) =>
-        sum + info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
+      (sum: number, info: any) =>
+        sum +
+        info.subMeters.reduce((subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0), 0),
       0
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
     const oneDayReturns = latest.subMeters.reduce(
-      (sum, sub) => sum + (sub.payment?.amount ?? 0),
+      (sum: number, sub: any) => sum + (sub.payment?.amount ?? 0),
       0
     );
 
-    const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date);
-    const lastDate = new Date(latest.date);
+    const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date as string);
+    const lastDate = new Date(latest.date as string);
     const totalDays = Math.max(
       1,
       (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -134,6 +141,8 @@ export const getBillingSummary = query(
 // Form to create a new billing info with multiple sub meters
 export const createBillingInfo = form(billFormSchema, async (data): Promise<BillingInfo> => {
   const { session } = requireAuth();
+
+  console.debug(JSON.stringify(data, null, 2));
 
   const userId = session!.userId;
 
