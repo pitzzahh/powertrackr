@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "build:preview": "npm run build && npm preview",
+    "build:preview": "npm run build && npm run preview",
     "prepare": "svelte-kit sync || echo ''",
     "postinstall": "git config core.hooksPath .githooks 2>/dev/null || echo 'Git hooks setup skipped'",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
