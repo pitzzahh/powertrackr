@@ -52,6 +52,7 @@
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
+  import { invalidate } from "$app/navigation";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
@@ -121,9 +122,6 @@
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );
     try {
-      console.log({
-        data,
-      });
       await submit();
       callback?.(true, action);
     } catch (error) {

@@ -1,7 +1,6 @@
 import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
 import type { Status } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
-import type { RemoteQuery } from "@sveltejs/kit";
 
 function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   if (infos.length === 0) {
@@ -53,7 +52,6 @@ class BillingStore {
   status = $state<Status>("idle");
   summary = $state<BillingSummary | null>(null);
   userId = $state<string | null>(null);
-  query = $state<RemoteQuery<ExtendedBillingInfo[]>>(null!); // Assuming the query object has refresh method
 
   setUserId(id: string) {
     this.userId = id;

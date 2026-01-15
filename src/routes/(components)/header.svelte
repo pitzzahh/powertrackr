@@ -33,6 +33,7 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { showSuccess, showError } from "$/components/toast";
   import { billingStore } from "$lib/stores/billing.svelte.js";
+  import { invalidate } from "$app/navigation";
 
   let { user }: HeaderProps = $props();
 
@@ -43,9 +44,10 @@
         icon: PhilippinePeso,
         label: "New Bill",
         content: newBill,
-        callback: (valid, action, metaData) => {
+        callback: async (valid, action, metaData) => {
           openMenu = false;
           if (valid) {
+            await invalidate("app:root");
             billingStore.refresh();
             showSuccess(
               action === "add"
