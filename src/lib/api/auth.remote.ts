@@ -22,7 +22,6 @@ import type { HelperResult } from "$/types/helper";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { resendVerification } from "./email.remote";
 
 export const signout = form(async () => {
   const event = getRequestEvent();
@@ -144,7 +143,12 @@ export const register = form(registerSchema, async (newUser, issues) => {
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
   if (!userResult.emailVerified) {
-    await resendVerification();
+    if (!(await createAndSendEmailVerification(userResult.id, email))) {
+      console.warn(
+        "createAndSendEmailVerification did not create a verification for user",
+        userResult.id
+      );
+    }
     return redirect(302, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
