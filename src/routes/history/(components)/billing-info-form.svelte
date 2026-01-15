@@ -35,22 +35,17 @@
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
   import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
-  import {
-    createBillingInfo,
-    getExtendedBillingInfos,
-    updateBillingInfo,
-  } from "$/api/billing-info.remote";
+  import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
-  import { invalidate } from "$app/navigation";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
@@ -115,7 +110,7 @@
 </script>
 
 <form
-  {...currentAction.enhance(async ({ data, form, submit }) => {
+  {...currentAction.enhance(async ({ form, submit }) => {
     const toastId = showLoading(
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );
