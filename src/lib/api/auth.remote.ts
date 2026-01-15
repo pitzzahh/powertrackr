@@ -10,7 +10,7 @@ import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
 } from "$/server/crud/email-verification-request-crud";
-import { createAndSendEmailVerification } from "$/server/email";
+
 import {
   encryptString,
   generateRandomRecoveryCode,
@@ -125,14 +125,6 @@ export const register = form(registerSchema, async (newUser, issues) => {
     error(400, "Failed to create user");
   }
 
-  // Attempt to create and send an email verification (best-effort)
-  try {
-    await createAndSendEmailVerification(userResult.id, userResult.email);
-  } catch (e) {
-    // Don't block registration for email failures; just log.
-    console.warn("Failed to create or send email verification", e);
-  }
-
   const sessionToken = generateSessionToken();
 
   const session = await createSession(sessionToken, userResult.id, {
@@ -142,19 +134,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   });
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
-  if (!userResult.emailVerified) {
-    if (!(await createAndSendEmailVerification(userResult.id, email))) {
-      console.warn(
-        "createAndSendEmailVerification did not create a verification for user",
-        userResult.id
-      );
-    }
-    return redirect(302, "/auth?act=verify-email");
-  }
-  if (userResult.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-setup");
-  }
-  return redirect(302, "/");
+  return redirect(302, "/auth?act=verify-email");
 });
 
 export const verifyEmail = form(verifyEmailSchema, async (data) => {
