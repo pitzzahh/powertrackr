@@ -68,13 +68,11 @@
       <FieldLabel for="code-{id}">Verification Code</FieldLabel>
       <Input
         id="code-{id}"
-        placeholder="Enter 6-digit code"
+        placeholder="Enter code"
         required
         autocomplete="one-time-code"
         class="text-center font-mono tracking-widest tabular-nums"
-        type="tel"
         maxlength={6}
-        inputmode="numeric"
         oninput={(e) => verifyEmail.fields.code.set(e.currentTarget.value.replace(/\D/g, ""))}
         {...verifyEmail.fields.code.as("text")}
       />

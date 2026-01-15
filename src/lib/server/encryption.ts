@@ -38,15 +38,11 @@ export function decryptToString(data: Uint8Array): string {
 }
 
 export function generateRandomOTP(): string {
-  const bytes = crypto.randomBytes(5);
-  const code = encodeBase32UpperCaseNoPadding(bytes);
-  return code;
+  return encodeBase32UpperCaseNoPadding(crypto.randomBytes(5));
 }
 
 export function generateRandomRecoveryCode(): string {
-  const recoveryCodeBytes = crypto.randomBytes(10);
-  const recoveryCode = encodeBase32UpperCaseNoPadding(recoveryCodeBytes);
-  return recoveryCode;
+  return encodeBase32UpperCaseNoPadding(crypto.randomBytes(10));
 }
 
 export async function hashPassword(password: string): Promise<string> {
