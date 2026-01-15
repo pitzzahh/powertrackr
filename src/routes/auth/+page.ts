@@ -1,8 +1,16 @@
 import { redirect } from "@sveltejs/kit";
 import type { AuthFormProps } from "$routes/auth/(components)/auth-form.svelte";
 
-// TODO: Validate if user is already authenticated and redirect accordingly
-export function load({ url: { searchParams, pathname } }) {
+export async function load({ url: { searchParams, pathname }, parent }) {
+  const data = await parent();
+  if (
+    data.session &&
+    data.user &&
+    (data.user.isOauthUser || data.user.emailVerified) &&
+    (!data.user.registeredTwoFactor || data.session.twoFactorVerified)
+  ) {
+    redirect(302, "/");
+  }
   const actions: AuthFormProps["action"][] = [
     "login",
     "register",
