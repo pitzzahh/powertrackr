@@ -13,7 +13,7 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
 } from "$lib/schemas/billing-info";
-import type { BillingInfo, BillingSummary } from "$/types/billing-info";
+import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
 import { eq } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
 import {
@@ -23,7 +23,7 @@ import {
 import { addPayment } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
 
-const COMMON_FIELDS: (keyof BillingInfo)[] = [
+const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
   "userId",
   "date",
@@ -32,8 +32,6 @@ const COMMON_FIELDS: (keyof BillingInfo)[] = [
   "status",
   "payPerkWh",
   "paymentId",
-  "createdAt",
-  "updatedAt",
 ] as const;
 // Query to get all billing infos for a user
 export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) => {
@@ -62,18 +60,7 @@ export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
   return await getBillingInfoByCrud({
     query: { id },
     options: {
-      fields: [
-        "id",
-        "userId",
-        "date",
-        "totalkWh",
-        "balance",
-        "status",
-        "payPerkWh",
-        "paymentId",
-        "createdAt",
-        "updatedAt",
-      ],
+      fields: COMMON_FIELDS,
     },
   });
 });

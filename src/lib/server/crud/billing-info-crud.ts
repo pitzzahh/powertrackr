@@ -4,7 +4,7 @@ import { billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewBillingInfo, BillingInfoDTO } from "$/types/billing-info";
+import type { NewBillingInfo, BillingInfo, BillingInfoDTO } from "$/types/billing-info";
 import type { Payment } from "$/types/payment";
 import type { SubMeter } from "$/types/sub-meter";
 
@@ -18,7 +18,7 @@ type BillingInfoQueryOptions = {
 
 export async function addBillingInfo(
   data: Omit<NewBillingInfo, "id">[]
-): Promise<HelperResult<NewBillingInfo[]>> {
+): Promise<HelperResult<BillingInfo[]>> {
   if (data.length === 0) {
     return {
       valid: true,
@@ -93,7 +93,7 @@ export async function updateBillingInfoBy(
 export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promise<
   HelperResult<
     Partial<
-      NewBillingInfo & {
+      BillingInfo & {
         payment?: Payment | null;
         subMeters?: SubMeter[];
       }
@@ -110,13 +110,16 @@ export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promi
       orderBy: options.order ? { date: options.order } : undefined,
     }),
   };
-  if (options && options.fields && options.fields.length > 0) {
-    queryOptions.columns = options.fields.reduce(
-      (acc, key) => ({ ...acc, [key as string]: true }),
-      {}
-    );
+  if (options && options.fields) {
+    if (options.fields.length > 0) {
+      queryOptions.columns = options.fields.reduce(
+        (acc, key) => ({ ...acc, [key as string]: true }),
+        {}
+      );
+    } else {
+    }
   }
-  const queryDBResult = await db.query.billingInfo.findMany({
+  const findManyOptions: any = {
     ...queryOptions,
     with: {
       payment: options?.with_payment,
@@ -131,7 +134,15 @@ export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promi
         },
       }),
     },
-  });
+  };
+  if (queryOptions.columns) {
+    findManyOptions.columns = {
+      ...queryOptions.columns,
+      createdAt: true,
+      updatedAt: true,
+    };
+  }
+  const queryDBResult = await db.query.billingInfo.findMany(findManyOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -151,7 +162,7 @@ export async function getBillingInfos(
 }
 
 export async function mapNewBillingInfo_to_DTO(
-  data: Partial<NewBillingInfo>[]
+  data: Partial<BillingInfo>[]
 ): Promise<BillingInfoDTO[]> {
   return data.map((_billing_info) => ({
     id: _billing_info.id ?? "",
