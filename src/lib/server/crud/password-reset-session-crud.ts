@@ -31,29 +31,10 @@ export async function addPasswordResetSession(
   const insert_result = await db
     .insert(passwordResetSession)
     .values(
-      data.map((session_data) => {
-        // Normalize expiresAt to an ISO 8601 string (TEXT) so callers may pass
-        // a number (seconds or ms), a Date, or a string and the DB will keep a
-        // consistent string representation.
-        const normalized = { ...session_data } as any;
-        if (normalized.expiresAt !== undefined) {
-          const raw = normalized.expiresAt;
-          if (typeof raw === "number") {
-            normalized.expiresAt =
-              raw < 1_000_000_000_000
-                ? new Date(raw * 1000).toISOString()
-                : new Date(raw).toISOString();
-          } else if (raw instanceof Date) {
-            normalized.expiresAt = raw.toISOString();
-          } else {
-            normalized.expiresAt = String(raw);
-          }
-        }
-        return {
-          id: crypto.randomUUID(),
-          ...normalized,
-        };
-      })
+      data.map((session_data) => ({
+        id: crypto.randomUUID(),
+        ...session_data,
+      }))
     )
     .returning();
 
@@ -170,8 +151,7 @@ export async function mapNewPasswordResetSession_to_DTO(
     userId: _session.userId ?? "",
     email: _session.email ?? "",
     code: _session.code ?? "",
-    // expiresAt is stored as an ISO 8601 string (TEXT)
-    expiresAt: _session.expiresAt ?? "",
+    expiresAt: _session.expiresAt ? new Date(_session.expiresAt) : new Date(),
     emailVerified: _session.emailVerified ?? false,
     twoFactorVerified: _session.twoFactorVerified ?? false,
   }));

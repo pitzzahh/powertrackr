@@ -625,10 +625,10 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].email).toBe("dto@example.com");
       expect(result[0].code).toBe("DTO");
-      // expiresAt should be returned as an ISO string (TEXT)
-      expect(typeof result[0].expiresAt).toBe("string");
-      // sanity check it's parseable
-      expect(Date.parse(result[0].expiresAt)).toBeGreaterThan(0);
+      // expiresAt should be returned as a Date object
+      expect(result[0].expiresAt).toBeInstanceOf(Date);
+      // sanity check it's a valid date
+      expect(result[0].expiresAt.getTime()).toBeGreaterThan(0);
     });
 
     it("should return empty array when none found", async () => {
@@ -652,8 +652,8 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(dto[0].id).toBe("");
       expect(dto[0].email).toBe("");
       expect(dto[0].code).toBe("");
-      // missing expiresAt should be represented as empty string now
-      expect(dto[0].expiresAt).toBe("");
+      // missing expiresAt should be represented as a new Date
+      expect(dto[0].expiresAt).toBeInstanceOf(Date);
       expect(dto[0].emailVerified).toBe(false);
     });
   });

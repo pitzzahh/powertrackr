@@ -6,7 +6,7 @@ export type NewPayment = typeof payment.$inferInsert;
 export type PaymentDTO = {
   id: string;
   amount: number | null;
-  date: string;
+  date: Date;
   createdAt: Date;
   updatedAt: Date;
 };

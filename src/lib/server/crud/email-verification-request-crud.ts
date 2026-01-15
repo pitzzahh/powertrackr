@@ -32,35 +32,10 @@ export async function addEmailVerificationRequest(
   const insert_result = await db
     .insert(emailVerificationRequest)
     .values(
-      data.map((request_data) => {
-        // Normalize expiresAt to an ISO 8601 string (TEXT) so the DB stores
-        // a consistent string representation regardless of whether callers
-        // pass a number (seconds/ms), a Date, or a string. Ensure the value
-        // is a string (or removed when not provided) so TypeScript/Drizzle
-        // see a consistent type for the inserted rows.
-        if (request_data.expiresAt !== undefined && request_data.expiresAt !== null) {
-          const raw = request_data.expiresAt as unknown;
-          if (typeof raw === "number") {
-            const num = raw as number;
-            request_data.expiresAt =
-              num < 1_000_000_000_000
-                ? new Date(num * 1000).toISOString()
-                : new Date(num).toISOString();
-          } else if (raw instanceof Date) {
-            request_data.expiresAt = raw.toISOString();
-          } else {
-            request_data.expiresAt = String(raw);
-          }
-        } else {
-          // Ensure absent value is not present on the object to keep types consistent
-          // Cast to any to allow deleting a non-optional property in tests
-          delete (request_data as any).expiresAt;
-        }
-        return {
-          id: crypto.randomUUID(),
-          ...request_data,
-        };
-      })
+      data.map((request_data) => ({
+        id: crypto.randomUUID(),
+        ...request_data,
+      }))
     )
     .returning();
 
@@ -98,22 +73,6 @@ export async function updateEmailVerificationRequestBy(
       message: "No data changed",
       value: [old_request],
     };
-  }
-
-  // Normalize any expiresAt update to an ISO 8601 string
-  if ("expiresAt" in changed_data && changed_data.expiresAt !== undefined) {
-    const raw = changed_data.expiresAt as unknown;
-    if (typeof raw === "number") {
-      changed_data.expiresAt =
-        (raw as number) < 1_000_000_000_000
-          ? new Date((raw as number) * 1000).toISOString()
-          : new Date(raw as number).toISOString();
-    } else if (raw instanceof Date) {
-      changed_data.expiresAt = raw.toISOString();
-    } else {
-      // assume it's already a string
-      changed_data.expiresAt = raw as any;
-    }
   }
 
   const whereSQL = buildWhereSQL(conditions);
@@ -245,18 +204,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "code") {
       conditions.push(eq(emailVerificationRequest.code, value as string));
     } else if (key === "expiresAt") {
-      // Accept either a string (ISO) or number (seconds/ms) for convenience,
-      // normalizing numeric values to an ISO 8601 string before comparison.
-      if (typeof value === "number") {
-        const num = value as number;
-        const normalized =
-          num < 1_000_000_000_000
-            ? new Date(num * 1000).toISOString()
-            : new Date(num).toISOString();
-        conditions.push(eq(emailVerificationRequest.expiresAt, normalized));
-      } else {
-        conditions.push(eq(emailVerificationRequest.expiresAt, value as string));
-      }
+      conditions.push(eq(emailVerificationRequest.expiresAt, value as string));
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;

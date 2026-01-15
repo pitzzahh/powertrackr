@@ -937,8 +937,8 @@ describe("Sub Meter CRUD Operations", () => {
       expect(dto[0].id).toBeUndefined();
       expect(dto[0].billingInfoId).toBeUndefined();
       expect(dto[0].subKwh).toBeUndefined();
-      expect(dto[0].createdAt).toBeUndefined();
-      expect(dto[0].updatedAt).toBeUndefined();
+      expect(dto[0].createdAt).toBeNull();
+      expect(dto[0].updatedAt).toBeNull();
     });
   });
 

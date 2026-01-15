@@ -361,17 +361,14 @@ describe("Payment CRUD Operations", () => {
       ];
       await addPayment(paymentData);
 
-      const searchParam: HelperParam<NewPayment> = {
+      const result = await getPayments({
         query: {},
-        options: {},
-      };
-
-      const result = await getPayments(searchParam);
+      });
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBeDefined();
       expect(result[0].amount).toBe(321.99);
-      expect(result[0].date).toBe("2024-05-05");
+      expect(result[0].date).toStrictEqual(new Date(paymentData[0].date!));
       expect(result[0].createdAt).toBeInstanceOf(Date);
       expect(result[0].updatedAt).toBeInstanceOf(Date);
     });
@@ -392,18 +389,17 @@ describe("Payment CRUD Operations", () => {
         {
           id: undefined as unknown as string,
           amount: null,
-          date: undefined as unknown as string,
         },
       ];
 
-      const result = await mapNewPayment_to_DTO(input);
+      const result = mapNewPayment_to_DTO(input);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe("");
       expect(result[0].amount).toBeNull();
-      expect(result[0].date).toBe("");
-      expect(result[0].createdAt).toBeInstanceOf(Date);
-      expect(result[0].updatedAt).toBeInstanceOf(Date);
+      expect(result[0].date).toBeNull();
+      expect(result[0].createdAt).toBeNull();
+      expect(result[0].updatedAt).toBeNull();
     });
   });
 

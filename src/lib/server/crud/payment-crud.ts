@@ -113,28 +113,24 @@ export async function getPaymentBy(
   };
 }
 
-export async function getPayments(data: HelperParam<NewPayment>): Promise<PaymentDTO[]> {
+export async function getPayments(data: HelperParam<NewPayment>): Promise<Partial<PaymentDTO>[]> {
   const paymentsResult = await getPaymentBy(data);
   return !paymentsResult.valid || !paymentsResult.value
     ? []
     : mapNewPayment_to_DTO(paymentsResult.value);
 }
 
-export async function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Promise<PaymentDTO[]> {
-  return data.map((_payment) => ({
-    id: _payment.id ?? "",
-    amount: _payment.amount ?? null,
-    date: _payment.date ?? "",
-    // Convert stored ISO strings to Date objects for DTO consumers
-    createdAt:
-      typeof _payment.createdAt === "string"
-        ? new Date(_payment.createdAt)
-        : (_payment.createdAt ?? new Date()),
-    updatedAt:
-      typeof _payment.updatedAt === "string"
-        ? new Date(_payment.updatedAt)
-        : (_payment.updatedAt ?? new Date()),
-  }));
+export function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Partial<PaymentDTO>[] {
+  return data.map(
+    (_payment) =>
+      ({
+        id: _payment.id ?? "",
+        amount: _payment.amount ?? null,
+        date: _payment.date ? new Date(_payment.date) : null,
+        createdAt: _payment.createdAt ? new Date(_payment.createdAt) : null,
+        updatedAt: _payment.updatedAt ? new Date(_payment.updatedAt) : null,
+      }) as PaymentDTO
+  );
 }
 
 export async function getPaymentCountBy(

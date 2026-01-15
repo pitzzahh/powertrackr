@@ -168,22 +168,8 @@ export async function mapNewSubMeter_to_DTO(
         subReadingLatest: _sub_meter.subReadingLatest,
         subReadingOld: _sub_meter.subReadingOld,
         paymentId: _sub_meter.paymentId,
-        createdAt:
-          _sub_meter.createdAt === undefined || _sub_meter.createdAt === null
-            ? undefined
-            : typeof _sub_meter.createdAt === "string" || typeof _sub_meter.createdAt === "number"
-              ? new Date(_sub_meter.createdAt as any)
-              : (_sub_meter.createdAt as any) instanceof Date
-                ? (_sub_meter.createdAt as any)
-                : undefined,
-        updatedAt:
-          _sub_meter.updatedAt === undefined || _sub_meter.updatedAt === null
-            ? undefined
-            : typeof _sub_meter.updatedAt === "string" || typeof _sub_meter.updatedAt === "number"
-              ? new Date(_sub_meter.updatedAt as any)
-              : (_sub_meter.updatedAt as any) instanceof Date
-                ? (_sub_meter.updatedAt as any)
-                : undefined,
+        createdAt: _sub_meter.createdAt ? new Date(_sub_meter.createdAt) : null,
+        updatedAt: _sub_meter.updatedAt ? new Date(_sub_meter.updatedAt) : null,
       } as SubMeterDTO;
 
       if ("payment" in _sub_meter) {

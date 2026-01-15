@@ -121,29 +121,14 @@ export async function getSessions(data: HelperParam<NewSession>): Promise<Sessio
 }
 
 export async function mapNewSession_to_DTO(data: Partial<NewSession>[]): Promise<SessionDTO[]> {
-  return data.map((_session) => {
-    // Normalize expiresAt to a Date instance for the DTO regardless of how it
-    // was stored in the DB (string/number/date). This keeps the DTO stable
-    // and avoids flaky assertions in tests.
-    const raw = (_session.expiresAt as unknown) ?? new Date();
-    let expiresAt: Date;
-    if (typeof raw === "string" || typeof raw === "number") {
-      expiresAt = new Date(raw as any);
-    } else if (raw instanceof Date) {
-      expiresAt = raw;
-    } else {
-      expiresAt = new Date();
-    }
-
-    return {
-      id: _session.id ?? "",
-      expiresAt,
-      ipAddress: _session.ipAddress ?? null,
-      userAgent: _session.userAgent ?? null,
-      userId: _session.userId ?? "",
-      twoFactorVerified: _session.twoFactorVerified ?? false,
-    } as SessionDTO;
-  });
+  return data.map((_session) => ({
+    id: _session.id ?? "",
+    expiresAt: _session.expiresAt ? new Date(_session.expiresAt) : new Date(),
+    ipAddress: _session.ipAddress ?? null,
+    userAgent: _session.userAgent ?? null,
+    userId: _session.userId ?? "",
+    twoFactorVerified: _session.twoFactorVerified ?? false,
+  }));
 }
 
 export async function getSessionCountBy(
@@ -200,21 +185,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "id") {
       conditions.push(eq(session.id, value as string));
     } else if (key === "expiresAt") {
-      // Accept string | number | Date and normalize to an ISO 8601 string for comparison.
-      const raw = value as unknown;
-      let normalizedIso: string;
-      if (typeof raw === "number") {
-        const num = raw as number;
-        const ms = num < 1_000_000_000_000 ? num * 1000 : num;
-        normalizedIso = new Date(ms).toISOString();
-      } else if (typeof raw === "string") {
-        normalizedIso = raw;
-      } else if (raw instanceof Date) {
-        normalizedIso = (raw as Date).toISOString();
-      } else {
-        normalizedIso = new Date().toISOString();
-      }
-      conditions.push(eq(session.expiresAt, normalizedIso));
+      conditions.push(eq(session.expiresAt, value as string));
     } else if (key === "ipAddress") {
       conditions.push(eq(session.ipAddress, value as string));
     } else if (key === "userAgent") {
