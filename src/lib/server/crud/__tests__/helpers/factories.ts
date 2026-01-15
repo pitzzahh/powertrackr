@@ -63,10 +63,7 @@ export function createBillingInfo(
     balance: 500.75 + sequence,
     status: "Pending",
     payPerkWh: 0.15,
-    paymentId: null,
-    // Use ISO strings for timestamps in tests/factories
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    paymentId: "",
     ...overrides,
   };
 }
@@ -206,7 +203,7 @@ export function createRelatedTestData(options: RelatedDataOptions = {}) {
     for (let i = 0; i < billingInfosPerUser; i++) {
       const billingInfo = createBillingInfo({
         userId: user.id,
-        paymentId: userPayments[i % userPayments.length]?.id || null,
+        paymentId: userPayments[i % userPayments.length]?.id,
       });
       billingInfos.push(billingInfo);
 

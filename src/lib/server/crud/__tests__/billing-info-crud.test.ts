@@ -31,65 +31,69 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("addBillingInfo", () => {
     it("should successfully add a single billing info", async () => {
-      // First create a user to reference
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser({ email: "billing@example.com" });
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser({ email: "billing@example.com" })]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            totalkWh: 1000,
-            balance: 500.75,
-            status: "Pending",
-            payPerkWh: 0.15,
-            date: "2024-01-15",
-          });
-          return rest;
-        })(),
-      ];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 500.75 })]);
 
-      const result = await addBillingInfo(billingData);
+      const result = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1000,
+          balance: 500.75,
+          status: "Pending",
+          payPerkWh: 0.15,
+          date: "2024-01-15",
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 billing info(s) added");
       expect(result.value).toHaveLength(1);
       expect(result.value[0]).toHaveProperty("id");
-      expect(result.value[0].userId).toBe(userId);
+      expect(result.value[0].userId).toBe(addedUser.id);
       expect(result.value[0].totalkWh).toBe(1000);
       expect(result.value[0].balance).toBe(500.75);
       expect(result.value[0].status).toBe("Pending");
       expect(result.value[0].payPerkWh).toBe(0.15);
+      expect(result.value[0].paymentId).toBe(addedPayment.id);
     });
 
     it("should successfully add multiple billing infos", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = createBillingInfos(3, { userId }).map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
+      const paymentPromises = Array.from({ length: 3 }, async () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
+
+      const billingData = paymentResults.map((res) =>
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: res.value[0].id,
+        })
+      );
 
       const result = await addBillingInfo(billingData);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((res) => res.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.message).toBe("3 billing info(s) added");
       expect(result.value).toHaveLength(3);
       expect(result.value.every((billing) => billing.id)).toBe(true);
-      expect(result.value.every((billing) => billing.userId === userId)).toBe(true);
+      expect(result.value.every((billing) => billing.userId === addedUser.id)).toBe(true);
     });
 
     it("should handle empty array input", async () => {
@@ -101,89 +105,90 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with payment reference", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 100.5 });
-          return rest;
-        })(),
-      ];
-      const paymentResult = await addPayment(paymentData);
-      const paymentId = paymentResult.value[0].id;
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100.5 })]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            paymentId,
-            totalkWh: 800,
-            balance: 400.25,
-          });
-          return rest;
-        })(),
-      ];
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+          totalkWh: 800,
+          balance: 400.25,
+        }),
+      ]);
 
-      const result = await addBillingInfo(billingData);
-
-      expect(result.valid).toBe(true);
-      expect(result.value[0].paymentId).toBe(paymentId);
+      expect(validUser).toBe(true);
+      expect(validPayment).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedPayment).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(addedBilling.paymentId).toBe(addedPayment.id);
     });
 
-    it("should handle billing info with null payment", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+    it("should handle billing info with undefined payment", async () => {
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            paymentId: null,
-          });
-          return rest;
-        })(),
-      ];
+      const result = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: undefined,
+        }),
+      ]);
 
-      const result = await addBillingInfo(billingData);
-
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value[0].paymentId).toBeNull();
     });
 
     it("should handle different status types", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const paymentPromises = Array.from({ length: 3 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
 
       const billingData = [
-        createBillingInfo({ userId, status: "Paid" }),
-        createBillingInfo({ userId, status: "Pending" }),
-        createBillingInfo({ userId, status: "N/A" }),
-      ].map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Paid",
+          paymentId: paymentResults[0].value[0].id,
+        }),
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Pending",
+          paymentId: paymentResults[1].value[0].id,
+        }),
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "N/A",
+          paymentId: paymentResults[2].value[0].id,
+        }),
+      ];
 
       const result = await addBillingInfo(billingData);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(3);
       expect(result.value[0].status).toBe("Paid");
@@ -194,23 +199,25 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfoBy", () => {
     it("should find billing info by ID", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1200 });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 1200 * 0.1 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1200,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
@@ -219,6 +226,11 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedPayment).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 billing info(s) found");
       expect(result.value).toHaveLength(1);
@@ -227,53 +239,63 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by user ID", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
-        query: { userId },
+        query: { userId: addedUser.id },
         options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].userId).toBe(userId);
+      expect(result.value[0].userId).toBe(addedUser.id);
     });
 
     it("should find billing info by date", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
       const testDate = "2024-02-01";
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, date: testDate });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          date: testDate,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { date: testDate },
@@ -282,6 +304,10 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0].date).toBe(testDate);
@@ -289,14 +315,10 @@ describe("Billing Info CRUD Operations", () => {
 
     describe("Billing Info CRUD Integration (payments & sub-meters) - manual CRUD flow", () => {
       it("should create main and sub payments correctly with multiple sub-meters (manual CRUD flow)", async () => {
-        const userData = [
-          (() => {
-            const { id: _, ...rest } = createUser();
-            return rest;
-          })(),
-        ];
-        const userResult = await addUser(userData);
-        const userId = userResult.value[0].id;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
 
         const date = "2024-04-01";
         const totalkWh = 1000;
@@ -321,37 +343,39 @@ describe("Billing Info CRUD Operations", () => {
         const subPaymentIds: (string | null)[] = [];
         for (const amount of expectedSubAmounts) {
           if (amount > 0) {
-            const p = await addPayment([{ amount, date: new Date().toISOString() }]);
-            subPaymentIds.push(p.value[0].id);
+            const {
+              value: [addedSubPayment],
+            } = await addPayment([{ amount, date: new Date().toISOString() }]);
+            subPaymentIds.push(addedSubPayment.id);
           } else {
             subPaymentIds.push(null);
           }
         }
 
         // Create main payment
-        const mainPayment = await addPayment([
-          { amount: expectedMain, date: new Date().toISOString() },
-        ]);
-        const mainPaymentId = mainPayment.value[0].id;
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: expectedMain, date: new Date().toISOString() }]);
+        const mainPaymentId = addedMainPayment.id;
 
         // Insert billing info referencing main payment id
-        const billingData = [
-          (() => {
-            const { id: _, ...rest } = createBillingInfo({
-              userId,
-              date,
-              totalkWh,
-              balance,
-              status: "Paid",
-              payPerkWh: payPer,
-              paymentId: mainPaymentId,
-            });
-            return rest;
-          })(),
-        ];
-        const billingResult = await addBillingInfo(billingData);
-        expect(billingResult.valid).toBe(true);
-        const billingId = billingResult.value[0].id;
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: mainPaymentId,
+          }),
+        ]);
+        expect(validUser).toBe(true);
+        expect(validBilling).toBe(true);
+        const billingId = addedBilling.id;
 
         // Insert sub meters
         const subMeterData = subMeters.map((s, idx) => ({
@@ -364,6 +388,9 @@ describe("Billing Info CRUD Operations", () => {
         await addSubMeter(subMeterData);
 
         // Assertions
+        expect(addedUser).toBeDefined();
+        expect(addedBilling).toBeDefined();
+        expect(addedMainPayment).toBeDefined();
         const billing = (await getBillingInfoBy({ query: { id: billingId }, options: {} }))
           .value[0];
         expect(billing.paymentId).toBe(mainPaymentId);
@@ -392,14 +419,10 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("should create main payment equal to balance when zero sub-meters (manual CRUD flow)", async () => {
-        const userData = [
-          (() => {
-            const { id: _, ...rest } = createUser();
-            return rest;
-          })(),
-        ];
-        const userResult = await addUser(userData);
-        const userId = userResult.value[0].id;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
 
         const date = "2024-04-15";
         const totalkWh = 1000;
@@ -408,26 +431,32 @@ describe("Billing Info CRUD Operations", () => {
         const payPer = calculatePayPerKwh(balance, totalkWh);
 
         // No sub-meter payments; main payment equals full balance
-        const mainPayment = await addPayment([{ amount: balance, date: new Date().toISOString() }]);
-        const mainPaymentId = mainPayment.value[0].id;
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance, date: new Date().toISOString() }]);
+        const mainPaymentId = addedMainPayment.id;
 
-        const billingData = [
-          (() => {
-            const { id: _, ...rest } = createBillingInfo({
-              userId,
-              date,
-              totalkWh,
-              balance,
-              status: "Pending",
-              payPerkWh: payPer,
-              paymentId: mainPaymentId,
-            });
-            return rest;
-          })(),
-        ];
-        const billingResult = await addBillingInfo(billingData);
-        expect(billingResult.valid).toBe(true);
-        const billingId = billingResult.value[0].id;
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Pending",
+            payPerkWh: payPer,
+            paymentId: mainPaymentId,
+          }),
+        ]);
+        expect(validUser).toBe(true);
+        expect(validBilling).toBe(true);
+        const billingId = addedBilling.id;
+
+        expect(addedUser).toBeDefined();
+        expect(addedBilling).toBeDefined();
+        expect(addedMainPayment).toBeDefined();
 
         const subs = await getSubMeterBy({ query: { billingInfoId: billingId }, options: {} });
         expect(subs.valid).toBe(false);
@@ -439,14 +468,10 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("should update sub-meter and corresponding payment via CRUDs", async () => {
-        const userData = [
-          (() => {
-            const { id: _, ...rest } = createUser();
-            return rest;
-          })(),
-        ];
-        const userResult = await addUser(userData);
-        const userId = userResult.value[0].id;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
 
         const date = "2024-05-01";
         const totalkWh = 500;
@@ -457,32 +482,38 @@ describe("Billing Info CRUD Operations", () => {
         // create initial sub-payment and billing
         const initialSubKwh = 10;
         const initialAmount = Number((initialSubKwh * payPer).toFixed(2));
-        const subPayment = await addPayment([
-          { amount: initialAmount, date: new Date().toISOString() },
-        ]);
-        const subPaymentId = subPayment.value[0].id;
+        const {
+          value: [addedSubPayment],
+        } = await addPayment([{ amount: initialAmount, date: new Date().toISOString() }]);
+        const subPaymentId = addedSubPayment.id;
 
-        const mainPayment = await addPayment([
-          { amount: balance - initialAmount, date: new Date().toISOString() },
-        ]);
-        const mainPaymentId = mainPayment.value[0].id;
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance - initialAmount, date: new Date().toISOString() }]);
+        const mainPaymentId = addedMainPayment.id;
 
-        const billingData = [
-          (() => {
-            const { id: _, ...rest } = createBillingInfo({
-              userId,
-              date,
-              totalkWh,
-              balance,
-              status: "Paid",
-              payPerkWh: payPer,
-              paymentId: mainPaymentId,
-            });
-            return rest;
-          })(),
-        ];
-        const billingResult = await addBillingInfo(billingData);
-        const billingId = billingResult.value[0].id;
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: mainPaymentId,
+          }),
+        ]);
+        const billingId = addedBilling.id;
+
+        expect(validUser).toBe(true);
+        expect(validBilling).toBe(true);
+        expect(addedUser).toBeDefined();
+        expect(addedBilling).toBeDefined();
+        expect(addedSubPayment).toBeDefined();
+        expect(addedMainPayment).toBeDefined();
 
         // create sub meter referencing the sub payment
         const addSub = await addSubMeter([
@@ -534,22 +565,28 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by status", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const paymentPromises = Array.from({ length: 2 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
 
       const billingData = [
-        createBillingInfo({ userId, status: "Paid" }),
-        createBillingInfo({ userId, status: "Pending" }),
-      ].map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Paid",
+          paymentId: paymentResults[0].value[0].id,
+        }),
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Pending",
+          paymentId: paymentResults[1].value[0].id,
+        }),
+      ];
       await addBillingInfo(billingData);
 
       const searchParam: HelperParam<NewBillingInfo> = {
@@ -559,28 +596,34 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0].status).toBe("Paid");
     });
 
     it("should find billing info by totalkWh", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1500 });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 150 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1500,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { totalkWh: 1500 },
@@ -589,28 +632,35 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0].totalkWh).toBe(1500);
     });
 
     it("should find billing info by balance", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, balance: 750.25 });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 750.25 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          balance: 750.25,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { balance: 750.25 },
@@ -619,6 +669,10 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0].balance).toBe(750.25);
@@ -638,20 +692,26 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = createBillingInfos(5, { userId }).map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
-      await addBillingInfo(billingData);
+      const paymentPromises = Array.from({ length: 5 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
+
+      const billingData = createBillingInfos(5, { userId: addedUser.id }).map((b, i) => ({
+        ...b,
+        paymentId: paymentResults[i].value[0].id,
+      }));
+      await addBillingInfo(
+        billingData.map((b) => {
+          const { id: _, ...rest } = b;
+          return rest;
+        })
+      );
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: {},
@@ -660,25 +720,34 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(3);
     });
 
     it("should apply offset option", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = createBillingInfos(5, { userId }).map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
-      await addBillingInfo(billingData);
+      const paymentPromises = Array.from({ length: 5 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
+
+      const billingData = createBillingInfos(5, { userId: addedUser.id }).map((b, i) => ({
+        ...b,
+        paymentId: paymentResults[i].value[0].id,
+      }));
+      await addBillingInfo(
+        billingData.map((b) => {
+          const { id: _, ...rest } = b;
+          return rest;
+        })
+      );
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: {},
@@ -687,35 +756,44 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(2);
     });
 
     it("should apply fields selection", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewBillingInfo> = {
-        query: { userId },
+        query: { userId: addedUser.id },
         options: { fields: ["id", "userId", "totalkWh"] as (keyof NewBillingInfo)[] },
       };
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
       expect(result.value[0]).toHaveProperty("id");
@@ -724,20 +802,26 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = createBillingInfos(3, { userId }).map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
-      const addResult = await addBillingInfo(billingData);
+      const paymentPromises = Array.from({ length: 3 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
+
+      const billingData = createBillingInfos(3, { userId: addedUser.id }).map((b, i) => ({
+        ...b,
+        paymentId: paymentResults[i].value[0].id,
+      }));
+      const addResult = await addBillingInfo(
+        billingData.map((b) => {
+          const { id: _, ...rest } = b;
+          return rest;
+        })
+      );
       const excludeId = addResult.value[1].id;
 
       const searchParam: HelperParam<NewBillingInfo> = {
@@ -747,6 +831,9 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoBy(searchParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(2);
       expect(result.value.every((billing) => billing.id !== excludeId)).toBe(true);
@@ -755,28 +842,27 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("updateBillingInfoBy", () => {
     it("should successfully update billing info by ID", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            totalkWh: 1000,
-            balance: 500.0,
-            status: "Pending",
-          });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 500 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1000,
+          balance: 500.0,
+          status: "Pending",
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
@@ -791,6 +877,10 @@ describe("Billing Info CRUD Operations", () => {
       };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 billing info(s) updated");
       expect(result.value).toHaveLength(1);
@@ -801,23 +891,25 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, totalkWh: 1000 });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1000,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
@@ -827,6 +919,10 @@ describe("Billing Info CRUD Operations", () => {
       const updateData = { totalkWh: 1000 };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.message).toBe("No data changed");
       expect(result.value).toHaveLength(1);
@@ -847,63 +943,62 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should update payment reference", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 200.0 });
-          return rest;
-        })(),
-      ];
-      const paymentResult = await addPayment(paymentData);
-      const paymentId = paymentResult.value[0].id;
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 200.0 })]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId, paymentId: null });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({ userId: addedUser.id, paymentId: addedPayment.id }),
+      ]);
+      expect(addedBilling.status).toBe("Pending");
 
-      const updateParam: HelperParam<NewBillingInfo> = {
-        query: { id: addedBilling.id },
-        options: {},
-      };
+      const { valid: validUpdateBilling, value: updatedBilling } = await updateBillingInfoBy(
+        {
+          query: { id: addedBilling.id },
+        },
+        {
+          status: "Paid",
+        }
+      );
+      expect(validUser).toBe(true);
+      expect(validPayment).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(validUpdateBilling).toBe(true);
 
-      const updateData = { paymentId };
-      const result = await updateBillingInfoBy(updateParam, updateData);
-
-      expect(result.valid).toBe(true);
-      expect(result.value[0].paymentId).toBe(paymentId);
+      expect(addedUser).toBeDefined();
+      expect(addedPayment).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(updatedBilling).toBeDefined();
     });
 
     it("should update multiple fields at once", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
@@ -919,6 +1014,10 @@ describe("Billing Info CRUD Operations", () => {
       };
       const result = await updateBillingInfoBy(updateParam, updateData);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value[0].totalkWh).toBe(2000);
       expect(result.value[0].balance).toBe(1000.0);
@@ -930,20 +1029,26 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfoCountBy", () => {
     it("should return correct count for existing billing infos", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = createBillingInfos(5, { userId }).map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
-      await addBillingInfo(billingData);
+      const paymentPromises = Array.from({ length: 5 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
+
+      const billingData = createBillingInfos(5, { userId: addedUser.id }).map((b, i) => ({
+        ...b,
+        paymentId: paymentResults[i].value[0].id,
+      }));
+      await addBillingInfo(
+        billingData.map((b) => {
+          const { id: _, ...rest } = b;
+          return rest;
+        })
+      );
 
       const countParam: HelperParam<NewBillingInfo> = {
         query: {},
@@ -952,6 +1057,9 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoCountBy(countParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toBe(5);
       expect(result.message).toBe("Billing info(s) count is 5");
@@ -971,23 +1079,33 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should count billing infos with specific criteria", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const paymentPromises = Array.from({ length: 3 }, () =>
+        addPayment([createPayment({ amount: 100 })])
+      );
+      const paymentResults = await Promise.all(paymentPromises);
 
       const billingData = [
-        createBillingInfo({ userId, status: "Paid" }),
-        createBillingInfo({ userId, status: "Paid" }),
-        createBillingInfo({ userId, status: "Pending" }),
-      ].map((billing) => {
-        const { id: _, ...rest } = billing;
-        return rest;
-      });
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Paid",
+          paymentId: paymentResults[0].value[0].id,
+        }),
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Paid",
+          paymentId: paymentResults[1].value[0].id,
+        }),
+        createBillingInfo({
+          userId: addedUser.id,
+          status: "Pending",
+          paymentId: paymentResults[2].value[0].id,
+        }),
+      ];
       await addBillingInfo(billingData);
 
       const countParam: HelperParam<NewBillingInfo> = {
@@ -997,28 +1115,32 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoCountBy(countParam);
 
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(paymentResults.every((r) => r.valid)).toBe(true);
       expect(result.valid).toBe(true);
       expect(result.value).toBe(2);
     });
 
     it("should apply limit when searching by specific fields", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({ userId });
-          return rest;
-        })(),
-      ];
-      const addResult = await addBillingInfo(billingData);
-      const addedBilling = addResult.value[0];
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
       const countParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
@@ -1027,6 +1149,10 @@ describe("Billing Info CRUD Operations", () => {
 
       const result = await getBillingInfoCountBy(countParam);
 
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toBe(1);
     });
@@ -1034,30 +1160,35 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfos", () => {
     it("should return DTO format billing infos", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            totalkWh: 1500,
-            balance: 750.5,
-            status: "Paid",
-          });
-          return rest;
-        })(),
-      ];
-      await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 750.5 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: 1500,
+          balance: 750.5,
+          status: "Paid",
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
 
       const searchParam: HelperParam<NewBillingInfo> = {
-        query: { userId },
+        query: { userId: addedUser.id },
         options: {},
       };
 
@@ -1074,7 +1205,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(result[0]).toHaveProperty("paymentId");
       expect(result[0]).toHaveProperty("createdAt");
       expect(result[0]).toHaveProperty("updatedAt");
-      expect(result[0].userId).toBe(userId);
+      expect(result[0].userId).toBe(addedUser.id);
       expect(result[0].totalkWh).toBe(1500);
       expect(result[0].balance).toBe(750.5);
       expect(result[0].status).toBe("Paid");
@@ -1114,9 +1245,9 @@ describe("Billing Info CRUD Operations", () => {
       expect(result[0].paymentId).toBe("test-payment-id");
     });
 
-    it("should handle billing info with null values", async () => {
+    it("should handle billing info with undefined values", async () => {
       const billingData = createBillingInfo({
-        paymentId: null,
+        paymentId: undefined,
       });
 
       const result = await mapNewBillingInfo_to_DTO([billingData]);
@@ -1292,163 +1423,166 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("Edge Cases and Error Handling", () => {
     it("should handle billing info with very large numbers", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
       const largeKWh = 999999999;
       const largeBalance = 999999999.99;
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            totalkWh: largeKWh,
-            balance: largeBalance,
-          });
-          return rest;
-        })(),
-      ];
 
-      const result = await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: largeBalance })]);
 
-      expect(result.valid).toBe(true);
-      expect(result.value[0].totalkWh).toBe(largeKWh);
-      expect(result.value[0].balance).toBe(largeBalance);
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          totalkWh: largeKWh,
+          balance: largeBalance,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(addedBilling.totalkWh).toBe(largeKWh);
+      expect(addedBilling.balance).toBe(largeBalance);
     });
 
     it("should handle billing info with small decimal values", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
       const smallBalance = 0.01;
       const smallPayPerKwh = 0.001;
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            balance: smallBalance,
-            payPerkWh: smallPayPerKwh,
-          });
-          return rest;
-        })(),
-      ];
 
-      const result = await addBillingInfo(billingData);
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: smallBalance })]);
 
-      expect(result.valid).toBe(true);
-      expect(result.value[0].balance).toBe(smallBalance);
-      expect(result.value[0].payPerkWh).toBe(smallPayPerKwh);
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          balance: smallBalance,
+          payPerkWh: smallPayPerKwh,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(addedBilling.balance).toBe(smallBalance);
+      expect(addedBilling.payPerkWh).toBe(smallPayPerKwh);
     });
 
     it("should handle special date formats", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
       const isoDate = new Date().toISOString();
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            date: isoDate,
-          });
-          return rest;
-        })(),
-      ];
 
-      const result = await addBillingInfo(billingData);
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100.5 })]);
 
-      expect(result.valid).toBe(true);
-      expect(result.value[0].date).toBe(isoDate);
+      const {
+        valid: validBillingInfo,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          date: isoDate,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validPayment).toBe(true);
+      expect(validBillingInfo).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedPayment).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(addedBilling.date).toBe(isoDate);
     });
 
     it("should handle simultaneous billing info operations", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const promises = Array.from({ length: 10 }, (_, i) => {
-        const billingData = [
-          (() => {
-            const { id: _, ...rest } = createBillingInfo({
-              userId,
-              totalkWh: i * 100,
-            });
-            return rest;
-          })(),
-        ];
-        return addBillingInfo(billingData);
+      const promises = Array.from({ length: 10 }, async (_, index) => {
+        const {
+          value: [addedPayment],
+        } = await addPayment([createPayment({ amount: 100.5 * index })]);
+
+        return addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            totalkWh: index * 100,
+            paymentId: addedPayment.id,
+          }),
+        ]);
       });
 
       const results = await Promise.all(promises);
-
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
       expect(results.every((result) => result.valid)).toBe(true);
       expect(results.every((result) => result.value.length === 1)).toBe(true);
     });
 
     it("should handle billing info with foreign key relationships", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment();
-          return rest;
-        })(),
-      ];
-      const paymentResult = await addPayment(paymentData);
-      const paymentId = paymentResult.value[0].id;
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment()]);
 
-      const billingData = [
-        (() => {
-          const { id: _, ...rest } = createBillingInfo({
-            userId,
-            paymentId,
-          });
-          return rest;
-        })(),
-      ];
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
 
-      const result = await addBillingInfo(billingData);
-
-      expect(result.valid).toBe(true);
-      expect(result.value[0].userId).toBe(userId);
-      expect(result.value[0].paymentId).toBe(paymentId);
+      expect(validUser).toBe(true);
+      expect(validPayment).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedPayment).toBeDefined();
+      expect(addedBilling).toBeDefined();
+      expect(addedBilling.userId).toBe(addedUser.id);
+      expect(addedBilling.paymentId).toBe(addedPayment.id);
 
       // Verify the relationship exists by querying
-      const searchParam: HelperParam<NewBillingInfo> = {
-        query: { userId, paymentId },
+      const searchResult = await getBillingInfoBy({
+        query: { userId: addedUser.id, paymentId: addedPayment.id },
         options: {},
-      };
-
-      const searchResult = await getBillingInfoBy(searchParam);
+      });
       expect(searchResult.valid).toBe(true);
       expect(searchResult.value).toHaveLength(1);
     });
