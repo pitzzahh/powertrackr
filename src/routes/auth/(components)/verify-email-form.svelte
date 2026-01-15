@@ -72,8 +72,7 @@
         required
         autocomplete="one-time-code"
         class="text-center font-mono tracking-widest tabular-nums"
-        maxlength={6}
-        oninput={(e) => verifyEmail.fields.code.set(e.currentTarget.value.replace(/\D/g, ""))}
+        oninput={(e) => verifyEmail.fields.code.set(e.currentTarget.value.toUpperCase())}
         {...verifyEmail.fields.code.as("text")}
       />
       <FieldError errors={verifyEmail.fields.code.issues()} />
