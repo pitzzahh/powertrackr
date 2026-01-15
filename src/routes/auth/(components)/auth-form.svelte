@@ -49,6 +49,7 @@
 
 <form
   {...currentAction.enhance(async ({ submit }) => {
+    if (status === "processing") return;
     status = "processing";
     const toastId = showLoading(
       action === "login" ? "Logging you in..." : "Creating your account..."
