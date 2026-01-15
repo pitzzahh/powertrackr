@@ -145,19 +145,18 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   const { code } = data;
 
   // Validate code against DB
-  const requestResult = await getEmailVerificationRequestBy({
+  const {
+    valid,
+    value: [request],
+  } = await getEmailVerificationRequestBy({
     query: { userId: event.locals.session.userId, code },
     options: { limit: 1 },
   });
 
-  if (!requestResult.valid || !requestResult.value || requestResult.value.length === 0) {
+  if (!valid || !request) {
     error(400, "Invalid or expired verification code");
   }
 
-  const [request] = requestResult.value;
-  if (!request) {
-    error(400, "Invalid or expired verification code");
-  }
   // Accept multiple stored formats (ISO string, seconds, milliseconds, or Date).
   // Normalize to milliseconds for comparison with Date.now().
   // The DB may store expiration as an ISO string (TEXT) or as a numeric
@@ -182,12 +181,12 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   }
 
   if (!expiresAtMs || expiresAtMs < Date.now()) {
-    console.warn("Email verification code expired or invalid", {
+    console.warn("Email verification code expired", {
       expiresAtRaw: request.expiresAt,
       expiresAtMs,
       now: Date.now(),
     });
-    error(400, "Invalid or expired verification code");
+    error(400, "Email verification code expired, please request a new code");
   }
 
   // Mark the user's email as verified
