@@ -8,6 +8,7 @@
   type VerifyEmailFormState = {
     status: Status;
     countdown: number;
+    cooldownTime: number | undefined;
     timer: ReturnType<typeof setInterval> | undefined;
   };
 </script>
@@ -34,9 +35,10 @@
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
-  let { status, countdown, timer }: VerifyEmailFormState = $state({
+  let { status, countdown, cooldownTime, timer }: VerifyEmailFormState = $state({
     status: "idle",
     countdown: 0,
+    cooldownTime: undefined,
     timer: undefined,
   });
 
@@ -52,17 +54,20 @@
     const cooldownCookie = cookies.find((c) => c.startsWith("resend_cooldown="));
     if (cooldownCookie) {
       const value = cooldownCookie.split("=")[1];
-      const cooldownTime = parseInt(value);
+      cooldownTime = parseInt(value);
       const now = Date.now();
-      const remaining = Math.max(0, Math.ceil((cooldownTime - now) / 1000));
-      if (remaining > 0) {
-        countdown = remaining;
+      countdown = Math.max(0, Math.ceil((cooldownTime - now) / 1000));
+      if (countdown > 0) {
         timer = setInterval(() => {
-          countdown--;
-          if (countdown <= 0) {
-            clearInterval(timer);
-            timer = undefined;
-            document.cookie = "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          if (cooldownTime) {
+            const now = Date.now();
+            countdown = Math.max(0, Math.ceil((cooldownTime - now) / 1000));
+            if (countdown <= 0) {
+              clearInterval(timer);
+              timer = undefined;
+              cooldownTime = undefined;
+              document.cookie = "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            }
           }
         }, 1000);
       }
@@ -144,16 +149,20 @@
               showError("Failed to resend code. Please try again.");
             }
             if (res?.success && res.sent) {
-              const cooldownTime = Date.now() + 60000; // 60 seconds
+              cooldownTime = Date.now() + 60000; // 60 seconds
               document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=60;`;
               countdown = 60;
               timer = setInterval(() => {
-                countdown--;
-                if (countdown <= 0) {
-                  clearInterval(timer);
-                  timer = undefined;
-                  document.cookie =
-                    "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                if (cooldownTime) {
+                  const now = Date.now();
+                  countdown = Math.max(0, Math.ceil((cooldownTime - now) / 1000));
+                  if (countdown <= 0) {
+                    clearInterval(timer);
+                    timer = undefined;
+                    cooldownTime = undefined;
+                    document.cookie =
+                      "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                  }
                 }
               }, 1000);
             }
