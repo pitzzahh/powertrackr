@@ -65,7 +65,8 @@ class BillingStore {
     if (!this.userId) return;
     try {
       this.status = "fetching";
-      this.extendedBillingInfos = await getExtendedBillingInfos({ userId: this.userId });
+      const { value } = await getExtendedBillingInfos({ userId: this.userId });
+      this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);
       this.status = "success";
     } catch (error) {
