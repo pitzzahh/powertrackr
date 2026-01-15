@@ -12,7 +12,9 @@ const config = {
     experimental: {
       remoteFunctions: true,
     },
-    adapter: adapter(),
+    adapter: adapter({
+      precompress: true,
+    }),
   },
   compilerOptions: {
     experimental: {
