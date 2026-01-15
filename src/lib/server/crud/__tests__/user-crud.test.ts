@@ -58,16 +58,16 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle users with all optional fields", async () => {
-      const minimalUser = {
-        name: "Minimal User",
-        email: "minimal@example.com",
-        emailVerified: false,
-        registeredTwoFactor: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      const result = await addUser([minimalUser]);
+      const result = await addUser([
+        {
+          name: "Minimal User",
+          email: "minimal@example.com",
+          emailVerified: false,
+          registeredTwoFactor: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      ]);
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
