@@ -23,11 +23,11 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
 
   // Send email verification on first visit to verify-email page
   if (act === "verify-email" && user && !user.emailVerified) {
-    const existing = await getEmailVerificationRequestBy({
+    const { valid, value } = await getEmailVerificationRequestBy({
       query: { userId: user.id },
       options: { limit: 1 },
     });
-    if (!existing.valid || !existing.value || existing.value.length === 0) {
+    if (!valid || !value || value.length === 0) {
       try {
         await createAndSendEmailVerification(user.id, user.email);
       } catch (e) {
