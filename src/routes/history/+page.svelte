@@ -1,9 +1,3 @@
-<script lang="ts" module>
-  type PageState = {
-    status: Status;
-  };
-</script>
-
 <script lang="ts">
   import type { Status } from "$/types/state";
   import { extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
@@ -11,14 +5,16 @@
   import { onMount } from "svelte";
   import { billingStore } from "$lib/stores/billing.svelte.js";
 
-  let { status }: PageState = $state({
-    status: "idle",
-  });
+  let { data } = $props();
 
-  onMount(() => billingStore.fetchData());
+  onMount(() => {
+    if (!data.user) return;
+    billingStore.setUserId(data.user.id);
+    billingStore.fetchData();
+  });
 </script>
 
 <HistoryDataTable
-  {status}
+  status={billingStore.status}
   data={billingStore.extendedBillingInfos.map(extendedBillingInfoToTableView)}
 />
