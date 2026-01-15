@@ -4,6 +4,12 @@
   import type { WithElementRef } from "$/index";
 
   export type VerifyEmailFormProps = WithElementRef<HTMLFormAttributes>;
+
+  type VerifyEmailFormState = {
+    status: Status;
+    countdown: number;
+    timer: ReturnType<typeof setInterval> | undefined;
+  };
 </script>
 
 <script lang="ts">
@@ -18,7 +24,7 @@
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
   import { Loader, MessageCircle } from "$/assets/icons";
-  import { onDestroy } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { verifyEmail } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
@@ -28,13 +34,40 @@
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
-  let { status }: { status: Status } = $state({
+  let { status, countdown, timer }: VerifyEmailFormState = $state({
     status: "idle",
+    countdown: 0,
+    timer: undefined,
   });
 
   const id = $props.id();
 
-  onDestroy(() => (status = "idle"));
+  onDestroy(() => {
+    clearInterval(timer);
+    status = "idle";
+  });
+
+  $effect(() => {
+    const cookies = document.cookie.split(";").map((c) => c.trim());
+    const cooldownCookie = cookies.find((c) => c.startsWith("resend_cooldown="));
+    if (cooldownCookie) {
+      const value = cooldownCookie.split("=")[1];
+      const cooldownTime = parseInt(value);
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((cooldownTime - now) / 1000));
+      if (remaining > 0) {
+        countdown = remaining;
+        timer = setInterval(() => {
+          countdown--;
+          if (countdown <= 0) {
+            clearInterval(timer);
+            timer = undefined;
+            document.cookie = "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          }
+        }, 1000);
+      }
+    }
+  });
 </script>
 
 <form
@@ -72,6 +105,7 @@
         required
         autocomplete="one-time-code"
         class="text-center font-mono tracking-widest tabular-nums"
+        spellcheck={false}
         oninput={(e) => verifyEmail.fields.code.set(e.currentTarget.value.toUpperCase())}
         {...verifyEmail.fields.code.as("text")}
       />
@@ -90,8 +124,9 @@
     <Field>
       <Button
         variant="outline"
-        disabled={status === "processing"}
+        disabled={status === "processing" || countdown > 0}
         aria-label="Resend verification code"
+        style="opacity: {countdown > 0 ? 0.3 + ((60 - countdown) / 60) * 0.7 : 1}"
         onclick={async () => {
           status = "processing";
           const toastId = showLoading("Resending verification code...");
@@ -108,6 +143,20 @@
             } else {
               showError("Failed to resend code. Please try again.");
             }
+            if (res?.success && res.sent) {
+              const cooldownTime = Date.now() + 60000; // 60 seconds
+              document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=60;`;
+              countdown = 60;
+              timer = setInterval(() => {
+                countdown--;
+                if (countdown <= 0) {
+                  clearInterval(timer);
+                  timer = undefined;
+                  document.cookie =
+                    "resend_cooldown=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                }
+              }, 1000);
+            }
           } catch (e) {
             const message = isHttpError(e) ? e.body.message : String(e);
             showError(message || "Failed to resend code. Please try again.");
@@ -119,12 +168,15 @@
       >
         {#if status === "processing"}
           <Loader class="size-5 animate-spin" />
+        {:else if countdown > 0}
+          Resend in {countdown}s
         {:else}
           Resend Code
         {/if}
       </Button>
       <FieldDescription class="text-center">
-        Didn't receive the code? Check your spam folder or resend.
+        Didn't receive the code? Check your spam folder or resend {#if countdown > 0}
+          in {countdown}s{/if}.
       </FieldDescription>
     </Field>
   </FieldGroup>
