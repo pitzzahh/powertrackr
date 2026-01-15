@@ -13,7 +13,7 @@ export const loginSchema = v.object({
 });
 
 export const verifyEmailSchema = v.object({
-  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+  code: v.pipe(v.string(), v.minLength(1)),
 });
 
 export const setup2FASchema = v.object({
