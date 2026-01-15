@@ -5,7 +5,7 @@ export type HelperResult<T = any> = {
 };
 export type HelperParam<T> = {
   query: Partial<T>;
-  options: Partial<HelperParamOptions<T>>;
+  options?: Partial<HelperParamOptions<T>>;
 };
 
 export type HelperParamOptions<T> = {

@@ -135,17 +135,21 @@ export async function getEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<Partial<NewEmailVerificationRequest>[]>> {
   const { options } = data;
-  const { limit, offset, order, fields, with_user } = options;
   const conditions = generateEmailVerificationRequestQueryConditions(data);
   const queryOptions: EmailVerificationRequestQueryOptions = {
-    with: with_user ? { user: true } : undefined,
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
-    limit,
-    offset,
-    orderBy: order ? { expiresAt: order as "asc" | "desc" } : undefined,
+    ...(options && {
+      with: options.with_user ? { user: true } : undefined,
+      limit: options.limit,
+      offset: options.offset,
+      orderBy: options.order ? { expiresAt: options.order } : undefined,
+    }),
   };
-  if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
+  if (options && options.fields && options.fields.length > 0) {
+    queryOptions.columns = options.fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {}
+    );
   }
   const queryDBResult = await db.query.emailVerificationRequest.findMany(queryOptions);
 
@@ -211,7 +215,6 @@ export function generateEmailVerificationRequestQueryConditions(
 ) {
   const { query, options } = data;
   const { id, userId, email, code, expiresAt } = query;
-  const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
@@ -220,8 +223,8 @@ export function generateEmailVerificationRequestQueryConditions(
   if (code) where.code = code;
   if (expiresAt) where.expiresAt = expiresAt;
 
-  if (exclude_id) {
-    where.NOT = { id: exclude_id };
+  if (options && options.exclude_id) {
+    where.NOT = { id: options.exclude_id };
   }
 
   return where;

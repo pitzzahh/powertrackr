@@ -111,20 +111,24 @@ export async function getSubMeterBy(
   HelperResult<Partial<NewSubMeter & { payment?: Payment | null; billingInfo?: BillingInfo }>[]>
 > {
   const { options } = data;
-  const { limit, offset, order, with_payment, with_billing_info, fields } = options;
   const conditions = generateSubMeterQueryConditions(data);
   const queryOptions: SubMeterQueryOptions = {
     with: {
-      ...(with_payment === true ? { payment: true } : {}),
-      ...(with_billing_info === true ? { billingInfo: true } : {}),
+      ...(options && options.with_payment ? { payment: true } : {}),
+      ...(options && options.with_billing_info ? { billingInfo: true } : {}),
     },
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
-    limit,
-    offset,
-    orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
+    ...(options && {
+      limit: options.limit,
+      offset: options.offset,
+      orderBy: options.order ? { createdAt: options.order } : undefined,
+    }),
   };
-  if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
+  if (options && options.fields && options.fields.length > 0) {
+    queryOptions.columns = options.fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {}
+    );
   }
   const queryDBResult = await db.query.subMeter.findMany(queryOptions);
 
@@ -228,7 +232,7 @@ export async function getSubMeterCountBy(
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
   const { id, billingInfoId, subkWh, subReadingLatest, subReadingOld, paymentId } = query;
-  const { exclude_id } = options;
+
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
@@ -238,8 +242,8 @@ export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   if (subReadingOld !== undefined) where.subReadingOld = subReadingOld;
   if (paymentId) where.paymentId = paymentId;
 
-  if (exclude_id) {
-    where.NOT = { id: exclude_id };
+  if (options && options.exclude_id) {
+    where.NOT = { id: options.exclude_id };
   }
 
   return where;

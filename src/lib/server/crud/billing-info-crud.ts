@@ -92,16 +92,20 @@ export async function getBillingInfoBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<Partial<NewBillingInfo>[]>> {
   const { options } = data;
-  const { limit, offset, order, fields } = options;
   const conditions = generateBillingInfoQueryConditions(data);
   const queryOptions: BillingInfoQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
-    limit,
-    offset,
-    orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
+    ...(options && {
+      limit: options.limit,
+      offset: options.offset,
+      orderBy: options.order ? { createdAt: options.order } : undefined,
+    }),
   };
-  if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
+  if (options && options.fields && options.fields.length > 0) {
+    queryOptions.columns = options.fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {}
+    );
   }
   const queryDBResult = await db.query.billingInfo.findMany(queryOptions);
 
@@ -168,7 +172,6 @@ export async function getBillingInfoCountBy(
 export function generateBillingInfoQueryConditions(data: HelperParam<NewBillingInfo>) {
   const { query, options } = data;
   const { id, userId, date, totalkWh, balance, status, payPerkWh, paymentId } = query;
-  const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
@@ -180,8 +183,8 @@ export function generateBillingInfoQueryConditions(data: HelperParam<NewBillingI
   if (payPerkWh !== undefined) where.payPerkWh = payPerkWh;
   if (paymentId) where.paymentId = paymentId;
 
-  if (exclude_id) {
-    where.NOT = { id: exclude_id };
+  if (options && options.exclude_id) {
+    where.NOT = { id: options.exclude_id };
   }
 
   return where;

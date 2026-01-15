@@ -88,16 +88,20 @@ export async function getPaymentBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<Partial<NewPayment>[]>> {
   const { options } = data;
-  const { limit, offset, order, fields } = options;
   const conditions = generatePaymentQueryConditions(data);
   const queryOptions: PaymentQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
-    limit,
-    offset,
-    orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
+    ...(options && {
+      limit: options.limit,
+      offset: options.offset,
+      orderBy: options.order ? { createdAt: options.order } : undefined,
+    }),
   };
-  if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
+  if (options && options.fields && options.fields.length > 0) {
+    queryOptions.columns = options.fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {}
+    );
   }
   const queryDBResult = await db.query.payment.findMany(queryOptions);
 
@@ -162,15 +166,14 @@ export async function getPaymentCountBy(
 export function generatePaymentQueryConditions(data: HelperParam<NewPayment>) {
   const { query, options } = data;
   const { id, amount, date } = query;
-  const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
   if (amount !== undefined) where.amount = amount;
   if (date) where.date = date;
 
-  if (exclude_id) {
-    where.NOT = { id: exclude_id };
+  if (options && options.exclude_id) {
+    where.NOT = { id: options.exclude_id };
   }
 
   return where;

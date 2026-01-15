@@ -87,17 +87,21 @@ export async function getUserBy(
   data: HelperParam<NewUser>
 ): Promise<HelperResult<Partial<NewUser>[]>> {
   const { options } = data;
-  const { limit, offset, order, with_session, fields } = options;
   const conditions = generateUserQueryConditions(data);
   const queryOptions: UserQueryOptions = {
-    with: with_session === true ? { sessions: true } : undefined,
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
-    limit,
-    offset,
-    orderBy: order ? { createdAt: order as "asc" | "desc" } : undefined,
+    ...(options && {
+      with: options.with_session ? { sessions: true } : undefined,
+      limit: options.limit,
+      offset: options.offset,
+      orderBy: options.order ? { createdAt: options.order } : undefined,
+    }),
   };
-  if (fields && fields.length > 0) {
-    queryOptions.columns = fields.reduce((acc, key) => ({ ...acc, [key as string]: true }), {});
+  if (options && options.fields && options.fields.length > 0) {
+    queryOptions.columns = options.fields.reduce(
+      (acc, key) => ({ ...acc, [key as string]: true }),
+      {}
+    );
   }
   const queryDBResult = await db.query.user.findMany(queryOptions);
 
@@ -167,7 +171,6 @@ export async function getUserCountBy(data: HelperParam<NewUser>): Promise<Helper
 export function generateUserQueryConditions(data: HelperParam<NewUser>) {
   const { query, options } = data;
   const { id, githubId, name, email, registeredTwoFactor, emailVerified } = query;
-  const { exclude_id } = options;
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
@@ -177,8 +180,8 @@ export function generateUserQueryConditions(data: HelperParam<NewUser>) {
   if (registeredTwoFactor !== undefined) where.registeredTwoFactor = registeredTwoFactor;
   if (emailVerified !== undefined) where.emailVerified = emailVerified;
 
-  if (exclude_id) {
-    where.NOT = { id: exclude_id };
+  if (options && options.exclude_id) {
+    where.NOT = { id: options.exclude_id };
   }
 
   return where;
