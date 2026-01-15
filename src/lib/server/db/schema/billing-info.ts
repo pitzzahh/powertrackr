@@ -7,13 +7,18 @@ export const billingInfo = sqliteTable(
   "billing_info",
   {
     id: text().primaryKey().notNull(),
-    userId: text("user_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
     date: text().notNull(), // Use text for timestamp in sqlite
     totalkWh: integer("total_kWh").notNull(),
     balance: real().notNull(),
     status: text().notNull(),
     payPerkWh: real("pay_per_kWh").notNull(),
-    paymentId: text("payment_id"),
+    paymentId: text("payment_id").references(() => payment.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
     ...timestamps,
   },
   (table) => [
