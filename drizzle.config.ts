@@ -8,9 +8,8 @@ if (!process.env.DATABASE_URL || !process.env.DATABASE_AUTH_TOKEN) {
 export default defineConfig({
   out: "./drizzle",
   schema: "./src/lib/server/db/schema/index.ts",
-  dialect: "turso",
+  dialect: "sqlite",
   dbCredentials: {
     url: process.env.DATABASE_URL,
-    authToken: process.env.DATABASE_AUTH_TOKEN,
   },
 });
