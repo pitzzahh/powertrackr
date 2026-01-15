@@ -31,22 +31,29 @@ export function getSelectedLabel(timeRange: string): string {
 }
 
 export function getFilteredData<T extends { date: Date }>(data: T[], timeRange: string): T[] {
-  if (timeRange === "all") return data;
-  let daysToSubtract = 90;
-  if (timeRange === "30d") {
-    daysToSubtract = 30;
-  } else if (timeRange === "7d") {
-    daysToSubtract = 7;
-  } else if (timeRange === "6m") {
-    daysToSubtract = 180;
-  } else if (timeRange === "1y") {
-    daysToSubtract = 365;
-  }
+  const filtered =
+    timeRange === "all"
+      ? data
+      : (() => {
+          let daysToSubtract = 90;
+          if (timeRange === "30d") {
+            daysToSubtract = 30;
+          } else if (timeRange === "7d") {
+            daysToSubtract = 7;
+          } else if (timeRange === "6m") {
+            daysToSubtract = 180;
+          } else if (timeRange === "1y") {
+            daysToSubtract = 365;
+          }
 
-  const maxDate =
-    data.length > 0 ? new Date(Math.max(...data.map((d) => d.date.getTime()))) : new Date();
-  const referenceDate = new Date(maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000);
-  return data.filter((item) => item.date >= referenceDate);
+          const maxDate =
+            data.length > 0 ? new Date(Math.max(...data.map((d) => d.date.getTime()))) : new Date();
+          const referenceDate = new Date(maxDate.getTime() - daysToSubtract * 24 * 60 * 60 * 1000);
+          return data.filter((item) => item.date >= referenceDate);
+        })();
+
+  // Sort in ascending order (oldest first) for consistent chart visualization
+  return [...filtered].sort((a, b) => a.date.getTime() - b.date.getTime());
 }
 
 export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
