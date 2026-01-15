@@ -28,20 +28,19 @@ describe("Auth Flow CRUD Operations", () => {
 
   it("email/password signup should require email verification", async () => {
     // Create a non-OAuth user (no githubId) - typical email/password signup scenario
-    const userData = [
-      (() => {
-        const { id: _, ...rest } = createUser({
-          githubId: null,
-          passwordHash: "hashed-password",
-          emailVerified: false,
-        });
-        return rest;
-      })(),
-    ];
+    const {
+      valid: validUser,
+      value: [user],
+    } = await addUser([
+      createUser({
+        githubId: null,
+        passwordHash: "hashed-password",
+        emailVerified: false,
+      }),
+    ]);
 
-    const userResult = await addUser(userData);
-    expect(userResult.valid).toBe(true);
-    const user = userResult.value[0];
+    expect(validUser).toBe(true);
+    expect(user).toBeDefined();
 
     // Simulate sending an email verification request (what the signup process should do)
     const verification = createEmailVerificationRequest({ userId: user.id, email: user.email });
@@ -99,17 +98,13 @@ describe("Auth Flow CRUD Operations", () => {
 
   it("oauth signup should NOT require email verification", async () => {
     // Create an OAuth user (githubId present) - OAuth flows shouldn't require email verification
-    const userData = [
-      (() => {
-        // createUser sets githubId by default; ensure emailVerified=false so we prove oauth bypass
-        const { id: _, ...rest } = createUser({ emailVerified: false, registeredTwoFactor: false });
-        return rest;
-      })(),
-    ];
+    const {
+      valid: validUser,
+      value: [user],
+    } = await addUser([createUser({ emailVerified: false, registeredTwoFactor: false })]);
 
-    const userResult = await addUser(userData);
-    expect(userResult.valid).toBe(true);
-    const user = userResult.value[0];
+    expect(validUser).toBe(true);
+    expect(user).toBeDefined();
 
     // Create a session for this oauth user
     const token = `test-token-${Date.now()}-${Math.random().toString(36).slice(2)}`;

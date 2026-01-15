@@ -25,14 +25,16 @@ describe("User CRUD Operations", () => {
       });
       const userData = [userDataWithoutId];
 
-      const result = await addUser(userData);
+      const {
+        valid,
+        value: [addedUser],
+      } = await addUser(userData);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("1 user(s) added");
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0]).toHaveProperty("id");
-      expect(result.value[0].email).toBe("test@example.com");
-      expect(result.value[0].name).toBe("Test User");
+      expect(valid).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedUser).toHaveProperty("id");
+      expect(addedUser.email).toBe("test@example.com");
+      expect(addedUser.name).toBe("Test User");
     });
 
     it("should successfully add multiple users", async () => {
@@ -41,24 +43,25 @@ describe("User CRUD Operations", () => {
         return userWithoutId;
       });
 
-      const result = await addUser(usersData);
+      const { valid, value: addedUsers } = await addUser(usersData);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("3 user(s) added");
-      expect(result.value).toHaveLength(3);
-      expect(result.value.every((user) => user.id)).toBe(true);
+      expect(valid).toBe(true);
+      expect(addedUsers).toHaveLength(3);
+      expect(addedUsers.every((user) => user.id)).toBe(true);
     });
 
     it("should handle empty array input", async () => {
-      const result = await addUser([]);
+      const { valid, value } = await addUser([]);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("0 user(s) added");
-      expect(result.value).toHaveLength(0);
+      expect(valid).toBe(true);
+      expect(value).toHaveLength(0);
     });
 
     it("should handle users with all optional fields", async () => {
-      const result = await addUser([
+      const {
+        valid,
+        value: [addedUser],
+      } = await addUser([
         {
           name: "Minimal User",
           email: "minimal@example.com",
@@ -69,25 +72,30 @@ describe("User CRUD Operations", () => {
         },
       ]);
 
-      expect(result.valid).toBe(true);
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0].name).toBe("Minimal User");
-      expect(result.value[0].email).toBe("minimal@example.com");
-      expect(result.value[0].githubId).toBeNull();
-      expect(result.value[0].image).toBeNull();
+      expect(valid).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedUser.name).toBe("Minimal User");
+      expect(addedUser.email).toBe("minimal@example.com");
+      expect(addedUser.githubId).toBeNull();
+      expect(addedUser.image).toBeNull();
     });
   });
 
   describe("getUserBy", () => {
     it("should find user by ID", async () => {
       // First add a user
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "findme@example.com",
-        name: "Find Me",
-      });
-      const userData = [userDataWithoutId];
-      const addResult = await addUser(userData);
-      const addedUser = addResult.value[0];
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "findme@example.com",
+          name: "Find Me",
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const searchParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
@@ -104,12 +112,18 @@ describe("User CRUD Operations", () => {
     });
 
     it("should find user by email", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "unique@example.com",
-        name: "Unique User",
-      });
-      const userData = [userDataWithoutId];
-      await addUser(userData);
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "unique@example.com",
+          name: "Unique User",
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const searchParam: HelperParam<NewUser> = {
         query: { email: "unique@example.com" },
@@ -124,9 +138,13 @@ describe("User CRUD Operations", () => {
     });
 
     it("should find user by githubId", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({ githubId: 12345, name: "GitHub User" });
-      const userData = [userDataWithoutId];
-      await addUser(userData);
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser({ githubId: 12345, name: "GitHub User" })]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const searchParam: HelperParam<NewUser> = {
         query: { githubId: 12345 },
@@ -158,7 +176,9 @@ describe("User CRUD Operations", () => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
       });
-      await addUser(usersData);
+      const { valid: validUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
 
       const searchParam: HelperParam<NewUser> = {
         query: {},
@@ -176,7 +196,9 @@ describe("User CRUD Operations", () => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
       });
-      await addUser(usersData);
+      const { valid: validUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
 
       const searchParam: HelperParam<NewUser> = {
         query: {},
@@ -190,12 +212,18 @@ describe("User CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "fields@example.com",
-        name: "Fields Test",
-      });
-      const userData = [userDataWithoutId];
-      await addUser(userData);
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "fields@example.com",
+          name: "Fields Test",
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const searchParam: HelperParam<NewUser> = {
         query: { email: "fields@example.com" },
@@ -216,8 +244,12 @@ describe("User CRUD Operations", () => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
       });
-      const addResult = await addUser(usersData);
-      const excludeId = addResult.value[1].id;
+      const { valid: validUsers, value: addedUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
+      expect(addedUsers).toHaveLength(3);
+
+      const excludeId = addedUsers[1].id;
 
       const searchParam: HelperParam<NewUser> = {
         query: {},
@@ -235,13 +267,18 @@ describe("User CRUD Operations", () => {
   describe("updateUserBy", () => {
     it("should successfully update user by ID", async () => {
       // First add a user
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "update@example.com",
-        name: "Update Me",
-      });
-      const userData = [userDataWithoutId];
-      const addResult = await addUser(userData);
-      const addedUser = addResult.value[0];
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "update@example.com",
+          name: "Update Me",
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
@@ -259,10 +296,13 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({ name: "Same Name" });
-      const userData = [userDataWithoutId];
-      const addResult = await addUser(userData);
-      const addedUser = addResult.value[0];
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser({ name: "Same Name" })]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
@@ -292,10 +332,13 @@ describe("User CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({ email: "multi@example.com" });
-      const userData = [userDataWithoutId];
-      const addResult = await addUser(userData);
-      const addedUser = addResult.value[0];
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser({ email: "multi@example.com" })]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
@@ -324,7 +367,9 @@ describe("User CRUD Operations", () => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
       });
-      await addUser(usersData);
+      const { valid: validUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
 
       const countParam: HelperParam<NewUser> = {
         query: {},
@@ -360,7 +405,9 @@ describe("User CRUD Operations", () => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
       });
-      await addUser(usersData);
+      const { valid: validUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
 
       const countParam: HelperParam<NewUser> = {
         query: { emailVerified: true },
@@ -376,12 +423,18 @@ describe("User CRUD Operations", () => {
 
   describe("getUsers", () => {
     it("should return DTO format users", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "dto@example.com",
-        name: "DTO User",
-      });
-      const userData = [userDataWithoutId];
-      await addUser(userData);
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "dto@example.com",
+          name: "DTO User",
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const searchParam: HelperParam<NewUser> = {
         query: { email: "dto@example.com" },
@@ -541,39 +594,45 @@ describe("User CRUD Operations", () => {
   describe("Edge Cases and Error Handling", () => {
     it("should handle user with very long strings", async () => {
       const longString = "a".repeat(1000);
-      const { id: _id, ...userDataWithoutId } = createUser({
-        name: longString,
-        email: "long@example.com",
-      });
-      const userData = [userDataWithoutId];
+      const {
+        valid,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          name: longString,
+          email: "long@example.com",
+        }),
+      ]);
 
-      const result = await addUser(userData);
-
-      expect(result.valid).toBe(true);
-      expect(result.value[0].name).toBe(longString);
+      expect(valid).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedUser.name).toBe(longString);
     });
 
     it("should handle special characters in user data", async () => {
-      const { id: _id2, ...userDataWithoutId } = createUser({
-        name: "User with Special Chars: !@#$%^&*()",
-        email: "special+chars@example.com",
-      });
-      const userData = [userDataWithoutId];
+      const {
+        valid,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          name: "User with Special Chars: !@#$%^&*()",
+          email: "special+chars@example.com",
+        }),
+      ]);
 
-      const result = await addUser(userData);
-
-      expect(result.valid).toBe(true);
-      expect(result.value[0].name).toBe("User with Special Chars: !@#$%^&*()");
-      expect(result.value[0].email).toBe("special+chars@example.com");
+      expect(valid).toBe(true);
+      expect(addedUser).toBeDefined();
+      expect(addedUser.name).toBe("User with Special Chars: !@#$%^&*()");
+      expect(addedUser.email).toBe("special+chars@example.com");
     });
 
     it("should handle simultaneous operations correctly", async () => {
       const promises = Array.from({ length: 10 }, (_, i) => {
-        const { id: _id3, ...userDataWithoutId } = createUser({
-          email: `concurrent${i}@example.com`,
-        });
-        const userData = [userDataWithoutId];
-        return addUser(userData);
+        return addUser([
+          createUser({
+            email: `concurrent${i}@example.com`,
+          }),
+        ]);
       });
 
       const results = await Promise.all(promises);

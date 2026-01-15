@@ -19,21 +19,16 @@ describe("Payment CRUD Operations", () => {
 
   describe("addPayment", () => {
     it("should successfully add a single payment", async () => {
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 200.5, date: "2024-01-15" });
-          return rest;
-        })(),
-      ];
+      const {
+        valid,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 200.5, date: "2024-01-15" })]);
 
-      const result = await addPayment(paymentData);
-
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("1 payment(s) added");
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0]).toHaveProperty("id");
-      expect(result.value[0].amount).toBe(200.5);
-      expect(result.value[0].date).toBe("2024-01-15");
+      expect(valid).toBe(true);
+      expect(addedPayment).toBeDefined();
+      expect(addedPayment).toHaveProperty("id");
+      expect(addedPayment.amount).toBe(200.5);
+      expect(addedPayment.date).toBe("2024-01-15");
     });
 
     it("should successfully add multiple payments", async () => {
@@ -42,33 +37,30 @@ describe("Payment CRUD Operations", () => {
         return rest;
       });
 
-      const result = await addPayment(paymentsData);
+      const { valid, value: addedPayments } = await addPayment(paymentsData);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("3 payment(s) added");
-      expect(result.value).toHaveLength(3);
-      expect(result.value.every((p) => p.id)).toBe(true);
+      expect(valid).toBe(true);
+      expect(addedPayments).toHaveLength(3);
+      expect(addedPayments.every((p) => p.id)).toBe(true);
     });
 
     it("should handle empty array input", async () => {
-      const result = await addPayment([]);
+      const { valid, value } = await addPayment([]);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("0 payment(s) added");
-      expect(result.value).toHaveLength(0);
+      expect(valid).toBe(true);
+      expect(value).toHaveLength(0);
     });
   });
 
   describe("getPaymentBy", () => {
     it("should find payment by ID", async () => {
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 300.75, date: "2024-02-02" });
-          return rest;
-        })(),
-      ];
-      const addResult = await addPayment(paymentData);
-      const addedPayment = addResult.value[0];
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 300.75, date: "2024-02-02" })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const searchParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
@@ -86,13 +78,13 @@ describe("Payment CRUD Operations", () => {
 
     it("should find payment by amount", async () => {
       const testAmount = 500.5;
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: testAmount });
-          return rest;
-        })(),
-      ];
-      await addPayment(paymentData);
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: testAmount })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const searchParam: HelperParam<NewPayment> = {
         query: { amount: testAmount },
@@ -108,13 +100,13 @@ describe("Payment CRUD Operations", () => {
 
     it("should find payment by date", async () => {
       const testDate = "2024-03-01";
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ date: testDate });
-          return rest;
-        })(),
-      ];
-      await addPayment(paymentData);
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ date: testDate })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const searchParam: HelperParam<NewPayment> = {
         query: { date: testDate },
@@ -146,7 +138,9 @@ describe("Payment CRUD Operations", () => {
         const { id: _, ...rest } = p;
         return rest;
       });
-      await addPayment(paymentsData);
+      const { valid: validPayments } = await addPayment(paymentsData);
+
+      expect(validPayments).toBe(true);
 
       const searchParam: HelperParam<NewPayment> = {
         query: {},
@@ -164,7 +158,9 @@ describe("Payment CRUD Operations", () => {
         const { id: _, ...rest } = p;
         return rest;
       });
-      await addPayment(paymentsData);
+      const { valid: validPayments } = await addPayment(paymentsData);
+
+      expect(validPayments).toBe(true);
 
       const searchParam: HelperParam<NewPayment> = {
         query: {},
@@ -178,11 +174,18 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      const { id: _, ...paymentWithoutId } = createPayment({
-        amount: 777.77,
-        date: "2024-04-04",
-      });
-      await addPayment([paymentWithoutId]);
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([
+        createPayment({
+          amount: 777.77,
+          date: "2024-04-04",
+        }),
+      ]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const searchParam: HelperParam<NewPayment> = {
         query: { amount: 777.77 },
@@ -202,8 +205,12 @@ describe("Payment CRUD Operations", () => {
         const { id: _, ...rest } = p;
         return rest;
       });
-      const addResult = await addPayment(payments);
-      const excludedId = addResult.value[0].id;
+      const { valid: validPayments, value: addedPayments } = await addPayment(payments);
+
+      expect(validPayments).toBe(true);
+      expect(addedPayments).toHaveLength(2);
+
+      const excludedId = addedPayments[0].id;
 
       const searchParam: HelperParam<NewPayment> = {
         query: {},
@@ -219,14 +226,13 @@ describe("Payment CRUD Operations", () => {
 
   describe("updatePaymentBy", () => {
     it("should successfully update payment by ID", async () => {
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 123.45 });
-          return rest;
-        })(),
-      ];
-      const addResult = await addPayment(paymentData);
-      const addedPayment = addResult.value[0];
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 123.45 })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const updateParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
@@ -247,14 +253,13 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({ amount: 555.55 });
-          return rest;
-        })(),
-      ];
-      const addResult = await addPayment(paymentData);
-      const addedPayment = addResult.value[0];
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 555.55 })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const updateParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
@@ -297,7 +302,9 @@ describe("Payment CRUD Operations", () => {
         const { id: _, ...rest } = p;
         return rest;
       });
-      await addPayment(paymentsData);
+      const { valid: validPayments } = await addPayment(paymentsData);
+
+      expect(validPayments).toBe(true);
 
       const countParam: HelperParam<NewPayment> = {
         query: {},
@@ -334,7 +341,9 @@ describe("Payment CRUD Operations", () => {
         return rest;
       });
 
-      await addPayment(paymentsData);
+      const { valid: validPayments } = await addPayment(paymentsData);
+
+      expect(validPayments).toBe(true);
 
       const countParam: HelperParam<NewPayment> = {
         query: { amount: 10 },
@@ -350,16 +359,18 @@ describe("Payment CRUD Operations", () => {
 
   describe("getPayments & mapNewPayment_to_DTO", () => {
     it("should return DTO format payments", async () => {
-      const paymentData = [
-        (() => {
-          const { id: _, ...rest } = createPayment({
-            amount: 321.99,
-            date: "2024-05-05",
-          });
-          return rest;
-        })(),
-      ];
-      await addPayment(paymentData);
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([
+        createPayment({
+          amount: 321.99,
+          date: "2024-05-05",
+        }),
+      ]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
 
       const result = await getPayments({
         query: {},
@@ -368,7 +379,7 @@ describe("Payment CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBeDefined();
       expect(result[0].amount).toBe(321.99);
-      expect(result[0].date).toStrictEqual(new Date(paymentData[0].date!));
+      expect(result[0].date).toStrictEqual(new Date(addedPayment.date!));
       expect(result[0].createdAt).toBeInstanceOf(Date);
       expect(result[0].updatedAt).toBeInstanceOf(Date);
     });

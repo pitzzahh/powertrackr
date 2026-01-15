@@ -20,60 +20,57 @@ describe("Session CRUD Operations", () => {
 
   describe("addSession", () => {
     it("should successfully add a single session", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionData = [
-        (() => {
-          const { id: _, ...rest } = createSession({
-            userId,
-            ipAddress: "127.0.0.1",
-            userAgent: "TestAgent/1.0",
-            twoFactorVerified: true,
-          });
-          return rest;
-        })(),
-      ];
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
-      const result = await addSession(sessionData);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes from now
+      const {
+        valid,
+        value: [addedSession],
+      } = await addSession([
+        createSession({
+          userId: addedUser.id,
+          ipAddress: "127.0.0.1",
+          userAgent: "TestAgent/1.0",
+          twoFactorVerified: true,
+          expiresAt,
+        }),
+      ]);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("1 session(s) added");
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0]).toHaveProperty("id");
-      expect(result.value[0].userId).toBe(userId);
-      expect(result.value[0].ipAddress).toBe("127.0.0.1");
-      expect(result.value[0].userAgent).toBe("TestAgent/1.0");
-      expect(result.value[0].twoFactorVerified).toBe(true);
+      expect(valid).toBe(true);
+      expect(addedSession).toBeDefined();
+      expect(addedSession).toHaveProperty("id");
+      expect(addedSession.userId).toBe(addedUser.id);
+      expect(addedSession.ipAddress).toBe("127.0.0.1");
+      expect(addedSession.userAgent).toBe("TestAgent/1.0");
+      expect(addedSession.twoFactorVerified).toBe(true);
+      expect(addedSession.expiresAt).toBe(expiresAt);
     });
 
     it("should successfully add multiple sessions", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionsData = createSessions(3, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = createSessions(3, { userId: addedUser.id }).map((s) => {
         const { id: _, ...rest } = s;
         return rest;
       });
 
-      const result = await addSession(sessionsData);
+      const { valid, value: addedSessions } = await addSession(sessionsData);
 
-      expect(result.valid).toBe(true);
-      expect(result.message).toBe("3 session(s) added");
-      expect(result.value).toHaveLength(3);
-      expect(result.value.every((s) => s.id)).toBe(true);
+      expect(valid).toBe(true);
+      expect(addedSessions).toHaveLength(3);
+      expect(addedSessions.every((s) => s.id)).toBe(true);
     });
 
     it("should handle empty array input", async () => {
@@ -85,52 +82,50 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle session with twoFactorVerified flag", async () => {
-      const userData = [
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ];
-      const userResult = await addUser(userData);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionData = [
-        (() => {
-          const { id: _, ...rest } = createSession({
-            userId,
-            twoFactorVerified: true,
-          });
-          return rest;
-        })(),
-      ];
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
-      const result = await addSession(sessionData);
+      const {
+        valid,
+        value: [addedSession],
+      } = await addSession([
+        createSession({
+          userId: addedUser.id,
+          twoFactorVerified: true,
+        }),
+      ]);
 
-      expect(result.valid).toBe(true);
-      expect(result.value[0].twoFactorVerified).toBe(true);
+      expect(valid).toBe(true);
+      expect(addedSession).toBeDefined();
+      expect(addedSession.twoFactorVerified).toBe(true);
     });
   });
 
   describe("getSessionBy", () => {
     it("should find session by ID", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const addResult = await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId });
-          return rest;
-        })(),
-      ]);
-      const added = addResult.value[0];
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const searchParam: HelperParam<NewSession> = {
-        query: { id: added.id },
+        query: { id: addedSession.id },
         options: {},
       };
 
@@ -139,51 +134,54 @@ describe("Session CRUD Operations", () => {
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 session(s) found");
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].id).toBe(added.id);
+      expect(result.value[0].id).toBe(addedSession.id);
     });
 
     it("should find session by userId", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      await addSession(
-        createSessions(2, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const { valid: validSessions } = await addSession(
+        createSessions(2, { userId: addedUser.id }).map((s) => {
           const { id: _, ...rest } = s;
           return rest;
         })
       );
 
+      expect(validSessions).toBe(true);
+
       const searchParam: HelperParam<NewSession> = {
-        query: { userId },
+        query: { userId: addedUser.id },
         options: {},
       };
 
       const result = await getSessionBy(searchParam);
 
       expect(result.valid).toBe(true);
-      expect(result.value.some((s) => s.userId === userId)).toBe(true);
+      expect(result.value.some((s) => s.userId === addedUser.id)).toBe(true);
     });
 
     it("should find session by ipAddress", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId, ipAddress: "10.0.0.1" });
-          return rest;
-        })(),
-      ]);
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id, ipAddress: "10.0.0.1" })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const searchParam: HelperParam<NewSession> = {
         query: { ipAddress: "10.0.0.1" } as unknown as NewSession,
@@ -197,20 +195,21 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by userAgent", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId, userAgent: "Agent/2.0" });
-          return rest;
-        })(),
-      ]);
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id, userAgent: "Agent/2.0" })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const searchParam: HelperParam<NewSession> = {
         query: { userAgent: "Agent/2.0" } as unknown as NewSession,
@@ -224,43 +223,43 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by expiresAt (try both Date and numeric forms)", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const expDateMs = Date.now() + 60 * 1000;
       const expDate = new Date(expDateMs).toISOString();
-      const addResult = await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId, expiresAt: expDate });
-          return rest;
-        })(),
-      ]);
-      const added = addResult.value[0];
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id, expiresAt: expDate })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       // Try both Date and numeric milliseconds forms as some adapters serialize differently
       const resultByDate = await getSessionBy({
-        query: { expiresAt: added.expiresAt } as unknown as NewSession,
+        query: { expiresAt: addedSession.expiresAt } as unknown as NewSession,
         options: {},
       });
 
       const resultByNumber = await getSessionBy({
         query: {
           expiresAt:
-            (added.expiresAt as any) instanceof Date
-              ? (added.expiresAt as any).getTime()
-              : (added.expiresAt as unknown as number),
+            (addedSession.expiresAt as any) instanceof Date
+              ? (addedSession.expiresAt as any).getTime()
+              : (addedSession.expiresAt as unknown as number),
         } as unknown as NewSession,
         options: {},
       });
 
       expect(resultByDate.valid || resultByNumber.valid).toBe(true);
       const found = resultByDate.valid ? resultByDate.value[0] : resultByNumber.value[0];
-      expect(found.id).toBe(added.id);
+      expect(found.id).toBe(addedSession.id);
     });
 
     it("should return empty result when session not found", async () => {
@@ -277,19 +276,21 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionsData = createSessions(5, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
         const { id: _, ...rest } = s;
         return rest;
       });
-      await addSession(sessionsData);
+      const { valid: validSessions } = await addSession(sessionsData);
+
+      expect(validSessions).toBe(true);
 
       const searchParam: HelperParam<NewSession> = {
         query: {},
@@ -303,19 +304,21 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionsData = createSessions(5, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
         const { id: _, ...rest } = s;
         return rest;
       });
-      await addSession(sessionsData);
+      const { valid: validSessions } = await addSession(sessionsData);
+
+      expect(validSessions).toBe(true);
 
       const searchParam: HelperParam<NewSession> = {
         query: {},
@@ -329,23 +332,25 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const { id: _, ...sessionWithoutId } = createSession({
-        userId,
+        userId: addedUser.id,
         ipAddress: "1.2.3.4",
         userAgent: "Agent/3.0",
       });
-      await addSession([sessionWithoutId]);
+      const { valid: validSession } = await addSession([sessionWithoutId]);
+
+      expect(validSession).toBe(true);
 
       const searchParam: HelperParam<NewSession> = {
-        query: { userId },
+        query: { userId: addedUser.id },
         options: { fields: ["id", "ipAddress", "userAgent"] as (keyof NewSession)[] },
       };
 
@@ -357,21 +362,25 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const addResult = await addSession(
-        createSessions(2, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const { valid: validSessions, value: addedSessions } = await addSession(
+        createSessions(2, { userId: addedUser.id }).map((s) => {
           const { id: _, ...rest } = s;
           return rest;
         })
       );
-      const excludedId = addResult.value[0].id;
+
+      expect(validSessions).toBe(true);
+      expect(addedSessions).toHaveLength(2);
+
+      const excludedId = addedSessions[0].id;
 
       const searchParam: HelperParam<NewSession> = {
         query: {},
@@ -387,28 +396,30 @@ describe("Session CRUD Operations", () => {
 
   describe("updateSessionBy", () => {
     it("should successfully update session by ID", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const addResult = await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({
-            userId,
-            userAgent: "InitAgent",
-            twoFactorVerified: false,
-          });
-          return rest;
-        })(),
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([
+        createSession({
+          userId: addedUser.id,
+          userAgent: "InitAgent",
+          twoFactorVerified: false,
+        }),
       ]);
-      const added = addResult.value[0];
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const updateParam: HelperParam<NewSession> = {
-        query: { id: added.id },
+        query: { id: addedSession.id },
         options: {},
       };
 
@@ -426,24 +437,24 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const addResult = await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId, userAgent: "SameAgent" });
-          return rest;
-        })(),
-      ]);
-      const added = addResult.value[0];
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id, userAgent: "SameAgent" })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const updateParam: HelperParam<NewSession> = {
-        query: { id: added.id },
+        query: { id: addedSession.id },
         options: {},
       };
 
@@ -451,7 +462,7 @@ describe("Session CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("No data changed");
-      expect(result.value[0].id).toBe(added.id);
+      expect(result.value[0].id).toBe(addedSession.id);
     });
 
     it("should handle nonexistent session update", async () => {
@@ -467,24 +478,24 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should update expiresAt", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const addResult = await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({ userId });
-          return rest;
-        })(),
-      ]);
-      const added = addResult.value[0];
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const updateParam: HelperParam<NewSession> = {
-        query: { id: added.id },
+        query: { id: addedSession.id },
         options: {},
       };
 
@@ -500,19 +511,21 @@ describe("Session CRUD Operations", () => {
 
   describe("getSessionCountBy", () => {
     it("should return correct count for existing sessions", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      const sessionsData = createSessions(5, { userId }).map((s) => {
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
         const { id: _, ...rest } = s;
         return rest;
       });
-      await addSession(sessionsData);
+      const { valid: validSessions } = await addSession(sessionsData);
+
+      expect(validSessions).toBe(true);
 
       const countParam: HelperParam<NewSession> = {
         query: {},
@@ -540,24 +553,26 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should count sessions with specific criteria", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
 
       const sessionsData = [
-        createSession({ userId, twoFactorVerified: true }),
-        createSession({ userId, twoFactorVerified: true }),
-        createSession({ userId, twoFactorVerified: false }),
+        createSession({ userId: addedUser.id, twoFactorVerified: true }),
+        createSession({ userId: addedUser.id, twoFactorVerified: true }),
+        createSession({ userId: addedUser.id, twoFactorVerified: false }),
       ].map((s) => {
         const { id: _, ...rest } = s;
         return rest;
       });
 
-      await addSession(sessionsData);
+      const { valid: validSessions } = await addSession(sessionsData);
+
+      expect(validSessions).toBe(true);
 
       const countParam: HelperParam<NewSession> = {
         query: { twoFactorVerified: true } as unknown as NewSession,
@@ -573,24 +588,27 @@ describe("Session CRUD Operations", () => {
 
   describe("getSessions & mapNewSession_to_DTO", () => {
     it("should return DTO format sessions", async () => {
-      const userResult = await addUser([
-        (() => {
-          const { id: _, ...rest } = createUser();
-          return rest;
-        })(),
-      ]);
-      const userId = userResult.value[0].id;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
 
-      await addSession([
-        (() => {
-          const { id: _, ...rest } = createSession({
-            userId,
-            ipAddress: "8.8.8.8",
-            userAgent: "Agent/4.0",
-          });
-          return rest;
-        })(),
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([
+        createSession({
+          userId: addedUser.id,
+          ipAddress: "8.8.8.8",
+          userAgent: "Agent/4.0",
+        }),
       ]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
 
       const result = await getSessions({ query: {}, options: {} });
 

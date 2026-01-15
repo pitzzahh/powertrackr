@@ -21,12 +21,13 @@ describe("server/email (Plunk) - no PLUNK key", () => {
 
     const { addUser } = await import("$/server/crud/user-crud");
     const { createUser } = await import("./helpers/factories");
-    const userData = (() => {
-      const { id: _, ...rest } = createUser();
-      return rest;
-    })();
-    const added = await addUser([userData]);
-    const user = added.value[0];
+    const {
+      valid,
+      value: [user],
+    } = await addUser([createUser()]);
+
+    expect(valid).toBe(true);
+    expect(user).toBeDefined();
 
     const verification = await mod.createAndSendEmailVerification(user.id, user.email);
     expect(verification).not.toBeNull();
