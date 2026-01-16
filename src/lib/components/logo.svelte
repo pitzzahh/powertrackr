@@ -13,7 +13,7 @@
     type ButtonVariant,
   } from "$/components/ui/button/button.svelte";
   import { cn } from "$/utils/style";
-  import { Zap } from "@lucide/svelte";
+  import { Zap } from "$/assets/icons";
 
   let {
     class: className,
@@ -25,6 +25,8 @@
 
 <Button
   href="/"
+  aria-label="Homepage"
+  style="view-transition-name: logo;"
   class={cn(
     "space-between flex cursor-pointer items-center justify-center rounded-sm text-primary",
     className
