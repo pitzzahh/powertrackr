@@ -14,7 +14,7 @@ import {
   generateSessionToken,
   hashPassword,
   verifyPasswordHash,
-} from "./encryption";
+} from "$/server/encryption";
 
 describe("encryption utilities", () => {
   it("roundtrips strings via encrypt/decrypt", () => {

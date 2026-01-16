@@ -9,7 +9,7 @@ import {
   generateNotFoundMessage,
   replaceTextWithMarker,
   toShortName,
-} from "./text";
+} from "$/utils/text";
 
 describe("text utilities", () => {
   it("maskEmailAddress returns undefined when input is undefined", () => {

@@ -40,7 +40,7 @@ describe("Plunk email helpers", () => {
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { createContact } = await import("./email");
+    const { createContact } = await import("$/server/email");
 
     const res = await createContact("no-key@example.com");
     expect(res).toBeNull();
@@ -66,7 +66,7 @@ describe("Plunk email helpers", () => {
     // @ts-ignore
     global.fetch = fetchMock as any;
 
-    const { createContact } = await import("./email");
+    const { createContact } = await import("$/server/email");
     const data = await createContact("alice@example.com", { plan: "free" });
     expect(data).toEqual({ id: 42, email: "alice@example.com" });
     expect(fetchMock).toHaveBeenCalled();
@@ -80,7 +80,7 @@ describe("Plunk email helpers", () => {
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { sendVerificationEmail } = await import("./email");
+    const { sendVerificationEmail } = await import("$/server/email");
     const res = await sendVerificationEmail("no-key@example.com", "1234", 15);
     expect(res).toBeNull();
     expect(warnSpy).toHaveBeenCalledWith(
@@ -114,7 +114,7 @@ describe("Plunk email helpers", () => {
     // @ts-ignore
     global.fetch = fetchMock as any;
 
-    const { sendVerificationEmail } = await import("./email");
+    const { sendVerificationEmail } = await import("$/server/email");
 
     const res = await sendVerificationEmail("bob@example.com", "CODE123", 30);
     expect(res).toEqual({ success: true, sent: true });
@@ -161,7 +161,7 @@ describe("Plunk email helpers", () => {
     // @ts-ignore
     global.fetch = fetchMock as any;
 
-    const { sendVerificationEmail } = await import("./email");
+    const { sendVerificationEmail } = await import("$/server/email");
 
     const res = await sendVerificationEmail("charlie@example.com", "X", 5);
     expect(res).toEqual({ success: true, retried: true });
@@ -191,7 +191,7 @@ describe("Plunk email helpers", () => {
     // @ts-ignore
     global.fetch = fetchMock as any;
 
-    const { sendVerificationEmail } = await import("./email");
+    const { sendVerificationEmail } = await import("$/server/email");
     const res = await sendVerificationEmail("d@example.com", "ZZZ", 10);
     expect(res).toEqual({ success: true, inline: true });
 
@@ -209,7 +209,7 @@ describe("Plunk email helpers", () => {
 
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const { createAndSendEmailVerification } = await import("./email");
+    const { createAndSendEmailVerification } = await import("$/server/email");
     const res = await createAndSendEmailVerification("u1", "x@example.com", 15);
     expect(res).toBeNull();
     expect(warnSpy).toHaveBeenCalledWith("Failed to add email verification request:", "boom");
@@ -230,7 +230,7 @@ describe("Plunk email helpers", () => {
       ],
     }));
 
-    const emailModule = await import("./email");
+    const emailModule = await import("$/server/email");
     const verification = await emailModule.createAndSendEmailVerification("u2", "z@example.com", 7);
     expect(verification).toBeTruthy();
     expect((verification as any).code).toBe("DETERMINISTIC-OTP");

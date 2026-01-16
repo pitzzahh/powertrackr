@@ -31,7 +31,7 @@ import {
   setSessionTokenCookie,
   deleteSessionTokenCookie,
   sessionCookieName,
-} from "./auth";
+} from "$/server/auth";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
