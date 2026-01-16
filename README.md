@@ -1,4 +1,4 @@
-# Powertrackr
+# PowerTrackr
 
 [![Build and Test](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg)](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml)
 
@@ -41,4 +41,5 @@ Powertrackr uses a simple per-kWh allocation model and does not include jurisdic
 Contributions are welcome.
 
 ### License
+
 TBA
