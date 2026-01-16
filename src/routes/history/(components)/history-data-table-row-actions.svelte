@@ -238,7 +238,7 @@
 
       <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
         <div class="space-y-4 p-4">
-          <BillingInfoForm action="update" billingInfo={billingInfoToDto(row.original)} />
+          <BillingInfoForm action="update" billingInfo={billingInfoToDto(row.original) as any} />
         </div>
       </ScrollArea>
     </Sheet.Content>

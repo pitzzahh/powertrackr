@@ -18,7 +18,7 @@ export type BillingInfoDTO = {
   updatedAt: Date;
 };
 
-export type BillingInfoDTOWithSubMeters = BillingInfo & {
+export type BillingInfoDTOWithSubMeters = BillingInfoDTO & {
   subMeters: SubMeterDTO[];
 };
 

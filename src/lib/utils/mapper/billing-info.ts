@@ -1,13 +1,15 @@
 import type {
   BillingInfo,
-  BillingInfoDTO,
+  BillingInfoDTOWithSubMeters,
   BillingInfoTableView,
   ExtendedBillingInfo,
   ExtendedBillingInfoTableView,
 } from "$/types/billing-info";
 import { DateFormat, formatDate } from "$/utils/format";
 
-export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
+export function billingInfoToDto(
+  original: ExtendedBillingInfoTableView
+): BillingInfoDTOWithSubMeters {
   return {
     id: original.id,
     userId: original.userId,
@@ -19,6 +21,17 @@ export function billingInfoToDto(original: BillingInfo): BillingInfoDTO {
     createdAt: new Date(original.createdAt),
     updatedAt: new Date(original.updatedAt),
     paymentId: original.paymentId,
+    subMeters: original.subMeters.map((e) => ({
+      id: e.id,
+      billingInfoId: e.billingInfoId,
+      subKwh: e.subkWh,
+      reading: e.reading,
+      subReadingLatest: e.subReadingLatest,
+      subReadingOld: e.subReadingOld,
+      paymentId: e.paymentId,
+      createdAt: new Date(e.createdAt),
+      updatedAt: new Date(e.updatedAt),
+    })),
   };
 }
 
