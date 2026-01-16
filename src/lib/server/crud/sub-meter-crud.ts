@@ -41,6 +41,14 @@ export async function addSubMeter(
         return {
           id: crypto.randomUUID(),
           ...sub_meter_data,
+          // Ensure `reading` is always present (schema requires it). Prefer an
+          // explicit `reading` if provided, otherwise fall back to the latest
+          // reading or the old reading, finally defaulting to 0.
+          reading:
+            sub_meter_data.reading ??
+            sub_meter_data.subReadingLatest ??
+            sub_meter_data.subReadingOld ??
+            0,
         };
       })
     )
@@ -92,6 +100,15 @@ export async function updateSubMeterBy(
   ) {
     (changed_data as any).subkWh = (changed_data as any).subKwh;
     delete (changed_data as any).subKwh;
+  }
+
+  // If subReadingLatest is updated, keep the `reading` field in sync unless
+  // `reading` itself was explicitly provided.
+  if (
+    Object.prototype.hasOwnProperty.call(changed_data, "subReadingLatest") &&
+    !Object.prototype.hasOwnProperty.call(changed_data, "reading")
+  ) {
+    (changed_data as any).reading = (changed_data as any).subReadingLatest;
   }
 
   const whereSQL = buildWhereSQL(conditions);
@@ -164,10 +181,25 @@ export async function mapNewSubMeter_to_DTO(
       const sub_meter_info = {
         id: _sub_meter.id,
         billingInfoId: _sub_meter.billingInfoId,
-        subKwh: _sub_meter.subKwh ?? _sub_meter.subkWh,
-        subReadingLatest: _sub_meter.subReadingLatest,
-        subReadingOld: _sub_meter.subReadingOld,
-        paymentId: _sub_meter.paymentId,
+        // Handle both possible key variants and normalize to DTO `subKwh` while preserving undefined
+        subKwh: Object.prototype.hasOwnProperty.call(_sub_meter, "subKwh")
+          ? (_sub_meter as any).subKwh
+          : Object.prototype.hasOwnProperty.call(_sub_meter, "subkWh")
+            ? (_sub_meter as any).subkWh
+            : undefined,
+        // Include the `reading` field in DTO (preserve undefined/null as provided)
+        reading: Object.prototype.hasOwnProperty.call(_sub_meter, "reading")
+          ? (_sub_meter as any).reading
+          : undefined,
+        subReadingLatest: Object.prototype.hasOwnProperty.call(_sub_meter, "subReadingLatest")
+          ? (_sub_meter as any).subReadingLatest
+          : undefined,
+        subReadingOld: Object.prototype.hasOwnProperty.call(_sub_meter, "subReadingOld")
+          ? (_sub_meter as any).subReadingOld
+          : undefined,
+        paymentId: Object.prototype.hasOwnProperty.call(_sub_meter, "paymentId")
+          ? (_sub_meter as any).paymentId
+          : undefined,
         createdAt: _sub_meter.createdAt ? new Date(_sub_meter.createdAt) : null,
         updatedAt: _sub_meter.updatedAt ? new Date(_sub_meter.updatedAt) : null,
       } as SubMeterDTO;
@@ -217,7 +249,7 @@ export async function getSubMeterCountBy(
 
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
-  const { id, billingInfoId, subkWh, subReadingLatest, subReadingOld, paymentId } = query;
+  const { id, billingInfoId, subkWh, subReadingLatest, subReadingOld, paymentId, reading } = query;
 
   const where: Record<string, unknown> = {};
 
@@ -227,6 +259,7 @@ export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   if (subReadingLatest !== undefined) where.subReadingLatest = subReadingLatest;
   if (subReadingOld !== undefined) where.subReadingOld = subReadingOld;
   if (paymentId) where.paymentId = paymentId;
+  if (reading !== undefined) where.reading = reading;
 
   if (options && options.exclude_id) {
     where.NOT = { id: options.exclude_id };
@@ -251,6 +284,8 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(subMeter.subReadingLatest, value as number));
     } else if (key === "subReadingOld") {
       conditions.push(eq(subMeter.subReadingOld, value as number));
+    } else if (key === "reading") {
+      conditions.push(eq(subMeter.reading, value as number));
     } else if (key === "paymentId") {
       conditions.push(eq(subMeter.paymentId, value as string));
     }

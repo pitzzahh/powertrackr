@@ -85,6 +85,7 @@ export async function setupTestDatabase() {
       id TEXT PRIMARY KEY,
       billing_info_id TEXT NOT NULL,
       sub_kWh INTEGER,
+      reading INTEGER NOT NULL,
       sub_reading_latest INTEGER,
       sub_reading_old INTEGER,
       payment_id TEXT,

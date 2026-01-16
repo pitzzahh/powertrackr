@@ -383,6 +383,7 @@ describe("Billing Info CRUD Operations", () => {
           subkWh: s.subReadingLatest - s.subReadingOld,
           subReadingLatest: s.subReadingLatest,
           subReadingOld: s.subReadingOld,
+          reading: s.subReadingLatest,
           paymentId: subPaymentIds[idx],
         }));
         await addSubMeter(subMeterData);
@@ -522,6 +523,7 @@ describe("Billing Info CRUD Operations", () => {
             subkWh: initialSubKwh,
             subReadingLatest: 1500,
             subReadingOld: 1490,
+            reading: 1500,
             paymentId: subPaymentId,
           },
         ]);

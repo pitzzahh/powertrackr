@@ -75,6 +75,8 @@ export function createSubMeter(overrides: FactoryOverrides<NewSubMeter> = {}): N
     billingInfoId: `billing-${sequence}`,
     subkWh: 50 + sequence,
     subReadingLatest: 1500 + sequence,
+    // Default `reading` should align with the latest reading when not provided
+    reading: 1500 + sequence,
     subReadingOld: 1450 + sequence,
     paymentId: null,
     // Use ISO strings for timestamps in tests/factories
