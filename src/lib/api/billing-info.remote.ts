@@ -22,6 +22,7 @@ import {
 } from "$/server/crud/billing-info-crud";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
+import type { NewSubMeter } from "$/types/sub-meter";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -185,13 +186,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
     error(400, "Failed to add billing info, billing info not processed");
   }
 
-  const subMeterInserts: {
-    billingInfoId: string;
-    subKwh: number | null;
-    subReadingLatest: number | null;
-    subReadingOld: number | null;
-    paymentId: string | null;
-  }[] = [];
+  const subMeterInserts: Omit<NewSubMeter, "id">[] = [];
   await db.transaction(async (tx) => {
     // Create sub payments and prepare sub meters
     for (const subData of subMetersData) {
@@ -202,7 +197,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
           .values({ id: subPayId, amount: subData.paymentAmount });
         subMeterInserts.push({
           billingInfoId: "", // will set after billing created
-          subKwh: subData.subKwh,
+          subkWh: subData.subKwh,
           subReadingLatest: subData.subReadingLatest,
           subReadingOld: subData.subReadingOld,
           paymentId: subPayId,
@@ -212,7 +207,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
         // Sub meter without payment (just tracking)
         subMeterInserts.push({
           billingInfoId: "", // will set after billing created
-          subKwh: subData.subKwh,
+          subkWh: subData.subKwh,
           subReadingLatest: subData.subReadingLatest,
           subReadingOld: subData.subReadingOld,
           paymentId: null,
