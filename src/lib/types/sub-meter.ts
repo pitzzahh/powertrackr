@@ -10,6 +10,7 @@ export type SubMeterDTO = {
   id: string;
   billingInfoId: string;
   subKwh: number | null;
+  reading: number | null;
   subReadingLatest: number | null;
   subReadingOld: number | null;
   paymentId: string | null;

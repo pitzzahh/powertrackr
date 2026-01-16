@@ -18,11 +18,14 @@ import { eq } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
 import {
   addBillingInfo,
+  updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
 } from "$/server/crud/billing-info-crud";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
 import type { NewSubMeter } from "$/types/sub-meter";
+import { addSubMeter } from "$/server/crud/sub-meter-crud";
+import { getLocalTimeZone } from "@internationalized/date";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -198,6 +201,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
         subMeterInserts.push({
           billingInfoId: "", // will set after billing created
           subkWh: subData.subKwh,
+          reading: subData.subReadingLatest,
           subReadingLatest: subData.subReadingLatest,
           subReadingOld: subData.subReadingOld,
           paymentId: subPayId,
@@ -208,6 +212,7 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
         subMeterInserts.push({
           billingInfoId: "", // will set after billing created
           subkWh: subData.subKwh,
+          reading: subData.subReadingLatest,
           subReadingLatest: subData.subReadingLatest,
           subReadingOld: subData.subReadingOld,
           paymentId: null,
@@ -237,11 +242,14 @@ export const updateBillingInfo = form(
     const { id, subMeters, ...updateData } = data;
 
     // Update the main billing info
-    const [result] = await db
-      .update(billingInfo)
-      .set(updateData)
-      .where(eq(billingInfo.id, id))
-      .returning();
+    const {
+      valid,
+      value: [updatedBillingInfo],
+    } = await updateBillingInfoCrud({ query: { id } }, updateData);
+
+    if (!valid) {
+      error(400, "Failed to update billing info");
+    }
 
     // Handle sub meters update if provided
     if (subMeters !== undefined) {
@@ -250,16 +258,19 @@ export const updateBillingInfo = form(
       await db.delete(subMeter).where(eq(subMeter.billingInfoId, id));
 
       if (subMeters.length > 0) {
-        const payPerkWh = calculatePayPerKwh(result.balance, result.totalkWh);
+        const payPerkWh = calculatePayPerKwh(
+          updatedBillingInfo.balance,
+          updatedBillingInfo.totalkWh
+        );
 
         const subMeterInserts = subMeters.map((sub) => {
           const subKwh = sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null;
           const paymentAmount = subKwh ? subKwh * payPerkWh : null;
 
           return {
-            id: crypto.randomUUID(),
             billingInfoId: id,
             subKwh,
+            reading: sub.reading,
             subReadingLatest: sub.subReadingLatest,
             subReadingOld: sub.subReadingOld ?? null,
             paymentId: paymentAmount ? crypto.randomUUID() : null,
@@ -267,23 +278,25 @@ export const updateBillingInfo = form(
         });
 
         // Insert new sub meters
-        await db.insert(subMeter).values(subMeterInserts);
+        await addSubMeter(subMeterInserts);
 
         // Create payments for sub meters that have payment amounts
         for (const sub of subMeterInserts) {
           if (sub.paymentId) {
             const subKwh = sub.subKwh!;
             const paymentAmount = subKwh * payPerkWh;
-            await db.insert(payment).values({
-              id: sub.paymentId,
-              amount: paymentAmount,
-            });
+            await addPayment([
+              {
+                date: new Date(getLocalTimeZone()).toISOString(),
+                amount: paymentAmount,
+              },
+            ]);
           }
         }
       }
     }
 
-    return result;
+    return updatedBillingInfo;
   }
 );
 

@@ -50,7 +50,7 @@ export async function addBillingInfo(
 export async function updateBillingInfoBy(
   by: HelperParam<NewBillingInfo>,
   data: Partial<NewBillingInfo>
-): Promise<HelperResult<NewBillingInfo[]>> {
+): Promise<HelperResult<BillingInfo[]>> {
   const { query } = by;
   const billing_info_param = { ...by, options: { ...by.options, fields: undefined } };
   const billing_info_result = await getBillingInfoBy(billing_info_param);
@@ -63,7 +63,7 @@ export async function updateBillingInfoBy(
     };
   }
 
-  const [old_billing_info] = billing_info_result.value as NewBillingInfo[];
+  const [old_billing_info] = billing_info_result.value as BillingInfo[];
   const conditions = generateBillingInfoQueryConditions(by);
   const changed_data = getChangedData(old_billing_info, data);
 

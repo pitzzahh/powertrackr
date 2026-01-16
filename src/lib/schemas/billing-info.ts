@@ -2,6 +2,7 @@ import * as v from "valibot";
 
 // Schema for individual sub meter entry
 export const subMeterSchema = v.object({
+  reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
   subReadingLatest: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
   subReadingOld: v.optional(
     v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater"))
