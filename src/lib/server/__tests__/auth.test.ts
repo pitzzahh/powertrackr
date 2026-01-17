@@ -176,7 +176,7 @@ describe("auth module", () => {
 
     // also verify DB has updated expiration
     const [dbRow] = await db.select().from(session).where(eq(session.id, sess.id));
-    expect((dbRow?.expiresAt as Date).getTime()).toBeGreaterThan(nearExpiry.getTime());
+    expect(dbRow.expiresAt.getTime()).toBeGreaterThan(nearExpiry.getTime());
   });
 
   it("invalidateSession calls delete on db", async () => {
