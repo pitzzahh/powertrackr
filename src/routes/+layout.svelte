@@ -74,30 +74,32 @@
   <meta property="og:type" content="website" />
 </svelte:head>
 
-{#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified)}
-  <div class="relative h-screen w-full overflow-hidden">
-    <Header user={data.user} />
+<main>
+  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified)}
+    <div class="relative h-screen w-full overflow-hidden">
+      <Header user={data.user} />
 
-    <div class="no-scrollbar h-full overflow-y-auto">
-      <main class="flex min-h-full justify-between gap-4 pt-16 pr-2 pl-4">
-        <aside
-          in:scale={{ duration: 150 }}
-          class={[
-            {
-              "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
-              "w-16": sidebarStore.collapsed,
-              "md:w-48 lg:w-54": !sidebarStore.collapsed,
-            },
-          ]}
-        >
-          <SidebarContent open={false} user={data.user} isMobileSheet={false} />
-        </aside>
-        <div class="flex min-w-0 flex-1 flex-col gap-4 py-1">
-          {@render children()}
-        </div>
-      </main>
+      <div class="no-scrollbar h-full overflow-y-auto">
+        <main class="flex min-h-full justify-between gap-4 pt-16 pr-2 pl-4">
+          <aside
+            in:scale={{ duration: 150 }}
+            class={[
+              {
+                "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
+                "w-16": sidebarStore.collapsed,
+                "md:w-48 lg:w-54": !sidebarStore.collapsed,
+              },
+            ]}
+          >
+            <SidebarContent open={false} user={data.user} isMobileSheet={false} />
+          </aside>
+          <div class="flex min-w-0 flex-1 flex-col gap-4 py-1">
+            {@render children()}
+          </div>
+        </main>
+      </div>
     </div>
-  </div>
-{:else}
-  {@render children()}
-{/if}
+  {:else}
+    {@render children()}
+  {/if}
+</main>
