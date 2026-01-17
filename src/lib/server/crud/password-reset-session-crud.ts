@@ -73,23 +73,6 @@ export async function updatePasswordResetSessionBy(
       value: [old_session],
     };
   }
-
-  // Normalize any expiresAt update to an ISO 8601 string
-  if ("expiresAt" in changed_data && changed_data.expiresAt !== undefined) {
-    const raw = changed_data.expiresAt as unknown;
-    if (typeof raw === "number") {
-      changed_data.expiresAt =
-        (raw as number) < 1_000_000_000_000
-          ? new Date((raw as number) * 1000).toISOString()
-          : new Date(raw as number).toISOString();
-    } else if (raw instanceof Date) {
-      changed_data.expiresAt = raw.toISOString();
-    } else {
-      // assume it's already a string
-      changed_data.expiresAt = raw as any;
-    }
-  }
-
   const whereSQL = buildWhereSQL(conditions);
   const updateDBRequest = await db
     .update(passwordResetSession)
@@ -163,6 +146,7 @@ export async function getPasswordResetSessionCountBy(
   const { query } = data;
   const { id, email } = query;
   const conditions = generatePasswordResetSessionQueryConditions(data);
+  console.log({ conditions });
   const request_query = db.select({ count: count() }).from(passwordResetSession);
 
   if (id || email) {
@@ -220,18 +204,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "code") {
       conditions.push(eq(passwordResetSession.code, value as string));
     } else if (key === "expiresAt") {
-      // Accept either a string (ISO) or number (seconds/ms) for convenience,
-      // normalizing numeric values to an ISO 8601 string before comparison.
-      if (typeof value === "number") {
-        const num = value as number;
-        const normalized =
-          num < 1_000_000_000_000
-            ? new Date(num * 1000).toISOString()
-            : new Date(num).toISOString();
-        conditions.push(eq(passwordResetSession.expiresAt, normalized));
-      } else {
-        conditions.push(eq(passwordResetSession.expiresAt, value as string));
-      }
+      conditions.push(eq(passwordResetSession.expiresAt, value as Date));
     } else if (key === "emailVerified") {
       conditions.push(eq(passwordResetSession.emailVerified, value as boolean));
     } else if (key === "twoFactorVerified") {
