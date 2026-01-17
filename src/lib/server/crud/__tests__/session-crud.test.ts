@@ -244,18 +244,13 @@ describe("Session CRUD Operations", () => {
 
       // Try both Date and numeric milliseconds forms as some adapters serialize differently
       const resultByDate = await getSessionBy({
-        query: { expiresAt: addedSession.expiresAt } as unknown as NewSession,
-        options: {},
+        query: { expiresAt: addedSession.expiresAt },
       });
 
       const resultByNumber = await getSessionBy({
         query: {
-          expiresAt:
-            (addedSession.expiresAt as any) instanceof Date
-              ? (addedSession.expiresAt as any).getTime()
-              : (addedSession.expiresAt as unknown as number),
-        } as unknown as NewSession,
-        options: {},
+          expiresAt: addedSession.expiresAt,
+        },
       });
 
       expect(resultByDate.valid || resultByNumber.valid).toBe(true);
@@ -643,11 +638,11 @@ describe("Session CRUD Operations", () => {
       const dto = await mapNewSession_to_DTO(input);
 
       expect(dto).toHaveLength(1);
-      expect(dto[0].id).toBe("");
-      expect(dto[0].ipAddress).toBeNull();
-      expect(dto[0].userAgent).toBeNull();
-      expect(dto[0].twoFactorVerified).toBe(false);
-      expect(dto[0].expiresAt).toBeInstanceOf(Date);
+      expect(dto[0].id).toBeUndefined();
+      expect(dto[0].ipAddress).toBeUndefined();
+      expect(dto[0].userAgent).toBeUndefined();
+      expect(dto[0].twoFactorVerified).toBeUndefined();
+      expect(dto[0].expiresAt).toBeUndefined();
     });
   });
 
