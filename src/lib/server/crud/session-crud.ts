@@ -113,21 +113,21 @@ export async function getSessionBy(
   };
 }
 
-export async function getSessions(data: HelperParam<NewSession>): Promise<SessionDTO[]> {
+export async function getSessions(data: HelperParam<NewSession>): Promise<Partial<SessionDTO>[]> {
   const sessionsResult = await getSessionBy(data);
-  return !sessionsResult.valid || !sessionsResult.value
-    ? []
-    : mapNewSession_to_DTO(sessionsResult.value);
+  return mapNewSession_to_DTO(sessionsResult.value);
 }
 
-export async function mapNewSession_to_DTO(data: Partial<NewSession>[]): Promise<SessionDTO[]> {
+export async function mapNewSession_to_DTO(
+  data: Partial<NewSession>[]
+): Promise<Partial<SessionDTO>[]> {
   return data.map((_session) => ({
-    id: _session.id ?? "",
-    expiresAt: _session.expiresAt ? new Date(_session.expiresAt) : new Date(),
-    ipAddress: _session.ipAddress ?? null,
-    userAgent: _session.userAgent ?? null,
-    userId: _session.userId ?? "",
-    twoFactorVerified: _session.twoFactorVerified ?? false,
+    id: _session.id,
+    expiresAt: _session.expiresAt,
+    ipAddress: _session.ipAddress,
+    userAgent: _session.userAgent,
+    userId: _session.userId,
+    twoFactorVerified: _session.twoFactorVerified,
   }));
 }
 
