@@ -1,7 +1,11 @@
 <script lang="ts">
-  import { AuthForm, VerifyEmailForm, Setup2FAForm } from "$routes/auth/(components)";
+  import {
+    AuthForm,
+    VerifyEmailForm,
+    Setup2FAForm,
+    AuthBackground,
+  } from "$routes/auth/(components)";
   import Logo from "$/components/logo.svelte";
-  import hero from "$/assets/illustrations/hero.svg";
   import { Button } from "$/components/ui/button/index.js";
   import { Moon, Sun } from "$/assets/icons";
   import { toggleMode } from "mode-watcher";
@@ -36,6 +40,6 @@
     </div>
   </div>
   <div class="relative hidden bg-muted lg:block">
-    <img src={hero} alt="placeholder" class="absolute inset-0 h-full w-full object-cover" />
+    <AuthBackground />
   </div>
 </div>
