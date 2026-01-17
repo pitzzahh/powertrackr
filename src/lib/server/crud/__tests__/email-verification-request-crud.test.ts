@@ -936,7 +936,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result[0].userId).toBe("test-user-id");
       expect(result[0].email).toBe("map@example.com");
       expect(result[0].code).toBe("MAP123456");
-      expect(result[0].expiresAt!).toBe(expiresAtMs);
+      expect(result[0].expiresAt!).toStrictEqual(new Date(expiresAtMs));
     });
 
     it("should handle verification request with user relationship", async () => {
