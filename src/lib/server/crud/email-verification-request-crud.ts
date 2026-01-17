@@ -7,7 +7,10 @@ import { getChangedData } from "$/utils/mapper";
 import type {
   NewEmailVerificationRequest,
   EmailVerificationRequestDTO,
+  NewEmailVerificationRequestWithUser,
 } from "$/types/email-verification-request";
+import { mapNewUser_to_DTO } from "./user-crud";
+import type { UserDTO } from "$/types/user";
 
 type EmailVerificationRequestQueryOptions = {
   with?: { user: true };
@@ -110,7 +113,7 @@ export async function getEmailVerificationRequestBy(
       {}
     );
   }
-  const queryDBResult = await (db as any).query.emailVerificationRequest.findMany(queryOptions);
+  const queryDBResult = await db.query.emailVerificationRequest.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -122,7 +125,7 @@ export async function getEmailVerificationRequestBy(
 
 export async function getEmailVerificationRequests(
   data: HelperParam<NewEmailVerificationRequest>
-): Promise<EmailVerificationRequestDTO[]> {
+): Promise<Partial<EmailVerificationRequestDTO>[]> {
   const requestsResult = await getEmailVerificationRequestBy(data);
   return !requestsResult.valid || !requestsResult.value
     ? []
@@ -130,26 +133,18 @@ export async function getEmailVerificationRequests(
 }
 
 export async function mapNewEmailVerificationRequest_to_DTO(
-  data: Partial<NewEmailVerificationRequest>[]
-): Promise<EmailVerificationRequestDTO[]> {
+  data: Partial<NewEmailVerificationRequestWithUser>[]
+): Promise<Partial<EmailVerificationRequestDTO>[]> {
   return data.map((_request) => ({
-    id: _request.id ?? "",
-    userId: _request.userId ?? "",
-    email: _request.email ?? "",
-    code: _request.code ?? "",
+    id: _request.id,
+    userId: _request.userId,
+    email: _request.email,
+    code: _request.code,
     // Normalize expiresAt into a native Date (supports Date/Timestamp from Postgres)
-    expiresAt: _request.expiresAt
-      ? _request.expiresAt instanceof Date
-        ? _request.expiresAt
-        : typeof _request.expiresAt === "number"
-          ? new Date(
-              _request.expiresAt < 1_000_000_000_000
-                ? _request.expiresAt * 1000
-                : _request.expiresAt
-            )
-          : new Date(String(_request.expiresAt))
-      : new Date(0),
-    ...("user" in _request ? { user: (_request as any).user } : {}),
+    expiresAt: _request.expiresAt,
+    ...(_request.user && {
+      user: mapNewUser_to_DTO([_request.user])[0] as UserDTO,
+    }),
   }));
 }
 
