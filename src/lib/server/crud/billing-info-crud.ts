@@ -236,7 +236,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "userId") {
       conditions.push(eq(billingInfo.userId, value as string));
     } else if (key === "date") {
-      conditions.push(eq(billingInfo.date, value as string));
+      conditions.push(eq(billingInfo.date, value as Date));
     } else if (key === "totalkWh") {
       conditions.push(eq(billingInfo.totalkWh, value as number));
     } else if (key === "balance") {
