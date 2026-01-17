@@ -1,15 +1,9 @@
 import { db, pool } from "$/server/db";
-import { vi, afterEach, afterAll } from "vitest";
+import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-// Mock crypto.randomUUID for consistent testing
-vi.stubGlobal("crypto", {
-  randomUUID: () => "test-uuid-" + Date.now() + "-" + Math.random().toString(36).slice(2, 11),
-});
-
-const execAsync = promisify(exec);
-await execAsync("npm run db:push");
+await promisify(exec)("npm run db:push");
 
 /**
  * Helpers to expose the real DB and pool to tests.
