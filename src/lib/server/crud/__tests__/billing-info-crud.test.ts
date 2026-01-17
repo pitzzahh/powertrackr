@@ -47,7 +47,7 @@ describe("Billing Info CRUD Operations", () => {
           balance: 500.75,
           status: "Pending",
           payPerkWh: 0.15,
-          date: "2024-01-15",
+          date: new Date("2024-01-15"),
           paymentId: addedPayment.id,
         }),
       ]);
@@ -219,12 +219,9 @@ describe("Billing Info CRUD Operations", () => {
         }),
       ]);
 
-      const searchParam: HelperParam<NewBillingInfo> = {
+      const result = await getBillingInfoBy({
         query: { id: addedBilling.id },
-        options: {},
-      };
-
-      const result = await getBillingInfoBy(searchParam);
+      });
 
       expect(validUser).toBe(true);
       expect(validBilling).toBe(true);
@@ -280,7 +277,7 @@ describe("Billing Info CRUD Operations", () => {
         value: [addedUser],
       } = await addUser([createUser()]);
 
-      const testDate = "2024-02-01";
+      const testDate = new Date("2024-02-01");
 
       const {
         value: [addedPayment],
@@ -310,7 +307,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(addedBilling).toBeDefined();
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].date).toBe(testDate);
+      expect(result.value[0].date).toStrictEqual(testDate);
     });
 
     describe("Billing Info CRUD Integration (payments & sub-meters) - manual CRUD flow", () => {
@@ -320,7 +317,7 @@ describe("Billing Info CRUD Operations", () => {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const date = "2024-04-01";
+        const date = new Date("2024-04-01");
         const totalkWh = 1000;
         const balance = 1000;
 
@@ -345,7 +342,7 @@ describe("Billing Info CRUD Operations", () => {
           if (amount > 0) {
             const {
               value: [addedSubPayment],
-            } = await addPayment([{ amount, date: new Date().toISOString() }]);
+            } = await addPayment([{ amount, date: new Date() }]);
             subPaymentIds.push(addedSubPayment.id);
           } else {
             subPaymentIds.push(null);
@@ -355,7 +352,7 @@ describe("Billing Info CRUD Operations", () => {
         // Create main payment
         const {
           value: [addedMainPayment],
-        } = await addPayment([{ amount: expectedMain, date: new Date().toISOString() }]);
+        } = await addPayment([{ amount: expectedMain, date: new Date() }]);
         const mainPaymentId = addedMainPayment.id;
 
         // Insert billing info referencing main payment id
@@ -425,7 +422,7 @@ describe("Billing Info CRUD Operations", () => {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const date = "2024-04-15";
+        const date = new Date("2024-04-15");
         const totalkWh = 1000;
         const balance = 250;
 
@@ -434,7 +431,7 @@ describe("Billing Info CRUD Operations", () => {
         // No sub-meter payments; main payment equals full balance
         const {
           value: [addedMainPayment],
-        } = await addPayment([{ amount: balance, date: new Date().toISOString() }]);
+        } = await addPayment([{ amount: balance, date: new Date() }]);
         const mainPaymentId = addedMainPayment.id;
 
         const {
@@ -474,7 +471,7 @@ describe("Billing Info CRUD Operations", () => {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const date = "2024-05-01";
+        const date = new Date("2024-05-01");
         const totalkWh = 500;
         const balance = 200;
 
@@ -485,12 +482,12 @@ describe("Billing Info CRUD Operations", () => {
         const initialAmount = Number((initialSubKwh * payPer).toFixed(2));
         const {
           value: [addedSubPayment],
-        } = await addPayment([{ amount: initialAmount, date: new Date().toISOString() }]);
+        } = await addPayment([{ amount: initialAmount, date: new Date() }]);
         const subPaymentId = addedSubPayment.id;
 
         const {
           value: [addedMainPayment],
-        } = await addPayment([{ amount: balance - initialAmount, date: new Date().toISOString() }]);
+        } = await addPayment([{ amount: balance - initialAmount, date: new Date() }]);
         const mainPaymentId = addedMainPayment.id;
 
         const {
@@ -1007,14 +1004,13 @@ describe("Billing Info CRUD Operations", () => {
         options: {},
       };
 
-      const updateData = {
+      const result = await updateBillingInfoBy(updateParam, {
         totalkWh: 2000,
         balance: 1000.0,
         status: "Paid" as const,
         payPerkWh: 0.25,
-        date: "2024-03-01",
-      };
-      const result = await updateBillingInfoBy(updateParam, updateData);
+        date: new Date("2024-03-01"),
+      });
 
       expect(validUser).toBe(true);
       expect(validBilling).toBe(true);
@@ -1025,7 +1021,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(result.value[0].balance).toBe(1000.0);
       expect(result.value[0].status).toBe("Paid");
       expect(result.value[0].payPerkWh).toBe(0.25);
-      expect(result.value[0].date).toBe("2024-03-01");
+      expect(result.value[0].date).toStrictEqual(new Date("2024-03-01"));
     });
   });
 
@@ -1036,20 +1032,20 @@ describe("Billing Info CRUD Operations", () => {
         value: [addedUser],
       } = await addUser([createUser()]);
 
-      const paymentPromises = Array.from({ length: 5 }, () =>
-        addPayment([createPayment({ amount: 100 })])
+      const paymentResults = await Promise.all(
+        Array.from({ length: 5 }, () => addPayment([createPayment({ amount: 100 })]))
       );
-      const paymentResults = await Promise.all(paymentPromises);
 
-      const billingData = createBillingInfos(5, { userId: addedUser.id }).map((b, i) => ({
-        ...b,
-        paymentId: paymentResults[i].value[0].id,
-      }));
       await addBillingInfo(
-        billingData.map((b) => {
-          const { id: _, ...rest } = b;
-          return rest;
-        })
+        createBillingInfos(5, { userId: addedUser.id })
+          .map((b, i) => ({
+            ...b,
+            paymentId: paymentResults[i].value[0].id,
+          }))
+          .map((b) => {
+            const { id: _, ...rest } = b;
+            return rest;
+          })
       );
 
       const countParam: HelperParam<NewBillingInfo> = {
@@ -1398,7 +1394,7 @@ describe("Billing Info CRUD Operations", () => {
         query: {
           id: "test-id",
           userId: "test-user-id",
-          date: "2024-01-15",
+          date: new Date("2024-01-15"),
           totalkWh: 1000,
           balance: 500.75,
           status: "Paid",
@@ -1413,7 +1409,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(conditions).toEqual({
         id: "test-id",
         userId: "test-user-id",
-        date: "2024-01-15",
+        date: new Date("2024-01-15"),
         totalkWh: 1000,
         balance: 500.75,
         status: "Paid",
@@ -1496,7 +1492,7 @@ describe("Billing Info CRUD Operations", () => {
         value: [addedUser],
       } = await addUser([createUser()]);
 
-      const isoDate = new Date().toISOString();
+      const date = new Date();
 
       const {
         valid: validPayment,
@@ -1509,7 +1505,7 @@ describe("Billing Info CRUD Operations", () => {
       } = await addBillingInfo([
         createBillingInfo({
           userId: addedUser.id,
-          date: isoDate,
+          date: date,
           paymentId: addedPayment.id,
         }),
       ]);
@@ -1520,7 +1516,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(addedUser).toBeDefined();
       expect(addedPayment).toBeDefined();
       expect(addedBilling).toBeDefined();
-      expect(addedBilling.date).toBe(isoDate);
+      expect(addedBilling.date).toStrictEqual(date);
     });
 
     it("should handle simultaneous billing info operations", async () => {
