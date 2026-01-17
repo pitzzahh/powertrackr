@@ -1,24 +1,20 @@
 <script lang="ts">
-	import DataTable from './data-table.svelte';
-	import type { PageData } from './$types';
-	import { getState, MAIN_STATE_CTX } from '$lib/state';
-	import type { Writable } from 'svelte/store';
-	import type { State } from '$lib/types';
+  import type { Status } from "$/types/state";
+  import { extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
+  import { HistoryDataTable } from "$routes/history/(components)";
+  import { onMount } from "svelte";
+  import { billingStore } from "$lib/stores/billing.svelte.js";
 
-	export let data: PageData;
+  let { data } = $props();
 
-	const state: Writable<State> = getState(MAIN_STATE_CTX);
-
-	$: {
-		$state.user = data.user;
-		$state.history = data.history;
-	}
+  onMount(() => {
+    if (!data.user) return;
+    billingStore.setUserId(data.user.id);
+    billingStore.fetchData();
+  });
 </script>
 
-<svelte:head>
-	<title>PowerTrackr History</title>
-</svelte:head>
-
-<div class="container mx-auto">
-	<DataTable />
-</div>
+<HistoryDataTable
+  status={billingStore.status}
+  data={billingStore.extendedBillingInfos.map(extendedBillingInfoToTableView)}
+/>
