@@ -37,7 +37,6 @@
   const id = $props.id();
 </script>
 
-powertrackr/src/routes/auth/(components)/reset-password-form.svelte
 <form
   {...resetPassword.enhance(async ({ submit }) => {
     status = "processing";
