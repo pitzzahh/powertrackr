@@ -22,13 +22,13 @@ describe("Payment CRUD Operations", () => {
       const {
         valid,
         value: [addedPayment],
-      } = await addPayment([createPayment({ amount: 200.5, date: "2024-01-15" })]);
+      } = await addPayment([createPayment({ amount: 200.5, date: new Date("2024-01-15") })]);
 
       expect(valid).toBe(true);
       expect(addedPayment).toBeDefined();
       expect(addedPayment).toHaveProperty("id");
       expect(addedPayment.amount).toBe(200.5);
-      expect(addedPayment.date).toBe("2024-01-15");
+      expect(addedPayment.date).toStrictEqual(new Date("2024-01-15"));
     });
 
     it("should successfully add multiple payments", async () => {
@@ -57,7 +57,7 @@ describe("Payment CRUD Operations", () => {
       const {
         valid: validPayment,
         value: [addedPayment],
-      } = await addPayment([createPayment({ amount: 300.75, date: "2024-02-02" })]);
+      } = await addPayment([createPayment({ amount: 300.75, date: new Date("2024-02-02") })]);
 
       expect(validPayment).toBe(true);
       expect(addedPayment).toBeDefined();
@@ -99,7 +99,7 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should find payment by date", async () => {
-      const testDate = "2024-03-01";
+      const testDate = new Date("2024-03-01");
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -110,14 +110,13 @@ describe("Payment CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPayment> = {
         query: { date: testDate },
-        options: {},
       };
 
       const result = await getPaymentBy(searchParam);
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].date).toBe(testDate);
+      expect(result.value[0].date).toStrictEqual(testDate);
     });
 
     it("should return empty result when payment not found", async () => {
@@ -180,7 +179,7 @@ describe("Payment CRUD Operations", () => {
       } = await addPayment([
         createPayment({
           amount: 777.77,
-          date: "2024-04-04",
+          date: new Date("2024-04-04"),
         }),
       ]);
 
@@ -365,7 +364,7 @@ describe("Payment CRUD Operations", () => {
       } = await addPayment([
         createPayment({
           amount: 321.99,
-          date: "2024-05-05",
+          date: new Date("2024-05-05"),
         }),
       ]);
 
@@ -423,12 +422,12 @@ describe("Payment CRUD Operations", () => {
 
     it("should generate correct conditions for multiple fields", () => {
       const param: HelperParam<NewPayment> = {
-        query: { amount: 200, date: "2024-07-07", id: "some-id" },
+        query: { amount: 200, date: new Date("2024-07-07"), id: "some-id" },
         options: {},
       };
       const conditions = generatePaymentQueryConditions(param);
       expect(conditions.amount).toBe(200);
-      expect(conditions.date).toBe("2024-07-07");
+      expect(conditions.date).toStrictEqual(new Date("2024-07-07"));
       expect(conditions.id).toBe("some-id");
     });
 
