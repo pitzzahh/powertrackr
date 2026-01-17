@@ -8,10 +8,10 @@ if (!DATABASE_URL) {
   throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
-const pool: any = new Pool({
+const pool = new Pool({
   connectionString: DATABASE_URL,
 });
 
-const db = drizzle(pool as any, { schema, relations } as any);
+const db = drizzle({ client: pool, schema, relations });
 
 export { db, pool };
