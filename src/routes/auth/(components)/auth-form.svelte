@@ -109,13 +109,20 @@
     {#if action === "register"}
       <Field>
         <FieldLabel for="name-{id}">Name</FieldLabel>
-        <Input id="name-{id}" autocomplete="name" required {...register.fields.name.as("text")} />
+        <Input
+          autofocus={action === "register"}
+          id="name-{id}"
+          autocomplete="name"
+          required
+          {...register.fields.name.as("text")}
+        />
         <FieldError errors={register.fields.name.issues()} />
       </Field>
     {/if}
     <Field>
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input
+        autofocus
         id="email-{id}"
         placeholder="m@example.com"
         required
