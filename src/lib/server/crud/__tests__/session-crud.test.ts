@@ -49,7 +49,8 @@ describe("Session CRUD Operations", () => {
       expect(addedSession.ipAddress).toBe("127.0.0.1");
       expect(addedSession.userAgent).toBe("TestAgent/1.0");
       expect(addedSession.twoFactorVerified).toBe(true);
-      expect(addedSession.expiresAt).toBe(expiresAt);
+      // Compare timestamps to avoid strict object identity mismatches between Date instances/ISO strings
+      expect(new Date(addedSession.expiresAt).getTime()).toBe(expiresAt.getTime());
     });
 
     it("should successfully add multiple sessions", async () => {
