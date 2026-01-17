@@ -1,14 +1,14 @@
-import { sqliteTable, uniqueIndex, text, real } from "drizzle-orm/sqlite-core";
+import { pgTable, uniqueIndex, text, real, timestamp } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { timestamps } from ".";
 
-export const payment = sqliteTable(
+export const payment = pgTable(
   "payment",
   {
     id: text().primaryKey().notNull(),
     amount: real(),
-    date: text()
-      .default(sql`CURRENT_TIMESTAMP`)
+    date: timestamp("date")
+      .default(sql`now()`)
       .notNull(),
     ...timestamps,
   },

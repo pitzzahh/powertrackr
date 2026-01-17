@@ -1,7 +1,7 @@
-import { sqliteTable, index, foreignKey } from "drizzle-orm/sqlite-core";
+import { pgTable, index, foreignKey } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
-export const emailVerificationRequest = sqliteTable(
+export const emailVerificationRequest = pgTable(
   "email_verification_request",
   (t) => ({
     id: t.text().primaryKey(),
@@ -11,7 +11,7 @@ export const emailVerificationRequest = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     email: t.text().notNull(),
     code: t.text().notNull(),
-    expiresAt: t.text("expires_at").notNull(),
+    expiresAt: t.timestamp("expires_at").notNull(),
   }),
   (table) => [
     index("email_verification_request_user_id_idx").on(table.userId),

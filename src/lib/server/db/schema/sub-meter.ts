@@ -1,9 +1,9 @@
-import { sqliteTable, index, foreignKey, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, index, foreignKey, text, integer } from "drizzle-orm/pg-core";
 import { payment } from "./payment";
 import { billingInfo } from "./billing-info";
 import { timestamps } from ".";
 
-export const subMeter = sqliteTable(
+export const subMeter = pgTable(
   "sub_meter",
   {
     id: text().primaryKey().notNull(),
