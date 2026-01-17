@@ -4,7 +4,7 @@ import { user } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewUser, UserDTO, UserDTOWithSessions } from "$/types/user";
+import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "$/types/user";
 
 type UserQueryOptions = {
   with?: { sessions: true };
@@ -113,35 +113,26 @@ export async function getUserBy(
   };
 }
 
-export async function getUsers(data: HelperParam<NewUser>): Promise<UserDTO[]> {
+export async function getUsers(data: HelperParam<NewUser>): Promise<Partial<NewUser>[]> {
   const usersResult = await getUserBy(data);
   return !usersResult.valid || !usersResult.value ? [] : mapNewUser_to_DTO(usersResult.value);
 }
 
-export async function mapNewUser_to_DTO(data: Partial<NewUser>[]): Promise<UserDTO[]> {
-  return Promise.all(
-    data.map(async (_user) => {
-      const user_info = {
-        id: _user.id ?? "",
-        githubId: _user.githubId ?? null,
-        name: _user.name ?? "",
-        email: _user.email ?? "",
-        emailVerified: _user.emailVerified ?? false,
-        registeredTwoFactor: _user.registeredTwoFactor ?? false,
-        image: _user.image ?? null,
-        createdAt: _user.createdAt ?? new Date(),
-        updatedAt: _user.updatedAt ?? new Date(),
-      } as UserDTO;
-
-      if ("sessions" in _user) {
-        return {
-          ...user_info,
-          sessions: _user.sessions,
-        } as UserDTOWithSessions;
-      }
-      return user_info;
-    })
-  );
+export function mapNewUser_to_DTO(
+  data: Partial<NewUserWitSessions>[]
+): Partial<UserDTOWithSessions>[] {
+  return data.map((_user) => ({
+    id: _user.id,
+    githubId: _user.githubId,
+    name: _user.name,
+    email: _user.email,
+    emailVerified: _user.emailVerified,
+    registeredTwoFactor: _user.registeredTwoFactor,
+    image: _user.image,
+    createdAt: _user.createdAt,
+    updatedAt: _user.updatedAt,
+    sessions: _user.sessions,
+  }));
 }
 
 export async function getUserCountBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
