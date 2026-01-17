@@ -10,9 +10,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/lib/server/crud/__tests__/helpers/setup.ts"],
     pool: "forks",
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    teardownTimeout: 5000,
+    // On CI environments tests can be slower (DB setup, network, shared runners).
+    // Increase timeouts when running in CI to reduce spurious failures.
+    testTimeout: process.env.CI ? 120000 : 20000,
+    hookTimeout: process.env.CI ? 60000 : 20000,
+    teardownTimeout: process.env.CI ? 60000 : 5000,
     fileParallelism: false,
     sequence: {
       hooks: "stack",
