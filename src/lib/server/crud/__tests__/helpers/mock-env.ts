@@ -1,19 +1,32 @@
-/**
- * Mock for `$env/static/private` used during tests.
- *
- * This file is aliased to `$env/static/private` in the test Vite config so that
- * modules importing static private env variables (like `ENCRYPTION_KEY`) resolve
- * correctly when running tests.
- *
- * NOTE: These values are only for tests and should never be used in production.
- */
+import { config } from "dotenv";
+import { existsSync } from "fs";
+import { resolve } from "path";
 
-export const ENCRYPTION_KEY = "00112233445566778899aabbccddeeff"; // 16 bytes (32 hex chars) for AES-128
-export const DATABASE_URL = "postgres://peter:self@localhost:5432/powertrackr_test";
-export const DATABASE_AUTH_TOKEN: string | undefined = undefined;
+// Load .env.test if present, but do not override already-set env vars.
+const envTestPath = resolve(process.cwd(), ".env");
+if (existsSync(envTestPath)) {
+  config({ path: envTestPath, override: false });
+}
 
-export const GITHUB_CLIENT_ID = "github-client-id";
-export const GITHUB_CLIENT_SECRET = "github-client-secret";
+// Export the values expected by `$env/static/private`. Prefer actual process.env values.
+// Throw a helpful error early if DATABASE_URL is missing so tests fail fast and clearly.
+export const DATABASE_URL: string | undefined = process.env.DATABASE_URL;
+console.log({ DATABASE_URL });
+if (!DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL is not defined. For tests set DATABASE_URL in the environment or create a .env.test file."
+  );
+}
+
+export const DATABASE_AUTH_TOKEN: string | undefined = process.env.DATABASE_AUTH_TOKEN;
+
+export const ENCRYPTION_KEY: string =
+  process.env.ENCRYPTION_KEY ?? "00112233445566778899aabbccddeeff"; // fallback (not for production)
+
+export const GITHUB_CLIENT_ID: string | undefined =
+  process.env.GITHUB_CLIENT_ID ?? "github-client-id";
+export const GITHUB_CLIENT_SECRET: string | undefined =
+  process.env.GITHUB_CLIENT_SECRET ?? "github-client-secret";
 
 /**
  * Plunk values are normally provided via dynamic/private in tests, but exporting
