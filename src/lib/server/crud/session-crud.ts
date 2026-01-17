@@ -4,7 +4,7 @@ import { session } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewSession, SessionDTO } from "$/types/session";
+import type { NewSession, Session, SessionDTO } from "$/types/session";
 
 type SessionQueryOptions = {
   where?: Record<string, unknown>;
@@ -176,7 +176,7 @@ export function generateSessionQueryConditions(data: HelperParam<NewSession>) {
   return where;
 }
 
-function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
+function buildWhereSQL(where: Record<keyof Session, unknown>): SQL | undefined {
   const conditions: SQL[] = [];
   for (const [key, value] of Object.entries(where)) {
     if (key === "NOT") {
@@ -185,7 +185,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "id") {
       conditions.push(eq(session.id, value as string));
     } else if (key === "expiresAt") {
-      conditions.push(eq(session.expiresAt, value as string));
+      conditions.push(eq(session.expiresAt, value as Date));
     } else if (key === "ipAddress") {
       conditions.push(eq(session.ipAddress, value as string));
     } else if (key === "userAgent") {
