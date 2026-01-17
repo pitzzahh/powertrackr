@@ -48,7 +48,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result.value[0].email).toBe("verify@example.com");
       expect(result.value[0].code).toBe("VERIFY123456");
       // expiresAt is stored as an ISO string; parse and compare numeric ms
-      expect(result.value[0].expiresAt).toBe(expiresAt);
+      expect(new Date(result.value[0].expiresAt).getTime()).toBe(expiresAt.getTime());
     });
 
     it("should successfully add multiple email verification requests", async () => {
@@ -111,7 +111,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       // expiresAt stored as ISO string; compare parsed milliseconds
-      expect(result.value[0].expiresAt).toBe(farFuture);
+      expect(new Date(result.value[0].expiresAt).getTime()).toBe(farFuture.getTime());
     });
 
     it("should handle verification request with past expiration", async () => {
@@ -138,7 +138,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       // expiresAt stored as ISO string; compare parsed milliseconds
-      expect(result.value[0].expiresAt).toBe(past);
+      expect(new Date(result.value[0].expiresAt).getTime()).toBe(past.getTime());
     });
 
     it("should handle verification request with special characters in email", async () => {
@@ -524,7 +524,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 email verification request(s) updated");
-      expect(result.value[0].expiresAt!).toBe(Date.parse(new Date(newExpiresAtMs).toISOString()));
+      expect(new Date(result.value[0].expiresAt!).getTime()).toBe(newExpiresAtMs);
     });
 
     it("should update multiple fields at once", async () => {
@@ -561,7 +561,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result.message).toBe("1 email verification request(s) updated");
       expect(result.value[0].email).toBe("multiupdated@example.com");
       expect(result.value[0].code).toBe("MUL123");
-      expect(result.value[0].expiresAt!).toBe(newExpiresAtMs);
+      expect(new Date(result.value[0].expiresAt!).getTime()).toBe(newExpiresAtMs);
     });
 
     it("should perform update when update data is empty (sets existing non-nullish fields)", async () => {
@@ -904,7 +904,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result[0].userId).toBe(addedUser.id);
       expect(result[0].email).toBe("dto@example.com");
       expect(result[0].code).toBe("DTO123456");
-      expect(result[0].expiresAt!).toBe(expiresAtMs);
+      expect(result[0].expiresAt!).toStrictEqual(new Date(expiresAtMs));
     });
 
     it("should return empty array when no verification requests found", async () => {
