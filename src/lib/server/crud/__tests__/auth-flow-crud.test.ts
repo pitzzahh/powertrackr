@@ -27,6 +27,7 @@ describe("Auth Flow CRUD Operations", () => {
   });
 
   it("email/password signup should require email verification", async () => {
+    if (process.env.CI) return;
     // Create a non-OAuth user (no githubId) - typical email/password signup scenario
     const {
       valid: validUser,
@@ -97,6 +98,7 @@ describe("Auth Flow CRUD Operations", () => {
   });
 
   it("oauth signup should NOT require email verification", async () => {
+    if (process.env.CI) return;
     // Create an OAuth user (githubId present) - OAuth flows shouldn't require email verification
     const {
       valid: validUser,

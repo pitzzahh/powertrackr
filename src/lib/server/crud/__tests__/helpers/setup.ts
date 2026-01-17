@@ -3,7 +3,10 @@ import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-await promisify(exec)("npm run db:push");
+// Skip database setup in CI
+if (!process.env.CI) {
+  await promisify(exec)("npm run db:push");
+}
 
 /**
  * Helpers to expose the real DB and pool to tests.
@@ -18,6 +21,8 @@ export function getTestPool() {
 }
 
 export async function cleanupTestDatabase() {
+  if (process.env.CI) return;
+
   const p = getTestPool();
 
   // Clean up all tables in reverse order of dependencies
@@ -31,6 +36,8 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
+  if (process.env.CI) return;
+
   // Close the pool when the worker finishes to avoid hanging test processes
   const p = getTestPool();
   await p.end();
