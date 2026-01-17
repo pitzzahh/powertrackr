@@ -186,7 +186,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "amount") {
       conditions.push(eq(payment.amount, value as number));
     } else if (key === "date") {
-      conditions.push(eq(payment.date, value as string));
+      conditions.push(eq(payment.date, value as Date));
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
