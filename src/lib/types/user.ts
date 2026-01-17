@@ -1,5 +1,5 @@
 import type { user } from "$/server/db/schema";
-import type { Session } from "./session";
+import type { NewSession, Session } from "./session";
 
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
@@ -16,6 +16,10 @@ export type UserDTO = {
   updatedAt: Date;
 };
 
+export type NewUserWitSessions = NewUser & {
+  sessions?: NewSession[];
+};
+
 export type UserTableView = Omit<User, "createdAt" | "updatedAt"> & {
   createdAt: string;
   updatedAt: string;
@@ -25,5 +29,5 @@ export type UserWithSessions = User & {
   sessions: Session[];
 };
 export type UserDTOWithSessions = UserDTO & {
-  sessions: Session[];
+  sessions?: NewSession[];
 };
