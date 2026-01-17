@@ -7,7 +7,10 @@
   };
 
   type AuthFormState = {
-    status: Status;
+    statuses: {
+      email: Status;
+      github: Status;
+    };
   };
 </script>
 
@@ -38,19 +41,25 @@
     currentAction: action === "login" ? login : register,
   });
 
-  let { status }: AuthFormState = $state({
-    status: "idle",
+  let { statuses }: AuthFormState = $state({
+    statuses: {
+      email: "idle",
+      github: "idle",
+    },
   });
 
   const id = $props.id();
 
-  onDestroy(() => (status = "idle"));
+  onDestroy(() => {
+    statuses.email = "idle";
+    statuses.github = "idle";
+  });
 </script>
 
 <form
   {...currentAction.enhance(async ({ submit }) => {
-    if (status === "processing") return;
-    status = "processing";
+    if (statuses.email === "processing") return;
+    statuses.email = "processing";
     const toastId = showLoading(
       action === "login" ? "Logging you in..." : "Creating your account..."
     );
@@ -68,7 +77,7 @@
       );
     } finally {
       toast.dismiss(toastId);
-      status = "idle";
+      statuses.email = "idle";
     }
   })}
   class={cn("flex flex-col gap-6", className)}
@@ -155,10 +164,10 @@
     <Field>
       <Button
         type="submit"
-        disabled={status === "processing"}
+        disabled={statuses.github === "processing"}
         aria-label={action === "login" ? "Login to your account" : "Create your account"}
       >
-        {#if status === "processing"}
+        {#if statuses.email === "processing"}
           <Loader class="size-5 animate-spin" />
         {:else}
           {action === "login" ? "Login to your account" : "Create your account"}
@@ -169,10 +178,10 @@
     <Field>
       <Button
         variant="outline"
-        disabled={status === "processing"}
+        disabled={statuses.email === "processing"}
         aria-label={action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
         onclick={async () => {
-          status = "processing";
+          statuses.github = "processing";
           const toastId = showLoading(
             action === "login" ? "Logging in with GitHub" : "Creating Account with GitHub"
           );
@@ -191,12 +200,12 @@
                   : "Failed to create your account. Please try again.")
             );
           } finally {
-            status = "idle";
+            statuses.github = "idle";
             toast.dismiss(toastId);
           }
         }}
       >
-        {#if status === "processing"}
+        {#if statuses.github === "processing"}
           <Loader class="size-5 animate-spin" />
         {:else}
           <Github />
