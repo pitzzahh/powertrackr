@@ -29,20 +29,16 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const expiresAtMs = Date.now() + 15 * 60 * 1000;
-      const expiresAt = new Date(expiresAtMs).toISOString();
-      const sessionData = [
-        (() => {
-          const { id: _, ...rest } = createPasswordResetSession({
-            userId: addedUser.id,
-            email: "reset@example.com",
-            code: "RESET123",
-            expiresAt,
-          });
-          return rest;
-        })(),
-      ];
+      const expiresAt = new Date(expiresAtMs);
 
-      const result = await addPasswordResetSession(sessionData);
+      const result = await addPasswordResetSession([
+        createPasswordResetSession({
+          userId: addedUser.id,
+          email: "reset@example.com",
+          code: "RESET123",
+          expiresAt,
+        }),
+      ]);
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 password reset session(s) added");
@@ -52,7 +48,7 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(result.value[0].email).toBe("reset@example.com");
       expect(result.value[0].code).toBe("RESET123");
       // expiresAt is now stored as an ISO string; compare parsed milliseconds
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(expiresAtMs);
+      expect(result.value[0].expiresAt!).toStrictEqual(expiresAt);
     });
 
     it("should successfully add multiple password reset sessions", async () => {
@@ -64,18 +60,15 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = Array.from({ length: 3 }, (_, i) =>
-        createPasswordResetSession({
-          userId: addedUser.id,
-          email: `reset${i}@example.com`,
-          code: `CODE${i}`,
-        })
-      ).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
-
-      const result = await addPasswordResetSession(sessionsData);
+      const result = await addPasswordResetSession(
+        Array.from({ length: 3 }, (_, i) =>
+          createPasswordResetSession({
+            userId: addedUser.id,
+            email: `reset${i}@example.com`,
+            code: `CODE${i}`,
+          })
+        )
+      );
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("3 password reset session(s) added");
@@ -100,18 +93,13 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionData = [
-        (() => {
-          const { id: _, ...rest } = createPasswordResetSession({
-            userId: addedUser.id,
-            emailVerified: true,
-            twoFactorVerified: true,
-          });
-          return rest;
-        })(),
-      ];
-
-      const result = await addPasswordResetSession(sessionData);
+      const result = await addPasswordResetSession([
+        createPasswordResetSession({
+          userId: addedUser.id,
+          emailVerified: true,
+          twoFactorVerified: true,
+        }),
+      ]);
 
       expect(result.valid).toBe(true);
       expect(result.value[0].emailVerified).toBe(true);
@@ -232,8 +220,7 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(addedSession).toBeDefined();
 
       const result = await getPasswordResetSessionBy({
-        query: { code: "CODEFIND123" } as unknown as NewPasswordResetSession,
-        options: {},
+        query: { code: "CODEFIND123" },
       });
 
       expect(result.valid).toBe(true);
@@ -250,7 +237,7 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const tsMs = Date.now() + 15 * 60 * 1000;
-      const ts = new Date(tsMs).toISOString();
+      const ts = new Date(tsMs);
       const {
         valid: validSession,
         value: [addedSession],
@@ -268,7 +255,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       // expiresAt stored as ISO string; compare parsed milliseconds
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(tsMs);
+      expect(result.value[0].expiresAt!).toStrictEqual(ts);
     });
 
     it("should find by emailVerified and twoFactorVerified flags", async () => {
@@ -320,13 +307,11 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const data = Array.from({ length: 5 }, (_, i) =>
-        createPasswordResetSession({ userId: addedUser.id, email: `t${i}@ex.com` })
-      ).map((r) => {
-        const { id: _, ...rest } = r;
-        return rest;
-      });
-      const { valid: validSessions } = await addPasswordResetSession(data);
+      const { valid: validSessions } = await addPasswordResetSession(
+        Array.from({ length: 5 }, (_, i) =>
+          createPasswordResetSession({ userId: addedUser.id, email: `t${i}@ex.com` })
+        )
+      );
 
       expect(validSessions).toBe(true);
 
@@ -609,8 +594,7 @@ describe("Password Reset Session CRUD Operations", () => {
       expect(validSessions).toBe(true);
 
       const result = await getPasswordResetSessionCountBy({
-        query: { emailVerified: true } as unknown as NewPasswordResetSession,
-        options: {},
+        query: { emailVerified: true },
       });
       expect(result.valid).toBe(true);
       expect(result.value).toBe(2);
