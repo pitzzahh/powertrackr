@@ -30,19 +30,15 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId: addedUser.id,
-            email: "verify@example.com",
-            code: "VERIFY123456",
-            expiresAt,
-          });
-          return rest;
-        })(),
-      ];
 
-      const result = await addEmailVerificationRequest(verificationData);
+      const result = await addEmailVerificationRequest([
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          email: "verify@example.com",
+          code: "VERIFY123456",
+          expiresAt,
+        }),
+      ]);
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 email verification request(s) added");
@@ -945,12 +941,12 @@ describe("Email Verification Request CRUD Operations", () => {
 
     it("should handle verification request with user relationship", async () => {
       const userData = { id: "test-user", name: "Test User", email: "test@example.com" };
-      const verificationData = {
-        ...createEmailVerificationRequest(),
-        user: userData,
-      };
-
-      const result = await mapNewEmailVerificationRequest_to_DTO([verificationData]);
+      const result = await mapNewEmailVerificationRequest_to_DTO([
+        {
+          ...createEmailVerificationRequest(),
+          user: userData,
+        },
+      ]);
 
       expect(result).toHaveLength(1);
       expect(result[0] as any).toHaveProperty("user");
@@ -958,22 +954,22 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with missing values", async () => {
-      const verificationData = {
-        id: undefined,
-        userId: undefined,
-        email: undefined,
-        code: undefined,
-        expiresAt: undefined,
-      };
-
-      const result = await mapNewEmailVerificationRequest_to_DTO([verificationData]);
+      const result = await mapNewEmailVerificationRequest_to_DTO([
+        {
+          id: undefined,
+          userId: undefined,
+          email: undefined,
+          code: undefined,
+          expiresAt: undefined,
+        },
+      ]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe("");
-      expect(result[0].userId).toBe("");
-      expect(result[0].email).toBe("");
-      expect(result[0].code).toBe("");
-      expect(result[0].expiresAt).toBe("");
+      expect(result[0].id).toBe(undefined);
+      expect(result[0].userId).toBe(undefined);
+      expect(result[0].email).toBe(undefined);
+      expect(result[0].code).toBe(undefined);
+      expect(result[0].expiresAt).toBe(undefined);
     });
 
     it("should handle empty array input", async () => {
@@ -1231,7 +1227,7 @@ describe("Email Verification Request CRUD Operations", () => {
       ]);
 
       expect(result.valid).toBe(true);
-      expect(result.value[0].expiresAt!).toBe(pastDateMs);
+      expect(result.value[0].expiresAt!).toStrictEqual(new Date(pastDateMs));
     });
 
     it("should handle verification request search with complex criteria", async () => {

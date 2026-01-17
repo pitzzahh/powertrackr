@@ -13,14 +13,9 @@ vi.mock("@sveltejs/kit", () => ({
   redirect: (status: number, location: string) => ({ status, location }),
 }));
 
-vi.mock("$/server/db", () => {
-  const insert = vi.fn();
-  const select = vi.fn();
-  const update = vi.fn();
-  const del = vi.fn();
-  return { db: { insert, select, update, delete: del } };
-});
-import { db as mockDb } from "$/server/db";
+import { db } from "$/server/db";
+import { user, session } from "$/server/db/schema";
+import { eq } from "drizzle-orm";
 
 // Import the module under test after setting up the mocks
 import {
@@ -86,118 +81,121 @@ describe("auth module", () => {
   });
 
   it("createSession inserts into DB and returns created session", async () => {
-    // Mock insert to return back the values object as the inserted row
-    (mockDb.insert as any).mockImplementation(() => ({
-      values: (v: any) => ({ returning: vi.fn(async () => [v]) }),
-    }));
-
     const token = "token-1";
     const userId = "user-1";
+
+    // Ensure user exists (session has a FK to user)
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        name: "A",
+        email: "a@b.com",
+        emailVerified: true,
+        registeredTwoFactor: false,
+      })
+      .returning();
+
     const flags = { twoFactorVerified: false } as any;
 
     const sess = await createSession(token, userId, flags);
     expect(sess.userId).toBe(userId);
     expect(sess.expiresAt).toBeInstanceOf(Date);
-    // Ensure insert was called
-    expect(mockDb.insert).toHaveBeenCalled();
+
+    // Verify session exists in DB
+    const rows = await db.select().from(session).where(eq(session.id, sess.id));
+    expect(rows.length).toBeGreaterThan(0);
   });
 
   it("validateSessionToken returns nulls when session not found", async () => {
-    // select -> return empty
-    (mockDb.select as any).mockImplementation(() => ({
-      from: () => ({
-        innerJoin: () => ({ where: () => Promise.resolve([]) }),
-      }),
-    }));
-
     const res = await validateSessionToken("nope");
     expect(res).toEqual({ session: null, user: null });
   });
 
   it("validateSessionToken deletes expired sessions and returns nulls", async () => {
-    const expired = new Date(Date.now() - 1000).toISOString();
-    const sessionRow = { id: "sid", userId: "u1", expiresAt: expired };
-    const userRow = {
-      id: "u1",
-      email: "aa",
-      name: null,
-      image: null,
-      emailVerified: true,
-      registeredTwoFactor: false,
-      githubId: null,
-    };
+    const userId = "u1";
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        name: "Expired User",
+        email: "aa",
+        emailVerified: true,
+        registeredTwoFactor: false,
+      })
+      .returning();
 
-    (mockDb.select as any).mockImplementation(() => ({
-      from: () => ({
-        innerJoin: () => ({
-          where: () => Promise.resolve([{ session: sessionRow, user: userRow }]),
-        }),
-      }),
-    }));
+    const token = "token-expired";
+    const sess = await createSession(token, userId, { twoFactorVerified: false } as any);
 
-    const mockWhere = vi.fn(() => Promise.resolve());
-    (mockDb.delete as any).mockImplementation(() => ({ where: mockWhere }));
+    // Expire the session
+    await db
+      .update(session)
+      .set({ expiresAt: new Date(Date.now() - 1000) })
+      .where(eq(session.id, sess.id));
 
-    const res = await validateSessionToken("token-expired");
+    const res = await validateSessionToken(token);
     expect(res).toEqual({ session: null, user: null });
-    expect(mockDb.delete).toHaveBeenCalled();
-    expect(mockWhere).toHaveBeenCalled();
+
+    // Ensure session removed from DB
+    const rows = await db.select().from(session).where(eq(session.id, sess.id));
+    expect(rows.length).toBe(0);
   });
 
   it("validateSessionToken renews sessions close to expiry", async () => {
-    const nearExpiry = new Date(Date.now() + DAY_IN_MS * 10).toISOString(); // 10 days from now
-    const sessionRow: any = {
-      id: "sid2",
-      userId: "u2",
-      expiresAt: nearExpiry,
-      twoFactorVerified: false,
-    };
-    const userRow = {
-      id: "u2",
-      email: "bb",
-      name: "B",
-      image: null,
-      emailVerified: true,
-      registeredTwoFactor: false,
-      githubId: "gh",
-    };
+    const userId = "u2";
+    await db
+      .insert(user)
+      .values({
+        id: userId,
+        name: "B",
+        email: "bb",
+        emailVerified: true,
+        registeredTwoFactor: false,
+        githubId: 123,
+      })
+      .returning();
 
-    (mockDb.select as any).mockImplementation(() => ({
-      from: () => ({
-        innerJoin: () => ({
-          where: () => Promise.resolve([{ session: sessionRow, user: userRow }]),
-        }),
-      }),
-    }));
+    const token = "token-renew";
+    const sess = await createSession(token, userId, { twoFactorVerified: false } as any);
 
-    let capturedSet: any = null;
-    const mockWhereUpdate = vi.fn(() => Promise.resolve());
-    (mockDb.update as any).mockImplementation(() => ({
-      set: (obj: any) => {
-        capturedSet = obj;
-        return { where: mockWhereUpdate };
-      },
-    }));
+    // Set near expiry (~10 days from now)
+    const nearExpiry = new Date(Date.now() + DAY_IN_MS * 10);
+    await db.update(session).set({ expiresAt: nearExpiry }).where(eq(session.id, sess.id));
 
-    const res = await validateSessionToken("token-renew");
-    expect(mockDb.update).toHaveBeenCalled();
-    expect(capturedSet).toBeTruthy();
-    expect(typeof capturedSet.expiresAt).toBe("string");
-    expect(Date.parse(capturedSet.expiresAt)).toBeGreaterThan(Date.parse(nearExpiry));
-    // returned session.expiresAt is updated accordingly (now a Date object)
+    const res = await validateSessionToken(token);
+
+    // verify that expiresAt was updated to a later date
+    expect(res.session).toBeTruthy();
     expect(res.session?.expiresAt).toBeInstanceOf(Date);
-    expect(res.session?.expiresAt?.toISOString()).toBe(capturedSet.expiresAt);
+    expect((res.session as any).expiresAt.getTime()).toBeGreaterThan(nearExpiry.getTime());
+
     // user should have isOauthUser derived from githubId and githubId omitted
     expect(res.user).toEqual(expect.objectContaining({ isOauthUser: true }));
     expect((res.user as any).githubId).toBeUndefined();
+
+    // also verify DB has updated expiration
+    const [dbRow] = await db.select().from(session).where(eq(session.id, sess.id));
+    expect((dbRow?.expiresAt as Date).getTime()).toBeGreaterThan(nearExpiry.getTime());
   });
 
   it("invalidateSession calls delete on db", async () => {
-    const mockWhere = vi.fn(() => Promise.resolve());
-    (mockDb.delete as any).mockImplementation(() => ({ where: mockWhere }));
-    await invalidateSession("some-id");
-    expect(mockDb.delete).toHaveBeenCalled();
-    expect(mockWhere).toHaveBeenCalled();
+    const userId = "u3";
+    await db
+      .insert(user)
+      .values({ id: userId, name: "C", email: "c@d.com", emailVerified: true })
+      .returning();
+    const token = "to-delete";
+    const sess = await createSession(token, userId, { twoFactorVerified: false } as any);
+
+    // Ensure session exists
+    let rows = await db.select().from(session).where(eq(session.id, sess.id));
+    expect(rows.length).toBeGreaterThan(0);
+
+    await invalidateSession(sess.id);
+
+    rows = await db.select().from(session).where(eq(session.id, sess.id));
+    expect(rows.length).toBe(0);
   });
 
   it("setSessionTokenCookie and deleteSessionTokenCookie interact with cookies API", () => {

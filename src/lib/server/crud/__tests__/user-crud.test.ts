@@ -67,8 +67,8 @@ describe("User CRUD Operations", () => {
           email: "minimal@example.com",
           emailVerified: false,
           registeredTwoFactor: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
       ]);
 
@@ -363,20 +363,18 @@ describe("User CRUD Operations", () => {
 
   describe("getUserCountBy", () => {
     it("should return correct count for existing users", async () => {
-      const usersData = createUsers(5).map((user) => {
-        const { id: _, ...userWithoutId } = user;
-        return userWithoutId;
-      });
-      const { valid: validUsers } = await addUser(usersData);
+      const { valid: validUsers } = await addUser(
+        createUsers(5).map((user) => {
+          const { id: _, ...userWithoutId } = user;
+          return userWithoutId;
+        })
+      );
 
       expect(validUsers).toBe(true);
 
-      const countParam: HelperParam<NewUser> = {
+      const result = await getUserCountBy({
         query: {},
-        options: {},
-      };
-
-      const result = await getUserCountBy(countParam);
+      });
 
       expect(result.valid).toBe(true);
       expect(result.value).toBe(5);
