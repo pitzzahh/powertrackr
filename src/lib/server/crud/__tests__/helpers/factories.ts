@@ -32,8 +32,8 @@ export function createUser(overrides: FactoryOverrides<NewUser> = {}): NewUser {
     image: null,
     passwordHash: "hashed-password",
     // Use ISO strings for timestamps in tests/factories
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }
@@ -43,10 +43,10 @@ export function createPayment(overrides: FactoryOverrides<NewPayment> = {}): New
   return {
     id: generateId(),
     amount: 100.5 + sequence,
-    date: new Date().toISOString(),
+    date: new Date(),
     // Use ISO strings for timestamps in tests/factories
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }
@@ -58,7 +58,7 @@ export function createBillingInfo(
   return {
     id: generateId(),
     userId: `user-${sequence}`,
-    date: new Date().toISOString(),
+    date: new Date(),
     totalkWh: 1000 + sequence,
     balance: 500.75 + sequence,
     status: "Pending",
@@ -80,8 +80,8 @@ export function createSubMeter(overrides: FactoryOverrides<NewSubMeter> = {}): N
     subReadingOld: 1450 + sequence,
     paymentId: null,
     // Use ISO strings for timestamps in tests/factories
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
     ...overrides,
   };
 }
@@ -90,7 +90,7 @@ export function createSession(overrides: FactoryOverrides<NewSession> = {}): New
   const sequence = getSequence();
   const now = new Date();
   // Use ISO string for expiresAt (seven days from now)
-  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
   return {
     id: generateId(),
     userId: `user-${sequence}`,
@@ -108,7 +108,7 @@ export function createEmailVerificationRequest(
   const sequence = getSequence();
   const now = Date.now();
   // expiresAt stored as ISO string (15 minutes from now)
-  const expiresAt = new Date(now + 15 * 60 * 1000).toISOString();
+  const expiresAt = new Date(now + 15 * 60 * 1000);
   return {
     id: generateId(),
     userId: `user-${sequence}`,
@@ -125,7 +125,7 @@ export function createPasswordResetSession(
   const sequence = getSequence();
   const now = Date.now();
   // expiresAt stored as ISO string (15 minutes from now)
-  const expiresAt = new Date(now + 15 * 60 * 1000).toISOString();
+  const expiresAt = new Date(now + 15 * 60 * 1000);
   return {
     id: generateId(),
     userId: `user-${sequence}`,
