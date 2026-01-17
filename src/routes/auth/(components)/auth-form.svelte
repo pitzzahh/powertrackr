@@ -33,11 +33,11 @@
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { loginWithGithub } from "$/api/github.remote";
-  import { showError, showLoading, showSuccess } from "$/components/toast";
+  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
 
   let { action, ref = $bindable(null), class: className, ...restProps }: AuthFormProps = $props();
 
-  let { currentAction } = $derived({
+  const { currentAction } = $derived({
     currentAction: action === "login" ? login : register,
   });
 
@@ -65,7 +65,12 @@
     );
     try {
       await submit();
-      showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
+      const issues = currentAction.fields.allIssues?.() || [];
+      if (issues.length > 0) {
+        showWarning(issues.map((i) => i.message).join(", "));
+      } else {
+        showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
+      }
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
@@ -131,6 +136,7 @@
       <Password.Root enableStrengthCheck={action === "register"}>
         <Password.Input
           id="password-{id}"
+          required
           autocomplete="current-password"
           {...currentAction.fields.password.as("password")}
         >
@@ -217,7 +223,10 @@
         <a
           href="/auth?act={action === 'login' ? 'register' : 'login'}"
           class="underline underline-offset-4"
-          onclick={() => (status = "idle")}
+          onclick={() => {
+            statuses.email = "idle";
+            statuses.github = "idle";
+          }}
         >
           {action === "login" ? "Sign up" : "Login"}
         </a>

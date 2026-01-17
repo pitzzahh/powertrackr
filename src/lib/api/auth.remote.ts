@@ -33,7 +33,7 @@ export const signout = form(async () => {
   redirect(303, "/auth?act=login");
 });
 
-export const login = form(loginSchema, async (user) => {
+export const login = form(loginSchema, async (user, issues) => {
   const event = getRequestEvent();
   const { email, password } = user;
   if (typeof email !== "string" || typeof password !== "string") {
@@ -55,16 +55,16 @@ export const login = form(loginSchema, async (user) => {
   })) as HelperResult<NewUser[]>;
 
   if (userResult?.githubId) {
-    error(400, "Account connected with GitHub, please login with GitHub");
+    invalid(issues.email("Account connected with GitHub, please login with GitHub"));
   }
 
   if (userResult === undefined || userResult === null) {
-    error(400, "Account does not exist");
+    invalid(issues.email("Account does not exist"));
   }
 
   const validPassword = await verifyPasswordHash(userResult.passwordHash!, password);
   if (!validPassword) {
-    error(400, "Invalid password");
+    invalid(issues.password("Invalid password"));
   }
 
   const sessionToken = generateSessionToken();
@@ -89,7 +89,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   const { email, name, password, confirmPassword } = newUser;
 
   if (password !== confirmPassword) {
-    return invalid(issues.confirmPassword("Passwords do not match"));
+    invalid(issues.confirmPassword("Passwords do not match"));
   }
   const {
     value: [userEmailCheck],
@@ -103,12 +103,12 @@ export const register = form(registerSchema, async (newUser, issues) => {
   })) as HelperResult<NewUser[]>;
 
   if (userEmailCheck !== undefined && userEmailCheck !== null) {
-    error(400, "Email is already used");
+    invalid(issues.email("Email is already used"));
   }
 
   const passwordHash = await hashPassword(password);
   const recoveryCode = generateRandomRecoveryCode();
-  const encryptedRecoveryCode = encryptString(recoveryCode);
+  const encryptedRecoveryCode = Buffer.from(encryptString(recoveryCode));
   const {
     valid,
     value: [userResult],
@@ -137,7 +137,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   return redirect(302, "/auth?act=verify-email");
 });
 
-export const verifyEmail = form(verifyEmailSchema, async (data) => {
+export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     error(401, "Not authenticated");
@@ -154,7 +154,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   });
 
   if (!valid || !request) {
-    error(400, "Invalid or expired verification code");
+    invalid(issues.code("Invalid or expired verification code"));
   }
 
   // Accept multiple stored formats (ISO string, seconds, milliseconds, or Date).
@@ -186,7 +186,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
       expiresAtMs,
       now: Date.now(),
     });
-    error(400, "Email verification code expired, please request a new code");
+    invalid(issues.code("Email verification code expired, please request a new code"));
   }
 
   // Mark the user's email as verified
@@ -202,7 +202,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   if (request.id) {
     updateEmailVerificationRequestBy(
       { query: { id: request.id }, options: {} },
-      { expiresAt: new Date(Date.now() - 1).toISOString() }
+      { expiresAt: new Date(Date.now() - 1) }
     ).catch(() => null);
   }
   // Check if 2FA is registered
@@ -218,7 +218,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data) => {
   return redirect(302, "/");
 });
 
-export const setup2FA = form(setup2FASchema, async (data) => {
+export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     error(401, "Not authenticated");
