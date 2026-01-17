@@ -1,4 +1,11 @@
-import { loginSchema, registerSchema, verifyEmailSchema, setup2FASchema } from "$/schemas/auth";
+import {
+  loginSchema,
+  registerSchema,
+  verifyEmailSchema,
+  setup2FASchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from "$/schemas/auth";
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -10,6 +17,11 @@ import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
 } from "$/server/crud/email-verification-request-crud";
+import {
+  getPasswordResetSessionBy,
+  updatePasswordResetSessionBy,
+} from "$/server/crud/password-reset-session-crud";
+import { createAndSendPasswordReset } from "$/server/email";
 
 import {
   encryptString,
@@ -234,4 +246,76 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
     error(400, "Failed to set up 2FA");
   }
   return redirect(302, "/");
+});
+
+export const forgotPassword = form(forgotPasswordSchema, async (user) => {
+  const { email } = user;
+  if (typeof email !== "string") {
+    error(400, "Invalid email");
+  }
+  // Check if user exists
+  const {
+    value: [userResult],
+  } = await getUserBy({
+    query: {
+      email,
+    },
+    options: {
+      with_session: false,
+      fields: ["id"],
+    },
+  });
+
+  if (!userResult) {
+    // For security, don't reveal if email exists or not
+    return { success: true };
+  }
+
+  // Create password reset session and send email
+  await createAndSendPasswordReset(userResult.id!, email);
+
+  return { success: true };
+});
+
+export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
+  const { code, password, confirmPassword } = data;
+
+  if (password !== confirmPassword) {
+    invalid(issues.confirmPassword("Passwords do not match"));
+  }
+
+  // Validate code against DB
+  const {
+    valid,
+    value: [{ id, userId, expiresAt }],
+  } = await getPasswordResetSessionBy({
+    query: { code },
+    options: { limit: 1, fields: ["id", "userId", "expiresAt"] },
+  });
+
+  if (!valid || (!userId && !expiresAt)) {
+    invalid(issues.code("Invalid or expired reset code"));
+  }
+
+  // Check expiration
+  if (!expiresAt || expiresAt < new Date()) {
+    invalid(issues.code("Reset code expired"));
+  }
+
+  // Update password
+  const passwordHash = await hashPassword(password);
+  const updateResult = await updateUserBy(
+    { query: { id: userId }, options: { with_session: false } },
+    { passwordHash }
+  );
+  if (!updateResult.valid) {
+    error(400, "Failed to reset password");
+  }
+
+  // Expire the reset session to prevent reuse
+  if (id) {
+    updatePasswordResetSessionBy({ query: { id } }, { expiresAt: new Date(Date.now() - 1) });
+  }
+
+  return redirect(302, "/auth?act=login");
 });
