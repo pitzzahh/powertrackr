@@ -43,13 +43,12 @@ export async function createSession(
   // Create an ISO string for the DB (store dates as ISO strings). We return
   // a Session object with `expiresAt` as a Date to preserve existing runtime
   // expectations for callers.
-  const expires = new Date(Date.now() + DAY_IN_MS * 30);
   const [sess] = await db
     .insert(session)
     .values({
       id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
       userId,
-      expiresAt: expires.toISOString(),
+      expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
       ...flags,
     })
     .returning();
@@ -83,16 +82,25 @@ export async function validateSessionToken(token: string) {
   const { session: sessionResult, user: userResult } = result;
 
   // Normalize the stored expiresAt into milliseconds (do NOT mutate
-  // `sessionResult.expiresAt`). Supports ISO strings (TEXT) or numeric
+  // `sessionResult.expiresAt`). Supports Date, ISO strings (TEXT) or numeric
   // timestamps (seconds or milliseconds).
   let expiresAtMs = 0;
-  if (typeof sessionResult.expiresAt === "string") {
+  if (sessionResult.expiresAt instanceof Date) {
+    expiresAtMs = sessionResult.expiresAt.getTime();
+  } else if (typeof sessionResult.expiresAt === "string") {
     expiresAtMs = Date.parse(sessionResult.expiresAt);
   } else if (typeof sessionResult.expiresAt === "number") {
     const raw = sessionResult.expiresAt as number;
     expiresAtMs = raw < 1_000_000_000_000 ? raw * 1000 : raw;
   } else {
-    expiresAtMs = 0;
+    // last-resort coercion: accept other representations (e.g., stringified)
+    const asNumber = Number((sessionResult.expiresAt as any) ?? NaN);
+    if (!Number.isNaN(asNumber)) {
+      expiresAtMs = asNumber < 1_000_000_000_000 ? asNumber * 1000 : asNumber;
+    } else {
+      const asString = sessionResult.expiresAt ? String(sessionResult.expiresAt as any) : "";
+      expiresAtMs = asString ? Date.parse(asString) : 0;
+    }
   }
 
   // delete expired sessions
@@ -104,12 +112,9 @@ export async function validateSessionToken(token: string) {
   // renew session if it's within 15 days of expiry
   if (Date.now() >= expiresAtMs - DAY_IN_MS * 15) {
     const newExpires = new Date(Date.now() + DAY_IN_MS * 30);
-    await db
-      .update(session)
-      .set({ expiresAt: newExpires.toISOString() })
-      .where(eq(session.id, session.id));
-    // reflect the updated ISO string in the returned session object
-    sessionResult.expiresAt = newExpires.toISOString();
+    await db.update(session).set({ expiresAt: newExpires }).where(eq(session.id, session.id));
+    // reflect the updated expiresAt as a Date in the returned session object
+    sessionResult.expiresAt = newExpires;
   }
 
   return {

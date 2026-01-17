@@ -9,6 +9,6 @@ export type EmailVerificationRequestDTO = {
   userId: string;
   email: string;
   code: string;
-  expiresAt: string;
+  expiresAt: Date;
   user?: UserDTO;
 };

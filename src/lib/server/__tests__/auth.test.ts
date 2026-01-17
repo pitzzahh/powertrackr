@@ -97,7 +97,7 @@ describe("auth module", () => {
 
     const sess = await createSession(token, userId, flags);
     expect(sess.userId).toBe(userId);
-    expect(typeof sess.expiresAt).toBe("string");
+    expect(sess.expiresAt).toBeInstanceOf(Date);
     // Ensure insert was called
     expect(mockDb.insert).toHaveBeenCalled();
   });
@@ -184,8 +184,9 @@ describe("auth module", () => {
     expect(capturedSet).toBeTruthy();
     expect(typeof capturedSet.expiresAt).toBe("string");
     expect(Date.parse(capturedSet.expiresAt)).toBeGreaterThan(Date.parse(nearExpiry));
-    // returned session.expiresAt is updated accordingly
-    expect(res.session?.expiresAt).toBe(capturedSet.expiresAt);
+    // returned session.expiresAt is updated accordingly (now a Date object)
+    expect(res.session?.expiresAt).toBeInstanceOf(Date);
+    expect(res.session?.expiresAt?.toISOString()).toBe(capturedSet.expiresAt);
     // user should have isOauthUser derived from githubId and githubId omitted
     expect(res.user).toEqual(expect.objectContaining({ isOauthUser: true }));
     expect((res.user as any).githubId).toBeUndefined();

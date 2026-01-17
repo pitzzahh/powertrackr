@@ -29,7 +29,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes from now
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
       const verificationData = [
         (() => {
           const { id: _, ...rest } = createEmailVerificationRequest({
@@ -100,7 +100,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const farFuture = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+      const farFuture = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
       const verificationData = [
         (() => {
           const { id: _, ...rest } = createEmailVerificationRequest({
@@ -127,7 +127,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const past = new Date(Date.now() - 60 * 1000).toISOString(); // 1 minute ago
+      const past = new Date(Date.now() - 60 * 1000); // 1 minute ago
       const verificationData = [
         (() => {
           const { id: _, ...rest } = createEmailVerificationRequest({
@@ -311,17 +311,13 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const testExpiresAtMs = Date.now() + 30 * 60 * 1000; // 30 minutes
-      const testExpiresAt = new Date(testExpiresAtMs).toISOString();
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId: addedUser.id,
-            expiresAt: testExpiresAt,
-          });
-          return rest;
-        })(),
-      ];
-      await addEmailVerificationRequest(verificationData);
+      const testExpiresAt = new Date(testExpiresAtMs);
+      await addEmailVerificationRequest([
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          expiresAt: testExpiresAt,
+        }),
+      ]);
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { expiresAt: testExpiresAt },
@@ -332,7 +328,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
       expect(result.valid).toBe(true);
       expect(result.value).toHaveLength(1);
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(testExpiresAtMs);
+      expect(new Date(result.value[0].expiresAt!).getTime()).toBe(testExpiresAtMs);
     });
 
     it("should return empty result when verification request not found", async () => {
@@ -515,13 +511,9 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({ userId: addedUser.id });
-          return rest;
-        })(),
-      ];
-      const addResult = await addEmailVerificationRequest(verificationData);
+      const addResult = await addEmailVerificationRequest([
+        createEmailVerificationRequest({ userId: addedUser.id }),
+      ]);
       const addedRequest = addResult.value[0];
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
@@ -531,14 +523,12 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const newExpiresAtMs = Date.now() + 60 * 60 * 1000;
       const result = await updateEmailVerificationRequestBy(updateParam, {
-        expiresAt: new Date(newExpiresAtMs).toISOString(),
+        expiresAt: new Date(newExpiresAtMs),
       });
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 email verification request(s) updated");
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(
-        Date.parse(new Date(newExpiresAtMs).toISOString())
-      );
+      expect(result.value[0].expiresAt!).toBe(Date.parse(new Date(newExpiresAtMs).toISOString()));
     });
 
     it("should update multiple fields at once", async () => {
@@ -550,17 +540,13 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId: addedUser.id,
-            email: "multi@example.com",
-            code: "INIT123",
-          });
-          return rest;
-        })(),
-      ];
-      const addResult = await addEmailVerificationRequest(verificationData);
+      const addResult = await addEmailVerificationRequest([
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          email: "multi@example.com",
+          code: "INIT123",
+        }),
+      ]);
       const addedRequest = addResult.value[0];
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
@@ -569,19 +555,17 @@ describe("Email Verification Request CRUD Operations", () => {
       };
 
       const newExpiresAtMs = Date.now() + 2 * 60 * 60 * 1000;
-      const newExpiresAt = new Date(newExpiresAtMs).toISOString();
-      const updateData = {
+      const result = await updateEmailVerificationRequestBy(updateParam, {
         email: "multiupdated@example.com",
         code: "MUL123",
-        expiresAt: newExpiresAt,
-      };
-      const result = await updateEmailVerificationRequestBy(updateParam, updateData);
+        expiresAt: new Date(newExpiresAtMs),
+      });
 
       expect(result.valid).toBe(true);
       expect(result.message).toBe("1 email verification request(s) updated");
       expect(result.value[0].email).toBe("multiupdated@example.com");
       expect(result.value[0].code).toBe("MUL123");
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(newExpiresAtMs);
+      expect(result.value[0].expiresAt!).toBe(newExpiresAtMs);
     });
 
     it("should perform update when update data is empty (sets existing non-nullish fields)", async () => {
@@ -674,24 +658,20 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({ userId: addedUser.id });
-          return rest;
-        })(),
-      ];
-      const addResult = await addEmailVerificationRequest(verificationData);
+      const addResult = await addEmailVerificationRequest([
+        createEmailVerificationRequest({ userId: addedUser.id }),
+      ]);
       const addedRequest = addResult.value[0];
 
-      const updateParam: HelperParam<NewEmailVerificationRequest> = {
-        query: { id: addedRequest.id },
-        options: {},
-      };
-
       const newExpirationMs = Date.now() + 24 * 60 * 60 * 1000;
-      const result = await updateEmailVerificationRequestBy(updateParam, {
-        expiresAt: new Date(newExpirationMs).toISOString(),
-      });
+      const result = await updateEmailVerificationRequestBy(
+        {
+          query: { id: addedRequest.id },
+        },
+        {
+          expiresAt: new Date(newExpirationMs),
+        }
+      );
 
       expect(result.valid).toBe(true);
     });
@@ -906,26 +886,18 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const expiresAtMs = Date.now() + 30 * 60 * 1000;
-      const expiresAt = new Date(expiresAtMs).toISOString();
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId: addedUser.id,
-            email: "dto@example.com",
-            code: "DTO123456",
-            expiresAt,
-          });
-          return rest;
-        })(),
-      ];
-      await addEmailVerificationRequest(verificationData);
+      await addEmailVerificationRequest([
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          email: "dto@example.com",
+          code: "DTO123456",
+          expiresAt: new Date(expiresAtMs),
+        }),
+      ]);
 
-      const searchParam: HelperParam<NewEmailVerificationRequest> = {
+      const result = await getEmailVerificationRequests({
         query: { userId: addedUser.id },
-        options: {},
-      };
-
-      const result = await getEmailVerificationRequests(searchParam);
+      });
 
       expect(result).toHaveLength(1);
       expect(result[0]).toHaveProperty("id");
@@ -936,7 +908,7 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(result[0].userId).toBe(addedUser.id);
       expect(result[0].email).toBe("dto@example.com");
       expect(result[0].code).toBe("DTO123456");
-      expect(Date.parse(result[0].expiresAt!)).toBe(expiresAtMs);
+      expect(result[0].expiresAt!).toBe(expiresAtMs);
     });
 
     it("should return empty array when no verification requests found", async () => {
@@ -954,21 +926,21 @@ describe("Email Verification Request CRUD Operations", () => {
   describe("mapNewEmailVerificationRequest_to_DTO", () => {
     it("should correctly map verification request data to DTO format", async () => {
       const expiresAtMs = Date.now() + 45 * 60 * 1000;
-      const expiresAt = new Date(expiresAtMs).toISOString();
-      const verificationData = createEmailVerificationRequest({
-        userId: "test-user-id",
-        email: "map@example.com",
-        code: "MAP123456",
-        expiresAt,
-      });
 
-      const result = await mapNewEmailVerificationRequest_to_DTO([verificationData]);
+      const result = await mapNewEmailVerificationRequest_to_DTO([
+        createEmailVerificationRequest({
+          userId: "test-user-id",
+          email: "map@example.com",
+          code: "MAP123456",
+          expiresAt: new Date(expiresAtMs),
+        }),
+      ]);
 
       expect(result).toHaveLength(1);
       expect(result[0].userId).toBe("test-user-id");
       expect(result[0].email).toBe("map@example.com");
       expect(result[0].code).toBe("MAP123456");
-      expect(Date.parse(result[0].expiresAt!)).toBe(expiresAtMs);
+      expect(result[0].expiresAt!).toBe(expiresAtMs);
     });
 
     it("should handle verification request with user relationship", async () => {
@@ -1061,12 +1033,10 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      const param: HelperParam<NewEmailVerificationRequest> = {
+      const conditions = generateEmailVerificationRequestQueryConditions({
         query: { userId: "test-user-id" },
         options: { exclude_id: "exclude-this-id" },
-      };
-
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      });
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -1076,14 +1046,11 @@ describe("Email Verification Request CRUD Operations", () => {
 
     it("should handle numeric expiresAt field", () => {
       const expiresAt = Date.now() + 15 * 60 * 1000;
-      const param: HelperParam<NewEmailVerificationRequest> = {
+      const conditions = generateEmailVerificationRequestQueryConditions({
         query: {
-          expiresAt: expiresAt as unknown as string,
+          expiresAt: expiresAt as unknown as Date,
         },
-        options: {},
-      };
-
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      });
 
       expect(conditions).toEqual({
         expiresAt,
@@ -1091,17 +1058,14 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should ignore undefined fields", () => {
-      const param: HelperParam<NewEmailVerificationRequest> = {
+      const conditions = generateEmailVerificationRequestQueryConditions({
         query: {
           userId: "test-user-id",
           email: undefined,
           code: undefined,
           expiresAt: undefined,
         },
-        options: {},
-      };
-
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      });
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -1110,18 +1074,15 @@ describe("Email Verification Request CRUD Operations", () => {
 
     it("should handle all available query fields", () => {
       const expiresAt = Date.now() + 30 * 60 * 1000;
-      const param: HelperParam<NewEmailVerificationRequest> = {
+      const conditions = generateEmailVerificationRequestQueryConditions({
         query: {
           id: "test-id",
           userId: "test-user-id",
           email: "test@example.com",
           code: "TESTCODE123",
-          expiresAt: expiresAt as unknown as string,
+          expiresAt: expiresAt as unknown as Date,
         },
-        options: {},
-      };
-
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      });
 
       expect(conditions).toEqual({
         id: "test-id",
@@ -1260,21 +1221,17 @@ describe("Email Verification Request CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const pastDateMs = Date.now() - 60 * 60 * 1000; // 1 hour ago
-      const pastDate = new Date(pastDateMs).toISOString();
-      const verificationData = [
-        (() => {
-          const { id: _, ...rest } = createEmailVerificationRequest({
-            userId: addedUser.id,
-            expiresAt: pastDate,
-          });
-          return rest;
-        })(),
-      ];
+      const pastDate = new Date(pastDateMs);
 
-      const result = await addEmailVerificationRequest(verificationData);
+      const result = await addEmailVerificationRequest([
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          expiresAt: pastDate,
+        }),
+      ]);
 
       expect(result.valid).toBe(true);
-      expect(Date.parse(result.value[0].expiresAt!)).toBe(pastDateMs);
+      expect(result.value[0].expiresAt!).toBe(pastDateMs);
     });
 
     it("should handle verification request search with complex criteria", async () => {

@@ -9,7 +9,7 @@
  */
 
 export const ENCRYPTION_KEY = "00112233445566778899aabbccddeeff"; // 16 bytes (32 hex chars) for AES-128
-export const DATABASE_URL = ":memory:";
+export const DATABASE_URL = "postgres://peter:self@localhost:5432/powertrackr_test";
 export const DATABASE_AUTH_TOKEN: string | undefined = undefined;
 
 export const GITHUB_CLIENT_ID = "github-client-id";

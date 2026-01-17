@@ -110,7 +110,7 @@ export async function getEmailVerificationRequestBy(
       {}
     );
   }
-  const queryDBResult = await db.query.emailVerificationRequest.findMany(queryOptions);
+  const queryDBResult = await (db as any).query.emailVerificationRequest.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -137,8 +137,18 @@ export async function mapNewEmailVerificationRequest_to_DTO(
     userId: _request.userId ?? "",
     email: _request.email ?? "",
     code: _request.code ?? "",
-    // expiresAt is now stored as an ISO 8601 string (TEXT)
-    expiresAt: _request.expiresAt ?? "",
+    // Normalize expiresAt into a native Date (supports Date/Timestamp from Postgres)
+    expiresAt: _request.expiresAt
+      ? _request.expiresAt instanceof Date
+        ? _request.expiresAt
+        : typeof _request.expiresAt === "number"
+          ? new Date(
+              _request.expiresAt < 1_000_000_000_000
+                ? _request.expiresAt * 1000
+                : _request.expiresAt
+            )
+          : new Date(String(_request.expiresAt))
+      : new Date(0),
     ...("user" in _request ? { user: (_request as any).user } : {}),
   }));
 }
@@ -204,7 +214,9 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "code") {
       conditions.push(eq(emailVerificationRequest.code, value as string));
     } else if (key === "expiresAt") {
-      conditions.push(eq(emailVerificationRequest.expiresAt, value as string));
+      // Expect the caller to provide a Date (Postgres TIMESTAMPTZ). Do not
+      // perform string/number normalization here.
+      conditions.push(eq(emailVerificationRequest.expiresAt, value as Date));
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;

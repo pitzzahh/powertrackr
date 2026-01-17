@@ -31,11 +31,11 @@ describe("server/email (Plunk) - no PLUNK key", () => {
 
     const verification = await mod.createAndSendEmailVerification(user.id, user.email);
     expect(verification).not.toBeNull();
-    // expiresAt should now be an ISO 8601 string stored in the DB
-    expect(typeof verification!.expiresAt).toBe("string");
-    expect(Date.parse(verification!.expiresAt)).toBeGreaterThan(Date.now());
-    // sanity check that parsed value is in milliseconds (greater than ~1e12)
-    expect(Date.parse(verification!.expiresAt)).toBeGreaterThan(1_000_000_000_000);
+    // expiresAt should now be a native Date object (Postgres TIMESTAMPTZ)
+    expect(verification!.expiresAt).toBeInstanceOf(Date);
+    expect((verification!.expiresAt as Date).getTime()).toBeGreaterThan(Date.now());
+    // sanity check that numeric value is in milliseconds (greater than ~1e12)
+    expect((verification!.expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
 
     const { getEmailVerificationRequestBy } =
       await import("$/server/crud/email-verification-request-crud");
@@ -44,8 +44,9 @@ describe("server/email (Plunk) - no PLUNK key", () => {
       options: { limit: 1 },
     });
     expect(found.valid).toBe(true);
-    // the DB value should be an ISO string - parse it for numeric comparison
-    expect(Date.parse(found.value[0].expiresAt!)).toBeGreaterThan(1_000_000_000_000);
+    // the DB value should be a Date object (Postgres TIMESTAMPTZ)
+    expect(found.value[0].expiresAt).toBeInstanceOf(Date);
+    expect((found.value[0].expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
 
     spy.mockRestore();
   });
