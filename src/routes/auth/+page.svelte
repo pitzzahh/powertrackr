@@ -3,6 +3,7 @@
     AuthForm,
     VerifyEmailForm,
     Setup2FAForm,
+    ForgotPasswordForm,
     AuthBackground,
   } from "$routes/auth/(components)";
   import Logo from "$/components/logo.svelte";
@@ -35,6 +36,8 @@
           <VerifyEmailForm />
         {:else if data.action === "2fa-setup"}
           <Setup2FAForm />
+        {:else if data.action === "forgot-password"}
+          <ForgotPasswordForm />
         {/if}
       </div>
     </div>

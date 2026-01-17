@@ -18,6 +18,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     "verify-email",
     "2fa-setup",
     "reset-password",
+    "forgot-password",
   ];
   const act = searchParams.get("act");
 
