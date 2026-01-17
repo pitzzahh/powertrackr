@@ -28,7 +28,7 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes from now
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
       const {
         valid,
         value: [addedSession],
@@ -232,7 +232,7 @@ describe("Session CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const expDateMs = Date.now() + 60 * 1000;
-      const expDate = new Date(expDateMs).toISOString();
+      const expDate = new Date(expDateMs);
       const {
         valid: validSession,
         value: [addedSession],
@@ -501,7 +501,7 @@ describe("Session CRUD Operations", () => {
 
       const newExpirationMs = Date.now() + 24 * 60 * 60 * 1000;
       const result = await updateSessionBy(updateParam, {
-        expiresAt: new Date(newExpirationMs).toISOString(),
+        expiresAt: new Date(newExpirationMs),
       });
 
       expect(result.valid).toBe(true);
@@ -631,7 +631,7 @@ describe("Session CRUD Operations", () => {
           id: undefined as unknown as string,
           // DB types use string for expiresAt; provide undefined as a
           // string-typed value so the mapper can normalize it to a Date.
-          expiresAt: undefined as unknown as string,
+          expiresAt: undefined as unknown as Date,
           ipAddress: undefined,
           userAgent: undefined,
           userId: undefined,
