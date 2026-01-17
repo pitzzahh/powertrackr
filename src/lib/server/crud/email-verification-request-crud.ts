@@ -140,7 +140,6 @@ export async function mapNewEmailVerificationRequest_to_DTO(
     userId: _request.userId,
     email: _request.email,
     code: _request.code,
-    // Normalize expiresAt into a native Date (supports Date/Timestamp from Postgres)
     expiresAt: _request.expiresAt,
     ...(_request.user && {
       user: mapNewUser_to_DTO([_request.user])[0] as UserDTO,
@@ -209,8 +208,6 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     } else if (key === "code") {
       conditions.push(eq(emailVerificationRequest.code, value as string));
     } else if (key === "expiresAt") {
-      // Expect the caller to provide a Date (Postgres TIMESTAMPTZ). Do not
-      // perform string/number normalization here.
       conditions.push(eq(emailVerificationRequest.expiresAt, value as Date));
     }
   }
