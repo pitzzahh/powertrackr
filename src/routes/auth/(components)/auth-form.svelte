@@ -3,7 +3,13 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
-    action: "login" | "register" | "verify-email" | "2fa-setup" | "reset-password";
+    action:
+      | "login"
+      | "register"
+      | "verify-email"
+      | "2fa-setup"
+      | "reset-password"
+      | "forgot-password";
   };
 
   type AuthFormState = {
@@ -134,8 +140,10 @@
     <Field>
       <div class="flex items-center">
         <FieldLabel for="password-{id}">Password</FieldLabel>
-        {#if action === "login"}
-          <a href="##" class="ms-auto text-sm underline-offset-4 hover:underline">
+        {#if action === "login" && (currentAction.fields.password.issues() || [])
+            .map((issue) => issue.message)
+            .some((message) => message.includes("Invalid password"))}
+          <a href="?act=forgot-password" class="ms-auto text-sm underline-offset-4 hover:underline">
             Forgot your password?
           </a>
         {/if}
