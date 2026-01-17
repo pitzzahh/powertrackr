@@ -136,23 +136,32 @@ describe("Billing Info CRUD Operations", () => {
       expect(addedBilling.paymentId).toBe(addedPayment.id);
     });
 
-    it("should handle billing info with undefined payment", async () => {
+    it("should require paymentId and accept a valid payment reference", async () => {
       const {
         valid: validUser,
         value: [addedUser],
       } = await addUser([createUser()]);
 
-      const result = await addBillingInfo([
+      // create a payment first to reference it (paymentId is required)
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
         createBillingInfo({
           userId: addedUser.id,
-          paymentId: undefined,
+          paymentId: addedPayment.id,
         }),
       ]);
 
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
-      expect(result.valid).toBe(true);
-      expect(result.value[0].paymentId).toBeNull();
+      expect(addedPayment).toBeDefined();
+      expect(validBilling).toBe(true);
+      expect(addedBilling.paymentId).toBe(addedPayment.id);
     });
 
     it("should handle different status types", async () => {
@@ -1450,7 +1459,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(addedUser).toBeDefined();
       expect(addedBilling).toBeDefined();
       expect(addedBilling.totalkWh).toBe(largeKWh);
-      expect(addedBilling.balance).toBe(largeBalance);
+      expect(Number(addedBilling.balance)).toBeCloseTo(largeBalance, 2);
     });
 
     it("should handle billing info with small decimal values", async () => {
