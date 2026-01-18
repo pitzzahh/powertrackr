@@ -65,7 +65,7 @@
 
 <ModeWatcher />
 <FocusRing />
-<Toaster theme={mode.current} position="top-right" closeButton={false} />
+<Toaster theme={mode.current} expand />
 
 <svelte:head>
   <link rel="icon" href={favicon} />
