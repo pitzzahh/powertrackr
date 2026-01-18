@@ -16,8 +16,8 @@
 
   type SubMeterForm = {
     id: string;
-    subReadingLatest: number;
-    subReadingOld: number | undefined;
+    label: string;
+    reading: number;
   };
 
   type BillingInfoFormState = {
@@ -66,8 +66,8 @@
   function addSubMeter() {
     subMeters.push({
       id: crypto.randomUUID(),
-      subReadingLatest: 0,
-      subReadingOld: undefined,
+      label: "",
+      reading: 0,
     });
   }
 
@@ -235,14 +235,14 @@
         Sub Meters ({subMeters.length})
       </h4>
       <Button variant="outline" size="sm" onclick={addSubMeter}>
-        <CirclePlus class="mr-2 h-4 w-4" />
+        <CirclePlus class="mr-2 size-4" />
         Add Sub Meter
       </Button>
     </div>
 
     {#each subMeters as subMeter, subIndex (subMeter.id)}
-      <Card.Root class="border-dashed">
-        <Card.Header class="pb-3">
+      <Card.Root class="gap-4 border-dashed">
+        <Card.Header class="border-b">
           <div class="flex items-center justify-between">
             <Card.Title class="text-sm">Sub Meter {subIndex + 1}</Card.Title>
             {#if subMeters.length >= 1}
@@ -250,9 +250,9 @@
                 variant="ghost"
                 size="sm"
                 onclick={() => removeSubMeter(subIndex)}
-                class="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                class="size-8 p-0 text-destructive hover:text-destructive"
               >
-                <Trash2 class="h-4 w-4" />
+                <Trash2 class="size-4" />
               </Button>
             {/if}
           </div>
@@ -260,33 +260,38 @@
         <Card.Content class="pt-0">
           <Field.Group>
             <Field.Field>
-              <Field.Label for="sub-latest-{subMeter.id}">Current Reading</Field.Label>
+              <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
               <Input
-                id="sub-latest-{subMeter.id}"
-                placeholder="Enter current reading"
-                min={0}
-                step={0.01}
-                {...currentAction.fields.subMeters[subIndex]["subReadingLatest"].as("number")}
+                id="{identity}-totalkWh"
+                placeholder="Enter Sub meter label"
+                required
+                {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
               />
               <Field.Description>Latest meter reading</Field.Description>
             </Field.Field>
 
             <Field.Field>
-              <Field.Label for="sub-old-{subMeter.id}">Previous Reading (Optional)</Field.Label>
+              <Field.Label for="sub-reading-{subMeter.id}">Current Reading</Field.Label>
               <Input
-                id="sub-old-{subMeter.id}"
-                placeholder="Enter previous reading"
+                id="sub-reading-{subMeter.id}"
+                placeholder="Enter current reading"
                 min={0}
                 step={0.01}
-                {...currentAction.fields.subMeters[subIndex]["subReadingOld"].as("number")}
+                {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
               />
-              <Field.Description>Previous meter reading for calculation</Field.Description>
+              <Field.Description>Current sub-meter reading for calculation</Field.Description>
             </Field.Field>
 
-            {#if subMeter.subReadingLatest && subMeter.subReadingOld && subMeter.subReadingLatest > subMeter.subReadingOld}
-              <div class="text-sm text-muted-foreground">
-                Consumption: {subMeter.subReadingLatest - subMeter.subReadingOld} kWh
-              </div>
+            {#if action === "update"}
+              {@const subMeters = billingInfo?.subMeters}
+              {@const currentMeter = subMeters?.find(
+                (m) => m.label === currentAction.fields.subMeters[subIndex]["label"].value()
+              )}
+              {#if currentMeter && currentMeter.reading - subMeter.reading}
+                <div class="text-sm text-muted-foreground">
+                  Consumption: {currentMeter.reading - subMeter.reading} kWh
+                </div>
+              {/if}
             {/if}
           </Field.Group>
         </Card.Content>
