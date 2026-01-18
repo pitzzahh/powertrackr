@@ -24,7 +24,7 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
-  import { WarningBanner } from "$/components/snippets.svelte";
+  import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
   import { Input } from "$/components/ui/input";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
@@ -211,13 +211,15 @@
         bind:value={delete_confirm_value}
         type="text"
         placeholder={currentDate}
-        class="max-w-xs"
+        class="text-center"
       />
       <Dialog.Footer>
         <Button
           variant="secondary"
+          disabled={app_state === "processing"}
           onclick={() => {
             open_view = false;
+            delete_confirm_value = "";
           }}
         >
           Cancel
@@ -229,13 +231,9 @@
           title="Confirm Delete Billing Info {currentDate}"
         >
           {#if app_state === "processing"}
-            <Loader class="mr-2 size-4 animate-spin" />
+            <Loader class="size-4 animate-spin" />
             Removing
-            <span class="ml-1">
-              <span class="animation-delay-0 animate-pulse">.</span>
-              <span class="animation-delay-500 animate-pulse">.</span>
-              <span class="animation-delay-1000 animate-pulse">.</span>
-            </span>
+            {@render LoadingDots()}
           {:else}
             Delete {currentDate}
           {/if}

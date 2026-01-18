@@ -5,7 +5,7 @@
     message: string;
   };
 
-  export { WarningBanner };
+  export { WarningBanner, LoadingDots };
 </script>
 
 {#snippet WarningBanner({ message }: WarningBannerProps)}
@@ -17,5 +17,13 @@
     <span class="mt-1 block text-sm text-amber-800 dark:text-amber-400">
       {message}
     </span>
+  </span>
+{/snippet}
+
+{#snippet LoadingDots()}
+  <span>
+    <span class="animation-delay-0 animate-pulse">.</span>
+    <span class="animation-delay-500 animate-pulse">.</span>
+    <span class="animation-delay-1000 animate-pulse">.</span>
   </span>
 {/snippet}
