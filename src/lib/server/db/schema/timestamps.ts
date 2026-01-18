@@ -1,3 +1,4 @@
+import { getLocalTimeZone } from "@internationalized/date";
 import { sql } from "drizzle-orm";
 import { timestamp } from "drizzle-orm/pg-core";
 
@@ -11,5 +12,5 @@ export const timestamps = {
     .default(sql`now()`),
   updatedAt: timestamp("updated_at")
     .notNull()
-    .default(sql`now()`),
+    .$onUpdateFn(() => new Date(getLocalTimeZone())),
 };
