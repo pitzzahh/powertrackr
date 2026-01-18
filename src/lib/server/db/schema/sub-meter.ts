@@ -7,6 +7,7 @@ export const subMeter = pgTable(
   "sub_meter",
   {
     id: text().primaryKey().notNull(),
+    label: text().notNull(),
     billingInfoId: text("billing_info_id")
       .notNull()
       .references(() => billingInfo.id, { onDelete: "cascade", onUpdate: "cascade" }),
