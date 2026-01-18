@@ -9,7 +9,11 @@ export default defineConfig({
     environment: "node",
     globals: true,
     setupFiles: ["src/lib/server/crud/__tests__/helpers/setup.ts"],
-    pool: "forks",
+    // threads isn't listed in the InlineConfig type for this version of Vitest,
+    // but it's supported at runtime and used here to ensure tests run in a
+    // single process to avoid flaky DB interactions.
+    // @ts-expect-error runtime-only config option
+    threads: false,
     // On CI environments tests can be slower (DB setup, network, shared runners).
     // Increase timeouts when running in CI to reduce spurious failures.
     testTimeout: process.env.CI ? 120000 : 20000,
