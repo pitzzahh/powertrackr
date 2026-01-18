@@ -2,7 +2,7 @@
 
 [![Build and Test](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg)](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml)
 
-Powertrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
+PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
 
 ### Primary use case
 
