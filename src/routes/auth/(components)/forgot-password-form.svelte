@@ -66,6 +66,7 @@
     <Field>
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input
+        autofocus
         id="email-{id}"
         placeholder="m@example.com"
         required

@@ -78,6 +78,7 @@
         id="code-{id}"
         placeholder="Enter 6-digit code"
         required
+        autofocus
         autocomplete="one-time-code"
         {...setup2FA.fields.code.as("text")}
       />

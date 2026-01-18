@@ -108,6 +108,7 @@
         id="code-{id}"
         placeholder="Enter code"
         required
+        autofocus
         autocomplete="one-time-code"
         class="text-center font-mono tracking-widest tabular-nums"
         spellcheck={false}

@@ -68,6 +68,7 @@
       <FieldLabel for="code-{id}">Reset Code</FieldLabel>
       <Input
         id="code-{id}"
+        autofocus
         placeholder="Enter reset code"
         required
         autocomplete="one-time-code"
