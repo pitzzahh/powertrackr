@@ -146,10 +146,21 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 
+  const {
+    valid,
+    value: [billingInfoWithSubMeters],
+  } = await getBillingInfoByCrud({
+    query: { userId },
+    options: {
+      fields: ["id", "date"],
+      with_billing_info: true,
+    },
+  });
+  
   // Process multiple sub meters
   const subMetersData = subMeters.map((sub) => ({
-    subReadingLatest: sub.subReadingLatest,
-    subReadingOld: sub.subReadingOld ?? null,
+    label: sub.label,
+    reading: sub.reading,
     subKwh: sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null,
     paymentAmount: sub.subReadingOld
       ? (sub.subReadingLatest - sub.subReadingOld) * payPerkWh
