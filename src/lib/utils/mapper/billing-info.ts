@@ -21,17 +21,7 @@ export function billingInfoToDto(
     createdAt: new Date(original.createdAt),
     updatedAt: new Date(original.updatedAt),
     paymentId: original.paymentId,
-    subMeters: original.subMeters.map((e) => ({
-      id: e.id,
-      billingInfoId: e.billingInfoId,
-      subKwh: e.subkWh,
-      reading: e.reading,
-      subReadingLatest: e.subReadingLatest,
-      subReadingOld: e.subReadingOld,
-      paymentId: e.paymentId,
-      createdAt: new Date(e.createdAt),
-      updatedAt: new Date(e.updatedAt),
-    })),
+    subMeters: original.subMeters,
   };
 }
 
