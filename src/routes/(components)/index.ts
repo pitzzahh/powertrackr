@@ -60,13 +60,13 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
   return {
     date: new Date(original.date),
     balance: original.balance,
-    payment: original.payment?.amount || 0,
-    subPayment: original.subMeters.reduce((sum, sub) => sum + (sub.payment?.amount || 0), 0),
+    payment: original.payment.amount,
+    subPayment: original.subMeters.reduce((sum, sub) => sum + sub.payment.amount, 0),
   };
 }
 
 export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
-  const subkWh = original.subMeters.reduce((sum, sub) => sum + (sub.subkWh || 0), 0);
+  const subkWh = original.subMeters.reduce((sum, sub) => sum + sub.subkWh, 0);
   return {
     date: new Date(original.date),
     totalkWh: original.totalkWh,

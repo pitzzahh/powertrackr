@@ -38,7 +38,7 @@ export type ExtendedBillingInfoTableView = Omit<
 };
 
 export type ExtendedBillingInfo = BillingInfo & {
-  payment: Payment | null;
+  payment: Payment;
   subMeters: SubMeterWithPayment[];
 };
 
