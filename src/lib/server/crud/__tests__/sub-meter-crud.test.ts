@@ -35,7 +35,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("addSubMeter", () => {
     it("should successfully add a single sub meter", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -63,8 +63,8 @@ describe("Sub Meter CRUD Operations", () => {
         createSubMeter({
           billingInfoId: addedBilling.id,
           subkWh: 77,
-          subReadingLatest: 2000,
-          subReadingOld: 1950,
+          reading: 2000,
+          label: "Test Sub Meter",
         }),
       ]);
 
@@ -75,11 +75,11 @@ describe("Sub Meter CRUD Operations", () => {
       expect(addedBilling).toBeDefined();
       expect(addedSubMeter).toBeDefined();
       expect(addedSubMeter.billingInfoId).toBe(addedBilling.id);
-      expect(addedSubMeter.subReadingLatest).toBe(2000);
+      expect((addedSubMeter as any).reading).toBe(2000);
     });
 
     it("should successfully add multiple sub meters", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -116,7 +116,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const result = await addSubMeter([]);
 
@@ -126,7 +126,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle sub meter with payment reference", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -171,7 +171,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle sub meter with null payment", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -214,7 +214,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeterBy", () => {
     it("should find sub meter by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -241,7 +241,7 @@ describe("Sub Meter CRUD Operations", () => {
       } = await addSubMeter([
         createSubMeter({
           billingInfoId: addedBilling.id,
-          subReadingLatest: 1800,
+          reading: 1800,
         }),
       ]);
 
@@ -264,7 +264,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should find sub meter by billingInfoId", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -308,7 +308,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should find sub meter by subReadingLatest", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -336,12 +336,12 @@ describe("Sub Meter CRUD Operations", () => {
       } = await addSubMeter([
         createSubMeter({
           billingInfoId: addedBilling.id,
-          subReadingLatest: testLatest,
+          reading: testLatest,
         }),
       ]);
 
       const searchParam: HelperParam<NewSubMeter> = {
-        query: { subReadingLatest: testLatest },
+        query: { reading: testLatest },
         options: {},
       };
 
@@ -354,11 +354,11 @@ describe("Sub Meter CRUD Operations", () => {
       expect(addedBilling).toBeDefined();
       expect(addedSubMeter).toBeDefined();
       expect(result.valid).toBe(true);
-      expect(result.value[0].subReadingLatest).toBe(testLatest);
+      expect((result.value[0] as any).reading).toBe(testLatest);
     });
 
     it("should find sub meter by paymentId", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -414,7 +414,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should return empty result when sub meter not found", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
@@ -429,7 +429,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -472,7 +472,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -515,7 +515,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -565,7 +565,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include payment when with_payment option is true", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -624,7 +624,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include billing info when with_billing_info option is true", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -678,7 +678,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("updateSubMeterBy", () => {
     it("should successfully update sub meter by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -728,7 +728,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -778,7 +778,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle nonexistent sub meter update", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const updateParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
@@ -795,7 +795,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeterCountBy", () => {
     it("should return correct count for existing sub meters", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -839,7 +839,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should return zero count when no sub meters match", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const countParam: HelperParam<NewSubMeter> = {
         query: { id: "nope" },
@@ -854,7 +854,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should count sub meters with specific criteria", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -904,7 +904,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeters & mapNewSubMeter_to_DTO", () => {
     it("should return DTO format sub meters", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -952,7 +952,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include payment in DTO when requested", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -1008,7 +1008,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include billing info in DTO when requested", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -1057,15 +1057,14 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("mapNewSubMeter_to_DTO should handle null/undefined values", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const data: Partial<NewSubMeter>[] = [
         {
           id: undefined,
           billingInfoId: undefined,
           subkWh: undefined,
-          subReadingLatest: undefined,
-          subReadingOld: undefined,
+          reading: undefined,
           paymentId: undefined,
         },
       ];
@@ -1083,7 +1082,7 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("generateSubMeterQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: { billingInfoId: "billing-1" } as unknown as NewSubMeter,
         options: {},
@@ -1095,14 +1094,13 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: {
           id: "sm-1",
           billingInfoId: "billing-1",
           subkWh: 10,
-          subReadingLatest: 200,
-          subReadingOld: 150,
+          reading: 200,
           paymentId: "pay-1",
         } as unknown as NewSubMeter,
         options: {},
@@ -1114,18 +1112,16 @@ describe("Sub Meter CRUD Operations", () => {
       expect(conditions.billingInfoId).toBe("billing-1");
       const typedConditions = conditions as {
         subkWh?: number;
-        subReadingLatest?: number;
-        subReadingOld?: number;
+        reading?: number;
         paymentId?: string;
       };
       expect(typedConditions.subkWh).toBe(10);
-      expect(typedConditions.subReadingLatest).toBe(200);
-      expect(typedConditions.subReadingOld).toBe(150);
+      expect(typedConditions.reading).toBe(200);
       expect(typedConditions.paymentId).toBe("pay-1");
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: {} as unknown as NewSubMeter,
         options: { exclude_id: "exclude-sm" },
@@ -1139,7 +1135,7 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should ignore undefined/null fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: {
           id: undefined as unknown as string,
