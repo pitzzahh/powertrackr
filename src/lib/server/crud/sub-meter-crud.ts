@@ -41,14 +41,6 @@ export async function addSubMeter(
         return {
           id: crypto.randomUUID(),
           ...sub_meter_data,
-          // Ensure `reading` is always present (schema requires it). Prefer an
-          // explicit `reading` if provided, otherwise fall back to the latest
-          // reading or the old reading, finally defaulting to 0.
-          reading:
-            sub_meter_data.reading ??
-            sub_meter_data.subReadingLatest ??
-            sub_meter_data.subReadingOld ??
-            0,
         };
       })
     )
@@ -91,15 +83,6 @@ export async function updateSubMeterBy(
       message: "No data changed",
       value: [old_sub_meter],
     };
-  }
-
-  // Normalize alternate subKwh key to schema key subkWh (handles both variants)
-  if (
-    Object.prototype.hasOwnProperty.call(changed_data, "subKwh") &&
-    !Object.prototype.hasOwnProperty.call(changed_data, "subkWh")
-  ) {
-    (changed_data as any).subkWh = (changed_data as any).subKwh;
-    delete (changed_data as any).subKwh;
   }
 
   // If subReadingLatest is updated, keep the `reading` field in sync unless
@@ -249,15 +232,13 @@ export async function getSubMeterCountBy(
 
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
-  const { id, billingInfoId, subkWh, subReadingLatest, subReadingOld, paymentId, reading } = query;
+  const { id, billingInfoId, subkWh, paymentId, reading } = query;
 
   const where: Record<string, unknown> = {};
 
   if (id) where.id = id;
   if (billingInfoId) where.billingInfoId = billingInfoId;
   if (subkWh !== undefined) where.subkWh = subkWh;
-  if (subReadingLatest !== undefined) where.subReadingLatest = subReadingLatest;
-  if (subReadingOld !== undefined) where.subReadingOld = subReadingOld;
   if (paymentId) where.paymentId = paymentId;
   if (reading !== undefined) where.reading = reading;
 
@@ -280,10 +261,6 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(subMeter.billingInfoId, value as string));
     } else if (key === "subkWh") {
       conditions.push(eq(subMeter.subkWh, value as number));
-    } else if (key === "subReadingLatest") {
-      conditions.push(eq(subMeter.subReadingLatest, value as number));
-    } else if (key === "subReadingOld") {
-      conditions.push(eq(subMeter.subReadingOld, value as number));
     } else if (key === "reading") {
       conditions.push(eq(subMeter.reading, value as number));
     } else if (key === "paymentId") {
