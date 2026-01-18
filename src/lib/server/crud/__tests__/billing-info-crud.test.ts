@@ -356,16 +356,12 @@ describe("Billing Info CRUD Operations", () => {
         const expectedMain = Number((balance - totalSub).toFixed(2));
 
         // Create payments for sub meters
-        const subPaymentIds: (string | null)[] = [];
+        const subPaymentIds: string[] = [];
         for (const amount of expectedSubAmounts) {
-          if (amount > 0) {
-            const {
-              value: [addedSubPayment],
-            } = await addPayment([{ amount, date: new Date() }]);
-            subPaymentIds.push(addedSubPayment.id);
-          } else {
-            subPaymentIds.push(null);
-          }
+          const {
+            value: [addedSubPayment],
+          } = await addPayment([{ amount, date: new Date() }]);
+          subPaymentIds.push(addedSubPayment.id);
         }
 
         // Create main payment
@@ -413,7 +409,7 @@ describe("Billing Info CRUD Operations", () => {
 
         const mainPay = (await getPaymentBy({ query: { id: mainPaymentId }, options: {} }))
           .value[0];
-        expect((mainPay as any).amount).toBeCloseTo(expectedMain, 2);
+        expect(mainPay.amount).toBeCloseTo(expectedMain, 2);
 
         const subs = await getSubMeterBy({
           query: { billingInfoId: billingId },
@@ -481,7 +477,7 @@ describe("Billing Info CRUD Operations", () => {
 
         const mainPay = (await getPaymentBy({ query: { id: mainPaymentId }, options: {} }))
           .value[0];
-        expect((mainPay as any).amount).toBeCloseTo(balance, 2);
+        expect(mainPay.amount).toBeCloseTo(balance, 2);
       });
 
       it("should update sub-meter and corresponding payment via CRUDs", async () => {
