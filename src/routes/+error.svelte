@@ -28,7 +28,7 @@
           {page.error?.message || "An unexpected error occurred."}
         </p>
         <Button onclick={() => goto("/auth")} variant="default">
-          <ChevronLeft class="mr-2 h-4 w-4" />
+          <ChevronLeft class="size-4" />
           Back to Login
         </Button>
       </div>
