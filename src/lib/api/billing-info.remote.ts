@@ -1,11 +1,9 @@
 import { query, form, command } from "$app/server";
-
 import { db } from "$lib/server/db/index";
 import { billingInfo } from "$lib/server/db/schema/billing-info";
 import { payment } from "$lib/server/db/schema/payment";
 import { subMeter } from "$lib/server/db/schema/sub-meter";
 import { calculatePayPerKwh } from "$lib";
-
 import {
   billFormSchema,
   updateBillingInfoSchema,
@@ -303,8 +301,8 @@ export const updateBillingInfo = form(
             error(400, "Sub meter not found in latest billing info");
           }
 
-          const subKwh = currentMeter.reading - sub.reading;
-          const paymentAmount = subKwh * payPerkWh;
+          const subkWh = currentMeter.reading - sub.reading;
+          const paymentAmount = subkWh * payPerkWh;
 
           const {
             valid: validSubPayment,
@@ -324,9 +322,9 @@ export const updateBillingInfo = form(
             label: sub.label,
             billingInfoId,
             reading: sub.reading,
-            subKwh,
+            subkWh,
             paymentId,
-          } as Omit<NewSubMeter, "id">;
+          };
         })
       );
 
