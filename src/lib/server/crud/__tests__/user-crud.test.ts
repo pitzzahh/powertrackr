@@ -19,7 +19,7 @@ describe("User CRUD Operations", () => {
 
   describe("addUser", () => {
     it("should successfully add a single user", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const { id: _, ...userDataWithoutId } = createUser({
         email: "test@example.com",
         name: "Test User",
@@ -39,7 +39,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should successfully add multiple users", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const usersData = createUsers(3).map((user) => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
@@ -53,7 +53,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const { valid, value } = await addUser([]);
 
       expect(valid).toBe(true);
@@ -61,7 +61,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle users with all optional fields", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid,
         value: [addedUser],
@@ -87,7 +87,7 @@ describe("User CRUD Operations", () => {
 
   describe("getUserBy", () => {
     it("should find user by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       // First add a user
       const {
         valid: validUser,
@@ -117,7 +117,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should find user by email", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -144,7 +144,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should find user by githubId", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -166,7 +166,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should return empty result when user not found", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewUser> = {
         query: { id: "nonexistent-id" },
         options: {},
@@ -180,7 +180,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const usersData = createUsers(5).map((user) => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
@@ -201,7 +201,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const usersData = createUsers(5).map((user) => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
@@ -222,7 +222,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -251,7 +251,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const usersData = createUsers(3).map((user) => {
         const { id: _, ...userWithoutId } = user;
         return userWithoutId;
@@ -278,7 +278,7 @@ describe("User CRUD Operations", () => {
 
   describe("updateUserBy", () => {
     it("should successfully update user by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       // First add a user
       const {
         valid: validUser,
@@ -309,7 +309,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -332,7 +332,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle nonexistent user update", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewUser> = {
         query: { id: "nonexistent-id" },
         options: {},
@@ -347,7 +347,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -379,7 +379,7 @@ describe("User CRUD Operations", () => {
 
   describe("getUserCountBy", () => {
     it("should return correct count for existing users", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const { valid: validUsers } = await addUser(
         createUsers(5).map((user) => {
           const { id: _, ...userWithoutId } = user;
@@ -399,7 +399,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should return zero count when no users match", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const countParam: HelperParam<NewUser> = {
         query: { email: "nonexistent@example.com" },
         options: {},
@@ -413,7 +413,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should count users with specific criteria", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const usersData = [
         createUser({ emailVerified: true }),
         createUser({ emailVerified: true }),
@@ -440,7 +440,7 @@ describe("User CRUD Operations", () => {
 
   describe("getUsers", () => {
     it("should return DTO format users", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -475,7 +475,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should return empty array when no users found", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewUser> = {
         query: { email: "nonexistent@example.com" },
         options: {},
@@ -489,7 +489,7 @@ describe("User CRUD Operations", () => {
 
   describe("mapNewUser_to_DTO", () => {
     it("should correctly map user data to DTO format", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const userData = createUser({
         email: "map@example.com",
         name: "Map User",
@@ -510,7 +510,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle users with null/undefined values", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const userData = createUser({
         githubId: null,
         image: null,
@@ -526,7 +526,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const result = await mapNewUser_to_DTO([]);
 
       expect(result).toHaveLength(0);
@@ -535,7 +535,7 @@ describe("User CRUD Operations", () => {
 
   describe("generateUserQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: { email: "test@example.com" },
         options: {},
@@ -547,7 +547,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: {
           email: "test@example.com",
@@ -567,7 +567,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: { name: "Test User" },
         options: { exclude_id: "exclude-this-id" },
@@ -582,7 +582,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle boolean fields correctly", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: {
           emailVerified: false,
@@ -600,7 +600,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should ignore undefined/null fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: {
           email: "test@example.com",
@@ -620,7 +620,7 @@ describe("User CRUD Operations", () => {
 
   describe("Edge Cases and Error Handling", () => {
     it("should handle user with very long strings", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const longString = "a".repeat(1000);
       const {
         valid,
@@ -638,7 +638,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle special characters in user data", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const {
         valid,
         value: [addedUser],
@@ -656,7 +656,7 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle simultaneous operations correctly", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const promises = Array.from({ length: 10 }, (_, i) => {
         return addUser([
           createUser({

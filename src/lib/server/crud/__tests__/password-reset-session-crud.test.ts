@@ -20,7 +20,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("addPasswordResetSession", () => {
     it("should successfully add a single password reset session", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -54,7 +54,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should successfully add multiple password reset sessions", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -81,7 +81,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const result = await addPasswordResetSession([]);
 
@@ -91,7 +91,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle emailVerified and twoFactorVerified flags", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -117,7 +117,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessionBy", () => {
     it("should find password reset session by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -149,7 +149,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset sessions by userId", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -182,7 +182,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by email", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -215,7 +215,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by code", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -244,7 +244,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by expiresAt", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -277,7 +277,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find by emailVerified and twoFactorVerified flags", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -313,7 +313,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return empty result when not found", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const result = await getPasswordResetSessionBy({ query: { id: "nope" }, options: {} });
       expect(result.valid).toBe(false);
@@ -321,7 +321,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should apply limit and offset and fields selection", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -359,7 +359,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -395,7 +395,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("updatePasswordResetSessionBy", () => {
     it("should successfully update password reset session by ID", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -431,7 +431,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -463,7 +463,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent session update", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: "nope" },
@@ -476,7 +476,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -513,7 +513,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should perform update when update data is empty", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -543,7 +543,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should treat empty string code as no data changed", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -577,7 +577,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessionCountBy", () => {
     it("should return correct count for existing password reset sessions", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -602,7 +602,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return zero count when none match", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const result = await getPasswordResetSessionCountBy({
         query: { email: "nope" },
@@ -614,7 +614,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should count by emailVerified flag", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -647,7 +647,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessions & mapNewPasswordResetSession_to_DTO", () => {
     it("should return DTO format password reset sessions", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const {
         valid: validUser,
@@ -679,14 +679,14 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return empty array when none found", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const result = await getPasswordResetSessions({ query: { userId: "no" }, options: {} });
       expect(result).toHaveLength(0);
     });
 
     it("mapNewPasswordResetSession_to_DTO should handle missing values", async () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
 
       const input: Partial<NewPasswordResetSession>[] = [
         {
@@ -711,7 +711,7 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("generatePasswordResetSessionQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: { email: "a@b.com" } as unknown as NewPasswordResetSession,
         options: {},
@@ -721,7 +721,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: {
           id: "p-1",
@@ -749,7 +749,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: {} as unknown as NewPasswordResetSession,
         options: { exclude_id: "exclude-me" },
@@ -761,7 +761,7 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should ignore undefined/null fields", () => {
-      if (process.env.CI) return;
+      if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: {
           email: undefined as unknown as string,

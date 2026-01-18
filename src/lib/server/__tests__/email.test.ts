@@ -203,7 +203,7 @@ describe("Plunk email helpers", () => {
   });
 
   it("createAndSendEmailVerification should return null when DB insert fails", async () => {
-    if (process.env.CI) return;
+    if (process.env.CI === "true") return;
     vi.resetModules();
     for (const k of Object.keys(env)) delete env[k];
     addEmailVerificationRequest.mockResolvedValue({ valid: false, message: "boom" });

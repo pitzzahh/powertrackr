@@ -21,7 +21,7 @@ export function getTestPool() {
 }
 
 export async function cleanupTestDatabase() {
-  if (process.env.CI) return;
+  if (process.env.CI === "true") return;
 
   const p = getTestPool();
 
@@ -36,7 +36,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  if (process.env.CI) return;
+  if (process.env.CI === "true") return;
 
   // Close the pool when the worker finishes to avoid hanging test processes
   const p = getTestPool();
