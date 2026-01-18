@@ -128,7 +128,7 @@
     <Field>
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input
-        autofocus
+        autofocus={action === "login"}
         id="email-{id}"
         placeholder="m@example.com"
         required
