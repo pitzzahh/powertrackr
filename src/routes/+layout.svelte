@@ -11,13 +11,14 @@
   import FocusRing from "$/components/focus-ring.svelte";
   import Header from "$routes/(components)/header.svelte";
   import { site } from "$/site";
+  import { dev } from "$app/environment";
 
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
   import { sidebarStore } from "$/stores/sidebar.svelte";
   import { Toaster } from "svelte-sonner";
-  import { untrack } from "svelte";
+  import { onMount, untrack } from "svelte";
   import { onNavigate } from "$app/navigation";
 
   const { children, data } = $props();
@@ -52,6 +53,12 @@
         resolve();
         await navigation.complete;
       });
+    });
+  });
+
+  onMount(() => {
+    navigator.serviceWorker.register("../service-worker.js", {
+      type: dev ? "module" : "classic",
     });
   });
 </script>
