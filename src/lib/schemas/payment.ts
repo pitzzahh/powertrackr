@@ -1,14 +1,14 @@
 import * as v from "valibot";
 
 export const createPaymentSchema = v.object({
-  amount: v.optional(v.number()),
-  date: v.optional(v.string()),
+  amount: v.number(),
+  date: v.string(),
 });
 
 export const updatePaymentSchema = v.object({
   id: v.string(),
-  amount: v.optional(v.number()),
-  date: v.optional(v.string()),
+  amount: v.number(),
+  date: v.string(),
 });
 
 export const paymentSchema = updatePaymentSchema;
