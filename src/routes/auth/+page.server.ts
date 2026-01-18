@@ -40,7 +40,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     (!act || !actions.includes(act as AuthFormProps["action"])) &&
     !(pathname === "/auth" && actions.includes(act as AuthFormProps["action"]))
   ) {
-    redirect(307, `/auth?act=${act}`);
+    redirect(307, `/auth?act=${act || "login"}`);
   }
   return {
     action: act as AuthFormProps["action"],
