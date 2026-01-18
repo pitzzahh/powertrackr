@@ -3,7 +3,7 @@
   "short_name": "PowerTrackr",
   "description": "PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters.",
   "start_url": "/",
-  "display_override": ["window-conrol-overlay"],
+  "display_override": ["window-controls-overlay","fullscreen", "minimal-ui"],
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f0b100",
@@ -35,16 +35,16 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshot-narrow.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "formFactor": "narrow"
+      "src": "/og-wide.avif",
+      "sizes": "2160x1440",
+      "type": "image/avif",
+      "formFactor": "wide"
     },
     {
-      "src": "/screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "formFactor": "wide"
+      "src": "/og-narrow.avif",
+      "sizes": "525x1135",
+      "type": "image/avif",
+      "formFactor": "narrow"
     }
   ]
 }
