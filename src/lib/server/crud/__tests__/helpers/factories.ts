@@ -20,11 +20,14 @@ function generateId(): string {
 
 export function createUser(overrides: FactoryOverrides<NewUser> = {}): NewUser {
   const sequence = getSequence();
+  // Use crypto.randomUUID for id and email, and a random numeric githubId to avoid collisions across tests
+  const uuid = crypto.randomUUID();
+  const githubIdValue = Math.floor(Math.random() * 1_000_000_000);
   return {
-    id: generateId(),
-    githubId: sequence,
+    id: uuid,
+    githubId: githubIdValue,
     name: `Test User ${sequence}`,
-    email: `user${sequence}@test.com`,
+    email: `user-${uuid}@test.com`,
     emailVerified: false,
     totpKey: null,
     recoveryCode: null,
@@ -77,7 +80,7 @@ export function createSubMeter(overrides: FactoryOverrides<NewSubMeter> = {}): N
     label: `Sub Meter ${sequence}`,
     // Default `reading` should align with the latest reading when not provided
     reading: 1500 + sequence,
-    paymentId: null,
+    paymentId: "",
     // Use ISO strings for timestamps in tests/factories
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -204,14 +207,14 @@ export function createRelatedTestData(options: RelatedDataOptions = {}) {
     for (let i = 0; i < billingInfosPerUser; i++) {
       const billingInfo = createBillingInfo({
         userId: user.id,
-        paymentId: userPayments[i % userPayments.length]?.id,
+        paymentId: userPayments[i % userPayments.length].id,
       });
       billingInfos.push(billingInfo);
 
       // Create sub meters for each billing info
       const billingSubMeters = createSubMeters(subMetersPerBilling, {
         billingInfoId: billingInfo.id,
-        paymentId: userPayments[i % userPayments.length]?.id || null,
+        paymentId: userPayments[i % userPayments.length].id,
       });
       subMeters.push(...billingSubMeters);
     }
