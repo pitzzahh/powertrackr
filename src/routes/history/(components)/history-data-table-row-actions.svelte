@@ -7,6 +7,7 @@
     active_dialog_content: "view" | "remove";
     open_view: boolean;
     open_edit: boolean;
+    delete_confirm_value: string;
   }
 </script>
 
@@ -23,15 +24,19 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
+  import { WarningBanner } from "$/components/snippets.svelte";
+  import { Input } from "$/components/ui/input";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
-  let { app_state, active_dialog_content, open_view, open_edit } = $state<ComponentState>({
-    app_state: "stale",
-    active_dialog_content: "view",
-    open_view: false,
-    open_edit: false,
-  });
+  let { app_state, active_dialog_content, open_view, open_edit, delete_confirm_value } =
+    $state<ComponentState>({
+      app_state: "stale",
+      active_dialog_content: "view",
+      open_view: false,
+      open_edit: false,
+      delete_confirm_value: "",
+    });
 
   let billingDetails = $derived([
     {
@@ -77,7 +82,15 @@
   ]);
 
   async function handle_remove_billing_info() {
+    if (delete_confirm_value != row.original.date) {
+      showWarning(
+        "Nice try, Inspector!",
+        "Bypassing the disabled state won't work. You still need the correct confirmation code."
+      );
+      return;
+    }
     app_state = "processing";
+
     // const delete_result = await deleteBillingInfo(row.original.id);
     // open_view = false;
     // app_state = "stale";
@@ -183,13 +196,23 @@
   {/if}
 
   {#if active_dialog_content === "remove"}
+    {@const currentDate = row.original.date}
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>
         <Dialog.Description>
           Are you sure you want to remove this billing info record? This action cannot be undone.
+          {@render WarningBanner({
+            message: "Removing this will also remove the sub meter billing informations.",
+          })}
         </Dialog.Description>
       </Dialog.Header>
+      <Input
+        bind:value={delete_confirm_value}
+        type="text"
+        placeholder={currentDate}
+        class="max-w-xs"
+      />
       <Dialog.Footer>
         <Button
           variant="secondary"
@@ -199,11 +222,10 @@
         >
           Cancel
         </Button>
-        {@const currentDate = formatDate(new Date(row.original.date))}
         <Button
           variant="destructive"
           onclick={handle_remove_billing_info}
-          disabled={app_state === "processing"}
+          disabled={delete_confirm_value != currentDate || app_state === "processing"}
           title="Confirm Delete Billing Info {currentDate}"
         >
           {#if app_state === "processing"}
