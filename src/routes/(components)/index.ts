@@ -77,3 +77,4 @@ export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
 
 export { default as ChartArea } from "./chart-area.svelte";
 export { default as ChartBar } from "./chart-bar.svelte";
+export { default as ErrorBackground } from "./error-background.svelte";

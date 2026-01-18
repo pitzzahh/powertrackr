@@ -49,3 +49,6 @@ export { default as Lock } from "@lucide/svelte/icons/lock";
 export { default as MessageCircle } from "@lucide/svelte/icons/message-circle";
 export { default as Paintbrush } from "@lucide/svelte/icons/paintbrush";
 export { default as Video } from "@lucide/svelte/icons/video";
+export { default as TriangleAlert } from "@lucide/svelte/icons/triangle-alert";
+export { default as ShieldAlert } from "@lucide/svelte/icons/shield-alert";
+export { default as CircleAlert } from "@lucide/svelte/icons/circle-alert";

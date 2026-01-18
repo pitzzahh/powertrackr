@@ -5,7 +5,7 @@
   import { Sun, Moon, ChevronLeft } from "$/assets/icons";
   import { toggleMode } from "mode-watcher";
   import { goto } from "$app/navigation";
-  import { AuthBackground } from "$routes/auth/(components)";
+  import { ErrorBackground } from "$routes/(components)";
 </script>
 
 <div class="grid min-h-svh lg:grid-cols-2">
@@ -36,6 +36,6 @@
     </div>
   </div>
   <div class="relative hidden bg-muted lg:block">
-    <AuthBackground />
+    <ErrorBackground />
   </div>
 </div>
