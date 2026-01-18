@@ -104,9 +104,10 @@
     //     },
     //   });
     // }
-    return showSuccess(
-      "Successfully Removed Billing Info",
-      "Billing Info record has been successfully removed."
+    app_state = "stale";
+    return showWarning(
+      "Feature Under Development",
+      "The ability to remove billing records is currently being implemented and will be available in a future update."
     );
   }
 </script>
