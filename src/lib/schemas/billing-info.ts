@@ -32,7 +32,7 @@ export const updateBillingInfoSchema = v.object({
   balance: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   totalkWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   // Multiple sub meters instead of single subReading
-  subMeters: v.optional(v.array(subMeterSchema)),
+  subMeters: v.fallback(v.array(subMeterSchema), []),
   status: v.fallback(v.picklist(["Paid", "Pending"]), "Pending"),
 });
 

@@ -20,6 +20,7 @@ import {
   addBillingInfo,
   updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
+  getBillingInfoCountBy,
 } from "$/server/crud/billing-info-crud";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
@@ -138,34 +139,51 @@ export const getBillingSummary = query(
 export const createBillingInfo = form(billFormSchema, async (data): Promise<BillingInfo> => {
   const { session } = requireAuth();
 
-  console.debug(JSON.stringify(data, null, 2));
+  const { valid: validCount, value: billingInfoCount } = await getBillingInfoCountBy({
+    query: { userId: session.userId },
+    options: { limit: 1 },
+  });
+
+  if (!validCount) {
+    error(400, "Failed to add billing info, cannot get total count");
+  }
+
+  const {
+    valid: validLatestBillingInfo,
+    value: [latestBillingInfo],
+  } = await getBillingInfoByCrud({
+    query: { userId: session.userId },
+    options: {
+      with_sub_meters: true,
+      order: "desc",
+      limit: 1,
+    },
+  });
+
+  if (billingInfoCount > 0 && !validLatestBillingInfo) {
+    error(400, "Failed to add billing info, cannot get previous billing info");
+  }
 
   const userId = session!.userId;
 
-  const { date, totalkWh, balance, status: statusBool, subMeters } = data;
+  const { date, totalkWh, balance, status, subMeters } = data;
 
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 
-  const {
-    valid,
-    value: [billingInfoWithSubMeters],
-  } = await getBillingInfoByCrud({
-    query: { userId },
-    options: {
-      fields: ["id", "date"],
-      with_billing_info: true,
-    },
-  });
-  
   // Process multiple sub meters
-  const subMetersData = subMeters.map((sub) => ({
-    label: sub.label,
-    reading: sub.reading,
-    subKwh: sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null,
-    paymentAmount: sub.subReadingOld
-      ? (sub.subReadingLatest - sub.subReadingOld) * payPerkWh
-      : null,
-  }));
+  const subMetersData = subMeters.map((sub) => {
+    const currentMeter = latestBillingInfo.subMeters?.find((m) => m.label === sub.label);
+    if (!currentMeter) {
+      error(400, "Sub meter not found in latest billing info");
+    }
+    const subkWh = currentMeter.reading - sub.reading;
+    return {
+      label: sub.label,
+      reading: sub.reading,
+      subkWh,
+      paymentAmount: subkWh * payPerkWh,
+    };
+  });
 
   const totalSubPaymentAmount = subMetersData.reduce(
     (sum, sub) => sum + (sub.paymentAmount || 0),
@@ -187,10 +205,10 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
   } = await addBillingInfo([
     {
       userId,
-      date,
+      date: new Date(date),
       totalkWh,
       balance,
-      status: statusBool ? "Paid" : "Pending",
+      status,
       payPerkWh,
       paymentId: mainPayment.id,
     },
@@ -204,31 +222,18 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
   await db.transaction(async (tx) => {
     // Create sub payments and prepare sub meters
     for (const subData of subMetersData) {
-      if (subData.paymentAmount && subData.paymentAmount > 0) {
-        const subPayId = crypto.randomUUID();
-        const addResult = await tx
-          .insert(payment)
-          .values({ id: subPayId, amount: subData.paymentAmount });
-        subMeterInserts.push({
-          billingInfoId: "", // will set after billing created
-          subkWh: subData.subKwh,
-          reading: subData.subReadingLatest,
-          subReadingLatest: subData.subReadingLatest,
-          subReadingOld: subData.subReadingOld,
-          paymentId: subPayId,
-        });
-        if (addResult.rowsAffected === 0) tx.rollback();
-      } else {
-        // Sub meter without payment (just tracking)
-        subMeterInserts.push({
-          billingInfoId: "", // will set after billing created
-          subkWh: subData.subKwh,
-          reading: subData.subReadingLatest,
-          subReadingLatest: subData.subReadingLatest,
-          subReadingOld: subData.subReadingOld,
-          paymentId: null,
-        });
-      }
+      const subPayId = crypto.randomUUID();
+      const addResult = await tx
+        .insert(payment)
+        .values({ id: subPayId, amount: subData.paymentAmount });
+      subMeterInserts.push({
+        billingInfoId: "", // will set after billing created
+        label: subData.label,
+        subkWh: subData.subkWh,
+        reading: subData.reading,
+        paymentId: subPayId,
+      });
+      if (addResult.rowCount === 0) tx.rollback();
     }
   });
 
@@ -250,61 +255,83 @@ export const createBillingInfo = form(billFormSchema, async (data): Promise<Bill
 export const updateBillingInfo = form(
   updateBillingInfoSchema,
   async (data): Promise<BillingInfo> => {
-    const { id, subMeters, ...updateData } = data;
+    const { session } = requireAuth();
+    const { id: billingInfoId, subMeters, ...updateData } = data;
+
+    const {
+      valid: validBillingInfo,
+      value: [billingInfoWithSubMetersToUpdate],
+    } = await getBillingInfoByCrud({
+      query: { userId: session.userId, id: billingInfoId },
+      options: {
+        fields: ["id", "date"],
+        with_billing_info: true,
+      },
+    });
+
+    if (!validBillingInfo) {
+      error(400, "Failed to update billing info, ");
+    }
 
     // Update the main billing info
     const {
-      valid,
+      valid: validBillingInfoUpdate,
       value: [updatedBillingInfo],
-    } = await updateBillingInfoCrud({ query: { id } }, updateData);
+    } = await updateBillingInfoCrud(
+      { query: { id: billingInfoId } },
+      {
+        ...updateData,
+        date: new Date(updateData.date),
+      }
+    );
 
-    if (!valid) {
+    if (!validBillingInfoUpdate) {
       error(400, "Failed to update billing info");
     }
 
     // Handle sub meters update if provided
-    if (subMeters !== undefined) {
-      // For simplicity, we'll replace all sub meters for this billing info
-      // In a more complex implementation, you might want to do diff-based updates
-      await db.delete(subMeter).where(eq(subMeter.billingInfoId, id));
+    if (subMeters.length > 0) {
+      const payPerkWh = calculatePayPerKwh(updatedBillingInfo.balance, updatedBillingInfo.totalkWh);
 
-      if (subMeters.length > 0) {
-        const payPerkWh = calculatePayPerKwh(
-          updatedBillingInfo.balance,
-          updatedBillingInfo.totalkWh
-        );
+      const subMeterInserts = await Promise.all(
+        subMeters.map(async (sub) => {
+          const currentMeter = billingInfoWithSubMetersToUpdate.subMeters?.find(
+            (m) => m.label === sub.label
+          );
 
-        const subMeterInserts = subMeters.map((sub) => {
-          const subKwh = sub.subReadingOld ? sub.subReadingLatest - sub.subReadingOld : null;
-          const paymentAmount = subKwh ? subKwh * payPerkWh : null;
+          if (!currentMeter) {
+            error(400, "Sub meter not found in latest billing info");
+          }
+
+          const subKwh = currentMeter.reading - sub.reading;
+          const paymentAmount = subKwh * payPerkWh;
+
+          const {
+            valid: validSubPayment,
+            value: [{ id: paymentId }],
+          } = await addPayment([
+            {
+              date: new Date(getLocalTimeZone()),
+              amount: paymentAmount,
+            },
+          ]);
+
+          if (!validSubPayment) {
+            error(400, "Failed to add sub payment");
+          }
 
           return {
-            billingInfoId: id,
-            subKwh,
+            label: sub.label,
+            billingInfoId,
             reading: sub.reading,
-            subReadingLatest: sub.subReadingLatest,
-            subReadingOld: sub.subReadingOld ?? null,
-            paymentId: paymentAmount ? crypto.randomUUID() : null,
-          };
-        });
+            subKwh,
+            paymentId,
+          } as Omit<NewSubMeter, "id">;
+        })
+      );
 
-        // Insert new sub meters
-        await addSubMeter(subMeterInserts);
-
-        // Create payments for sub meters that have payment amounts
-        for (const sub of subMeterInserts) {
-          if (sub.paymentId) {
-            const subKwh = sub.subKwh!;
-            const paymentAmount = subKwh * payPerkWh;
-            await addPayment([
-              {
-                date: new Date(getLocalTimeZone()).toISOString(),
-                amount: paymentAmount,
-              },
-            ]);
-          }
-        }
-      }
+      // Insert new sub meters
+      await addSubMeter(subMeterInserts);
     }
 
     return updatedBillingInfo;

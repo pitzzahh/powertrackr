@@ -170,15 +170,12 @@ export async function mapNewSubMeter_to_DTO(
           : Object.prototype.hasOwnProperty.call(_sub_meter, "subkWh")
             ? (_sub_meter as any).subkWh
             : undefined,
+        label: Object.prototype.hasOwnProperty.call(_sub_meter, "label")
+          ? (_sub_meter as any).label
+          : undefined,
         // Include the `reading` field in DTO (preserve undefined/null as provided)
         reading: Object.prototype.hasOwnProperty.call(_sub_meter, "reading")
           ? (_sub_meter as any).reading
-          : undefined,
-        subReadingLatest: Object.prototype.hasOwnProperty.call(_sub_meter, "subReadingLatest")
-          ? (_sub_meter as any).subReadingLatest
-          : undefined,
-        subReadingOld: Object.prototype.hasOwnProperty.call(_sub_meter, "subReadingOld")
-          ? (_sub_meter as any).subReadingOld
           : undefined,
         paymentId: Object.prototype.hasOwnProperty.call(_sub_meter, "paymentId")
           ? (_sub_meter as any).paymentId
