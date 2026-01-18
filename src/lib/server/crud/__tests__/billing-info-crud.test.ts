@@ -68,9 +68,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should successfully add multiple billing infos", async () => {
-      console.log({
-        CI: process.env.CI,
-      });
       if (process.env.CI === "true") return;
       const {
         valid: validUser,
