@@ -19,7 +19,7 @@ export const getSessions = query(getSessionsSchema, async ({ userId }) => {
 
 // Query to get a single session by id
 export const getSession = query(getSessionSchema, async (id) => {
-  return await getSessionBy({ query: { id }, options: {} });
+  return await getSessionBy({ query: { id } });
 });
 
 // Form to create a new session
@@ -28,12 +28,7 @@ export const createSession = form(createSessionSchema, async (data) => {
     valid,
     value: [result],
     message,
-  } = await addSession([
-    {
-      ...data,
-      expiresAt: data.expiresAt.toISOString(),
-    },
-  ]);
+  } = await addSession([data]);
 
   if (!valid) {
     error(400, message || "Failed to create session");
@@ -49,13 +44,7 @@ export const updateSession = form(updateSessionSchema, async (data) => {
     valid,
     value: [result],
     message,
-  } = await updateSessionBy(
-    { query: { id }, options: {} },
-    {
-      ...updateData,
-      expiresAt: updateData.expiresAt.toISOString(),
-    }
-  );
+  } = await updateSessionBy({ query: { id } }, updateData);
 
   if (!valid) {
     error(400, message || "Failed to update session");
