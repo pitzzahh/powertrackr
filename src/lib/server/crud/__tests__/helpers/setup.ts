@@ -3,7 +3,7 @@ import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-// Skip database setup in CI
+// Ensure local migrations are applied when not running in CI
 if (!process.env.CI) {
   await promisify(exec)("npm run db:push");
 }
