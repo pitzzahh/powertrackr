@@ -12,6 +12,8 @@
   }
 
   let { open, onOpenChange, billingInfo }: Props = $props();
+
+  $inspect(billingInfo);
 </script>
 
 <Dialog {open} {onOpenChange}>
@@ -30,31 +32,19 @@
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
                   <TableCell class="bg-muted/50 py-2 font-medium">Sub kWh</TableCell>
-                  <TableCell class="py-2"
-                    >{subMeter?.subkWh ? `${subMeter?.subkWh}kWh` : "N/A"}</TableCell
-                  >
+                  <TableCell class="py-2">{subMeter.subkWh}kWh</TableCell>
                 </TableRow>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
                   <TableCell class="bg-muted/50 py-2 font-medium">Latest Reading</TableCell>
-                  <TableCell class="py-2">{subMeter.subReadingLatest ?? "N/A"}</TableCell>
-                </TableRow>
-                <TableRow
-                  class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
-                >
-                  <TableCell class="bg-muted/50 py-2 font-medium">Old Reading</TableCell>
-                  <TableCell class="py-2">{subMeter.subReadingOld ?? "N/A"}</TableCell>
+                  <TableCell class="py-2">{subMeter.reading}</TableCell>
                 </TableRow>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
                   <TableCell class="bg-muted/50 py-2 font-medium">Payment Amount</TableCell>
-                  <TableCell class="py-2"
-                    >{subMeter.payment?.amount
-                      ? `${formatNumber(subMeter.payment.amount)}`
-                      : "N/A"}</TableCell
-                  >
+                  <TableCell class="py-2">{formatNumber(subMeter.payment.amount)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>

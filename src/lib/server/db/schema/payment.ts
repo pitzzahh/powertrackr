@@ -6,7 +6,7 @@ export const payment = pgTable(
   "payment",
   {
     id: text().primaryKey().notNull(),
-    amount: real(),
+    amount: real().notNull(),
     date: timestamp("date")
       .default(sql`now()`)
       .notNull(),
