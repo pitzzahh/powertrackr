@@ -93,10 +93,10 @@
       subMeters.length = 0;
       if (billingInfo.subMeters) {
         subMeters.push(
-          ...(billingInfo as any).subMeters.map((sub: any) => ({
-            id: crypto.randomUUID(),
-            subReadingLatest: sub.subReadingLatest || 0,
-            subReadingOld: sub.subReadingOld || undefined,
+          ...billingInfo.subMeters.map((sub) => ({
+            id: sub.id,
+            label: sub.label,
+            reading: sub.reading,
           }))
         );
       }
