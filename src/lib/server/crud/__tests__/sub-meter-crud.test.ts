@@ -198,7 +198,7 @@ describe("Sub Meter CRUD Operations", () => {
       } = await addSubMeter([
         createSubMeter({
           billingInfoId: addedBilling.id,
-          paymentId: null,
+          paymentId: null!,
         }),
       ]);
 
@@ -946,7 +946,7 @@ describe("Sub Meter CRUD Operations", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBeDefined();
       expect(result[0].billingInfoId).toBe(addedBilling.id);
-      expect(result[0].subKwh).toBe(333);
+      expect(result[0].subkWh).toBe(333);
       expect(result[0].createdAt).toBeInstanceOf(Date);
       expect(result[0].updatedAt).toBeInstanceOf(Date);
     });
@@ -1074,7 +1074,7 @@ describe("Sub Meter CRUD Operations", () => {
       expect(dto).toHaveLength(1);
       expect(dto[0].id).toBeUndefined();
       expect(dto[0].billingInfoId).toBeUndefined();
-      expect(dto[0].subKwh).toBeUndefined();
+      expect(dto[0].subkWh).toBeUndefined();
       expect(dto[0].createdAt).toBeNull();
       expect(dto[0].updatedAt).toBeNull();
     });
