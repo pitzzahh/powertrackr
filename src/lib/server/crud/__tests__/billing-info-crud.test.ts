@@ -833,15 +833,11 @@ describe("Billing Info CRUD Operations", () => {
       );
       const paymentResults = await Promise.all(paymentPromises);
 
-      const billingData = createBillingInfos(3, { userId: addedUser.id }).map((b, i) => ({
-        ...b,
-        paymentId: paymentResults[i].value[0].id,
-      }));
       const addResult = await addBillingInfo(
-        billingData.map((b) => {
-          const { id: _, ...rest } = b;
-          return rest;
-        })
+        createBillingInfos(3, { userId: addedUser.id }).map((b, i) => ({
+          ...b,
+          paymentId: paymentResults[i].value[0].id,
+        }))
       );
       const excludeId = addResult.value[1].id;
 
