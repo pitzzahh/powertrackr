@@ -3,6 +3,7 @@
   "short_name": "PowerTrackr",
   "description": "PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters.",
   "start_url": "/",
+  "display_override": ["window-conrol-overlay"],
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#f0b100",
