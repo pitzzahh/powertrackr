@@ -9,7 +9,7 @@ export type NewSubMeter = typeof subMeter.$inferInsert;
 export type SubMeterDTO = {
   id: string;
   billingInfoId: string;
-  subKwh: number;
+  subkWh: number;
   label: string;
   reading: number;
   paymentId: string;

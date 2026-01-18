@@ -165,7 +165,7 @@ export async function mapNewSubMeter_to_DTO(
         id: _sub_meter.id,
         billingInfoId: _sub_meter.billingInfoId,
         // Handle both possible key variants and normalize to DTO `subKwh` while preserving undefined
-        subKwh: Object.prototype.hasOwnProperty.call(_sub_meter, "subKwh")
+        subkWh: Object.prototype.hasOwnProperty.call(_sub_meter, "subKwh")
           ? (_sub_meter as any).subKwh
           : Object.prototype.hasOwnProperty.call(_sub_meter, "subkWh")
             ? (_sub_meter as any).subkWh
