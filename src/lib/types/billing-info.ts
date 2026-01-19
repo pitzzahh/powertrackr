@@ -1,9 +1,14 @@
 import type { billingInfo } from "$/server/db/schema/billing-info";
 import type { Payment } from "$/server/db/schema/payment";
-import type { SubMeterDTO, SubMeterWithPayment } from "./sub-meter";
+import type { SubMeterDTO, SubMeterWithPayment } from "$/types/sub-meter";
 
 export type BillingInfo = typeof billingInfo.$inferSelect;
 export type NewBillingInfo = Omit<typeof billingInfo.$inferInsert, "createdAt" | "updatedAt">;
+
+export type BillingInfoWithPaymentAndSubMetersWithPayment = BillingInfo & {
+  payment?: Payment;
+  subMeters?: SubMeterWithPayment[];
+};
 
 export type BillingInfoDTO = {
   id: string;

@@ -4,9 +4,12 @@ import { billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewBillingInfo, BillingInfo, BillingInfoDTO } from "$/types/billing-info";
-import type { Payment } from "$/types/payment";
-import type { SubMeter } from "$/types/sub-meter";
+import type {
+  NewBillingInfo,
+  BillingInfo,
+  BillingInfoDTO,
+  BillingInfoWithPaymentAndSubMetersWithPayment,
+} from "$/types/billing-info";
 
 type BillingInfoQueryOptions = {
   where?: Record<string, unknown>;
@@ -50,7 +53,7 @@ export async function addBillingInfo(
 export async function updateBillingInfoBy(
   by: HelperParam<NewBillingInfo>,
   data: Partial<NewBillingInfo>
-): Promise<HelperResult<BillingInfo[]>> {
+): Promise<HelperResult<BillingInfoWithPaymentAndSubMetersWithPayment[]>> {
   const { query } = by;
   const billing_info_param = { ...by, options: { ...by.options, fields: undefined } };
   const billing_info_result = await getBillingInfoBy(billing_info_param);
@@ -63,7 +66,8 @@ export async function updateBillingInfoBy(
     };
   }
 
-  const [old_billing_info] = billing_info_result.value as BillingInfo[];
+  const [old_billing_info] =
+    billing_info_result.value as BillingInfoWithPaymentAndSubMetersWithPayment[];
   const conditions = generateBillingInfoQueryConditions(by);
   const changed_data = getChangedData(old_billing_info, data);
 
@@ -90,16 +94,9 @@ export async function updateBillingInfoBy(
   };
 }
 
-export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promise<
-  HelperResult<
-    Partial<
-      BillingInfo & {
-        payment?: Payment | null;
-        subMeters?: SubMeter[];
-      }
-    >[]
-  >
-> {
+export async function getBillingInfoBy(
+  data: HelperParam<NewBillingInfo>
+): Promise<HelperResult<Partial<BillingInfoWithPaymentAndSubMetersWithPayment>[]>> {
   const { options } = data;
   const conditions = generateBillingInfoQueryConditions(data);
   const queryOptions: BillingInfoQueryOptions = {
