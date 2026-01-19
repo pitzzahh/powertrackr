@@ -27,18 +27,15 @@
   href="/"
   aria-label="Homepage"
   style="view-transition-name: logo;"
-  class={cn(
-    "space-between flex cursor-pointer items-center justify-center rounded-sm text-primary",
-    className
-  )}
+  class={cn("flex cursor-pointer items-center justify-center rounded-sm", className)}
   {size}
   {variant}
   {...restProps}
 >
-  <Zap class="size-6" />
-  <span class="mr-1 text-3xl leading-0 font-bold">
-    <span class="text-foreground">{site.name.substring(0, 5)}</span><span class="text-primary"
-      >{site.name.substring(5, site.name.length)}
-    </span>
+  <Zap class="size-6 text-primary-foreground dark:text-primary" />
+  <span class="mr-1 text-3xl leading-none font-bold">
+    <span class="text-foreground">{site.name.substring(0, 5)}</span><span
+      class="text-primary-foreground dark:text-primary">{site.name.substring(5)}</span
+    >
   </span>
 </Button>
