@@ -16,7 +16,7 @@
 </script>
 
 <Dialog {open} {onOpenChange}>
-  <DialogContent class="min-w-xl">
+  <DialogContent>
     <DialogHeader>
       <DialogTitle>Sub Payments for [{billingInfo.date}]</DialogTitle>
     </DialogHeader>
