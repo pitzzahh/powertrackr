@@ -1,3 +1,5 @@
+import type { db } from "$/server/db";
+
 export type HelperResult<T = any> = {
   valid: boolean;
   message: string;
@@ -29,6 +31,7 @@ export type HelperParamOptions<T> = {
   with_billing_info: boolean;
   with_sub_meters: boolean;
   with_sub_meters_with_payment: boolean;
+  tx: typeof db;
 };
 
 export type APIReturnedData<T> = {
