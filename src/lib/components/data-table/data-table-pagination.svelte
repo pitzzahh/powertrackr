@@ -29,7 +29,7 @@
   }: DataTablePaginationProps<TData> = $props();
 </script>
 
-<div class="sticky bottom-0 z-10 w-full rounded-b border bg-card backdrop-blur-sm">
+<div class="sticky bottom-0 z-10 w-full overflow-hidden rounded-b border bg-card backdrop-blur-sm">
   <ScrollArea orientation="horizontal" class="w-full">
     <div class="flex min-w-max items-center justify-between gap-6 px-4 py-2">
       <!-- Left section: Selection and loading info -->
