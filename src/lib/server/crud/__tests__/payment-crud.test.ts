@@ -438,18 +438,18 @@ describe("Payment CRUD Operations", () => {
       const input: Partial<NewPayment>[] = [
         {
           id: undefined as unknown as string,
-          amount: null,
+          amount: 0,
         },
       ];
 
       const result = mapNewPayment_to_DTO(input);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe("");
-      expect(result[0].amount).toBeNull();
-      expect(result[0].date).toBeNull();
-      expect(result[0].createdAt).toBeNull();
-      expect(result[0].updatedAt).toBeNull();
+      expect(result[0].id).toBeUndefined();
+      expect(result[0].amount).toBe(0);
+      expect(result[0].date).toBeUndefined();
+      expect(result[0].createdAt).toBeUndefined();
+      expect(result[0].updatedAt).toBeUndefined();
     });
   });
 

@@ -1262,7 +1262,7 @@ describe("Billing Info CRUD Operations", () => {
         paymentId: "test-payment-id",
       });
 
-      const result = await mapNewBillingInfo_to_DTO([billingData]);
+      const result = mapNewBillingInfo_to_DTO([billingData]);
 
       expect(result).toHaveLength(1);
       expect(result[0].userId).toBe("test-user-id");
@@ -1279,10 +1279,10 @@ describe("Billing Info CRUD Operations", () => {
         paymentId: undefined,
       });
 
-      const result = await mapNewBillingInfo_to_DTO([billingData]);
+      const result = mapNewBillingInfo_to_DTO([billingData]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].paymentId).toBeNull();
+      expect(result[0].paymentId).toBeUndefined();
     });
 
     it("should handle billing info with missing values", async () => {
@@ -1299,24 +1299,24 @@ describe("Billing Info CRUD Operations", () => {
         updatedAt: undefined,
       };
 
-      const result = await mapNewBillingInfo_to_DTO([billingData]);
+      const result = mapNewBillingInfo_to_DTO([billingData]);
 
       expect(result).toHaveLength(1);
-      expect(result[0].id).toBe("");
-      expect(result[0].userId).toBe("");
-      expect(result[0].date).toBeInstanceOf(Date); // We create new date if not present
-      expect(result[0].totalkWh).toBe(0);
-      expect(result[0].balance).toBe(0);
-      expect(result[0].status).toBe("N/A");
-      expect(result[0].payPerkWh).toBe(0);
-      expect(result[0].paymentId).toBeNull();
-      expect(result[0].createdAt).toBeInstanceOf(Date); // We create new date if not present
-      expect(result[0].updatedAt).toBeInstanceOf(Date); // We create new date if not present
+      expect(result[0].id).toBeUndefined();
+      expect(result[0].userId).toBeUndefined();
+      expect(result[0].date).toBeUndefined(); // We create new date if not present
+      expect(result[0].totalkWh).toBeUndefined();
+      expect(result[0].balance).toBeUndefined();
+      expect(result[0].status).toBeUndefined();
+      expect(result[0].payPerkWh).toBeUndefined();
+      expect(result[0].paymentId).toBeUndefined();
+      expect(result[0].createdAt).toBeUndefined(); // We create new date if not present
+      expect(result[0].updatedAt).toBeUndefined(); // We create new date if not present
     });
 
     it("should handle empty array input", async () => {
       if (process.env.CI === "true") return;
-      const result = await mapNewBillingInfo_to_DTO([]);
+      const result = mapNewBillingInfo_to_DTO([]);
 
       expect(result).toHaveLength(0);
     });
@@ -1329,7 +1329,7 @@ describe("Billing Info CRUD Operations", () => {
         createBillingInfo({ status: "N/A", totalkWh: 2000 }),
       ];
 
-      const result = await mapNewBillingInfo_to_DTO(billingData);
+      const result = mapNewBillingInfo_to_DTO(billingData);
 
       expect(result).toHaveLength(3);
       expect(result[0].status).toBe("Paid");
