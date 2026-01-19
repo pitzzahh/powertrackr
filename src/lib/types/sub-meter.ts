@@ -23,7 +23,7 @@ export type SubMeterTableView = Omit<SubMeter, "createdAt" | "updatedAt"> & {
 };
 
 export type SubMeterWithPayment = SubMeter & {
-  payment: Payment;
+  payment?: Payment;
 };
 
 export type SubMeterWithBillingInfo = SubMeter & {

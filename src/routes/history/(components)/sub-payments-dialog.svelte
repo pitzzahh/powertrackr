@@ -48,7 +48,7 @@
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
                   <TableCell class="bg-muted/50 py-2 font-medium">Payment Amount</TableCell>
-                  <TableCell class="py-2">{formatNumber(subMeter.payment.amount)}</TableCell>
+                  <TableCell class="py-2">{formatNumber(subMeter.payment?.amount || 0)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
