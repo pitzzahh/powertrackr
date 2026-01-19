@@ -3,7 +3,7 @@
     date: Date;
     balance: number;
     payment: number;
-    subPayment: number;
+    subPayments: { [label: string]: number };
   };
 
   export type AreaChartInteractiveProps = {
@@ -12,12 +12,6 @@
     retryStatus?: Status;
     refetch?: (callback: () => void) => void;
   };
-
-  const CHART_CONFIG = {
-    balance: { label: "Balance", color: "var(--chart-1)" },
-    payment: { label: "Payment", color: "var(--chart-2)" },
-    subPayment: { label: "Sub Payment", color: "var(--chart-3)" },
-  } satisfies Chart.ChartConfig;
 </script>
 
 <script lang="ts">
@@ -34,17 +28,52 @@
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
+  import { SvelteSet } from "svelte/reactivity";
+  import { onMount } from "svelte";
 
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
-  let { timeRange, visibleKeys } = $state({
+  let { timeRange, visibleKeysSet } = $state({
     timeRange: "all",
-    visibleKeys: Object.keys(CHART_CONFIG),
+    visibleKeysSet: new SvelteSet<string>(),
   });
 
-  const { selectedLabel, filteredData } = $derived({
-    selectedLabel: getSelectedLabel(timeRange),
+  let { visibleKeys, filteredData, selectedLabel, uniqueLabels } = $derived({
+    visibleKeys: Array.from(visibleKeysSet),
     filteredData: getFilteredData(chartData, timeRange),
+    selectedLabel: getSelectedLabel(timeRange),
+    uniqueLabels: Array.from(new Set(chartData.flatMap((d) => Object.keys(d.subPayments)))),
+  });
+
+  const { transformedData, CHART_CONFIG } = $derived({
+    transformedData: filteredData.map((d) => ({
+      date: d.date,
+      balance: d.balance,
+      payment: d.payment,
+      ...d.subPayments,
+    })),
+    CHART_CONFIG: {
+      balance: { label: "Balance", color: "var(--chart-1)" },
+      payment: { label: "Payment", color: "var(--chart-2)" },
+      ...Object.fromEntries(
+        uniqueLabels.map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
+      ),
+    },
+  });
+
+  onMount(() => {
+    const keys = Object.keys(CHART_CONFIG);
+    for (const key of keys) {
+      if (!visibleKeysSet.has(key)) {
+        visibleKeysSet.add(key);
+      }
+    }
+    // Remove keys that are no longer in config
+    for (const key of Array.from(visibleKeysSet)) {
+      if (!keys.includes(key)) {
+        visibleKeysSet.delete(key);
+      }
+    }
   });
 </script>
 
@@ -93,7 +122,7 @@
     {:else if filteredData.length > 0}
       <ChartContainer config={CHART_CONFIG} class="-ml-3 aspect-auto h-62.5 w-full">
         <LineChart
-          data={filteredData}
+          data={transformedData}
           x="date"
           xScale={scaleUtc()}
           series={Object.entries(CHART_CONFIG)

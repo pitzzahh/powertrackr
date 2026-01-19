@@ -61,7 +61,9 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
     date: new Date(original.date),
     balance: original.balance,
     payment: original.payment.amount,
-    subPayment: original.subMeters.reduce((sum, sub) => sum + sub.payment.amount, 0),
+    subPayments: Object.fromEntries(
+      original.subMeters.map((sub) => [sub.label, sub.payment.amount])
+    ),
   };
 }
 
