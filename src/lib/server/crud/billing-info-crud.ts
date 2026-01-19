@@ -154,27 +154,25 @@ export async function getBillingInfoBy(data: HelperParam<NewBillingInfo>): Promi
 
 export async function getBillingInfos(
   data: HelperParam<NewBillingInfo>
-): Promise<BillingInfoDTO[]> {
+): Promise<Partial<BillingInfoDTO>[]> {
   const billingInfosResult = await getBillingInfoBy(data);
   return !billingInfosResult.valid || !billingInfosResult.value
     ? []
     : mapNewBillingInfo_to_DTO(billingInfosResult.value);
 }
 
-export async function mapNewBillingInfo_to_DTO(
-  data: Partial<BillingInfo>[]
-): Promise<BillingInfoDTO[]> {
+export function mapNewBillingInfo_to_DTO(data: Partial<BillingInfo>[]): Partial<BillingInfoDTO>[] {
   return data.map((_billing_info) => ({
-    id: _billing_info.id ?? "",
-    userId: _billing_info.userId ?? "",
-    date: _billing_info.date ? new Date(_billing_info.date) : new Date(),
-    totalkWh: _billing_info.totalkWh ?? 0,
-    balance: _billing_info.balance ?? 0,
-    status: (_billing_info.status as BillingInfoDTO["status"]) ?? "N/A",
-    payPerkWh: _billing_info.payPerkWh ?? 0,
-    paymentId: _billing_info.paymentId ?? null,
-    createdAt: _billing_info.createdAt ? new Date(_billing_info.createdAt) : new Date(),
-    updatedAt: _billing_info.updatedAt ? new Date(_billing_info.updatedAt) : new Date(),
+    id: _billing_info.id,
+    userId: _billing_info.userId,
+    date: _billing_info.date,
+    totalkWh: _billing_info.totalkWh,
+    balance: _billing_info.balance,
+    status: _billing_info.status as BillingInfoDTO["status"],
+    payPerkWh: _billing_info.payPerkWh,
+    paymentId: _billing_info.paymentId,
+    createdAt: _billing_info.createdAt,
+    updatedAt: _billing_info.updatedAt,
   }));
 }
 
