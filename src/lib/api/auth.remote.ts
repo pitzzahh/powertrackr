@@ -30,7 +30,7 @@ import {
   hashPassword,
   verifyPasswordHash,
 } from "$/server/encryption";
-import type { HelperResult } from "$/types/helper";
+import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
