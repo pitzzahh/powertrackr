@@ -52,16 +52,11 @@
 
   const identity = $props.id();
 
-  let { dateValue, status, open, subMeters } = $derived<BillingInfoFormState>({
+  let subMeters: BillingInfoFormState["subMeters"] = $state([]);
+
+  let { dateValue, status, open } = $derived<Omit<BillingInfoFormState, "subMeters">>({
     dateValue: undefined,
     status: "pending",
-    subMeters: billingInfo
-      ? billingInfo.subMeters.map((sub) => ({
-          id: sub.id,
-          label: sub.label,
-          reading: sub.reading,
-        }))
-      : [],
     open: false,
   });
 
@@ -108,7 +103,15 @@
         : undefined;
       status = "pending";
     }
+
+    subMeters =
+      billingInfo?.subMeters.map((sub) => ({
+        id: sub.id,
+        label: sub.label,
+        reading: sub.reading,
+      })) ?? [];
   });
+
   $effect(() => {
     currentAction.fields.subMeters.set(
       subMeters.map((s) => ({
