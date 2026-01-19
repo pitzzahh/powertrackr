@@ -72,7 +72,6 @@ describe("Payment CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
-        options: {},
       };
 
       const result = await getPaymentBy(searchParam);
@@ -98,7 +97,6 @@ describe("Payment CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPayment> = {
         query: { amount: testAmount },
-        options: {},
       };
 
       const result = await getPaymentBy(searchParam);
@@ -136,7 +134,6 @@ describe("Payment CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPayment> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getPaymentBy(searchParam);
@@ -259,7 +256,6 @@ describe("Payment CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
-        options: {},
       };
 
       const updateData: Partial<NewPayment> = {
@@ -288,7 +284,6 @@ describe("Payment CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPayment> = {
         query: { id: addedPayment.id },
-        options: {},
       };
 
       const updateData: Partial<NewPayment> = {
@@ -308,7 +303,6 @@ describe("Payment CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPayment> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const updateData: Partial<NewPayment> = {
@@ -337,7 +331,6 @@ describe("Payment CRUD Operations", () => {
 
       const countParam: HelperParam<NewPayment> = {
         query: {},
-        options: {},
       };
 
       const result = await getPaymentCountBy(countParam);
@@ -352,7 +345,6 @@ describe("Payment CRUD Operations", () => {
 
       const countParam: HelperParam<NewPayment> = {
         query: { amount: 999999 },
-        options: {},
       };
 
       const result = await getPaymentCountBy(countParam);
@@ -380,7 +372,6 @@ describe("Payment CRUD Operations", () => {
 
       const countParam: HelperParam<NewPayment> = {
         query: { amount: 10 },
-        options: {},
       };
 
       const result = await getPaymentCountBy(countParam);
@@ -424,7 +415,6 @@ describe("Payment CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPayment> = {
         query: { amount: 888888 },
-        options: {},
       };
 
       const result = await getPayments(searchParam);
@@ -465,7 +455,6 @@ describe("Payment CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewPayment> = {
         query: { amount: 200, date: new Date("2024-07-07"), id: "some-id" },
-        options: {},
       };
       const conditions = generatePaymentQueryConditions(param);
       expect(conditions.amount).toBe(200);
@@ -489,7 +478,6 @@ describe("Payment CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewPayment> = {
         query: { id: undefined as unknown as string, amount: undefined as unknown as number },
-        options: {},
       };
       const conditions = generatePaymentQueryConditions(param);
       expect(Object.keys(conditions)).toHaveLength(0);

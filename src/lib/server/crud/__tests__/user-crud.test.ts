@@ -105,7 +105,6 @@ describe("User CRUD Operations", () => {
 
       const searchParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
-        options: {},
       };
 
       const result = await getUserBy(searchParam);
@@ -134,7 +133,6 @@ describe("User CRUD Operations", () => {
 
       const searchParam: HelperParam<NewUser> = {
         query: { email: "unique@example.com" },
-        options: {},
       };
 
       const result = await getUserBy(searchParam);
@@ -156,7 +154,6 @@ describe("User CRUD Operations", () => {
 
       const searchParam: HelperParam<NewUser> = {
         query: { githubId: 12345 },
-        options: {},
       };
 
       const result = await getUserBy(searchParam);
@@ -170,7 +167,6 @@ describe("User CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewUser> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getUserBy(searchParam);
@@ -296,7 +292,6 @@ describe("User CRUD Operations", () => {
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
-        options: {},
       };
 
       const updateData = { name: "Updated Name", emailVerified: true };
@@ -321,7 +316,6 @@ describe("User CRUD Operations", () => {
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
-        options: {},
       };
 
       const updateData = { name: "Same Name" };
@@ -336,7 +330,6 @@ describe("User CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewUser> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const updateData = { name: "New Name" };
@@ -359,7 +352,6 @@ describe("User CRUD Operations", () => {
 
       const updateParam: HelperParam<NewUser> = {
         query: { id: addedUser.id },
-        options: {},
       };
 
       const updateData = {
@@ -403,7 +395,6 @@ describe("User CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const countParam: HelperParam<NewUser> = {
         query: { email: "nonexistent@example.com" },
-        options: {},
       };
 
       const result = await getUserCountBy(countParam);
@@ -429,7 +420,6 @@ describe("User CRUD Operations", () => {
 
       const countParam: HelperParam<NewUser> = {
         query: { emailVerified: true },
-        options: {},
       };
 
       const result = await getUserCountBy(countParam);
@@ -457,7 +447,6 @@ describe("User CRUD Operations", () => {
 
       const searchParam: HelperParam<NewUser> = {
         query: { email: "dto@example.com" },
-        options: {},
       };
 
       const result = await getUsers(searchParam);
@@ -479,7 +468,6 @@ describe("User CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewUser> = {
         query: { email: "nonexistent@example.com" },
-        options: {},
       };
 
       const result = await getUsers(searchParam);
@@ -539,7 +527,6 @@ describe("User CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: { email: "test@example.com" },
-        options: {},
       };
 
       const conditions = generateUserQueryConditions(param);
@@ -555,7 +542,6 @@ describe("User CRUD Operations", () => {
           name: "Test User",
           emailVerified: true,
         },
-        options: {},
       };
 
       const conditions = generateUserQueryConditions(param);
@@ -589,7 +575,6 @@ describe("User CRUD Operations", () => {
           emailVerified: false,
           registeredTwoFactor: true,
         },
-        options: {},
       };
 
       const conditions = generateUserQueryConditions(param);
@@ -608,7 +593,6 @@ describe("User CRUD Operations", () => {
           githubId: undefined,
           name: undefined,
         },
-        options: {},
       };
 
       const conditions = generateUserQueryConditions(param);

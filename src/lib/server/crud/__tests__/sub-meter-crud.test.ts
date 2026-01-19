@@ -253,7 +253,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { id: addedSubMeter.id },
-        options: {},
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -341,7 +340,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { billingInfoId: addedBilling.id },
-        options: {},
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -392,7 +390,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { reading: testLatest },
-        options: {},
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -446,7 +443,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { paymentId: addedSubPayment.id },
-        options: {},
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -468,7 +464,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getSubMeterBy(searchParam);
@@ -770,7 +765,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSubMeter> = {
         query: { id: addedSubMeter.id },
-        options: {},
       };
 
       const result = await updateSubMeterBy(updateParam, { subkWh: 888 });
@@ -821,7 +815,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSubMeter> = {
         query: { id: addedSubMeter.id },
-        options: {},
       };
 
       const result = await updateSubMeterBy(updateParam, { subkWh: 44 });
@@ -842,7 +835,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await updateSubMeterBy(updateParam, { subkWh: 1 });
@@ -887,7 +879,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const countParam: HelperParam<NewSubMeter> = {
         query: {},
-        options: {},
       };
 
       const result = await getSubMeterCountBy(countParam);
@@ -906,7 +897,6 @@ describe("Sub Meter CRUD Operations", () => {
 
       const countParam: HelperParam<NewSubMeter> = {
         query: { id: "nope" },
-        options: {},
       };
 
       const result = await getSubMeterCountBy(countParam);
@@ -1150,7 +1140,6 @@ describe("Sub Meter CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: { billingInfoId: "billing-1" } as unknown as NewSubMeter,
-        options: {},
       };
 
       const conditions = generateSubMeterQueryConditions(param);
@@ -1168,7 +1157,6 @@ describe("Sub Meter CRUD Operations", () => {
           reading: 200,
           paymentId: "pay-1",
         } as unknown as NewSubMeter,
-        options: {},
       };
 
       const conditions = generateSubMeterQueryConditions(param);
@@ -1206,7 +1194,6 @@ describe("Sub Meter CRUD Operations", () => {
           id: undefined as unknown as string,
           billingInfoId: undefined as unknown as string,
         } as unknown as NewSubMeter,
-        options: {},
       };
 
       const conditions = generateSubMeterQueryConditions(param);

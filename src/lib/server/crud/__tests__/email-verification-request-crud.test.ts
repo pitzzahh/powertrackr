@@ -198,7 +198,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -229,7 +228,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: addedUser.id },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -263,7 +261,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { email: testEmail },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -297,7 +294,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { code: testCode },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -328,7 +324,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { expiresAt: testExpiresAt },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -342,7 +337,6 @@ describe("Email Verification Request CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestBy(searchParam);
@@ -532,7 +526,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const newExpiresAtMs = Date.now() + 60 * 60 * 1000;
@@ -566,7 +559,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const newExpiresAtMs = Date.now() + 2 * 60 * 60 * 1000;
@@ -608,7 +600,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const result = await updateEmailVerificationRequestBy(updateParam, {});
@@ -642,7 +633,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const updateData = { code: "SAME123" };
@@ -657,7 +647,6 @@ describe("Email Verification Request CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const updateData = { code: "NEWCODE" };
@@ -716,7 +705,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const updateData = { code: "NEW456789" };
@@ -749,7 +737,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const updateData = { code: "" };
@@ -781,7 +768,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const updateData = { email: "updated@test.com" };
@@ -815,7 +801,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const countParam: HelperParam<NewEmailVerificationRequest> = {
         query: {},
-        options: {},
       };
 
       const result = await getEmailVerificationRequestCountBy(countParam);
@@ -829,7 +814,6 @@ describe("Email Verification Request CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const countParam: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "nonexistent-user-id" },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestCountBy(countParam);
@@ -861,7 +845,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const countParam: HelperParam<NewEmailVerificationRequest> = {
         query: { email: "test1@example.com" },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestCountBy(countParam);
@@ -891,7 +874,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
       const countParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: addedRequest.id },
-        options: {},
       };
 
       const result = await getEmailVerificationRequestCountBy(countParam);
@@ -942,7 +924,6 @@ describe("Email Verification Request CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "nonexistent-user-id" },
-        options: {},
       };
 
       const result = await getEmailVerificationRequests(searchParam);
@@ -1039,7 +1020,6 @@ describe("Email Verification Request CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "test-user-id" },
-        options: {},
       };
 
       const conditions = generateEmailVerificationRequestQueryConditions(param);
@@ -1055,7 +1035,6 @@ describe("Email Verification Request CRUD Operations", () => {
           email: "test@example.com",
           code: "CODE123",
         },
-        options: {},
       };
 
       const conditions = generateEmailVerificationRequestQueryConditions(param);

@@ -132,7 +132,6 @@ describe("Session CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
 
       const result = await getSessionBy(searchParam);
@@ -164,7 +163,6 @@ describe("Session CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSession> = {
         query: { userId: addedUser.id },
-        options: {},
       };
 
       const result = await getSessionBy(searchParam);
@@ -193,7 +191,6 @@ describe("Session CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSession> = {
         query: { ipAddress: "10.0.0.1" } as unknown as NewSession,
-        options: {},
       };
 
       const result = await getSessionBy(searchParam);
@@ -222,7 +219,6 @@ describe("Session CRUD Operations", () => {
 
       const searchParam: HelperParam<NewSession> = {
         query: { userAgent: "Agent/2.0" } as unknown as NewSession,
-        options: {},
       };
 
       const result = await getSessionBy(searchParam);
@@ -271,7 +267,6 @@ describe("Session CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewSession> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getSessionBy(searchParam);
@@ -431,7 +426,6 @@ describe("Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
 
       const updateData: Partial<NewSession> = {
@@ -467,7 +461,6 @@ describe("Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
 
       const result = await updateSessionBy(updateParam, { userAgent: "SameAgent" });
@@ -481,7 +474,6 @@ describe("Session CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewSession> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await updateSessionBy(updateParam, { userAgent: "X" });
@@ -510,7 +502,6 @@ describe("Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
 
       const newExpirationMs = Date.now() + 24 * 60 * 60 * 1000;
@@ -544,7 +535,6 @@ describe("Session CRUD Operations", () => {
 
       const countParam: HelperParam<NewSession> = {
         query: {},
-        options: {},
       };
 
       const result = await getSessionCountBy(countParam);
@@ -558,7 +548,6 @@ describe("Session CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const countParam: HelperParam<NewSession> = {
         query: { userId: "not-found" },
-        options: {},
       };
 
       const result = await getSessionCountBy(countParam);
@@ -593,7 +582,6 @@ describe("Session CRUD Operations", () => {
 
       const countParam: HelperParam<NewSession> = {
         query: { twoFactorVerified: true } as unknown as NewSession,
-        options: {},
       };
 
       const result = await getSessionCountBy(countParam);
@@ -675,7 +663,6 @@ describe("Session CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: { userId: "user-1" } as unknown as NewSession,
-        options: {},
       };
 
       const conditions = generateSessionQueryConditions(param);
@@ -693,7 +680,6 @@ describe("Session CRUD Operations", () => {
           userAgent: "Agent",
           twoFactorVerified: true,
         } as unknown as NewSession,
-        options: {},
       };
 
       const conditions = generateSessionQueryConditions(param);
@@ -724,7 +710,6 @@ describe("Session CRUD Operations", () => {
           id: undefined as unknown as string,
           userId: undefined as unknown as string,
         } as unknown as NewSession,
-        options: {},
       };
 
       const conditions = generateSessionQueryConditions(param);

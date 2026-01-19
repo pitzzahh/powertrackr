@@ -274,7 +274,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { userId: addedUser.id },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -314,7 +313,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { date: testDate },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -605,7 +603,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { status: "Paid" },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -642,7 +639,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { totalkWh: 1500 },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -680,7 +676,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { balance: 750.25 },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -698,7 +693,6 @@ describe("Billing Info CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const result = await getBillingInfoBy(searchParam);
@@ -884,7 +878,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
-        options: {},
       };
 
       const updateData = {
@@ -932,7 +925,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
-        options: {},
       };
 
       const updateData = { totalkWh: 1000 };
@@ -951,7 +943,6 @@ describe("Billing Info CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: "nonexistent-id" },
-        options: {},
       };
 
       const updateData = { totalkWh: 1500 };
@@ -1024,7 +1015,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
-        options: {},
       };
 
       const result = await updateBillingInfoBy(updateParam, {
@@ -1074,7 +1064,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const countParam: HelperParam<NewBillingInfo> = {
         query: {},
-        options: {},
       };
 
       const result = await getBillingInfoCountBy(countParam);
@@ -1091,7 +1080,6 @@ describe("Billing Info CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const countParam: HelperParam<NewBillingInfo> = {
         query: { userId: "nonexistent-user-id" },
-        options: {},
       };
 
       const result = await getBillingInfoCountBy(countParam);
@@ -1134,7 +1122,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const countParam: HelperParam<NewBillingInfo> = {
         query: { status: "Paid" },
-        options: {},
       };
 
       const result = await getBillingInfoCountBy(countParam);
@@ -1169,7 +1156,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const countParam: HelperParam<NewBillingInfo> = {
         query: { id: addedBilling.id },
-        options: {},
       };
 
       const result = await getBillingInfoCountBy(countParam);
@@ -1215,7 +1201,6 @@ describe("Billing Info CRUD Operations", () => {
 
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { userId: addedUser.id },
-        options: {},
       };
 
       const result = await getBillingInfos(searchParam);
@@ -1241,7 +1226,6 @@ describe("Billing Info CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { userId: "nonexistent-user-id" },
-        options: {},
       };
 
       const result = await getBillingInfos(searchParam);
@@ -1346,7 +1330,6 @@ describe("Billing Info CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: { userId: "test-user-id" },
-        options: {},
       };
 
       const conditions = generateBillingInfoQueryConditions(param);
@@ -1362,7 +1345,6 @@ describe("Billing Info CRUD Operations", () => {
           status: "Paid",
           totalkWh: 1000,
         },
-        options: {},
       };
 
       const conditions = generateBillingInfoQueryConditions(param);
@@ -1397,7 +1379,6 @@ describe("Billing Info CRUD Operations", () => {
           balance: 0,
           payPerkWh: 0,
         },
-        options: {},
       };
 
       const conditions = generateBillingInfoQueryConditions(param);
@@ -1418,7 +1399,6 @@ describe("Billing Info CRUD Operations", () => {
           balance: undefined,
           status: undefined,
         },
-        options: {},
       };
 
       const conditions = generateBillingInfoQueryConditions(param);
@@ -1441,7 +1421,6 @@ describe("Billing Info CRUD Operations", () => {
           payPerkWh: 0.15,
           paymentId: "test-payment-id",
         },
-        options: {},
       };
 
       const conditions = generateBillingInfoQueryConditions(param);
@@ -1626,7 +1605,6 @@ describe("Billing Info CRUD Operations", () => {
       // Verify the relationship exists by querying
       const searchResult = await getBillingInfoBy({
         query: { userId: addedUser.id, paymentId: addedPayment.id },
-        options: {},
       });
       expect(searchResult.valid).toBe(true);
       expect(searchResult.value).toHaveLength(1);

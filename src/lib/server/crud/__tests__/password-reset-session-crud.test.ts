@@ -137,7 +137,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const searchParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
 
       const result = await getPasswordResetSessionBy(searchParam);
@@ -173,7 +172,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const result = await getPasswordResetSessionBy({
         query: { userId: addedUser.id },
-        options: {},
       });
 
       expect(result.valid).toBe(true);
@@ -207,7 +205,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const result = await getPasswordResetSessionBy({
         query: { email: "find@example.com" } as unknown as NewPasswordResetSession,
-        options: {},
       });
 
       expect(result.valid).toBe(true);
@@ -268,7 +265,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const result = await getPasswordResetSessionBy({
         query: { expiresAt: ts } as unknown as NewPasswordResetSession,
-        options: {},
       });
 
       expect(result.valid).toBe(true);
@@ -299,14 +295,12 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const byEmailVerified = await getPasswordResetSessionBy({
         query: { emailVerified: true } as unknown as NewPasswordResetSession,
-        options: {},
       });
       expect(byEmailVerified.valid).toBe(true);
       expect(byEmailVerified.value[0].emailVerified).toBe(true);
 
       const byTwoFactor = await getPasswordResetSessionBy({
         query: { twoFactorVerified: true } as unknown as NewPasswordResetSession,
-        options: {},
       });
       expect(byTwoFactor.valid).toBe(true);
       expect(byTwoFactor.value[0].twoFactorVerified).toBe(true);
@@ -417,7 +411,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, {
         code: "NEW",
@@ -453,7 +446,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, { code: "SAME" });
 
@@ -467,7 +459,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: "nope" },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, { code: "X" });
 
@@ -498,7 +489,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, {
         code: "MUL",
@@ -533,7 +523,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, {});
 
@@ -565,7 +554,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: addedSession.id },
-        options: {},
       };
       const result = await updatePasswordResetSessionBy(updateParam, { code: "" });
 
@@ -606,7 +594,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
       const result = await getPasswordResetSessionCountBy({
         query: { email: "nope" },
-        options: {},
       });
       expect(result.valid).toBe(false);
       expect(result.value).toBe(0);
@@ -714,7 +701,6 @@ describe("Password Reset Session CRUD Operations", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: { email: "a@b.com" } as unknown as NewPasswordResetSession,
-        options: {},
       };
       const cond = generatePasswordResetSessionQueryConditions(param);
       expect(cond.email).toBe("a@b.com");
@@ -732,7 +718,6 @@ describe("Password Reset Session CRUD Operations", () => {
           emailVerified: true,
           twoFactorVerified: true,
         } as unknown as NewPasswordResetSession,
-        options: {},
       };
 
       const cond = generatePasswordResetSessionQueryConditions(param);
@@ -767,7 +752,6 @@ describe("Password Reset Session CRUD Operations", () => {
           email: undefined as unknown as string,
           id: undefined as unknown as string,
         } as unknown as NewPasswordResetSession,
-        options: {},
       };
       const cond = generatePasswordResetSessionQueryConditions(param);
       expect(Object.keys(cond)).toHaveLength(0);
