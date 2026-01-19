@@ -87,7 +87,7 @@
       <Header user={data.user} />
 
       <div class="no-scrollbar h-full overflow-y-auto">
-        <main class="flex min-h-full justify-between gap-4 pt-16 pr-2 pl-4">
+        <main class="flex min-h-full justify-between gap-4 px-4 pt-16">
           <aside
             in:scale={{ duration: 150 }}
             class={[
