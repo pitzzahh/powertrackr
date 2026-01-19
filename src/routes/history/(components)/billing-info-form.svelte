@@ -47,6 +47,8 @@
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
   import Separator from "$/components/ui/separator/separator.svelte";
+  import { sineInOut } from "svelte/easing";
+  import { scale } from "svelte/transition";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
@@ -255,69 +257,72 @@
 
     {#each subMeters as subMeter, subIndex (subMeter.id)}
       {@const currentMeter = currentAction.fields.subMeters[subIndex].value()}
-      <Card.Root class="gap-4 border-dashed">
-        <Card.Header class="border-b">
-          <div class="flex items-center justify-between">
-            <Card.Title class="text-sm">Sub Meter {subIndex + 1}</Card.Title>
-            {#if subMeters.length >= 1}
-              <Button
-                variant="ghost"
-                size="sm"
-                onclick={() => removeSubMeter(subIndex)}
-                class="size-8 p-0 text-destructive hover:text-destructive"
-              >
-                <Trash2 class="size-4" />
-              </Button>
-            {/if}
-          </div>
-        </Card.Header>
-        <Card.Content class="pt-0">
-          <Field.Group>
-            <Field.Field>
-              <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
-              <Input
-                id="{identity}-totalkWh"
-                placeholder="Enter Sub meter label"
-                required
-                {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
-              />
-            </Field.Field>
+      <div in:scale={{ duration: 250, delay: subIndex * 100, easing: sineInOut }}>
+        <Card.Root class="gap-4 border-dashed">
+          <Card.Header class="border-b">
+            <div class="flex items-center justify-between">
+              <Card.Title class="text-sm">Sub Meter {subIndex + 1}</Card.Title>
+              {#if subMeters.length >= 1}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onclick={(e) => removeSubMeter(subIndex)}
+                  class="size-8 p-0 text-destructive hover:text-destructive"
+                >
+                  <Trash2 class="size-4" />
+                </Button>
+              {/if}
+            </div>
+          </Card.Header>
+          <Card.Content class="pt-0">
+            <Field.Group>
+              <Field.Field>
+                <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
+                <Input
+                  id="sub-label-{subMeter.id}"
+                  placeholder="Enter Sub meter label"
+                  required
+                  {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
+                />
+              </Field.Field>
 
-            <Field.Field>
-              <Field.Label for="sub-reading-{subMeter.id}">Current Reading</Field.Label>
-              <Input
-                id="sub-reading-{subMeter.id}"
-                placeholder="Enter current reading"
-                min={0}
-                step={1}
-                {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
-              />
-              <Field.Description>
-                {#if currentMeter}
-                  Previous reading: [{subMeter.reading}]
-                {:else}
-                  Current sub-meter reading for calculation
-                {/if}
-              </Field.Description>
-            </Field.Field>
+              <Field.Field>
+                <Field.Label for="sub-reading-{subMeter.id}">Current Reading</Field.Label>
+                <Input
+                  id="sub-reading-{subMeter.id}"
+                  placeholder="Enter current reading"
+                  min={0}
+                  step={1}
+                  required
+                  {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
+                />
+                <Field.Description>
+                  {#if currentMeter}
+                    Previous reading: [{subMeter.reading}]
+                  {:else}
+                    Current sub-meter reading for calculation
+                  {/if}
+                </Field.Description>
+              </Field.Field>
 
-            <Separator />
+              <Separator />
 
-            {#if currentMeter}
-              <div class="text-sm text-muted-foreground">
-                Consumption: {currentMeter.reading - subMeter.reading} kWh
-              </div>
-            {/if}
-          </Field.Group>
-        </Card.Content>
-      </Card.Root>
+              {#if currentMeter}
+                <div class="text-sm text-muted-foreground">
+                  Consumption: {isNaN(currentMeter.reading) || currentMeter.reading === 0
+                    ? 0
+                    : currentMeter.reading - subMeter.reading} kWh
+                </div>
+              {/if}
+            </Field.Group>
+          </Card.Content>
+        </Card.Root>
+      </div>
     {/each}
   </div>
 
   <!-- Submit Button -->
-  <div class="flex justify-end pt-4">
-    <Button type="submit" class="min-w-32">
-      {action === "add" ? "Create Billing Info" : "Update Billing Info"}
-    </Button>
-  </div>
+  <Button type="submit" class="mt-4 flex min-w-32 justify-self-end">
+    {action === "add" ? "Create Billing Info" : "Update Billing Info"}
+  </Button>
 </form>
