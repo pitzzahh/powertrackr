@@ -300,12 +300,10 @@
 
             <Separator />
 
-            {#if action === "update"}
-              {#if currentMeter}
-                <div class="text-sm text-muted-foreground">
-                  Consumption: {currentMeter.reading - subMeter.reading} kWh
-                </div>
-              {/if}
+            {#if currentMeter}
+              <div class="text-sm text-muted-foreground">
+                Consumption: {currentMeter.reading - subMeter.reading} kWh
+              </div>
             {/if}
           </Field.Group>
         </Card.Content>
