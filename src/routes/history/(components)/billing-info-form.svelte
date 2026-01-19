@@ -129,11 +129,11 @@
     );
     try {
       await submit();
+      form.reset();
       callback?.(true, action);
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {
-      form.reset();
       toast.dismiss(toastId);
     }
   })}
