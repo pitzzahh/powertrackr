@@ -238,6 +238,7 @@
         <a
           href="/auth?act={action === 'login' ? 'register' : 'login'}"
           class="underline underline-offset-4"
+          aria-disabled={statuses.email === "processing" || statuses.github === "processing"}
           onclick={() => {
             statuses.email = "idle";
             statuses.github = "idle";
