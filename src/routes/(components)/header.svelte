@@ -145,16 +145,24 @@
 {/snippet}
 
 {#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
-  {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
   <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
     <div class="space-y-4 p-4">
-      <BillingInfoForm
-        action="add"
-        {callback}
-        billingInfo={user
-          ? (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters)
-          : undefined}
-      />
+      <svelte:boundary>
+        {@const billingInfo = await getLatestBillingInfo({ userId: user?.id || "" })}
+
+        {@render BillingForm({
+          callback,
+          billingInfo: user ? (billingInfo.value[0] as BillingInfoDTOWithSubMeters) : undefined,
+        })}
+
+        {#snippet failed()}
+          {@render BillingForm({ callback })}
+        {/snippet}
+      </svelte:boundary>
     </div>
   </ScrollArea>
+{/snippet}
+
+{#snippet BillingForm(props: Omit<BillingInfoWithSubMetersFormProps, "action">)}
+  <BillingInfoForm {...props} action="add" />
 {/snippet}
