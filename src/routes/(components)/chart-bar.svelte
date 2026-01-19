@@ -116,7 +116,7 @@
       <Card.Title>Energy Usage</Card.Title>
       <Card.Description>Showing kWh usage over time</Card.Description>
     </div>
-    <div class="grid h-fit sm:grid-cols-2 md:grid-cols-4">
+    <div class="grid h-fit grid-cols-2 md:grid-cols-4">
       {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
         {@const chart = key}
         <button
