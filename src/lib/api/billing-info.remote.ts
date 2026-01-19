@@ -226,36 +226,40 @@ export const createBillingInfo = form(
       );
     }
 
-    let {
-      valid: validMainPayment,
-      value: [mainPayment],
-    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }]);
-
-    if (!validMainPayment) {
-      throw error(400, "Failed to add billing info, main payment not processed");
-    }
-
-    const {
-      valid: validBillingInfo,
-      value: [result],
-    } = await addBillingInfo([
-      {
-        userId,
-        date: new Date(date),
-        totalkWh,
-        balance,
-        status,
-        payPerkWh,
-        paymentId: mainPayment.id,
-      },
-    ]);
-
-    if (!validBillingInfo) {
-      throw error(400, "Failed to add billing info, billing info not processed");
-    }
-
     const subMeterInserts: Omit<NewSubMeter, "id">[] = [];
-    await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
+      let {
+        valid: validMainPayment,
+        value: [mainPayment],
+      } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], tx);
+
+      if (!validMainPayment) {
+        tx.rollback();
+        throw error(400, "Failed to add billing info, main payment not processed");
+      }
+
+      const {
+        valid: validBillingInfo,
+        value: [result],
+      } = await addBillingInfo(
+        [
+          {
+            userId,
+            date: new Date(date),
+            totalkWh,
+            balance,
+            status,
+            payPerkWh,
+            paymentId: mainPayment.id,
+          },
+        ],
+        tx
+      );
+
+      if (!validBillingInfo) {
+        tx.rollback();
+        throw error(400, "Failed to add billing info, billing info not processed");
+      }
       // Create sub payments and prepare sub meters
       for (const subData of subMetersData) {
         const {
@@ -282,6 +286,7 @@ export const createBillingInfo = form(
           paymentId: addedPayment.id,
         });
       }
+      return result;
     });
 
     // Add sub meters
