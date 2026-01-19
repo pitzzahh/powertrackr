@@ -44,6 +44,18 @@ export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) 
   });
 });
 
+export const getLatestBillingInfo = query(getBillingInfosSchema, async ({ userId }) => {
+  return await getBillingInfoByCrud({
+    query: { userId },
+    options: {
+      fields: COMMON_FIELDS,
+      with_sub_meters: true,
+      order: "desc",
+      limit: 1,
+    },
+  });
+});
+
 // Query to get extended billing infos with payments for a user
 export const getExtendedBillingInfos = query(getBillingInfosSchema, async ({ userId }) => {
   return await getBillingInfoByCrud({
