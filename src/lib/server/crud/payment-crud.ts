@@ -1,10 +1,11 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { payment } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/types/helper";
+import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewPayment, PaymentDTO } from "$/types/payment";
+import type { HelperParamOptions } from "../types/helper";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;
@@ -15,7 +16,8 @@ type PaymentQueryOptions = {
 };
 
 export async function addPayment(
-  data: Omit<NewPayment, "id">[]
+  data: Omit<NewPayment, "id">[],
+  tx?: HelperParamOptions<NewPayment>["tx"]
 ): Promise<HelperResult<NewPayment[]>> {
   if (data.length === 0) {
     return {
@@ -25,7 +27,7 @@ export async function addPayment(
     };
   }
 
-  const insert_result = await db
+  const insert_result = await (tx || db)
     .insert(payment)
     .values(
       data.map((payment_data) => {
@@ -49,7 +51,7 @@ export async function updatePaymentBy(
   by: HelperParam<NewPayment>,
   data: Partial<NewPayment>
 ): Promise<HelperResult<NewPayment[]>> {
-  const { query } = by;
+  const { query, options } = by;
   const payment_param = { ...by, options: { ...by.options, fields: undefined } };
   const payment_result = await getPaymentBy(payment_param);
 
@@ -72,9 +74,12 @@ export async function updatePaymentBy(
       value: [old_payment],
     };
   }
-
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db.update(payment).set(changed_data).returning().where(whereSQL);
+  const updateDBRequest = await (options?.tx || db)
+    .update(payment)
+    .set(changed_data)
+    .returning()
+    .where(whereSQL);
 
   const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
@@ -103,7 +108,7 @@ export async function getPaymentBy(
       {}
     );
   }
-  const queryDBResult = await db.query.payment.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db).query.payment.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -134,10 +139,10 @@ export function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Partial<Payme
 export async function getPaymentCountBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<number>> {
-  const { query } = data;
+  const { query, options } = data;
   const { id, amount } = query;
   const conditions = generatePaymentQueryConditions(data);
-  const request_query = db.select({ count: count() }).from(payment);
+  const request_query = (options?.tx || db).select({ count: count() }).from(payment);
 
   if (id || amount) {
     request_query.limit(1);

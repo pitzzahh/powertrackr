@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { billingInfo } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/types/helper";
+import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
