@@ -131,8 +131,13 @@
     );
     try {
       await submit();
+      const issues = currentAction.fields.allIssues?.() || [];
+      if (issues.length > 0) {
+        callback?.(false, action, { error: issues.map((i) => i.message).join(", ") });
+      } else {
+        callback?.(true, action);
+      }
       form.reset();
-      callback?.(true, action);
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {
