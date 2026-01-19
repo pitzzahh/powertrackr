@@ -19,7 +19,7 @@ export const billFormSchema = v.object({
   totalkWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   // Multiple sub meters instead of single subReading
   subMeters: v.fallback(v.array(subMeterSchema), []),
-  status: v.fallback(v.picklist(["Paid", "Pending"]), "Pending"),
+  status: v.fallback(v.picklist(["Paid", "Pending", "N/A"]), "Pending"),
 });
 
 // Schema for updating billing info with multiple sub meters
@@ -33,7 +33,7 @@ export const updateBillingInfoSchema = v.object({
   totalkWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   // Multiple sub meters instead of single subReading
   subMeters: v.fallback(v.array(subMeterSchema), []),
-  status: v.fallback(v.picklist(["Paid", "Pending"]), "Pending"),
+  status: v.fallback(v.picklist(["Paid", "Pending", "N/A"]), "Pending"),
 });
 
 export const billingInfoSchema = updateBillingInfoSchema;
