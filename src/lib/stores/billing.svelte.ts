@@ -66,7 +66,6 @@ class BillingStore {
     try {
       this.status = "fetching";
       const { value } = await getExtendedBillingInfos({ userId: this.userId });
-      console.log(JSON.stringify(value, null, 2));
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);
       this.status = "success";
