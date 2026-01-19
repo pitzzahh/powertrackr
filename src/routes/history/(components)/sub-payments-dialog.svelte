@@ -12,8 +12,6 @@
   }
 
   let { open, onOpenChange, billingInfo }: Props = $props();
-
-  $inspect(billingInfo);
 </script>
 
 <Dialog {open} {onOpenChange}>
