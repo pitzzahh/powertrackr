@@ -26,7 +26,7 @@ import type {
   SubMeterDTOWithPayment,
   SubMeterDTOWithBillingInfo,
 } from "$/types/sub-meter";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("Sub Meter CRUD Operations", () => {
   beforeEach(() => {

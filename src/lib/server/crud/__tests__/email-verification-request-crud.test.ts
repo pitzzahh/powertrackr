@@ -11,7 +11,7 @@ import {
 import { createEmailVerificationRequest, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewEmailVerificationRequest } from "$/types/email-verification-request";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("Email Verification Request CRUD Operations", () => {
   beforeEach(() => {

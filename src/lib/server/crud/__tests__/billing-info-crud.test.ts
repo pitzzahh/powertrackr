@@ -20,7 +20,7 @@ import { addUser } from "../user-crud";
 import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
 import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
 import type { NewBillingInfo } from "$/types/billing-info";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 import type { Payment } from "$/types/payment";
 import type { SubMeter } from "$/types/sub-meter";
 

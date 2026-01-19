@@ -8,9 +8,10 @@ import {
   mapNewUser_to_DTO,
   generateUserQueryConditions,
 } from "../user-crud";
+import { db } from "$/server/db";
 import { createUser, createUsers, resetSequence } from "./helpers/factories";
 import type { NewUser } from "$/types/user";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("User CRUD Operations", () => {
   beforeEach(() => {
@@ -615,6 +616,105 @@ describe("User CRUD Operations", () => {
       expect(conditions).toEqual({
         email: "test@example.com",
       });
+    });
+  });
+
+  describe("Transactions", () => {
+    it("should isolate addUser inside transaction until commit", async () => {
+      if (process.env.CI === "true") return;
+      const initialCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      const { id: _, ...userDataWithoutId } = createUser({
+        email: "tx-isolation@example.com",
+        name: "Tx Isolation",
+      });
+
+      await db.transaction(async (tx) => {
+        const addResult = await addUser([userDataWithoutId], tx);
+        expect(addResult.valid).toBe(true);
+
+        const inTxCount = (await getUserCountBy({ query: {}, options: { tx } })).value;
+        expect(inTxCount).toBe(initialCount + 1);
+
+        const outTxCount = (await getUserCountBy({ query: {}, options: {} })).value;
+        expect(outTxCount).toBe(initialCount);
+      });
+
+      const finalCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      expect(finalCount).toBe(initialCount + 1);
+    });
+
+    it("should rollback addUser when transaction throws", async () => {
+      if (process.env.CI === "true") return;
+      const initialCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      const { id: _, ...userDataWithoutId } = createUser({
+        email: "tx-rollback@example.com",
+        name: "Tx Rollback",
+      });
+
+      await expect(
+        db.transaction(async (tx) => {
+          await addUser([userDataWithoutId], tx);
+          throw new Error("force rollback");
+        })
+      ).rejects.toThrow();
+
+      const finalCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      expect(finalCount).toBe(initialCount);
+    });
+
+    it("should isolate updateUserBy inside transaction until commit", async () => {
+      if (process.env.CI === "true") return;
+      const { id: _, ...userDataWithoutId } = createUser({
+        email: "tx-update@example.com",
+        name: "Before",
+      });
+      const {
+        valid: insertValid,
+        value: [addedUser],
+      } = await addUser([userDataWithoutId]);
+      expect(insertValid).toBe(true);
+      const userId = addedUser.id;
+
+      await db.transaction(async (tx) => {
+        const updateResult = await updateUserBy(
+          { query: { id: userId }, options: { tx } },
+          { name: "After" }
+        );
+        expect(updateResult.valid).toBe(true);
+
+        const inTxUser = (await getUserBy({ query: { id: userId }, options: { tx } })).value[0];
+        expect(inTxUser.name).toBe("After");
+
+        const outTxUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
+        expect(outTxUser.name).toBe("Before");
+      });
+
+      const afterCommitUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
+      expect(afterCommitUser.name).toBe("After");
+    });
+
+    it("should rollback updateUserBy when transaction throws", async () => {
+      if (process.env.CI === "true") return;
+      const { id: _, ...userDataWithoutId } = createUser({
+        email: "tx-update-rollback@example.com",
+        name: "Original",
+      });
+      const {
+        valid: insertValid,
+        value: [addedUser],
+      } = await addUser([userDataWithoutId]);
+      expect(insertValid).toBe(true);
+      const userId = addedUser.id;
+
+      await expect(
+        db.transaction(async (tx) => {
+          await updateUserBy({ query: { id: userId }, options: { tx } }, { name: "Changed" });
+          throw new Error("force rollback");
+        })
+      ).rejects.toThrow();
+
+      const afterRollbackUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
+      expect(afterRollbackUser.name).toBe("Original");
     });
   });
 

@@ -11,7 +11,7 @@ import {
 import { createSession, createSessions, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewSession } from "$/types/session";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("Session CRUD Operations", () => {
   beforeEach(() => {

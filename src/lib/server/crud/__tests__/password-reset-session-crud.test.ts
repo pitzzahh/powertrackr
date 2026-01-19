@@ -11,7 +11,7 @@ import {
 import { createPasswordResetSession, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewPasswordResetSession } from "$/types/password-reset-session";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("Password Reset Session CRUD Operations", () => {
   beforeEach(() => {

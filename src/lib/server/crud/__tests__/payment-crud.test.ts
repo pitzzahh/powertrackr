@@ -10,7 +10,7 @@ import {
 } from "../payment-crud";
 import { createPayment, createPayments, resetSequence } from "./helpers/factories";
 import type { NewPayment } from "$/types/payment";
-import type { HelperParam } from "$/types/helper";
+import type { HelperParam } from "$/server/types/helper";
 
 describe("Payment CRUD Operations", () => {
   beforeEach(() => {
