@@ -46,6 +46,7 @@
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
   import { showLoading } from "$/components/toast";
+  import Separator from "$/components/ui/separator/separator.svelte";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
@@ -209,7 +210,7 @@
           placeholder="Enter total kWh"
           required
           min={0}
-          step={0.01}
+          step={1}
           {...currentAction.fields.totalkWh.as("number")}
         />
         <Field.Description>Total electricity consumption</Field.Description>
@@ -250,6 +251,7 @@
     </div>
 
     {#each subMeters as subMeter, subIndex (subMeter.id)}
+      {@const currentMeter = currentAction.fields.subMeters[subIndex].value()}
       <Card.Root class="gap-4 border-dashed">
         <Card.Header class="border-b">
           <div class="flex items-center justify-between">
@@ -269,10 +271,6 @@
         <Card.Content class="pt-0">
           <Field.Group>
             <Field.Field>
-              {@const subMeters = billingInfo?.subMeters}
-              {@const currentMeter = subMeters?.find(
-                (m) => m.label === currentAction.fields.subMeters[subIndex]["label"].value()
-              )}
               <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
               <Input
                 id="{identity}-totalkWh"
@@ -280,13 +278,6 @@
                 required
                 {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
               />
-              <Field.Description>
-                {#if currentMeter}
-                  Previous reading: [{currentMeter.reading}]
-                {:else}
-                  Current meter reading
-                {/if}
-              </Field.Description>
             </Field.Field>
 
             <Field.Field>
@@ -295,18 +286,22 @@
                 id="sub-reading-{subMeter.id}"
                 placeholder="Enter current reading"
                 min={0}
-                step={0.01}
+                step={1}
                 {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
               />
-              <Field.Description>Current sub-meter reading for calculation</Field.Description>
+              <Field.Description>
+                {#if currentMeter}
+                  Previous reading: [{subMeter.reading}]
+                {:else}
+                  Current sub-meter reading for calculation
+                {/if}
+              </Field.Description>
             </Field.Field>
 
+            <Separator />
+
             {#if action === "update"}
-              {@const subMeters = billingInfo?.subMeters}
-              {@const currentMeter = subMeters?.find(
-                (m) => m.label === currentAction.fields.subMeters[subIndex]["label"].value()
-              )}
-              {#if currentMeter && currentMeter.reading - subMeter.reading}
+              {#if currentMeter}
                 <div class="text-sm text-muted-foreground">
                   Consumption: {currentMeter.reading - subMeter.reading} kWh
                 </div>
