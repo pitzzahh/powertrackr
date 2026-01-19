@@ -31,7 +31,7 @@
   import { isHttpError } from "@sveltejs/kit";
   import { signout } from "$/api/auth.remote";
   import { resendVerification } from "$/api/email.remote";
-  import { showError, showLoading, showSuccess } from "$/components/toast";
+  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
@@ -43,11 +43,6 @@
   });
 
   const id = $props.id();
-
-  onDestroy(() => {
-    clearInterval(timer);
-    status = "idle";
-  });
 
   $effect(() => {
     const cookies = document.cookie.split(";").map((c) => c.trim());
@@ -72,6 +67,10 @@
         }, 1000);
       }
     }
+    return () => {
+      clearInterval(timer);
+      status = "idle";
+    };
   });
 </script>
 
@@ -81,7 +80,12 @@
     const toastId = showLoading("Verifying your email...");
     try {
       await submit();
-      showSuccess("Email verified successfully");
+      const issues = verifyEmail.fields.allIssues?.() || [];
+      if (issues.length > 0) {
+        showWarning(issues.map((i) => i.message).join(", "));
+      } else {
+        showSuccess("Email verified successfully");
+      }
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
