@@ -34,6 +34,8 @@
   import { showSuccess, showError } from "$/components/toast";
   import { billingStore } from "$lib/stores/billing.svelte.js";
   import { invalidate } from "$app/navigation";
+  import { getLatestBillingInfo } from "$/api/billing-info.remote";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
 
   let { user }: HeaderProps = $props();
 
@@ -143,9 +145,16 @@
 {/snippet}
 
 {#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
+  {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
   <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
     <div class="space-y-4 p-4">
-      <BillingInfoForm action="add" {callback} />
+      <BillingInfoForm
+        action="add"
+        {callback}
+        billingInfo={user
+          ? (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters)
+          : undefined}
+      />
     </div>
   </ScrollArea>
 {/snippet}
