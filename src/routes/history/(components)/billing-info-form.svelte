@@ -51,10 +51,16 @@
 
   const identity = $props.id();
 
-  let { dateValue, status, open, subMeters } = $state<BillingInfoFormState>({
+  let { dateValue, status, open, subMeters } = $derived<BillingInfoFormState>({
     dateValue: undefined,
     status: "pending",
-    subMeters: [],
+    subMeters: billingInfo
+      ? billingInfo.subMeters.map((sub) => ({
+          id: sub.id,
+          label: sub.label,
+          reading: sub.reading,
+        }))
+      : [],
     open: false,
   });
 
@@ -84,28 +90,31 @@
       // Set date
       const date = new Date(billingInfo.date);
       dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-
-      // Set other fields
+      currentAction.fields.date.set(dateValue?.toString());
       status = billingInfo.status;
-
-      // Initialize sub meters if they exist
-      // Note: This assumes billingInfo has subMeters property, adjust if needed
-      subMeters.length = 0;
-      if (billingInfo.subMeters) {
-        subMeters.push(
-          ...billingInfo.subMeters.map((sub) => ({
-            id: sub.id,
-            label: sub.label,
-            reading: sub.reading,
-          }))
-        );
-      }
+      currentAction.fields.balance.set(billingInfo.balance);
+      currentAction.fields.totalkWh.set(billingInfo.totalkWh);
+      currentAction.fields.status.set(billingInfo.status);
     } else {
       // Add mode - initialize with defaults
-      dateValue = today(getLocalTimeZone());
+      const latestDate = billingInfo && new Date(billingInfo?.date);
+      dateValue = latestDate
+        ? new CalendarDate(
+            latestDate.getFullYear(),
+            latestDate.getMonth() + 2,
+            latestDate.getDate()
+          )
+        : undefined;
       status = "pending";
-      subMeters.length = 0; // Start with no sub meters
     }
+  });
+  $effect(() => {
+    currentAction.fields.subMeters.set(
+      subMeters.map((s) => ({
+        label: s.label,
+        reading: action === "add" ? 0 : s.reading,
+      }))
+    );
   });
 </script>
 
@@ -260,6 +269,10 @@
         <Card.Content class="pt-0">
           <Field.Group>
             <Field.Field>
+              {@const subMeters = billingInfo?.subMeters}
+              {@const currentMeter = subMeters?.find(
+                (m) => m.label === currentAction.fields.subMeters[subIndex]["label"].value()
+              )}
               <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
               <Input
                 id="{identity}-totalkWh"
@@ -267,7 +280,13 @@
                 required
                 {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
               />
-              <Field.Description>Latest meter reading</Field.Description>
+              <Field.Description>
+                {#if currentMeter}
+                  Previous reading: [{currentMeter.reading}]
+                {:else}
+                  Current meter reading
+                {/if}
+              </Field.Description>
             </Field.Field>
 
             <Field.Field>
