@@ -29,7 +29,6 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
-  import { onMount } from "svelte";
 
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
@@ -61,7 +60,7 @@
     },
   });
 
-  onMount(() => {
+  $effect(() => {
     const keys = Object.keys(CHART_CONFIG);
     for (const key of keys) {
       if (!visibleKeysSet.has(key)) {
