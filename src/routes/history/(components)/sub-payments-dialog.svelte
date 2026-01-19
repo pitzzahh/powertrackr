@@ -5,6 +5,8 @@
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import type { ExtendedBillingInfoTableView } from "$lib/types/billing-info";
+  import { cubicInOut } from "svelte/easing";
+  import { scale } from "svelte/transition";
 
   interface Props {
     open: boolean;
@@ -22,7 +24,10 @@
     </DialogHeader>
     <ScrollArea class="max-h-96">
       {#each billingInfo.subMeters as subMeter, index}
-        <div class="space-y-2">
+        <div
+          class="space-y-2"
+          in:scale={{ duration: 1000, delay: index * 100, easing: cubicInOut }}
+        >
           <h3 class="text-md mb-2 font-semibold">Sub Meter [{subMeter.label}]</h3>
           <div class="overflow-hidden rounded-md border bg-background">
             <Table>
