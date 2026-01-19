@@ -121,16 +121,14 @@ export async function getPayments(data: HelperParam<NewPayment>): Promise<Partia
 }
 
 export function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Partial<PaymentDTO>[] {
-  return data.map(
-    (_payment) =>
-      ({
-        id: _payment.id ?? "",
-        amount: _payment.amount ?? null,
-        date: _payment.date ? new Date(_payment.date) : null,
-        createdAt: _payment.createdAt ? new Date(_payment.createdAt) : null,
-        updatedAt: _payment.updatedAt ? new Date(_payment.updatedAt) : null,
-      }) as PaymentDTO
-  );
+  // basicaly does nothing atm
+  return data.map((_payment) => ({
+    id: _payment.id,
+    amount: _payment.amount,
+    date: _payment.date,
+    createdAt: _payment.createdAt,
+    updatedAt: _payment.updatedAt,
+  }));
 }
 
 export async function getPaymentCountBy(
