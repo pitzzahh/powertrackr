@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { billingInfo } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
+import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
@@ -20,7 +20,8 @@ type BillingInfoQueryOptions = {
 };
 
 export async function addBillingInfo(
-  data: Omit<NewBillingInfo, "id">[]
+  data: Omit<NewBillingInfo, "id">[],
+  tx?: HelperParamOptions<NewBillingInfo>["tx"]
 ): Promise<HelperResult<BillingInfo[]>> {
   if (data.length === 0) {
     return {
@@ -30,7 +31,7 @@ export async function addBillingInfo(
     };
   }
 
-  const insert_result = await db
+  const insert_result = await (tx || db)
     .insert(billingInfo)
     .values(
       data.map((billing_info_data) => {
@@ -54,7 +55,7 @@ export async function updateBillingInfoBy(
   by: HelperParam<NewBillingInfo>,
   data: Partial<NewBillingInfo>
 ): Promise<HelperResult<BillingInfoWithPaymentAndSubMetersWithPayment[]>> {
-  const { query } = by;
+  const { query, options } = by;
   const billing_info_param = { ...by, options: { ...by.options, fields: undefined } };
   const billing_info_result = await getBillingInfoBy(billing_info_param);
 
@@ -80,7 +81,7 @@ export async function updateBillingInfoBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db
+  const updateDBRequest = await (options?.tx || db)
     .update(billingInfo)
     .set(changed_data)
     .returning()
@@ -139,7 +140,7 @@ export async function getBillingInfoBy(
       updatedAt: true,
     };
   }
-  const queryDBResult = await db.query.billingInfo.findMany(findManyOptions);
+  const queryDBResult = await (options?.tx || db).query.billingInfo.findMany(findManyOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -176,10 +177,10 @@ export function mapNewBillingInfo_to_DTO(data: Partial<BillingInfo>[]): Partial<
 export async function getBillingInfoCountBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<number>> {
-  const { query } = data;
+  const { query, options } = data;
   const { id, userId } = query;
   const conditions = generateBillingInfoQueryConditions(data);
-  const request_query = db.select({ count: count() }).from(billingInfo);
+  const request_query = (options?.tx || db).select({ count: count() }).from(billingInfo);
 
   if (id || userId) {
     request_query.limit(1);

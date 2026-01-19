@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { session } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
+import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewSession, Session, SessionDTO } from "$/types/session";
@@ -15,7 +15,8 @@ type SessionQueryOptions = {
 };
 
 export async function addSession(
-  data: Omit<NewSession, "id">[]
+  data: Omit<NewSession, "id">[],
+  tx?: HelperParamOptions<NewSession>["tx"]
 ): Promise<HelperResult<NewSession[]>> {
   if (data.length === 0) {
     return {
@@ -25,7 +26,7 @@ export async function addSession(
     };
   }
 
-  const insert_result = await db
+  const insert_result = await (tx || db)
     .insert(session)
     .values(
       data.map((session_data) => {
@@ -49,7 +50,7 @@ export async function updateSessionBy(
   by: HelperParam<NewSession>,
   data: Partial<NewSession>
 ): Promise<HelperResult<NewSession[]>> {
-  const { query } = by;
+  const { query, options } = by;
   const session_param = { ...by, options: { ...by.options, fields: undefined } };
   const session_result = await getSessionBy(session_param);
 
@@ -74,7 +75,11 @@ export async function updateSessionBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db.update(session).set(changed_data).returning().where(whereSQL);
+  const updateDBRequest = await (options?.tx || db)
+    .update(session)
+    .set(changed_data)
+    .returning()
+    .where(whereSQL);
 
   const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
@@ -103,7 +108,7 @@ export async function getSessionBy(
       {}
     );
   }
-  const queryDBResult = await db.query.session.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db).query.session.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -137,7 +142,7 @@ export async function getSessionCountBy(
   const { query } = data;
   const { id, userId } = query;
   const conditions = generateSessionQueryConditions(data);
-  const request_query = db.select({ count: count() }).from(session);
+  const request_query = (data.options?.tx || db).select({ count: count() }).from(session);
 
   if (id || userId) {
     request_query.limit(1);

@@ -31,7 +31,7 @@ export type HelperParamOptions<T> = {
   with_billing_info: boolean;
   with_sub_meters: boolean;
   with_sub_meters_with_payment: boolean;
-  tx: typeof db;
+  tx: Parameters<Parameters<typeof db.transaction>[0]>[0];
 };
 
 export type APIReturnedData<T> = {

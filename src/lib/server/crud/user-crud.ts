@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { user } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
+import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "$/types/user";
@@ -15,7 +15,10 @@ type UserQueryOptions = {
   columns?: Record<string, true>;
 };
 
-export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult<NewUser[]>> {
+export async function addUser(
+  data: Omit<NewUser, "id">[],
+  tx?: HelperParamOptions<NewUser>["tx"]
+): Promise<HelperResult<NewUser[]>> {
   if (data.length === 0) {
     return {
       valid: true,
@@ -24,7 +27,7 @@ export async function addUser(data: Omit<NewUser, "id">[]): Promise<HelperResult
     };
   }
 
-  const insert_result = await db
+  const insert_result = await (tx || db)
     .insert(user)
     .values(
       data.map((user_data) => {
@@ -48,7 +51,7 @@ export async function updateUserBy(
   by: HelperParam<NewUser>,
   data: Partial<NewUser>
 ): Promise<HelperResult<NewUser[]>> {
-  const { query } = by;
+  const { query, options } = by;
   const user_param = { ...by, options: { ...by.options, fields: undefined } };
   const user_result = await getUserBy(user_param);
 
@@ -73,7 +76,11 @@ export async function updateUserBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db.update(user).set(changed_data).returning().where(whereSQL);
+  const updateDBRequest = await (options?.tx || db)
+    .update(user)
+    .set(changed_data)
+    .returning()
+    .where(whereSQL);
 
   const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
@@ -103,7 +110,7 @@ export async function getUserBy(
       {}
     );
   }
-  const queryDBResult = await db.query.user.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db).query.user.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -136,10 +143,10 @@ export function mapNewUser_to_DTO(
 }
 
 export async function getUserCountBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
-  const { query } = data;
+  const { query, options } = data;
   const { id, email } = query;
   const conditions = generateUserQueryConditions(data);
-  const request_query = db.select({ count: count() }).from(user);
+  const request_query = (options?.tx || db).select({ count: count() }).from(user);
 
   if (id || email) {
     request_query.limit(1);

@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { passwordResetSession } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
+import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
@@ -18,7 +18,8 @@ type PasswordResetSessionQueryOptions = {
 };
 
 export async function addPasswordResetSession(
-  data: Omit<NewPasswordResetSession, "id">[]
+  data: Omit<NewPasswordResetSession, "id">[],
+  tx?: HelperParamOptions<NewPasswordResetSession>["tx"]
 ): Promise<HelperResult<NewPasswordResetSession[]>> {
   if (data.length === 0) {
     return {
@@ -28,7 +29,7 @@ export async function addPasswordResetSession(
     };
   }
 
-  const insert_result = await db
+  const insert_result = await (tx || db)
     .insert(passwordResetSession)
     .values(
       data.map((session_data) => ({
@@ -50,7 +51,7 @@ export async function updatePasswordResetSessionBy(
   by: HelperParam<NewPasswordResetSession>,
   data: Partial<NewPasswordResetSession>
 ): Promise<HelperResult<NewPasswordResetSession[]>> {
-  const { query } = by;
+  const { query, options } = by;
   const session_param = { ...by, options: { ...by.options, fields: undefined } };
   const session_result = await getPasswordResetSessionBy(session_param);
 
@@ -74,7 +75,7 @@ export async function updatePasswordResetSessionBy(
     };
   }
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await db
+  const updateDBRequest = await (options?.tx || db)
     .update(passwordResetSession)
     .set(changed_data)
     .returning()
@@ -107,7 +108,7 @@ export async function getPasswordResetSessionBy(
       {}
     );
   }
-  const queryDBResult = await db.query.passwordResetSession.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db).query.passwordResetSession.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -143,11 +144,11 @@ export async function mapNewPasswordResetSession_to_DTO(
 export async function getPasswordResetSessionCountBy(
   data: HelperParam<NewPasswordResetSession>
 ): Promise<HelperResult<number>> {
-  const { query } = data;
+  const { query, options } = data;
   const { id, email } = query;
   const conditions = generatePasswordResetSessionQueryConditions(data);
   console.log({ conditions });
-  const request_query = db.select({ count: count() }).from(passwordResetSession);
+  const request_query = (options?.tx || db).select({ count: count() }).from(passwordResetSession);
 
   if (id || email) {
     request_query.limit(1);
