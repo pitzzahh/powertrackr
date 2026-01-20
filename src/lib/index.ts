@@ -8,3 +8,5 @@ export type WithElementRef<T, U extends HTMLElement = HTMLElement> = T & {
 export const calculatePayPerKwh = (balance: number, totalKwh: number) => {
   return Number((balance / totalKwh).toFixed(2));
 };
+
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
