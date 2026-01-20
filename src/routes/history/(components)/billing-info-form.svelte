@@ -90,6 +90,8 @@
       dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
       currentAction.fields.date.set(dateValue?.toString());
       status = billingInfo.status;
+      //@ts-expect-error id exists for update action
+      currentAction.fields.id.set(billingInfo.id);
       currentAction.fields.balance.set(billingInfo.balance);
       currentAction.fields.totalkWh.set(billingInfo.totalkWh);
       currentAction.fields.status.set(billingInfo.status);
@@ -142,7 +144,6 @@
       toast.dismiss(toastId);
     }
   })}
-  class="space-y-6"
 >
   <!-- Main Billing Info Fields -->
   <div class="space-y-4">
@@ -151,6 +152,18 @@
     </h4>
 
     <Field.Group>
+      {#if action === "update"}
+        <Field.Field class="sr-only">
+          <Field.Label for="{identity}-balance" class="sr-only">Total Balance</Field.Label>
+          <input
+            id="{identity}-balance"
+            type="text"
+            hidden
+            {...updateBillingInfo.fields.id.as("text")}
+          />
+        </Field.Field>
+      {/if}
+
       <Field.Field>
         <Label for="{identity}-date" class="px-1">Date</Label>
         <Popover.Root bind:open>
