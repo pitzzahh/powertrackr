@@ -489,14 +489,9 @@ export const deleteBillingInfoBatch = command(
       session: { userId },
     } = requireAuth();
 
-    let validCount = 0;
-
-    for (const id of ids) {
-      const { valid } = await deleteBillingInfoBy({ query: { id } });
-      if (valid) {
-        validCount++;
-      }
-    }
+    const validCount = (
+      await Promise.all(ids.map((id) => deleteBillingInfoBy({ query: { id } })))
+    ).filter((result) => result.valid).length;
 
     if (validCount === count) {
       console.log("Refreshing data");
