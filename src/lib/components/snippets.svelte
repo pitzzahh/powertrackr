@@ -1,11 +1,16 @@
 <script module lang="ts">
+  import { getLatestBillingInfo } from "$/api/billing-info.remote";
   import { TriangleAlert } from "$lib/assets/icons";
+  import { ScrollArea } from "$/components/ui/scroll-area";
+  import type { BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import { BillingInfoForm } from "$routes/history/(components)";
 
   export type WarningBannerProps = {
     message: string;
   };
 
-  export { WarningBanner, LoadingDots };
+  export { WarningBanner, LoadingDots, NewBill };
 </script>
 
 {#snippet WarningBanner({ message }: WarningBannerProps)}
@@ -26,4 +31,18 @@
     <span class="animation-delay-500 animate-pulse">.</span>
     <span class="animation-delay-1000 animate-pulse">.</span>
   </span>
+{/snippet}
+
+{#snippet NewBill(callback: BillingInfoWithSubMetersFormProps["callback"], userId: string)}
+  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
+    {@const billingInfo = getLatestBillingInfo({ userId })}
+    <div class="space-y-4 p-4">
+      {#key billingInfo.current}
+        {@const latestBillingInfo =
+          (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
+
+        <BillingInfoForm action="add" {callback} billingInfo={latestBillingInfo} />
+      {/key}
+    </div>
+  </ScrollArea>
 {/snippet}

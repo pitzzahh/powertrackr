@@ -6,12 +6,15 @@
     user: App.Locals["user"];
   };
 
-  type HeaderState = {
+  export type HeaderState = {
     openMenu: boolean;
     quickActions: {
       icon: typeof Icon;
       label: string;
-      content: (callback: BillingInfoWithSubMetersFormProps["callback"]) => ReturnType<Snippet<[]>>;
+      content: (
+        callback: BillingInfoWithSubMetersFormProps["callback"],
+        userId: string
+      ) => ReturnType<Snippet<[]>>;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
@@ -27,18 +30,16 @@
   import { toggleMode } from "mode-watcher";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import BillingInfoForm, {
-    type BillingInfoWithSubMetersFormProps,
-  } from "$routes/history/(components)/billing-info-form.svelte";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import { showSuccess, showError, showWarning } from "$/components/toast";
+  import { type BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
+  import { showSuccess, showWarning } from "$/components/toast";
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
-  import { getLatestBillingInfo } from "$/api/billing-info.remote";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import { NewBill } from "$/components/snippets.svelte";
 
   let { user }: HeaderProps = $props();
 
   const billingStore = useBillingStore();
+  const consumptionStore = useConsumptionStore();
 
   let { openMenu, quickActions }: HeaderState = $state({
     openMenu: false,
@@ -46,11 +47,12 @@
       {
         icon: PhilippinePeso,
         label: "New Bill",
-        content: newBill,
+        content: NewBill,
         callback: (valid, action, metaData) => {
           openMenu = false;
           if (valid) {
             billingStore.refresh();
+            consumptionStore.refresh();
             showSuccess(
               action === "add"
                 ? "Billing info created successfully!"
@@ -113,7 +115,7 @@
                       <Sheet.Title>Add new Bill</Sheet.Title>
                       <Sheet.Description>Enter billing info</Sheet.Description>
                     </Sheet.Header>
-                    {@render quickAction.content(quickAction.callback)}
+                    {@render quickAction.content(quickAction.callback, user?.id || "")}
                   </Sheet.Content>
                 </Sheet.Portal>
               </Sheet.Root>
@@ -145,18 +147,4 @@
   viewTransitionName = "logo",
 }: { className?: string; viewTransitionName?: string } = {})}
   <Logo variant="ghost" class={cn("px-0", className)} {viewTransitionName} />
-{/snippet}
-
-{#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}
-  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
-    {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
-    <div class="space-y-4 p-4">
-      {#key billingInfo.current}
-        {@const latestBillingInfo =
-          (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
-
-        <BillingInfoForm action="add" {callback} billingInfo={latestBillingInfo} />
-      {/key}
-    </div>
-  </ScrollArea>
 {/snippet}
