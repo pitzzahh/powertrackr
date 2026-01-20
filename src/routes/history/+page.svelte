@@ -3,18 +3,20 @@
   import { extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
   import { HistoryDataTable } from "$routes/history/(components)";
   import { onMount } from "svelte";
-  import { BILLING_STORE } from "$lib/stores/billing.svelte.js";
+  import { useBillingStore } from "$/stores/billing.svelte.js";
 
   let { data } = $props();
 
+  const billingStore = useBillingStore();
+
   onMount(() => {
     if (!data.user) return;
-    BILLING_STORE.setUserId(data.user.id);
-    BILLING_STORE.fetchData();
+    billingStore.setUserId(data.user.id);
+    billingStore.fetchData();
   });
 </script>
 
 <HistoryDataTable
-  status={BILLING_STORE.status}
-  data={BILLING_STORE.extendedBillingInfos.map(extendedBillingInfoToTableView)}
+  status={billingStore.status}
+  data={billingStore.extendedBillingInfos.map(extendedBillingInfoToTableView)}
 />

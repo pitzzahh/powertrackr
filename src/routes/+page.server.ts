@@ -1,6 +1,5 @@
 import { requireAuth } from "$/server/auth";
 
-export function load({ depends }) {
-  depends("app:root");
+export function load() {
   return requireAuth();
 }

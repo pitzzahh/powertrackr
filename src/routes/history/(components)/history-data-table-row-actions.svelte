@@ -27,8 +27,11 @@
   import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
   import { Input } from "$/components/ui/input";
   import { deleteBillingInfo } from "$/api/billing-info.remote";
+  import { useBillingStore } from "$/stores/billing.svelte";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
+
+  const billingStore = useBillingStore();
 
   let { app_state, active_dialog_content, open_view, open_edit, delete_confirm_value } =
     $state<ComponentState>({
@@ -39,7 +42,7 @@
       delete_confirm_value: "",
     });
 
-  let billingDetails = $derived([
+  const BILLING_DETAILS = $derived([
     {
       label: "ID",
       value: row.original.id,
@@ -97,13 +100,17 @@
     });
 
     if (!valid || value != 1) {
+      app_state = "stale";
+      open_view = false;
       return showWarning(
         "Failed to remove billing info. It may not exist or already removed.",
         `More info: ${message || "unknown reason"}`
       );
     }
     app_state = "stale";
-    return showSuccess(message);
+    open_view = false;
+    billingStore.refresh();
+    return showSuccess(`Billing info${value > 1 ? "s" : ""} deleted successfully`, message);
   }
 </script>
 
@@ -168,7 +175,7 @@
         <div class="overflow-hidden rounded-md border bg-background">
           <Table>
             <TableBody>
-              {#each billingDetails as item}
+              {#each BILLING_DETAILS as item}
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >

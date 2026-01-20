@@ -6,15 +6,17 @@
   import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { BILLING_STORE } from "$lib/stores/billing.svelte.js";
+  import { useBillingStore } from "$/stores/billing.svelte.js";
   import { Loader, Banknote } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
 
   let { data } = $props();
 
+  const billingStore = useBillingStore();
+
   onMount(() => {
-    BILLING_STORE.setUserId(data.user.id);
-    BILLING_STORE.fetchData();
+    billingStore.setUserId(data.user.id);
+    billingStore.fetchData();
     if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
       goto(page.url.pathname, { replaceState: true });
@@ -26,17 +28,17 @@
 
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
   <ChartArea
-    status={BILLING_STORE.status}
-    refetch={(cb) => BILLING_STORE.refresh().finally(cb)}
-    chartData={BILLING_STORE.extendedBillingInfos.map(toAreaChartData)}
+    status={billingStore.status}
+    refetch={(cb) => billingStore.refresh().finally(cb)}
+    chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
   />
 </section>
 
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
   <ChartBar
-    status={BILLING_STORE.status}
-    refetch={(cb) => BILLING_STORE.refresh().finally(cb)}
-    chartData={BILLING_STORE.extendedBillingInfos.map(toBarChartData)}
+    status={billingStore.status}
+    refetch={(cb) => billingStore.refresh().finally(cb)}
+    chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
   />
 </section>
 
@@ -50,13 +52,13 @@
         <Banknote class="h-5 w-5" />
         <span class="text-lg">Current</span>
       </div>
-      {#if BILLING_STORE.status === "fetching"}
+      {#if billingStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
-      {:else if BILLING_STORE.status === "error"}
+      {:else if billingStore.status === "error"}
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
       {:else}
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          {formatNumber(BILLING_STORE.summary?.current || 0)}
+          {formatNumber(billingStore.summary?.current || 0)}
         </div>
       {/if}
     </div>
@@ -64,49 +66,49 @@
     <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Cost</span>
-        {#if BILLING_STORE.status === "fetching"}
+        {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
-        {:else if BILLING_STORE.status === "error"}
+        {:else if billingStore.status === "error"}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(BILLING_STORE.summary?.invested || 0)}</span
+            >{formatNumber(billingStore.summary?.invested || 0)}</span
           >
         {/if}
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Savings</span>
-        {#if BILLING_STORE.status === "fetching"}
+        {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
-        {:else if BILLING_STORE.status === "error"}
+        {:else if billingStore.status === "error"}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
         {:else}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(BILLING_STORE.summary?.totalReturns || 0)}</span
+            >+{formatNumber(billingStore.summary?.totalReturns || 0)}</span
           >
         {/if}
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-sm">Net Savings</span>
-        {#if BILLING_STORE.status === "fetching"}
+        {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
-        {:else if BILLING_STORE.status === "error"}
+        {:else if billingStore.status === "error"}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0%</span>
         {:else}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(BILLING_STORE.summary?.netReturns || 0)}%</span
+            >+{formatNumber(billingStore.summary?.netReturns || 0)}%</span
           >
         {/if}
       </div>
       <div class="flex flex-col gap-1">
         <span class="text-sm">1 Day Savings</span>
-        {#if BILLING_STORE.status === "fetching"}
+        {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
-        {:else if BILLING_STORE.status === "error"}
+        {:else if billingStore.status === "error"}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
         {:else}
           <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(BILLING_STORE.summary?.oneDayReturns || 0)}</span
+            >+{formatNumber(billingStore.summary?.oneDayReturns || 0)}</span
           >
         {/if}
       </div>

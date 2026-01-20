@@ -17,6 +17,7 @@
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
   import { sidebarStore } from "$/stores/sidebar.svelte";
+  import { setBillingStore } from "$/stores/billing.svelte";
   import { Toaster } from "svelte-sonner";
   import { onMount, untrack } from "svelte";
   import { onNavigate } from "$app/navigation";
@@ -25,6 +26,9 @@
 
   // Initialize sidebar state from server data immediately
   untrack(() => sidebarStore.init(data.sidebarCollapsed));
+
+  // Initialize billing store context
+  setBillingStore();
 
   let { pendingCount }: LayoutState = $state({
     pendingCount: 0,

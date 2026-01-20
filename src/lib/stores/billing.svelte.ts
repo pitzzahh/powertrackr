@@ -1,6 +1,7 @@
 import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
 import type { Status } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
+import { getContext, setContext } from "svelte";
 
 function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   if (infos.length === 0) {
@@ -47,7 +48,7 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   };
 }
 
-class BillingStore {
+class BillingState {
   extendedBillingInfos = $state<ExtendedBillingInfo[]>([]);
   status = $state<Status>("idle");
   summary = $state<BillingSummary | null>(null);
@@ -78,4 +79,22 @@ class BillingStore {
   }
 }
 
-export const BILLING_STORE = new BillingStore();
+const SYMBOL_KEY = "billing-store";
+
+/**
+ * Instantiates a new `BillingState` instance and sets it in the context.
+ *
+ * @returns The `BillingState` instance.
+ */
+export function setBillingStore(): BillingState {
+  return setContext(Symbol.for(SYMBOL_KEY), new BillingState());
+}
+
+/**
+ * Retrieves the `BillingState` instance from the context. This is a class instance,
+ * so you cannot destructure it.
+ * @returns The `BillingState` instance.
+ */
+export function useBillingStore(): BillingState {
+  return getContext(Symbol.for(SYMBOL_KEY));
+}
