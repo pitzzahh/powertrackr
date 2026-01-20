@@ -20,13 +20,11 @@
   } = $props();
 
   let open = $state(false);
-
-  let buttonSize = $derived(children ? "default" : size);
 </script>
 
 <Button
   variant="outline"
-  size={buttonSize}
+  size={children ? "default" : size}
   title="View Sub Payments"
   onclick={() => (open = true)}
   class={className}
