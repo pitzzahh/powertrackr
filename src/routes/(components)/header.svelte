@@ -32,7 +32,7 @@
   } from "$routes/history/(components)/billing-info-form.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { showSuccess, showError, showWarning } from "$/components/toast";
-  import { billingStore } from "$lib/stores/billing.svelte.js";
+  import { BILLING_STORE } from "$lib/stores/billing.svelte.js";
   import { invalidate } from "$app/navigation";
   import { getLatestBillingInfo } from "$/api/billing-info.remote";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
@@ -50,7 +50,7 @@
           openMenu = false;
           if (valid) {
             await invalidate("app:root");
-            billingStore.refresh();
+            BILLING_STORE.refresh();
             showSuccess(
               action === "add"
                 ? "Billing info created successfully!"

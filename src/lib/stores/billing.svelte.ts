@@ -78,4 +78,4 @@ class BillingStore {
   }
 }
 
-export const billingStore = new BillingStore();
+export const BILLING_STORE = new BillingStore();
