@@ -22,7 +22,7 @@
     <DialogHeader>
       <DialogTitle>Sub Payments for [{billingInfo.date}]</DialogTitle>
     </DialogHeader>
-    <ScrollArea class="max-h-96">
+    <ScrollArea class="max-h-96 pr-2.5">
       {#each billingInfo.subMeters as subMeter, index}
         <div
           class="space-y-2"
@@ -54,7 +54,7 @@
             </Table>
           </div>
         </div>
-        {#if index % 2 == 0}
+        {#if index < billingInfo.subMeters.length - 1}
           <Separator class="my-6 w-full" />
         {/if}
       {/each}
