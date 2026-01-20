@@ -3,7 +3,7 @@
 # Pre-commit hook to run format and oxlint
 
 echo "Running format..."
-bun run format
+npm run format
 FORMAT_EXIT=$?
 
 if [ $FORMAT_EXIT -ne 0 ]; then
@@ -12,7 +12,7 @@ if [ $FORMAT_EXIT -ne 0 ]; then
 fi
 
 echo "Running oxlint..."
-bun run lint
+npm run lint
 LINT_EXIT=$?
 
 if [ $LINT_EXIT -ne 0 ]; then
