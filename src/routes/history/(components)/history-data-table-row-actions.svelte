@@ -19,13 +19,14 @@
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
-  import { showWarning } from "$/components/toast";
+  import { showSuccess, showWarning } from "$/components/toast";
   import * as Sheet from "$/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
   import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
   import { Input } from "$/components/ui/input";
+  import { deleteBillingInfo } from "$/api/billing-info.remote";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
@@ -91,24 +92,18 @@
     }
     app_state = "processing";
 
-    // const delete_result = await deleteBillingInfo(row.original.id);
-    // open_view = false;
-    // app_state = "stale";
-    // if (delete_result === 0) {
-    //   return toast.custom(Toast, {
-    //     componentProps: {
-    //       title: "Failed to Remove Billing Info",
-    //       description:
-    //         "Failed to remove billing info record. It may not exist or already removed.",
-    //       variant: "destructive",
-    //     },
-    //   });
-    // }
+    const { valid, value, message } = await deleteBillingInfo({
+      id: row.original.id,
+    });
+
+    if (!valid || value != 1) {
+      return showWarning(
+        "Failed to remove billing info. It may not exist or already removed.",
+        `More info: ${message || "unknown reason"}`
+      );
+    }
     app_state = "stale";
-    return showWarning(
-      "Feature Under Development",
-      "The ability to remove billing records is currently being implemented and will be available in a future update."
-    );
+    return showSuccess(message);
   }
 </script>
 

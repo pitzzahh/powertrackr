@@ -1,6 +1,5 @@
 import { query, form, command } from "$app/server";
 import { db } from "$lib/server/db/index";
-import { billingInfo } from "$lib/server/db/schema/billing-info";
 import { subMeter } from "$lib/server/db/schema/sub-meter";
 import { calculatePayPerKwh } from "$lib";
 import {
@@ -18,6 +17,7 @@ import {
   updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
   getBillingInfoCountBy,
+  deleteBillingInfoBy,
 } from "$/server/crud/billing-info-crud";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error, invalid } from "@sveltejs/kit";
@@ -464,5 +464,5 @@ export const updateBillingInfo = form(
 
 // Command to delete a billing info
 export const deleteBillingInfo = command(deleteBillingInfoSchema, async ({ id }) => {
-  await db.delete(billingInfo).where(eq(billingInfo.id, id));
+  return await deleteBillingInfoBy({ query: { id } });
 });
