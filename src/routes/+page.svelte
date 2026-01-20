@@ -16,6 +16,7 @@
 
   onMount(() => {
     billingStore.setUserId(data.user.id);
+    billingStore.setStatus("loading_data");
     billingStore.fetchData();
     if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
