@@ -50,7 +50,7 @@
         callback: async (valid, action, metaData) => {
           openMenu = false;
           if (valid) {
-            billingStore.refresh();
+            billingStore.fetchData();
             showSuccess(
               action === "add"
                 ? "Billing info created successfully!"

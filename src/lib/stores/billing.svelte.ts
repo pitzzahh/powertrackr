@@ -58,10 +58,6 @@ class BillingState {
     this.userId = id;
   }
 
-  refresh() {
-    return this.fetchData();
-  }
-
   async fetchData() {
     if (!this.userId) return;
     try {

@@ -29,7 +29,7 @@
 <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
   <ChartArea
     status={billingStore.status}
-    refetch={(cb) => billingStore.refresh().finally(cb)}
+    refetch={(cb) => billingStore.fetchData().finally(cb)}
     chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
   />
 </section>
@@ -37,7 +37,7 @@
 <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
   <ChartBar
     status={billingStore.status}
-    refetch={(cb) => billingStore.refresh().finally(cb)}
+    refetch={(cb) => billingStore.fetchData().finally(cb)}
     chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
   />
 </section>
