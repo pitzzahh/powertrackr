@@ -65,6 +65,7 @@ export const getExtendedBillingInfos = query(getBillingInfosSchema, async ({ use
       fields: COMMON_FIELDS,
       with_payment: true,
       with_sub_meters_with_payment: true,
+      order: "desc",
     },
   });
 });
@@ -279,7 +280,9 @@ export const createBillingInfo = form(
 
     // Add sub meters
     await addSubMeter(subMeterInserts);
-
+    getExtendedBillingInfos({
+      userId,
+    }).refresh();
     return result;
   }
 );
