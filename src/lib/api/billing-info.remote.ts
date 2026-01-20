@@ -467,5 +467,15 @@ export const updateBillingInfo = form(
 
 // Command to delete a billing info
 export const deleteBillingInfo = command(deleteBillingInfoSchema, async ({ id }) => {
-  return await deleteBillingInfoBy({ query: { id } });
+  const {
+    session: { userId },
+  } = requireAuth();
+
+  const result = await deleteBillingInfoBy({ query: { id } });
+
+  if (result.value === 1) {
+    getExtendedBillingInfos({ userId }).refresh();
+  }
+
+  return result;
 });
