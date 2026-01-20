@@ -4,13 +4,14 @@
     entity_name: string; // singular form of the entity name (e.g., "position", "audit log")
     entity_name_plural?: string; // plural form (e.g., "positions", "audit logs")
     description?: string; // Custom dialog description, optional,
-    delete_fn: (row: TData) => Promise<0 | 1>; // Custom delete function, optional
+    delete_fn: (row: TData, count?: number | 1) => Promise<0 | 1>; // Custom delete function, optional
     callback?: (valid: boolean) => void; // Optional callback function to call after deletion
   }
 
   type ComponentState = {
     app_state: "idle" | "processing";
     dialog_open: boolean;
+    delete_confirm_value: string;
   };
 </script>
 
@@ -25,8 +26,9 @@
   import { catchErrorTyped } from "$/utils/error";
   import { toast } from "svelte-sonner";
   import { cn } from "$/utils/style";
-  import { Toast } from "$/components/toast";
+  import { Toast, showWarning } from "$/components/toast";
   import { cubicInOut } from "svelte/easing";
+  import { Input } from "$/components/ui/input";
 
   let {
     table,
@@ -37,9 +39,10 @@
     callback,
   }: DataTableFloatingBarProps<TData> = $props();
 
-  let { app_state, dialog_open } = $state<ComponentState>({
+  let { app_state, dialog_open, delete_confirm_value } = $state<ComponentState>({
     app_state: "idle",
     dialog_open: false,
+    delete_confirm_value: "",
   });
 
   const { entity_plural_name, selected_rows, default_dialog_description } = $derived({
@@ -48,7 +51,18 @@
     default_dialog_description: `This action cannot be undone. This will permanently delete the ${table.getFilteredSelectedRowModel().rows.length} selected ${entity_name_plural || `${entity_name}s`}, this is not reversible.`,
   });
 
+  const { deleteMessage } = $derived({
+    deleteMessage: `absolutely delete ${selected_rows.length} ${entity_name.toLocaleLowerCase()}`,
+  });
+
   async function handleDeleteSelectedRows() {
+    if (delete_confirm_value != deleteMessage) {
+      showWarning(
+        "Nice try, Inspector!",
+        "Bypassing the disabled state won't work. You still need the correct confirmation code."
+      );
+      return;
+    }
     app_state = "processing";
     const total_selected = selected_rows.length;
     let valid_count = 0;
@@ -56,7 +70,9 @@
 
     for (const row of selected_rows) {
       if (delete_fn) {
-        const [error, result] = await catchErrorTyped(delete_fn(row.original));
+        const [error, result] = await catchErrorTyped(
+          delete_fn(row.original, selected_rows.length)
+        );
         console.debug(
           `Delete function called for row: ${JSON.stringify(row.original)}, result: ${result}, error: ${error}`
         );
@@ -69,6 +85,7 @@
       }
     }
     dialog_open = false;
+    delete_confirm_value = "";
     app_state = "idle";
     table.toggleAllRowsSelected(false);
     if (valid_count < selected_rows.length) {
@@ -142,7 +159,17 @@
   </div>
 </div>
 
-<Dialog.Root open={dialog_open} onOpenChange={(value) => (dialog_open = value)}>
+<Dialog.Root
+  open={dialog_open}
+  onOpenChange={(value) => {
+    if (!value && app_state === "processing") {
+      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+      dialog_open = true;
+    } else {
+      dialog_open = value;
+    }
+  }}
+>
   <Dialog.Content>
     <Dialog.Header>
       <Dialog.Title>Are you sure?</Dialog.Title>
@@ -150,9 +177,27 @@
         {dialogDescription || default_dialog_description}
       </Dialog.Description>
     </Dialog.Header>
+    <Input
+      bind:value={delete_confirm_value}
+      type="text"
+      placeholder="Type {deleteMessage} to confirm"
+      class="text-center"
+    />
     <Dialog.Footer>
-      <Button variant="outline" onclick={() => (dialog_open = false)}>Cancel</Button>
-      <Button variant="destructive" onclick={handleDeleteSelectedRows}>
+      <Button
+        variant="outline"
+        onclick={() => {
+          dialog_open = false;
+          delete_confirm_value = "";
+        }}
+      >
+        Cancel
+      </Button>
+      <Button
+        variant="destructive"
+        onclick={handleDeleteSelectedRows}
+        disabled={delete_confirm_value !== deleteMessage || app_state === "processing"}
+      >
         <RefreshCw
           class={cn("hidden h-4 w-4 animate-spin", {
             block: app_state === "processing",
