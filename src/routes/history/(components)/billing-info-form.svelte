@@ -117,6 +117,7 @@
 
     currentAction.fields.subMeters.set(
       subMeters.map((s) => ({
+        id: s.id,
         label: s.label,
         reading: s.reading,
       }))
@@ -154,9 +155,9 @@
     <Field.Group>
       {#if action === "update"}
         <Field.Field class="sr-only">
-          <Field.Label for="{identity}-balance" class="sr-only">Total Balance</Field.Label>
+          <Field.Label for="{identity}-id" class="sr-only">Billing Info ID</Field.Label>
           <input
-            id="{identity}-balance"
+            id="{identity}-id"
             type="text"
             hidden
             {...updateBillingInfo.fields.id.as("text")}
@@ -291,6 +292,18 @@
             </div>
           </Card.Header>
           <Card.Content class="pt-0">
+            {#if action === "update"}
+              <Field.Field class="sr-only">
+                <Field.Label for="{identity}-sub-meter-id" class="sr-only">Sub meter id</Field.Label
+                >
+                <input
+                  id="{identity}-sub-meter-id"
+                  type="text"
+                  hidden
+                  {...updateBillingInfo.fields.subMeters[subIndex]["id"].as("text")}
+                />
+              </Field.Field>
+            {/if}
             <Field.Group>
               <Field.Field>
                 <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>

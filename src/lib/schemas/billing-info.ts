@@ -9,6 +9,8 @@ export const subMeterSchema = v.object({
   reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
 });
 
+export const updateSubMeterSchema = v.intersect([subMeterSchema, v.object({ id: v.string() })]);
+
 // Schema for billing info form with multiple sub meters
 export const billFormSchema = v.object({
   date: v.pipe(
@@ -32,7 +34,7 @@ export const updateBillingInfoSchema = v.object({
   balance: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   totalkWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
   // Multiple sub meters instead of single subReading
-  subMeters: v.fallback(v.array(subMeterSchema), []),
+  subMeters: v.fallback(v.array(updateSubMeterSchema), []),
   status: v.fallback(v.picklist(["Paid", "Pending", "N/A"]), "Pending"),
 });
 
