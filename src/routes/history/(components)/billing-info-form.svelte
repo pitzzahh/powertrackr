@@ -112,13 +112,11 @@
         label: sub.label,
         reading: sub.reading,
       })) ?? [];
-  });
 
-  $effect(() => {
     currentAction.fields.subMeters.set(
       subMeters.map((s) => ({
         label: s.label,
-        reading: action === "add" ? 0 : s.reading,
+        reading: s.reading,
       }))
     );
   });
@@ -296,7 +294,7 @@
                 <Input
                   id="sub-reading-{subMeter.id}"
                   placeholder="Enter current reading"
-                  min={0}
+                  min={subMeter.reading}
                   step={1}
                   required
                   {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
