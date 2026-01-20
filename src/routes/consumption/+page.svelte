@@ -20,8 +20,8 @@
   );
 
   onMount(() => {
-    if (!data.user) return;
     consumptionStore.setUserId(data.user.id);
+    consumptionStore.setStatus("loading_data");
     consumptionStore.fetchData();
   });
 </script>
