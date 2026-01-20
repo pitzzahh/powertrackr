@@ -7,7 +7,7 @@ import {
   updatePaymentSchema,
   getPaymentSchema,
   deletePaymentSchema,
-} from "$lib/schemas/payment";
+} from "$/validators/payment";
 import { addPayment, updatePaymentBy } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
 

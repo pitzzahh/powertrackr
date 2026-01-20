@@ -8,7 +8,7 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
-} from "$lib/schemas/billing-info";
+} from "$/validators/billing-info";
 import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
 import { requireAuth } from "$/server/auth";
 import {

@@ -5,7 +5,7 @@ import {
   setup2FASchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from "$/schemas/auth";
+} from "$/validators/auth";
 import {
   createSession,
   deleteSessionTokenCookie,

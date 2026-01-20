@@ -8,7 +8,7 @@ import {
   getSessionsSchema,
   getSessionSchema,
   deleteSessionSchema,
-} from "$lib/schemas/session";
+} from "$/validators/session";
 import { addSession, updateSessionBy, getSessionBy } from "$/server/crud/session-crud";
 import { error } from "@sveltejs/kit";
 

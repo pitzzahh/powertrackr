@@ -8,7 +8,7 @@ import {
   updateUserSchema,
   getUserSchema,
   deleteUserSchema,
-} from "$lib/schemas/user";
+} from "$/validators/user";
 import { addUser, getUserBy } from "$/server/crud/user-crud";
 import { error } from "@sveltejs/kit";
 
