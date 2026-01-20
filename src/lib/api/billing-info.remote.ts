@@ -23,7 +23,7 @@ import {
 import { addPayment } from "$/server/crud/payment-crud";
 import { error, invalid } from "@sveltejs/kit";
 import type { NewSubMeter } from "$/types/sub-meter";
-import { addSubMeter, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
+import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
 
@@ -377,7 +377,9 @@ export const updateBillingInfo = form(
         const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
 
         if (toDeleteIds.length > 0) {
-          await tx.delete(subMeter).where(inArray(subMeter.id, toDeleteIds));
+          await Promise.all(
+            toDeleteIds.map((id) => deleteSubMeterBy({ query: { id }, options: { tx } }))
+          );
         }
 
         for (const subData of subMetersData) {
