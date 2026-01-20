@@ -58,10 +58,18 @@ class BillingState {
     this.userId = id;
   }
 
+  setStatus(status: Status) {
+    this.status = status;
+  }
+
+  refresh() {
+    this.setStatus("fetching");
+    this.fetchData();
+  }
+
   async fetchData() {
     if (!this.userId) return;
     try {
-      this.status = "fetching";
       const { value } = await getExtendedBillingInfos({ userId: this.userId });
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);
