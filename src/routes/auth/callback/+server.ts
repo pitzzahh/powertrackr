@@ -39,8 +39,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const userRequest = new Request("https://api.github.com/user");
   userRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
   const userResponse = await event.fetch(userRequest);
-  const userResult: unknown = await userResponse.json();
-  const userParser = new ObjectParser(userResult);
+  const userParser = new ObjectParser(await userResponse.json());
 
   const githubUserId = userParser.getNumber("id");
   const username = userParser.getString("login");
