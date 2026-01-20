@@ -47,7 +47,7 @@
         icon: PhilippinePeso,
         label: "New Bill",
         content: newBill,
-        callback: async (valid, action, metaData) => {
+        callback: (valid, action, metaData) => {
           openMenu = false;
           if (valid) {
             billingStore.fetchData();
