@@ -168,6 +168,32 @@ export async function getPasswordResetSessionCountBy(
   };
 }
 
+export async function deletePasswordResetSessionBy(
+  data: HelperParam<NewPasswordResetSession>
+): Promise<HelperResult<number>> {
+  const { query, options } = data;
+  const conditions = generatePasswordResetSessionQueryConditions(data);
+  const whereSQL = buildWhereSQL(conditions);
+
+  if (!whereSQL) {
+    return {
+      valid: false,
+      message: "No conditions provided for deletion",
+      value: 0,
+    };
+  }
+
+  const deleteResult = await (options?.tx || db).delete(passwordResetSession).where(whereSQL);
+
+  const deletedCount = deleteResult.rowCount ?? 0;
+  const is_valid = deletedCount > 0;
+  return {
+    valid: is_valid,
+    message: `${deletedCount} password reset session(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
+    value: deletedCount,
+  };
+}
+
 export function generatePasswordResetSessionQueryConditions(
   data: HelperParam<NewPasswordResetSession>
 ) {

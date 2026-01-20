@@ -162,6 +162,32 @@ export async function getSessionCountBy(
   };
 }
 
+export async function deleteSessionBy(
+  data: HelperParam<NewSession>
+): Promise<HelperResult<number>> {
+  const { query, options } = data;
+  const conditions = generateSessionQueryConditions(data);
+  const whereSQL = buildWhereSQL(conditions);
+
+  if (!whereSQL) {
+    return {
+      valid: false,
+      message: "No conditions provided for deletion",
+      value: 0,
+    };
+  }
+
+  const deleteResult = await (options?.tx || db).delete(session).where(whereSQL);
+
+  const deletedCount = deleteResult.rowCount ?? 0;
+  const is_valid = deletedCount > 0;
+  return {
+    valid: is_valid,
+    message: `${deletedCount} session(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
+    value: deletedCount,
+  };
+}
+
 export function generateSessionQueryConditions(data: HelperParam<NewSession>) {
   const { query, options } = data;
   const { id, expiresAt, ipAddress, userAgent, userId, twoFactorVerified } = query;

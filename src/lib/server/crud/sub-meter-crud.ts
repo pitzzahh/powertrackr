@@ -232,6 +232,32 @@ export async function getSubMeterCountBy(
   };
 }
 
+export async function deleteSubMeterBy(
+  data: HelperParam<NewSubMeter>
+): Promise<HelperResult<number>> {
+  const { query, options } = data;
+  const conditions = generateSubMeterQueryConditions(data);
+  const whereSQL = buildWhereSQL(conditions);
+
+  if (!whereSQL) {
+    return {
+      valid: false,
+      message: "No conditions provided for deletion",
+      value: 0,
+    };
+  }
+
+  const deleteResult = await (options?.tx || db).delete(subMeter).where(whereSQL);
+
+  const deletedCount = deleteResult.rowCount ?? 0;
+  const is_valid = deletedCount > 0;
+  return {
+    valid: is_valid,
+    message: `${deletedCount} sub meter(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
+    value: deletedCount,
+  };
+}
+
 export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
   const { query, options } = data;
   const { id, billingInfoId, subkWh, paymentId, reading } = query;
