@@ -22,11 +22,7 @@
 
   const ctx = pendingFetchContext.get();
 
-  let {
-    table,
-    status = $bindable("idle"),
-    hide_show_row_count,
-  }: DataTablePaginationProps<TData> = $props();
+  let { table, status = "idle", hide_show_row_count }: DataTablePaginationProps<TData> = $props();
 </script>
 
 <div class="sticky bottom-0 z-10 w-full overflow-hidden rounded-b border bg-card backdrop-blur-sm">
@@ -34,33 +30,31 @@
     <div class="flex min-w-max items-center justify-between gap-6 px-4 py-2">
       <!-- Left section: Selection and loading info -->
       <div class="flex items-center gap-4">
-        {#key status}
-          {#if table.getFilteredSelectedRowModel().rows.length > 0}
-            <div transition:scale={{ duration: 200, easing: cubicInOut }}>
-              <Badge
-                variant="secondary"
-                class="flex items-center gap-2 text-sm font-medium whitespace-nowrap dark:bg-background"
-              >
-                <div class="size-2 animate-pulse rounded-full bg-primary"></div>
-                {table.getFilteredSelectedRowModel().rows.length} of
-                {table.getFilteredRowModel().rows.length} selected
-              </Badge>
-            </div>
-          {/if}
-          {#if status === "loading_data" || status === "fetching"}
+        {#if table.getFilteredSelectedRowModel().rows.length > 0}
+          <div transition:scale={{ duration: 200, easing: cubicInOut }}>
             <Badge
               variant="secondary"
-              class="flex animate-pulse items-center text-sm font-medium whitespace-nowrap dark:bg-background"
+              class="flex items-center gap-2 text-sm font-medium whitespace-nowrap dark:bg-background"
             >
-              <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
-              {#if status === "loading_data"}
-                Crunching initial data...
-              {:else}
-                Fetching some required data...
-              {/if}
+              <div class="size-2 animate-pulse rounded-full bg-primary"></div>
+              {table.getFilteredSelectedRowModel().rows.length} of
+              {table.getFilteredRowModel().rows.length} selected
             </Badge>
-          {/if}
-        {/key}
+          </div>
+        {/if}
+        {#if status === "loading_data" || status === "fetching"}
+          <Badge
+            variant="secondary"
+            class="flex animate-pulse items-center text-sm font-medium whitespace-nowrap dark:bg-background"
+          >
+            <Loader class="mr-2 h-3.5 w-3.5 animate-spin" />
+            {#if status === "loading_data"}
+              Crunching initial data...
+            {:else}
+              Fetching some required data...
+            {/if}
+          </Badge>
+        {/if}
       </div>
 
       <!-- Right section: Controls -->
