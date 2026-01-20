@@ -25,6 +25,7 @@ import { error, invalid } from "@sveltejs/kit";
 import type { NewSubMeter } from "$/types/sub-meter";
 import { addSubMeter } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
+import type { HelperResult } from "$/server/types/helper";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -506,6 +507,6 @@ export const deleteBillingInfoBatch = command(
       valid: validCount === count,
       value: validCount,
       message: `${validCount} item(s) deleted successfully`,
-    };
+    } as HelperResult<number>;
   }
 );
