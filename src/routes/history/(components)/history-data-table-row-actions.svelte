@@ -246,8 +246,8 @@
 
 <Sheet.Root bind:open={open_edit}>
   <Sheet.Portal>
-    <Sheet.Content class="min-w-[60%]" side="left">
-      <Sheet.Header>
+    <Sheet.Content class="min-w-[60%] gap-1" side="left">
+      <Sheet.Header class="border-b">
         <Sheet.Title>Edit billing info of {formatDate(new Date(row.original.date))}</Sheet.Title>
         <Sheet.Description>
           Update the billing info details for billing info with id
