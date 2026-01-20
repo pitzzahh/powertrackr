@@ -21,6 +21,7 @@
   import { Toaster } from "svelte-sonner";
   import { onMount, untrack } from "svelte";
   import { onNavigate } from "$app/navigation";
+  import { setConsumptionStore } from "$/stores/consumption.svelte.js";
 
   const { children, data } = $props();
 
@@ -29,6 +30,8 @@
 
   // Initialize billing store context
   setBillingStore();
+  // Initialize consumption store context
+  setConsumptionStore();
 
   let { pendingCount }: LayoutState = $state({
     pendingCount: 0,
