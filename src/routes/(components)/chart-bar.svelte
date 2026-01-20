@@ -185,7 +185,7 @@
           /> Refetch</Button
         >
       </div>
-    {:else if filteredData.length > 0}
+    {:else if filteredData.length > 0 && browser}
       <Chart.Container config={CHART_CONFIG} class="aspect-auto h-62.5 w-full">
         <BarChart
           bind:context

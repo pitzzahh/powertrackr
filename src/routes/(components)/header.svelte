@@ -135,13 +135,16 @@
   </header>
 
   <Sheet.Content side="left" class="flex h-full w-full flex-col bg-muted p-4">
-    {@render logo({ className: "py-6 w-fit mx-auto" })}
+    {@render logo({ className: "py-6 w-fit mx-auto", viewTransitionName: "logo-mobile" })}
     <SidebarContent bind:open={openMenu} {user} isMobileSheet={true} />
   </Sheet.Content>
 </Sheet.Root>
 
-{#snippet logo({ className }: { className?: string } | undefined = {})}
-  <Logo variant="ghost" class={cn("px-0", className)} />
+{#snippet logo({
+  className,
+  viewTransitionName = "logo",
+}: { className?: string; viewTransitionName?: string } = {})}
+  <Logo variant="ghost" class={cn("px-0", className)} {viewTransitionName} />
 {/snippet}
 
 {#snippet newBill(callback: HeaderState["quickActions"][0]["callback"])}

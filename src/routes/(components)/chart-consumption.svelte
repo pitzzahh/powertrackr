@@ -21,6 +21,7 @@
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
   import { formatNumber } from "$/utils/format";
+  import { browser } from "$app/environment";
   import type { Status } from "$/types/state";
 
   let { chartData, status, retryStatus, refetch }: ConsumptionChartProps = $props();
@@ -62,7 +63,7 @@
           /> Refetch</Button
         >
       </div>
-    {:else if chartData.length > 0}
+    {:else if chartData.length > 0 && browser}
       <Chart.Container config={CHART_CONFIG}>
         <LineChart
           data={sortedData}

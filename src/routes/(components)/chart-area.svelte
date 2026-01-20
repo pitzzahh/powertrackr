@@ -15,6 +15,7 @@
 </script>
 
 <script lang="ts">
+  import { browser } from "$app/environment";
   import * as Chart from "$/components/ui/chart/index.js";
   import * as Card from "$/components/ui/card/index.js";
   import * as Select from "$/components/ui/select/index.js";
@@ -118,7 +119,7 @@
           /> Refetch</Button
         >
       </div>
-    {:else if filteredData.length > 0}
+    {:else if filteredData.length > 0 && browser}
       <ChartContainer config={CHART_CONFIG} class="-ml-3 aspect-auto h-62.5 w-full">
         <LineChart
           data={transformedData}

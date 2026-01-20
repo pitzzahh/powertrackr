@@ -3,6 +3,7 @@
     variant?: ButtonVariant;
     size?: ButtonSize;
     class?: string;
+    viewTransitionName?: string;
   };
 </script>
 
@@ -19,6 +20,7 @@
     class: className,
     variant = "default",
     size = "default",
+    viewTransitionName = "logo",
     ...restProps
   }: LogoProps = $props();
 </script>
@@ -26,7 +28,7 @@
 <Button
   href="/"
   aria-label="Homepage"
-  style="view-transition-name: logo;"
+  style="view-transition-name: {viewTransitionName};"
   class={cn("flex cursor-pointer items-center justify-center rounded-sm", className)}
   {size}
   {variant}
