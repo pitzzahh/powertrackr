@@ -5,6 +5,7 @@ import {
   getEmailVerificationRequestBy,
   getEmailVerificationRequests,
   getEmailVerificationRequestCountBy,
+  deleteEmailVerificationRequestBy,
   mapNewEmailVerificationRequest_to_DTO,
   generateEmailVerificationRequestQueryConditions,
 } from "../email-verification-request-crud";
@@ -1109,6 +1110,158 @@ describe("Email Verification Request CRUD Operations", () => {
         code: "TESTCODE123",
         expiresAt,
       });
+    });
+  });
+
+  describe("deleteEmailVerificationRequestBy", () => {
+    it("should successfully delete verification request by ID", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const verificationData = [
+        (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({ userId: addedUser.id });
+          return rest;
+        })(),
+      ];
+      const addResult = await addEmailVerificationRequest(verificationData);
+      const addedRequest = addResult.value[0];
+
+      const deleteParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { id: addedRequest.id },
+      };
+
+      const result = await deleteEmailVerificationRequestBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 email verification request(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getEmailVerificationRequestBy({
+        query: { id: addedRequest.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple verification requests by userId", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const verificationData = Array.from({ length: 3 }, (_, i) =>
+        createEmailVerificationRequest({
+          userId: addedUser.id,
+          email: `test${i}@example.com`,
+        })
+      ).map((request) => {
+        const { id: _, ...rest } = request;
+        return rest;
+      });
+
+      const { valid: validRequests, value: addedRequests } =
+        await addEmailVerificationRequest(verificationData);
+
+      expect(validRequests).toBe(true);
+      expect(addedRequests).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { userId: addedUser.id },
+      };
+
+      const result = await deleteEmailVerificationRequestBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(3);
+      expect(result.message).toContain("3 email verification request(s) deleted");
+
+      // Verify deletion
+      const countResult = await getEmailVerificationRequestCountBy({
+        query: { userId: addedUser.id },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent verification request deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deleteEmailVerificationRequestBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewEmailVerificationRequest> = {
+        query: {},
+      };
+
+      const result = await deleteEmailVerificationRequestBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete verification requests with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const testEmail = "multi@example.com";
+      const testCode = "MULTI123";
+
+      const verificationData = [
+        (() => {
+          const { id: _, ...rest } = createEmailVerificationRequest({
+            userId: addedUser.id,
+            email: testEmail,
+            code: testCode,
+          });
+          return rest;
+        })(),
+      ];
+      const addResult = await addEmailVerificationRequest(verificationData);
+      const addedRequest = addResult.value[0];
+
+      const deleteParam: HelperParam<NewEmailVerificationRequest> = {
+        query: { userId: addedUser.id, email: testEmail },
+      };
+
+      const result = await deleteEmailVerificationRequestBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 email verification request(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getEmailVerificationRequestBy({
+        query: { id: addedRequest.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 

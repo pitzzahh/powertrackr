@@ -7,6 +7,7 @@ import {
   getBillingInfoCountBy,
   mapNewBillingInfo_to_DTO,
   generateBillingInfoQueryConditions,
+  deleteBillingInfoBy,
 } from "../billing-info-crud";
 import {
   createBillingInfo,
@@ -14,6 +15,7 @@ import {
   createUser,
   createPayment,
   resetSequence,
+  createSubMeter,
 } from "./helpers/factories";
 import { calculatePayPerKwh } from "$lib";
 import { addUser } from "../user-crud";
@@ -1232,6 +1234,242 @@ describe("Billing Info CRUD Operations", () => {
       const result = await getBillingInfos(searchParam);
 
       expect(result).toHaveLength(0);
+    });
+  });
+
+  describe("deleteBillingInfoBy", () => {
+    it("should successfully delete billing info by ID", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment()]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+
+      const deleteParam = {
+        query: { id: addedBilling.id },
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 billing info(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getBillingInfoBy({
+        query: { id: addedBilling.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple billing infos by userId", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const paymentPromises = Array.from({ length: 3 }, () => addPayment([createPayment()]));
+      const paymentResults = await Promise.all(paymentPromises);
+      const payments = paymentResults.flatMap((r) => r.value);
+
+      const billingData = payments.map((payment) =>
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: payment.id,
+        })
+      );
+
+      const { valid: validBilling, value: addedBillings } = await addBillingInfo(billingData);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(addedBillings).toHaveLength(3);
+
+      const deleteParam = {
+        query: { userId: addedUser.id },
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(3);
+      expect(result.message).toContain("3 billing info(s) deleted");
+
+      // Verify deletion
+      const countResult = await getBillingInfoCountBy({
+        query: { userId: addedUser.id },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent billing info deletion", async () => {
+      if (process.env.CI === "true") return;
+      const deleteParam = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+      const deleteParam = {
+        query: {},
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete billing infos with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment()]);
+
+      const testDate = new Date("2024-01-15");
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          date: testDate,
+          status: "Paid",
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+
+      const deleteParam = {
+        query: { userId: addedUser.id, date: testDate, status: "Paid" },
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 billing info(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getBillingInfoBy({
+        query: { id: addedBilling.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should cascade delete billing info with associated sub meters", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      // Create sub meters for this billing info
+      const subMeterData = [
+        createSubMeter({
+          billingInfoId: addedBilling.id,
+          paymentId: addedPayment.id,
+          subkWh: 25,
+          reading: 1250,
+          label: "Sub Meter A",
+        }),
+        createSubMeter({
+          billingInfoId: addedBilling.id,
+          paymentId: addedPayment.id,
+          subkWh: 30,
+          reading: 1300,
+          label: "Sub Meter B",
+        }),
+      ].map((s) => {
+        const { id: _, ...rest } = s;
+        return rest;
+      });
+
+      const { valid: validSubMeters, value: addedSubMeters } = await addSubMeter(subMeterData);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(validSubMeters).toBe(true);
+      expect(addedSubMeters).toHaveLength(2);
+
+      // Verify sub meters exist
+      const subMeterCheckBefore = await getSubMeterBy({
+        query: { billingInfoId: addedBilling.id },
+      });
+      expect(subMeterCheckBefore.valid).toBe(true);
+      expect(subMeterCheckBefore.value).toHaveLength(2);
+
+      // Delete the billing info
+      const deleteParam = {
+        query: { id: addedBilling.id },
+      };
+
+      const result = await deleteBillingInfoBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 billing info(s) deleted");
+
+      // Verify billing info is deleted
+      const billingFetchResult = await getBillingInfoBy({
+        query: { id: addedBilling.id },
+      });
+      expect(billingFetchResult.valid).toBe(false);
+
+      // Verify sub meters are cascade deleted
+      const subMeterCheckAfter = await getSubMeterBy({
+        query: { billingInfoId: addedBilling.id },
+      });
+      expect(subMeterCheckAfter.valid).toBe(false);
+      expect(subMeterCheckAfter.value).toHaveLength(0);
     });
   });
 

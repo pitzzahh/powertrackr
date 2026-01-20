@@ -5,6 +5,7 @@ import {
   getUserBy,
   getUsers,
   getUserCountBy,
+  deleteUserBy,
   mapNewUser_to_DTO,
   generateUserQueryConditions,
 } from "../user-crud";
@@ -753,6 +754,132 @@ describe("User CRUD Operations", () => {
 
       expect(results.every((result) => result.valid)).toBe(true);
       expect(results.every((result) => result.value.length === 1)).toBe(true);
+    });
+  });
+
+  describe("deleteUserBy", () => {
+    it("should successfully delete user by ID", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser({ email: "delete@example.com" })]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const deleteParam: HelperParam<NewUser> = {
+        query: { id: addedUser.id },
+      };
+
+      const result = await deleteUserBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 user(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getUserBy({
+        query: { id: addedUser.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple users by emailVerified", async () => {
+      if (process.env.CI === "true") return;
+
+      const usersData = [
+        createUser({ emailVerified: true }),
+        createUser({ emailVerified: true }),
+        createUser({ emailVerified: false }),
+      ].map((user) => {
+        const { id: _, ...rest } = user;
+        return rest;
+      });
+
+      const { valid: validUsers, value: addedUsers } = await addUser(usersData);
+
+      expect(validUsers).toBe(true);
+      expect(addedUsers).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewUser> = {
+        query: { emailVerified: true },
+      };
+
+      const result = await deleteUserBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(2);
+      expect(result.message).toContain("2 user(s) deleted");
+
+      // Verify deletion
+      const countResult = await getUserCountBy({
+        query: { emailVerified: true },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent user deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewUser> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deleteUserBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewUser> = {
+        query: {},
+      };
+
+      const result = await deleteUserBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete users with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([
+        createUser({
+          email: "multi@example.com",
+          name: "Multi User",
+          emailVerified: true,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const deleteParam: HelperParam<NewUser> = {
+        query: { email: "multi@example.com", emailVerified: true },
+      };
+
+      const result = await deleteUserBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 user(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getUserBy({
+        query: { id: addedUser.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 });

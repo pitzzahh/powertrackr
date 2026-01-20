@@ -5,6 +5,7 @@ import {
   getSubMeterBy,
   getSubMeters,
   getSubMeterCountBy,
+  deleteSubMeterBy,
   mapNewSubMeter_to_DTO,
   generateSubMeterQueryConditions,
 } from "../sub-meter-crud";
@@ -1199,6 +1200,202 @@ describe("Sub Meter CRUD Operations", () => {
       const conditions = generateSubMeterQueryConditions(param);
 
       expect(Object.keys(conditions)).toHaveLength(0);
+    });
+  });
+
+  describe("deleteSubMeterBy", () => {
+    it("should successfully delete sub meter by ID", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      const {
+        valid: validSubMeter,
+        value: [addedSubMeter],
+      } = await addSubMeter([
+        createSubMeter({
+          billingInfoId: addedBilling.id,
+          paymentId: addedPayment.id,
+          reading: 1500,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(validSubMeter).toBe(true);
+
+      const deleteParam: HelperParam<NewSubMeter> = {
+        query: { id: addedSubMeter.id },
+      };
+
+      const result = await deleteSubMeterBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 sub meter(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getSubMeterBy({
+        query: { id: addedSubMeter.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple sub meters by billingInfoId", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      const subMetersData = createSubMeters(3, {
+        billingInfoId: addedBilling.id,
+        paymentId: addedPayment.id,
+      }).map((s) => {
+        const { id: _, ...rest } = s;
+        return rest;
+      });
+
+      const { valid: validSubMeters, value: addedSubMeters } = await addSubMeter(subMetersData);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(validSubMeters).toBe(true);
+      expect(addedSubMeters).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewSubMeter> = {
+        query: { billingInfoId: addedBilling.id },
+      };
+
+      const result = await deleteSubMeterBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(3);
+      expect(result.message).toContain("3 sub meter(s) deleted");
+
+      // Verify deletion
+      const countResult = await getSubMeterCountBy({
+        query: { billingInfoId: addedBilling.id },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent sub meter deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewSubMeter> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deleteSubMeterBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewSubMeter> = {
+        query: {},
+      };
+
+      const result = await deleteSubMeterBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete sub meters with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      const {
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 100 })]);
+
+      const {
+        valid: validBilling,
+        value: [addedBilling],
+      } = await addBillingInfo([
+        createBillingInfo({
+          userId: addedUser.id,
+          paymentId: addedPayment.id,
+        }),
+      ]);
+
+      const testReading = 2500;
+      const testSubkWh = 50;
+
+      const {
+        valid: validSubMeter,
+        value: [addedSubMeter],
+      } = await addSubMeter([
+        createSubMeter({
+          billingInfoId: addedBilling.id,
+          paymentId: addedPayment.id,
+          reading: testReading,
+          subkWh: testSubkWh,
+        }),
+      ]);
+
+      expect(validUser).toBe(true);
+      expect(validBilling).toBe(true);
+      expect(validSubMeter).toBe(true);
+
+      const deleteParam: HelperParam<NewSubMeter> = {
+        query: { billingInfoId: addedBilling.id, reading: testReading } as unknown as NewSubMeter,
+      };
+
+      const result = await deleteSubMeterBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 sub meter(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getSubMeterBy({
+        query: { id: addedSubMeter.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 });

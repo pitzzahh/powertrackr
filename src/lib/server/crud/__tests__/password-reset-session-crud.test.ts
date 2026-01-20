@@ -5,6 +5,7 @@ import {
   getPasswordResetSessionBy,
   getPasswordResetSessions,
   getPasswordResetSessionCountBy,
+  deletePasswordResetSessionBy,
   mapNewPasswordResetSession_to_DTO,
   generatePasswordResetSessionQueryConditions,
 } from "../password-reset-session-crud";
@@ -755,6 +756,160 @@ describe("Password Reset Session CRUD Operations", () => {
       };
       const cond = generatePasswordResetSessionQueryConditions(param);
       expect(Object.keys(cond)).toHaveLength(0);
+    });
+  });
+
+  describe("deletePasswordResetSessionBy", () => {
+    it("should successfully delete password reset session by ID", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addPasswordResetSession([createPasswordResetSession({ userId: addedUser.id })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
+
+      const deleteParam: HelperParam<NewPasswordResetSession> = {
+        query: { id: addedSession.id },
+      };
+
+      const result = await deletePasswordResetSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 password reset session(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getPasswordResetSessionBy({
+        query: { id: addedSession.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple password reset sessions by userId", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = [
+        createPasswordResetSession({ userId: addedUser.id }),
+        createPasswordResetSession({ userId: addedUser.id }),
+        createPasswordResetSession({ userId: addedUser.id }),
+      ].map((s) => {
+        const { id: _, ...rest } = s;
+        return rest;
+      });
+
+      const { valid: validSessions, value: addedSessions } =
+        await addPasswordResetSession(sessionsData);
+
+      expect(validSessions).toBe(true);
+      expect(addedSessions).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewPasswordResetSession> = {
+        query: { userId: addedUser.id },
+      };
+
+      const result = await deletePasswordResetSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(3);
+      expect(result.message).toContain("3 password reset session(s) deleted");
+
+      // Verify deletion
+      const countResult = await getPasswordResetSessionCountBy({
+        query: { userId: addedUser.id },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent password reset session deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewPasswordResetSession> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deletePasswordResetSessionBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewPasswordResetSession> = {
+        query: {},
+      };
+
+      const result = await deletePasswordResetSessionBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete password reset sessions with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const testEmail = "multi@example.com";
+      const testCode = "MULTI123";
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addPasswordResetSession([
+        createPasswordResetSession({
+          userId: addedUser.id,
+          email: testEmail,
+          code: testCode,
+        }),
+      ]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
+
+      const deleteParam: HelperParam<NewPasswordResetSession> = {
+        query: { userId: addedUser.id, email: testEmail } as unknown as NewPasswordResetSession,
+      };
+
+      const result = await deletePasswordResetSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 password reset session(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getPasswordResetSessionBy({
+        query: { id: addedSession.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 });

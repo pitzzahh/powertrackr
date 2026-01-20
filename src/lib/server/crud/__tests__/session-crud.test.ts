@@ -5,6 +5,7 @@ import {
   getSessionBy,
   getSessions,
   getSessionCountBy,
+  deleteSessionBy,
   mapNewSession_to_DTO,
   generateSessionQueryConditions,
 } from "../session-crud";
@@ -655,6 +656,151 @@ describe("Session CRUD Operations", () => {
       expect(dto[0].userAgent).toBeUndefined();
       expect(dto[0].twoFactorVerified).toBeUndefined();
       expect(dto[0].expiresAt).toBeUndefined();
+    });
+  });
+
+  describe("deleteSessionBy", () => {
+    it("should successfully delete session by ID", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([createSession({ userId: addedUser.id })]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
+
+      const deleteParam: HelperParam<NewSession> = {
+        query: { id: addedSession.id },
+      };
+
+      const result = await deleteSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 session(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getSessionBy({
+        query: { id: addedSession.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple sessions by userId", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const sessionsData = createSessions(3, { userId: addedUser.id }).map((s) => {
+        const { id: _, ...rest } = s;
+        return rest;
+      });
+
+      const { valid: validSessions, value: addedSessions } = await addSession(sessionsData);
+
+      expect(validSessions).toBe(true);
+      expect(addedSessions).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewSession> = {
+        query: { userId: addedUser.id },
+      };
+
+      const result = await deleteSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(3);
+      expect(result.message).toContain("3 session(s) deleted");
+
+      // Verify deletion
+      const countResult = await getSessionCountBy({
+        query: { userId: addedUser.id },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent session deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewSession> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deleteSessionBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewSession> = {
+        query: {},
+      };
+
+      const result = await deleteSessionBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete sessions with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+      const {
+        valid: validUser,
+        value: [addedUser],
+      } = await addUser([createUser()]);
+
+      expect(validUser).toBe(true);
+      expect(addedUser).toBeDefined();
+
+      const testExpiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
+
+      const {
+        valid: validSession,
+        value: [addedSession],
+      } = await addSession([
+        createSession({
+          userId: addedUser.id,
+          ipAddress: "192.168.1.1",
+          expiresAt: testExpiresAt,
+        }),
+      ]);
+
+      expect(validSession).toBe(true);
+      expect(addedSession).toBeDefined();
+
+      const deleteParam: HelperParam<NewSession> = {
+        query: { userId: addedUser.id, ipAddress: "192.168.1.1" } as unknown as NewSession,
+      };
+
+      const result = await deleteSessionBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 session(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getSessionBy({
+        query: { id: addedSession.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 

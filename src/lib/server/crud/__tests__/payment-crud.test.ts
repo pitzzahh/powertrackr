@@ -5,6 +5,7 @@ import {
   getPaymentBy,
   getPayments,
   getPaymentCountBy,
+  deletePaymentBy,
   mapNewPayment_to_DTO,
   generatePaymentQueryConditions,
 } from "../payment-crud";
@@ -440,6 +441,134 @@ describe("Payment CRUD Operations", () => {
       expect(result[0].date).toBeUndefined();
       expect(result[0].createdAt).toBeUndefined();
       expect(result[0].updatedAt).toBeUndefined();
+    });
+  });
+
+  describe("deletePaymentBy", () => {
+    it("should successfully delete payment by ID", async () => {
+      if (process.env.CI === "true") return;
+
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([createPayment({ amount: 150.25 })]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
+
+      const deleteParam: HelperParam<NewPayment> = {
+        query: { id: addedPayment.id },
+      };
+
+      const result = await deletePaymentBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 payment(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getPaymentBy({
+        query: { id: addedPayment.id },
+      });
+      expect(fetchResult.valid).toBe(false);
+    });
+
+    it("should successfully delete multiple payments by amount", async () => {
+      if (process.env.CI === "true") return;
+
+      const paymentsData = [
+        createPayment({ amount: 100 }),
+        createPayment({ amount: 100 }),
+        createPayment({ amount: 200 }),
+      ].map((p) => {
+        const { id: _, ...rest } = p;
+        return rest;
+      });
+
+      const { valid: validPayments, value: addedPayments } = await addPayment(paymentsData);
+
+      expect(validPayments).toBe(true);
+      expect(addedPayments).toHaveLength(3);
+
+      const deleteParam: HelperParam<NewPayment> = {
+        query: { amount: 100 },
+      };
+
+      const result = await deletePaymentBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(2);
+      expect(result.message).toContain("2 payment(s) deleted");
+
+      // Verify deletion
+      const countResult = await getPaymentCountBy({
+        query: { amount: 100 },
+      });
+      expect(countResult.value).toBe(0);
+    });
+
+    it("should handle nonexistent payment deletion", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewPayment> = {
+        query: { id: "non-existent-id" },
+      };
+
+      const result = await deletePaymentBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toContain("not deleted");
+    });
+
+    it("should handle no conditions provided", async () => {
+      if (process.env.CI === "true") return;
+
+      const deleteParam: HelperParam<NewPayment> = {
+        query: {},
+      };
+
+      const result = await deletePaymentBy(deleteParam);
+
+      expect(result.valid).toBe(false);
+      expect(result.value).toBe(0);
+      expect(result.message).toBe("No conditions provided for deletion");
+    });
+
+    it("should delete payments with multiple conditions", async () => {
+      if (process.env.CI === "true") return;
+
+      const testDate = new Date("2024-06-06");
+      const testAmount = 250.5;
+
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+      } = await addPayment([
+        createPayment({
+          amount: testAmount,
+          date: testDate,
+        }),
+      ]);
+
+      expect(validPayment).toBe(true);
+      expect(addedPayment).toBeDefined();
+
+      const deleteParam: HelperParam<NewPayment> = {
+        query: { amount: testAmount, date: testDate },
+      };
+
+      const result = await deletePaymentBy(deleteParam);
+
+      expect(result.valid).toBe(true);
+      expect(result.value).toBe(1);
+      expect(result.message).toContain("1 payment(s) deleted");
+
+      // Verify deletion
+      const fetchResult = await getPaymentBy({
+        query: { id: addedPayment.id },
+      });
+      expect(fetchResult.valid).toBe(false);
     });
   });
 
