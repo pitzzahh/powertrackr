@@ -189,11 +189,5 @@
   </ScrollArea>
 </div>
 <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-  {#key data.length}
-    <DataTablePagination
-      {table}
-      status={status === "loading_data" ? status : ctx.count > 0 ? "fetching" : "idle"}
-      {...pagination_props}
-    />
-  {/key}
+  <DataTablePagination {table} {status} {...pagination_props} />
 </div>
