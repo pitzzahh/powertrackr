@@ -97,6 +97,7 @@
 
     const { valid, value, message } = await deleteBillingInfo({
       id: row.original.id,
+      count: 1,
     });
 
     if (!valid || value != 1) {
