@@ -6,24 +6,15 @@
   import { useConsumptionStore } from "$/stores/consumption.svelte.js";
   import { Loader, Zap } from "$lib/assets/icons";
   import * as Card from "$/components/ui/card";
-  import { ChartContainer, ChartTooltip } from "$/components/ui/chart";
-  import { Area } from "layerchart";
-  import { curveNatural } from "d3-shape";
+  import { ChartConsumption } from "$routes/(components)";
 
   let { data } = $props();
 
   const consumptionStore = useConsumptionStore();
 
-  const chartConfig = {
-    kWh: {
-      label: "kWh",
-      color: "hsl(var(--chart-1))",
-    },
-  };
-
   const chartData = $derived(
     consumptionStore.extendedBillingInfos.map((info) => ({
-      date: new Date(info.date).toLocaleDateString(),
+      date: new Date(info.date),
       kWh: info.totalkWh,
     }))
   );
@@ -44,28 +35,11 @@
   {@render Metrics()}
 
   <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-    <Card.Root>
-      <Card.Header>
-        <Card.Title>kWh Consumption Over Time</Card.Title>
-        <Card.Description>Historical energy usage</Card.Description>
-      </Card.Header>
-      <Card.Content>
-        {#if consumptionStore.status === "fetching"}
-          <div class="flex h-64 items-center justify-center">
-            <Loader class="h-8 w-8 animate-spin" />
-          </div>
-        {:else if consumptionStore.status === "error"}
-          <div class="flex h-64 items-center justify-center text-muted-foreground">
-            Failed to load chart data
-          </div>
-        {:else}
-          <!-- <ChartContainer config={chartConfig} class="h-64">
-            <Area data={chartData} x="date" y="kWh" curve={curveNatural} />
-            <ChartTooltip />
-          </ChartContainer> -->
-        {/if}
-      </Card.Content>
-    </Card.Root>
+    <ChartConsumption
+      {chartData}
+      status={consumptionStore.status}
+      refetch={() => consumptionStore.fetchData()}
+    />
   </section>
 
   <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
@@ -128,7 +102,7 @@
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0 kWh</div>
       {:else}
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          {formatNumber(consumptionStore.summary?.totalKWh || 0)} kWh
+          <span class="text-primary">{consumptionStore.summary?.totalKWh || 0}</span> kWh
         </div>
       {/if}
     </div>
