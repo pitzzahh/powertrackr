@@ -8,6 +8,7 @@ import {
   getBillingInfosSchema,
   getBillingInfoSchema,
   deleteBillingInfoSchema,
+  deleteBillingInfoSchemaBatch,
 } from "$lib/schemas/billing-info";
 import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
 import { eq, inArray } from "drizzle-orm";
@@ -479,3 +480,32 @@ export const deleteBillingInfo = command(deleteBillingInfoSchema, async ({ id })
 
   return result;
 });
+
+export const deleteBillingInfoBatch = command(
+  deleteBillingInfoSchemaBatch,
+  async ({ ids, count }) => {
+    const {
+      session: { userId },
+    } = requireAuth();
+
+    let validCount = 0;
+
+    for (const id of ids) {
+      const { valid } = await deleteBillingInfoBy({ query: { id } });
+      if (valid) {
+        validCount++;
+      }
+    }
+
+    if (validCount === count) {
+      console.log("Refreshing data");
+      getExtendedBillingInfos({ userId }).refresh();
+    }
+
+    return {
+      valid: validCount === count,
+      value: validCount,
+      message: `${validCount} item(s) deleted successfully`,
+    };
+  }
+);

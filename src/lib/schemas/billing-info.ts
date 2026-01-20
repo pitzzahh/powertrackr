@@ -45,3 +45,8 @@ export const getBillingInfosSchema = v.object({ userId: v.string() });
 export const getBillingInfoSchema = v.string();
 
 export const deleteBillingInfoSchema = v.object({ id: v.string(), count: v.number() });
+
+export const deleteBillingInfoSchemaBatch = v.object({
+  ids: v.array(v.string()),
+  count: v.number(),
+});

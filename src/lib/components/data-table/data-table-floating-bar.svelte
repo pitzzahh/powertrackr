@@ -1,10 +1,12 @@
 <script module lang="ts">
+  import type { HelperResult } from "$/server/types/helper";
+
   export interface DataTableFloatingBarProps<TData extends object> {
     table: Table<TData>;
     entity_name: string; // singular form of the entity name (e.g., "position", "audit log")
     entity_name_plural?: string; // plural form (e.g., "positions", "audit logs")
     description?: string; // Custom dialog description, optional,
-    delete_fn: (row: TData, count?: number | 1) => Promise<0 | 1>; // Custom delete function, optional
+    delete_fn: (row: TData[], count: number | 1) => Promise<HelperResult<TData | number>>; // Custom delete function, optional
     callback?: (valid: boolean) => void; // Optional callback function to call after deletion
   }
 
@@ -24,9 +26,8 @@
   import { Button, buttonVariants } from "$/components/ui/button/index.js";
   import * as Dialog from "$/components/ui/dialog/index.js";
   import { catchErrorTyped } from "$/utils/error";
-  import { toast } from "svelte-sonner";
   import { cn } from "$/utils/style";
-  import { Toast, showWarning } from "$/components/toast";
+  import { showError, showWarning } from "$/components/toast";
   import { cubicInOut } from "svelte/easing";
   import { Input } from "$/components/ui/input";
 
@@ -65,50 +66,35 @@
     }
     app_state = "processing";
     const total_selected = selected_rows.length;
-    let valid_count = 0;
-    let error_count = 0;
 
-    for (const row of selected_rows) {
-      if (delete_fn) {
-        const [error, result] = await catchErrorTyped(
-          delete_fn(row.original, selected_rows.length)
-        );
-        console.debug(
-          `Delete function called for row: ${JSON.stringify(row.original)}, result: ${result}, error: ${error}`
-        );
-        if (error) {
-          error_count++;
-        } else if (result === 1) {
-          valid_count++;
-        }
-        continue;
-      }
+    const [error, result] = await catchErrorTyped(
+      delete_fn(
+        selected_rows.flatMap((r) => r.original),
+        total_selected
+      )
+    );
+
+    if (error) {
+      showError("Failed to delete, something went wrong", `More info: ${error.message}`);
+      return callback?.(false);
     }
     dialog_open = false;
     delete_confirm_value = "";
     app_state = "idle";
     table.toggleAllRowsSelected(false);
-    if (valid_count < selected_rows.length) {
-      toast.custom(Toast, {
-        componentProps: {
-          title: "Partial Deletion",
-          description: `${valid_count} ${total_selected === 1 ? entity_name : entity_plural_name} deleted successfully, but some failed.`,
-          variant: "warning",
-        },
-      });
+
+    if (!result.valid) {
+      if (typeof result.value === "number") {
+        if (result.value < selected_rows.length) {
+          showWarning(
+            "Partial Deletion",
+            `${result} ${total_selected === 1 ? entity_name : entity_plural_name} deleted successfully, but some failed.`
+          );
+        }
+      }
       return callback?.(false);
-    } else if (error_count > 0) {
-      toast.custom(Toast, {
-        componentProps: {
-          title: "Deletion Failed",
-          description: `Failed to delete selected ${entity_plural_name}. Please try again.`,
-          variant: "error",
-        },
-      });
-      return callback?.(false);
-    } else {
-      return callback?.(valid_count === total_selected);
     }
+    return callback?.(true);
   }
 </script>
 

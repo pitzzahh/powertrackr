@@ -10,15 +10,17 @@
 
 <script lang="ts">
   import { generateOptions } from "$/utils/mapper";
-  import { toast } from "svelte-sonner";
-  import { Toast } from "$/components/toast";
+  import { showSuccess } from "$/components/toast";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
-
-  let { data, data_table_props, status }: HistoryDataTableProps = $props();
-
+  import { useBillingStore } from "$/stores/billing.svelte";
   import { historyTableColumns, HistoryDataTableToolbar } from ".";
   import { DataTable, DataTableFloatingBar } from "$/components/data-table";
   import type { Status } from "$/types/state";
+  import { deleteBillingInfoBatch } from "$/api/billing-info.remote";
+
+  let { data, data_table_props, status }: HistoryDataTableProps = $props();
+
+  const billingStore = useBillingStore();
 </script>
 
 <section class="flex flex-col gap-2">
@@ -35,18 +37,16 @@
         {table}
         entity_name="Billing Info"
         entity_name_plural="Billing Infos"
-        delete_fn={(row) => {
-          alert("Not yet implemented " + row);
-          return Promise.resolve(0);
+        delete_fn={(rows, count) => {
+          return deleteBillingInfoBatch({
+            ids: rows.map((r) => r.id),
+            count,
+          });
         }}
         callback={(valid) => {
           if (!valid) return;
-          toast.custom(Toast, {
-            componentProps: {
-              title: "Deletion Successful",
-              description: "Billing Info record has been successfully removed.",
-            },
-          });
+          billingStore.refresh();
+          showSuccess("Deletion Successful", "Billing Info record has been successfully removed.");
         }}
       />
     {/snippet}
