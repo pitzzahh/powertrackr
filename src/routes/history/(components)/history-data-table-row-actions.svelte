@@ -109,7 +109,7 @@
     }
     app_state = "stale";
     open_view = false;
-    billingStore.fetchData();
+    billingStore.refresh();
     return showSuccess(`Billing info${value > 1 ? "s" : ""} deleted successfully`, message);
   }
 </script>
