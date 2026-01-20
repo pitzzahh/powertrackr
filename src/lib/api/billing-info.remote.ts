@@ -1,6 +1,5 @@
 import { query, form, command } from "$app/server";
 import { db } from "$lib/server/db/index";
-import { subMeter } from "$lib/server/db/schema/sub-meter";
 import { calculatePayPerKwh } from "$lib";
 import {
   billFormSchema,
@@ -11,7 +10,6 @@ import {
   deleteBillingInfoSchemaBatch,
 } from "$lib/schemas/billing-info";
 import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
-import { inArray } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
 import {
   addBillingInfo,
