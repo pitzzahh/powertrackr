@@ -16,7 +16,16 @@
   });
 </script>
 
-<HistoryDataTable
-  status={billingStore.status}
-  data={billingStore.extendedBillingInfos.map(extendedBillingInfoToTableView)}
-/>
+<div class="space-y-6 pb-4">
+  <div class="flex items-center justify-between">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">History</h1>
+      <p class="text-muted-foreground">View your billing history</p>
+    </div>
+  </div>
+
+  <HistoryDataTable
+    status={billingStore.status}
+    data={billingStore.extendedBillingInfos.map(extendedBillingInfoToTableView)}
+  />
+</div>

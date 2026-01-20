@@ -27,9 +27,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="space-y-2">
-    <h1 class="text-3xl font-bold tracking-tight">Consumption</h1>
-    <p class="text-muted-foreground">Monitor your energy usage and sub-meter readings</p>
+  <div class="flex items-center justify-between">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">Consumption</h1>
+      <p class="text-muted-foreground">Monitor your energy usage and sub-meter readings</p>
+    </div>
   </div>
 
   {@render Metrics()}

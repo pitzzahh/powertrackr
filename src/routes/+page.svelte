@@ -24,23 +24,32 @@
   });
 </script>
 
-{@render Metrics()}
+<div class="space-y-6 pb-4">
+  <div class="flex items-center justify-between">
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <p class="text-muted-foreground">Overview of your energy billing and savings</p>
+    </div>
+  </div>
 
-<section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-  <ChartArea
-    status={billingStore.status}
-    refetch={(cb) => billingStore.fetchData().finally(cb)}
-    chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
-  />
-</section>
+  {@render Metrics()}
 
-<section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-  <ChartBar
-    status={billingStore.status}
-    refetch={(cb) => billingStore.fetchData().finally(cb)}
-    chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
-  />
-</section>
+  <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+    <ChartArea
+      status={billingStore.status}
+      refetch={(cb) => billingStore.fetchData().finally(cb)}
+      chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
+    />
+  </section>
+
+  <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
+    <ChartBar
+      status={billingStore.status}
+      refetch={(cb) => billingStore.fetchData().finally(cb)}
+      chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
+    />
+  </section>
+</div>
 
 {#snippet Metrics()}
   <section
