@@ -11,7 +11,7 @@ import {
   deleteBillingInfoSchemaBatch,
 } from "$lib/schemas/billing-info";
 import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
-import { eq, inArray } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { requireAuth } from "$/server/auth";
 import {
   addBillingInfo,
@@ -23,7 +23,7 @@ import {
 import { addPayment } from "$/server/crud/payment-crud";
 import { error, invalid } from "@sveltejs/kit";
 import type { NewSubMeter } from "$/types/sub-meter";
-import { addSubMeter } from "$/server/crud/sub-meter-crud";
+import { addSubMeter, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
 
@@ -383,13 +383,19 @@ export const updateBillingInfo = form(
         for (const subData of subMetersData) {
           if (subData.id) {
             // update existing
-            await tx
-              .update(subMeter)
-              .set({
+            await updateSubMeterBy(
+              {
+                query: {
+                  id: subData.id,
+                },
+                options: { tx },
+              },
+              {
                 reading: subData.reading,
                 subkWh: subData.subkWh,
-              })
-              .where(eq(subMeter.id, subData.id));
+              }
+            );
+
             await updatePaymentBy(
               { query: { id: subData.paymentId }, options: { tx } },
               { amount: subData.paymentAmount }
