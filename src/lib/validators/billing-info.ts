@@ -50,3 +50,24 @@ export const deleteBillingInfoSchemaBatch = v.object({
   ids: v.array(v.string()),
   count: v.number(),
 });
+
+export const generateRandomBillingInfosSchema = v.object({
+  count: v.pipe(
+    v.unknown(),
+    v.transform((v) => Number(v)),
+    v.number(),
+    v.minValue(1, "must be at least 1")
+  ),
+  minSubMeters: v.pipe(
+    v.unknown(),
+    v.transform((v) => Number(v)),
+    v.number(),
+    v.minValue(0, "must be 0 or greater")
+  ),
+  maxSubMeters: v.pipe(
+    v.unknown(),
+    v.transform((v) => Number(v)),
+    v.number(),
+    v.minValue(0, "must be 0 or greater")
+  ),
+});

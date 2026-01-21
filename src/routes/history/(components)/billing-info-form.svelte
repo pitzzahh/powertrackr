@@ -1,13 +1,14 @@
 <script lang="ts" module>
+  type Action = "add" | "update";
   export type BillingInfoWithSubMetersFormProps = {
-    action: "add" | "update";
+    action: Action;
     billingInfo?: BillingInfoDTOWithSubMeters;
     /**
      * Callback to be called when the form is submitted.
      */
     callback?: (
       valid: boolean,
-      action: "add" | "update",
+      action: Action,
       metaData?: {
         error?: string;
       }

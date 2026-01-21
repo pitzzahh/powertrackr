@@ -24,7 +24,7 @@
   import Logo from "$/components/logo.svelte";
   import { Button, buttonVariants } from "$/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun } from "$/assets/icons";
+  import { Menu, PhilippinePeso, Moon, Sun, Dice6 } from "$/assets/icons";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { cn } from "$/utils/style";
   import { toggleMode } from "mode-watcher";
@@ -34,7 +34,7 @@
   import { showSuccess, showWarning } from "$/components/toast";
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { NewBill } from "$/components/snippets.svelte";
+  import { NewBill, GenerateRandomBills } from "$/components/snippets.svelte";
 
   let { user }: HeaderProps = $props();
 
@@ -63,6 +63,21 @@
               action === "add" ? "Failed to create billing info" : "Failed to update billing info",
               metaData?.error
             );
+          }
+        },
+      },
+      {
+        icon: Dice6,
+        label: "Generate Random Bills",
+        content: GenerateRandomBills,
+        callback: (valid, _, metaData) => {
+          openMenu = false;
+          if (valid) {
+            billingStore.refresh();
+            consumptionStore.refresh();
+            showSuccess(metaData?.error || "Random billing infos generated successfully!");
+          } else {
+            showWarning("Failed to generate random billing infos", metaData?.error);
           }
         },
       },

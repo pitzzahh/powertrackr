@@ -132,30 +132,29 @@ export function showPromise<T>(
     error:
       | { title: string; description?: string }
       | ((error: unknown) => { title: string; description?: string });
+    onSuccess?: (data: T) => void; // Optional callback for success
+    onError?: (error: string) => void; // Optional callback for error
   }
 ) {
-  // Show loading toast
   const loadingId = showLoading(options.loading.title, options.loading.description);
 
   promise
     .then((data) => {
       const successOptions =
         typeof options.success === "function" ? options.success(data) : options.success;
-
-      // Dismiss loading and show success
       dismissToast(loadingId);
       showSuccess(successOptions.title, successOptions.description);
+      if (options.onSuccess) options.onSuccess(data); // Call optional callback
     })
     .catch((error) => {
       const errorOptions =
         typeof options.error === "function" ? options.error(error) : options.error;
-
-      // Dismiss loading and show error
       dismissToast(loadingId);
       showError(errorOptions.title, errorOptions.description);
+      if (options.onError) options.onError(errorOptions?.description || "Something went wrong"); // Call optional callback
     });
 
-  return loadingId;
+  return loadingId; // Still returns the ID, but now with optional callbacks
 }
 
 /**

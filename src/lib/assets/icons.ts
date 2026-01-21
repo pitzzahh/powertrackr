@@ -52,3 +52,4 @@ export { default as Video } from "@lucide/svelte/icons/video";
 export { default as TriangleAlert } from "@lucide/svelte/icons/triangle-alert";
 export { default as ShieldAlert } from "@lucide/svelte/icons/shield-alert";
 export { default as CircleAlert } from "@lucide/svelte/icons/circle-alert";
+export { default as Dice6 } from "@lucide/svelte/icons/dice-6";
