@@ -321,22 +321,42 @@ export const generateRandomBillingInfos = command(
       maxSubMeters: number;
     };
 
+    console.log("Generating random bills:", { count, minSubMeters, maxSubMeters });
+
+    // Get latest billing info for sub meter readings
+    const { valid: _validLatest, value: latestInfos } = await getExtendedBillingInfos({ userId });
+    const latest = latestInfos[0];
+    let subMeterReadings: Record<string, number> = {};
+    if (latest) {
+      latest.subMeters?.forEach((sub) => {
+        subMeterReadings[sub.label] = sub.reading;
+      });
+    }
+
+    // Generate sequential years with random months/days from 2000 to current year
+    const end = new Date();
+    const totalYears = end.getFullYear() - 2000;
+    const yearsPerBill = totalYears / count;
+
     let created = 0;
+    console.log("Starting loop for", count, "bills");
     for (let i = 0; i < count; i++) {
-      // Generate random date from 2000 to current year
-      const start = new Date(2000, 0, 1).getTime();
-      const end = new Date().getTime();
-      const randomTime = start + Math.random() * (end - start);
-      const date = new Date(randomTime).toISOString().split("T")[0];
-      const totalkWh = Math.floor(Math.random() * 800) + 200; // 200-1000
-      const balance = Math.floor(Math.random() * 800) + 200; // 200-1000
-      const status = Math.random() > 0.5 ? "Paid" : "Pending";
+      console.log("Creating bill", i + 1);
+      const year = Math.floor(2000 + i * yearsPerBill);
+      const month = Math.floor(Math.random() * 12) + 1; // 1-12
+      const day = Math.floor(Math.random() * 28) + 1; // 1-28 to avoid invalid dates
+      const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const numSub = Math.floor(Math.random() * (maxSubMeters - minSubMeters + 1)) + minSubMeters;
+      const totalkWh = Math.floor(Math.random() * 2000) + 1000 + numSub * 100; // 1000-3000 + buffer
+      const balance = Math.floor(Math.random() * 2000) + 1000 + numSub * 100; // 1000-3000 + buffer
+      const status = Math.random() > 0.5 ? "Paid" : "Pending";
       const subMeters = [];
       for (let j = 1; j <= numSub; j++) {
         const label = `Sub Meter ${j}`;
-        const reading = Math.floor(Math.random() * 1000) + 100; // Random reading 100-1100
+        const prevReading = subMeterReadings[label] || 0;
+        const reading = prevReading + Math.floor(Math.random() * 50) + 10; // +10-60
         subMeters.push({ label, reading });
+        subMeterReadings[label] = reading;
       }
 
       try {
@@ -351,10 +371,12 @@ export const generateRandomBillingInfos = command(
           userId
         );
         created++;
+        console.log("Created bill", i + 1);
       } catch (err) {
         console.error(`Failed to create billing info ${i + 1}:`, err);
       }
     }
+    console.log("Created", created, "bills");
 
     getExtendedBillingInfos({ userId }).refresh();
     return {
