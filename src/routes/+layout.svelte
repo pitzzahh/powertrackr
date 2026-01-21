@@ -16,7 +16,7 @@
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
-  import { sidebarStore } from "$/stores/sidebar.svelte";
+  import { setSidebarStore } from "$/stores/sidebar.svelte";
   import { setBillingStore } from "$/stores/billing.svelte";
   import { Toaster } from "svelte-sonner";
   import { onMount, untrack } from "svelte";
@@ -25,8 +25,10 @@
 
   const { children, data } = $props();
 
+  const sidebar = setSidebarStore();
+
   // Initialize sidebar state from server data immediately
-  untrack(() => sidebarStore.init(data.sidebarCollapsed));
+  untrack(() => sidebar.init(data.sidebarCollapsed));
 
   // Initialize billing store context
   setBillingStore();
@@ -100,8 +102,8 @@
             class={[
               {
                 "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
-                "w-16": sidebarStore.collapsed,
-                "md:w-48 lg:w-54": !sidebarStore.collapsed,
+                "w-16": sidebar.collapsed,
+                "md:w-48 lg:w-54": !sidebar.collapsed,
               },
             ]}
           >

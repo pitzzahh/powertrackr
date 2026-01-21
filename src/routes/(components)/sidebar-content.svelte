@@ -18,7 +18,7 @@
   import { Button, buttonVariants } from "$/components/ui/button";
   import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
-  import { sidebarStore } from "$/stores/sidebar.svelte";
+  import { useSidebarStore } from "$/stores/sidebar.svelte";
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
@@ -43,6 +43,8 @@
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
+  const sidebar = useSidebarStore();
+
   let { status, logoutAttempt }: SidebarContentState = $state({
     status: "idle",
     logoutAttempt: false,
@@ -50,10 +52,10 @@
 
   const pendingFetches = pendingFetchContext.get();
 
-  const collapsed = $derived(sidebarStore.collapsed && !isMobileSheet);
+  const collapsed = $derived(sidebar.collapsed && !isMobileSheet);
 
   onDestroy(() => {
-    sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+    sidebar.navItems = sidebar.navItems.map((navItem) => ({
       ...navItem,
       active: false,
     }));
@@ -82,7 +84,7 @@
           onclick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            sidebarStore.toggleCollapse();
+            sidebar.toggleCollapse();
           }}
           class={buttonVariants({
             variant: "outline",
@@ -120,7 +122,7 @@
     },
   ]}
 >
-  {#each sidebarStore.navItems as item (item.label)}
+  {#each sidebar.navItems as item (item.label)}
     {@const Icon = item.icon}
     {@const isActive = item.active || page.url.pathname === item.route}
     <Tooltip.Provider>
@@ -129,7 +131,7 @@
           onclick={() => {
             open = false;
             pendingFetches.delete();
-            sidebarStore.navItems = sidebarStore.navItems.map((navItem) => ({
+            sidebar.navItems = sidebar.navItems.map((navItem) => ({
               ...navItem,
               active: navItem.label === item.label,
             }));

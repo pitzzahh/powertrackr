@@ -1,4 +1,5 @@
 import { House, Zap, Clock } from "$lib/assets/icons";
+import { getContext, setContext } from "svelte";
 
 class SidebarStore {
   navItems = $state([
@@ -28,4 +29,21 @@ class SidebarStore {
   }
 }
 
-export const sidebarStore = new SidebarStore();
+const SYMBOL_KEY = "custom-sidebar";
+
+/**
+ * Instantiates a new `SidebarStore` instance and sets it in the context.
+ *
+ * @returns The `SidebarStore` instance.
+ */
+export function setSidebarStore(): SidebarStore {
+  return setContext(Symbol.for(SYMBOL_KEY), new SidebarStore());
+}
+
+/**
+ * Retrieves the `SidebarStore` instance from the context.
+ * @returns The `SidebarStore` instance.
+ */
+export function useSidebarStore(): SidebarStore {
+  return getContext(Symbol.for(SYMBOL_KEY));
+}
