@@ -1,10 +1,13 @@
 export const formatNumber = (
   num: number,
-  options: { currency?: string; locale?: string } = {}
+  options: { currency?: string; locale?: string; style?: Intl.NumberFormatOptions["style"] } = {}
 ): string => {
-  const { currency = "PHP", locale = "en-PH" } = options;
+  const { currency = "PHP", locale = "en-PH", style = "currency" } = options;
   const locales = [locale];
-  const intlOptions: Intl.NumberFormatOptions = { style: "currency", currency };
+  const intlOptions: Intl.NumberFormatOptions = {
+    style,
+    ...(style === "currency" ? { currency } : {}),
+  };
   return new Intl.NumberFormat(locales, intlOptions).format(num);
 };
 
