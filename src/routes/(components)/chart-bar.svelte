@@ -14,7 +14,7 @@
   };
 
   type ChartBarState = {
-    timeRange: "7d" | "30d" | "90d" | "6m" | "1y" | "all";
+    timeRange: string;
     activeChart: "totalkWh" | "mainKWh" | "subkWh" | "all";
     context: ChartContextValue;
     totalkWh: number;
