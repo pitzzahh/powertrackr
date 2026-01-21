@@ -129,7 +129,9 @@
                       <Sheet.Title>Add new Bill</Sheet.Title>
                       <Sheet.Description>Enter billing info</Sheet.Description>
                     </Sheet.Header>
-                    {@render quickAction.content(quickAction.callback, user?.id || "")}
+                    {#if quickAction.visible}
+                      {@render quickAction.content(quickAction.callback, user?.id || "")}
+                    {/if}
                   </Sheet.Content>
                 </Sheet.Portal>
               </Sheet.Root>
