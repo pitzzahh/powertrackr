@@ -86,7 +86,9 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(totalEnergyConsumed)} kWh</span
+            >{formatNumber(totalEnergyConsumed, {
+              style: "decimal",
+            })} kWh</span
           >
         {/if}
       </div>
