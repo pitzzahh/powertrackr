@@ -9,6 +9,7 @@
   export type HeaderState = {
     openMenu: boolean;
     quickActions: {
+      visible: boolean;
       icon: typeof Icon;
       label: string;
       content: (
@@ -35,6 +36,7 @@
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { NewBill, GenerateRandomBills } from "$/components/snippets.svelte";
+  import { dev } from "$app/environment";
 
   let { user }: HeaderProps = $props();
 
@@ -45,6 +47,7 @@
     openMenu: false,
     quickActions: [
       {
+        visible: true,
         icon: PhilippinePeso,
         label: "New Bill",
         content: NewBill,
@@ -67,6 +70,7 @@
         },
       },
       {
+        visible: dev,
         icon: Dice6,
         label: "Generate Random Bills",
         content: GenerateRandomBills,

@@ -25,6 +25,7 @@ import type { NewSubMeter } from "$/types/sub-meter";
 import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
+import { dev } from "$app/environment";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -314,6 +315,8 @@ export const generateRandomBillingInfos = command(
     const {
       session: { userId },
     } = requireAuth();
+
+    if (!dev) error(404, "Not found");
 
     const { count, minSubMeters, maxSubMeters } = data as {
       count: number;
