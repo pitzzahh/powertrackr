@@ -74,15 +74,10 @@
         icon: Dice6,
         label: "Generate Random Bills",
         content: GenerateRandomBills,
-        callback: (valid, _, metaData) => {
+        callback: (_valid, _action, _metaData) => {
           openMenu = false;
-          if (valid) {
-            billingStore.refresh();
-            consumptionStore.refresh();
-            showSuccess(metaData?.error || "Random billing infos generated successfully!");
-          } else {
-            showWarning("Failed to generate random billing infos", metaData?.error);
-          }
+          billingStore.refresh();
+          consumptionStore.refresh();
         },
       },
     ],
