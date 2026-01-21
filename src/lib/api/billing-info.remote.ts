@@ -336,17 +336,19 @@ export const generateRandomBillingInfos = command(
       });
     }
 
-    // Generate sequential years with random months/days from 2000 to current year
+    // Generate sequential months from 2000 to current year
     const end = new Date();
     const totalYears = end.getFullYear() - 2000;
-    const yearsPerBill = totalYears / count;
+    const totalMonths = totalYears * 12 + end.getMonth() + 1;
+    const monthsPerBill = totalMonths / count;
 
     let created = 0;
     console.log("Starting loop for", count, "bills");
     for (let i = 0; i < count; i++) {
       console.log("Creating bill", i + 1);
-      const year = Math.floor(2000 + i * yearsPerBill);
-      const month = Math.floor(Math.random() * 12) + 1; // 1-12
+      const monthIndex = Math.floor(i * monthsPerBill);
+      const year = 2000 + Math.floor(monthIndex / 12);
+      const month = (monthIndex % 12) + 1;
       const day = Math.floor(Math.random() * 28) + 1; // 1-28 to avoid invalid dates
       const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const numSub = Math.floor(Math.random() * (maxSubMeters - minSubMeters + 1)) + minSubMeters;
