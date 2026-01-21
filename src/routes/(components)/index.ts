@@ -8,26 +8,15 @@ export const TIME_RANGE_OPTIONS = [
   { value: "90d", label: "Last 3 months" },
   { value: "6m", label: "Last 6 months" },
   { value: "1y", label: "Last year" },
+  ...Array.from({ length: 10 - 1 }, (_, i) => ({
+    value: `${i + 2}y`,
+    label: `Last ${i + 2} years`,
+  })),
   { value: "all", label: "Show All" },
 ];
 
 export function getSelectedLabel(timeRange: string): string {
-  switch (timeRange) {
-    case "7d":
-      return "Last 7 days";
-    case "30d":
-      return "Last 30 days";
-    case "90d":
-      return "Last 3 months";
-    case "6m":
-      return "Last 6 months";
-    case "1y":
-      return "Last year";
-    case "all":
-      return "Show All";
-    default:
-      return "Last 3 months";
-  }
+  return TIME_RANGE_OPTIONS.find((opt) => opt.value === timeRange)?.label || "Last 3 months";
 }
 
 export function getFilteredData<T extends { date: Date }>(data: T[], timeRange: string): T[] {
@@ -44,6 +33,9 @@ export function getFilteredData<T extends { date: Date }>(data: T[], timeRange: 
             daysToSubtract = 180;
           } else if (timeRange === "1y") {
             daysToSubtract = 365;
+          } else if (timeRange.endsWith("y")) {
+            const years = parseInt(timeRange.slice(0, -1));
+            daysToSubtract = years * 365;
           }
 
           const maxDate =
