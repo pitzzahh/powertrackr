@@ -68,12 +68,12 @@
                   <div>
                     <p class="font-medium">{subMeter.label}</p>
                     <p class="text-sm text-muted-foreground">
-                      Reading: {formatNumber(subMeter.reading)}
+                      Reading: {subMeter.reading}
                     </p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold">{formatNumber(subMeter.subkWh)} kWh</p>
+                  <p class="font-semibold">{subMeter.subkWh} kWh</p>
                 </div>
               </div>
             {/each}
@@ -118,7 +118,9 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(consumptionStore.summary?.averageDailyKWh || 0)} kWh</span
+            >{formatNumber(consumptionStore.summary?.averageDailyKWh || 0, {
+              style: "decimal",
+            })} kWh</span
           >
         {/if}
       </div>
@@ -142,7 +144,7 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(consumptionStore.summary?.latestReading || 0)}</span
+            >{consumptionStore.summary?.latestReading || 0} kWh</span
           >
         {/if}
       </div>
