@@ -37,7 +37,6 @@
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
   import { IsMobile } from "$/hooks/is-mobile.svelte";
   import { toShortName } from "$/utils/text";
-  import * as Tooltip from "$/components/ui/tooltip/index.js";
   import { showLoading, showSuccess, toast } from "$/components/toast";
   import { goto } from "$app/navigation";
 
@@ -66,7 +65,7 @@
 {#if !isMobileSheet}
   <div
     class={[
-      "transition-all duration-300 ease-in-out",
+      "transition-all duration-150 ease-in-out",
       {
         flex: collapsed,
         "justify-center": collapsed,
@@ -78,38 +77,32 @@
       },
     ]}
   >
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger
-          onclick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            sidebar.toggleCollapse();
-          }}
-          class={buttonVariants({
-            variant: "outline",
-            size: "icon",
-            class: "size-8 bg-card transition-transform duration-300 ease-in-out hover:bg-muted",
-          })}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <span
-            class={[
-              "transition-transform duration-300 ease-in-out",
-              {
-                "rotate-180": collapsed,
-                "rotate-0": !collapsed,
-              },
-            ]}
-          >
-            <PanelLeftClose class="size-4" />
-          </span>
-        </Tooltip.Trigger>
-        <Tooltip.Content side="right">
-          <p>{collapsed ? "Expand sidebar" : "Collapse sidebar"}</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Button
+      onclick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        sidebar.toggleCollapse();
+      }}
+      class={buttonVariants({
+        variant: "outline",
+        size: "icon",
+        class: "size-8 bg-card transition-transform duration-150 ease-in-out hover:bg-muted",
+      })}
+      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    >
+      <span
+        class={[
+          "transition-transform duration-150 ease-in-out",
+          {
+            "rotate-180": collapsed,
+            "rotate-0": !collapsed,
+          },
+        ]}
+      >
+        <PanelLeftClose class="size-4" />
+      </span>
+    </Button>
   </div>
 {/if}
 
@@ -125,46 +118,32 @@
   {#each sidebar.navItems as item (item.label)}
     {@const Icon = item.icon}
     {@const isActive = item.active || page.url.pathname === item.route}
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger
-          onclick={() => {
-            open = false;
-            pendingFetches.delete();
-            sidebar.navItems = sidebar.navItems.map((navItem) => ({
-              ...navItem,
-              active: navItem.label === item.label,
-            }));
-            goto(item.route);
-          }}
-        >
-          {#snippet child({ props })}
-            <Button
-              {...props}
-              data-active={isActive}
-              variant="link"
-              size={collapsed ? "icon" : "default"}
-              class={[
-                {
-                  "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground data-[active=true]:text-primary": true,
-                  "justify-start": !collapsed,
-                },
-              ]}
-            >
-              <Icon class="size-6" />
-              {#if !collapsed}
-                <span class="text-sm font-medium tracking-wide">{item.label}</span>
-              {/if}
-            </Button>
-          {/snippet}
-        </Tooltip.Trigger>
-        {#if collapsed}
-          <Tooltip.Content side="right">
-            <p>{item.label}</p>
-          </Tooltip.Content>
-        {/if}
-      </Tooltip.Root>
-    </Tooltip.Provider>
+    <Button
+      onclick={() => {
+        open = false;
+        pendingFetches.delete();
+        sidebar.navItems = sidebar.navItems.map((navItem) => ({
+          ...navItem,
+          active: navItem.label === item.label,
+        }));
+        goto(item.route);
+      }}
+      data-active={isActive}
+      variant="link"
+      size={collapsed ? "icon" : "default"}
+      class={[
+        {
+          "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground data-[active=true]:text-primary": true,
+          "justify-start": !collapsed,
+        },
+      ]}
+      title={collapsed && !isMobileSheet ? item.label : undefined}
+    >
+      <Icon class="size-6" />
+      {#if !collapsed}
+        <span class="text-sm font-medium tracking-wide">{item.label}</span>
+      {/if}
+    </Button>
   {/each}
 </nav>
 
@@ -177,7 +156,7 @@
     <DropdownMenu.Trigger
       class={[
         buttonVariants({ variant: "secondary" }),
-        "flex w-full items-center rounded-lg transition-all duration-300 ease-in-out",
+        "flex w-full items-center rounded-lg transition-all duration-150 ease-in-out",
         {
           "justify-center": collapsed,
           "p-1": collapsed,
