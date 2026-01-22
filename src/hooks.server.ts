@@ -2,6 +2,7 @@ import * as auth from "$lib/server/auth";
 import { sequence } from "@sveltejs/kit/hooks";
 import { dev } from "$app/environment";
 import type { Handle } from "@sveltejs/kit";
+import { redirect } from "@sveltejs/kit";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
   const sessionToken = event.cookies.get(auth.sessionCookieName);
@@ -9,25 +10,43 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   if (!sessionToken) {
     event.locals.user = null;
     event.locals.session = null;
+  } else {
+    try {
+      const { session, user } = await auth.validateSessionToken(sessionToken);
 
+      if (session) {
+        auth.setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+      } else {
+        auth.deleteSessionTokenCookie(event);
+      }
+
+      event.locals.user = user;
+      event.locals.session = session;
+    } catch (error) {
+      console.error("Auth error:", error);
+      event.locals.user = null;
+      event.locals.session = null;
+    }
+  }
+
+  // Skip auth checks for auth-related paths
+  if (event.url.pathname.startsWith("/auth") || event.url.pathname.startsWith("/.well-known")) {
     return resolve(event);
   }
-  try {
-    const { session, user } = await auth.validateSessionToken(sessionToken);
 
-    if (session) {
-      auth.setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
-    } else {
-      auth.deleteSessionTokenCookie(event);
-    }
-
-    event.locals.user = user;
-    event.locals.session = session;
-  } catch (error) {
-    console.error("Auth error:", error);
-    event.locals.user = null;
-    event.locals.session = null;
+  // Require authentication for other paths
+  if (!event.locals.user || !event.locals.session) {
+    redirect(307, "/auth?act=login");
   }
+
+  // Check additional auth requirements
+  if (!event.locals.user.isOauthUser && !event.locals.user.emailVerified) {
+    redirect(302, "/auth?act=verify-email");
+  }
+  if (event.locals.user.registeredTwoFactor && !event.locals.session.twoFactorVerified) {
+    redirect(302, "/auth/2fa");
+  }
+
   return resolve(event);
 };
 

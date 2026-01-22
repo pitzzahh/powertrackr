@@ -32,15 +32,18 @@ import {
 } from "$/server/encryption";
 import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
-import { form, getRequestEvent } from "$app/server";
+import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
+import { requireAuth as requireAuthServer } from "$/server/auth";
+
+export const requireAuth = query(() => requireAuthServer());
 
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     return redirect(303, "/auth?act=login");
   }
-  await invalidateSession(event.locals.session.id);
+  invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
   redirect(303, "/auth?act=login");
 });
