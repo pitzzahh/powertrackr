@@ -78,16 +78,9 @@
     ]}
   >
     <Button
-      onclick={(e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        sidebar.toggleCollapse();
-      }}
-      class={buttonVariants({
-        variant: "outline",
-        size: "icon",
-        class: "size-8 bg-card transition-transform duration-150 ease-in-out hover:bg-muted",
-      })}
+      onclick={() => sidebar.toggleCollapse()}
+      variant="outline"
+      size="icon"
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
