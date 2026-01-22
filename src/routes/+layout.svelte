@@ -20,6 +20,8 @@
   import { untrack } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { setConsumptionStore } from "$/stores/consumption.svelte.js";
+  import { RenderScan } from "svelte-render-scan";
+  import { dev } from "$app/environment";
 
   const { children, data } = $props();
 
@@ -67,6 +69,9 @@
 <ModeWatcher />
 <FocusRing />
 <Toaster theme={mode.current} expand />
+{#if dev}
+  <RenderScan />
+{/if}
 
 <svelte:head>
   <link rel="icon" href={favicon} />
