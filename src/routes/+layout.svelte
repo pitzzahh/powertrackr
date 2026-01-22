@@ -12,7 +12,6 @@
   import Header from "$routes/(components)/header.svelte";
   import { site } from "$/site";
   import { dev } from "$app/environment";
-
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
@@ -62,12 +61,6 @@
         resolve();
         await navigation.complete;
       });
-    });
-  });
-
-  onMount(() => {
-    navigator.serviceWorker.register("../service-worker.js", {
-      type: dev ? "module" : "classic",
     });
   });
 </script>
