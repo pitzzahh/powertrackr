@@ -82,7 +82,10 @@
               format: (v: Date) => v.toLocaleDateString("en-US", { month: "short" }),
             },
             yAxis: {
-              format: (v) => formatNumber(v),
+              format: (v) =>
+                formatNumber(v, {
+                  style: "decimal",
+                }),
             },
             highlight: { points: { r: 4 } },
           }}
