@@ -106,36 +106,36 @@
       <div class="flex items-center justify-center gap-4">
         <div class="hidden items-center justify-center gap-2 md:flex">
           {#each quickActions as quickAction, index (quickAction.label)}
-            {@const Icon = quickAction.icon}
-            <span
-              in:scale={{
-                duration: 250,
-                delay: index * 150,
-                easing: cubicInOut,
-                start: 0.8,
-              }}
-            >
-              <Sheet.Root>
-                <Sheet.Trigger class={buttonVariants()}>
-                  <Icon class="size-4" />
-                  <span>{quickAction.label}</span>
-                  <span class="sr-only">
-                    {quickAction.label}
-                  </span>
-                </Sheet.Trigger>
-                <Sheet.Portal>
-                  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-                    <Sheet.Header class="border-b">
-                      <Sheet.Title>Add new Bill</Sheet.Title>
-                      <Sheet.Description>Enter billing info</Sheet.Description>
-                    </Sheet.Header>
-                    {#if quickAction.visible}
+            {#if quickAction.visible}
+              {@const Icon = quickAction.icon}
+              <span
+                in:scale={{
+                  duration: 250,
+                  delay: index * 150,
+                  easing: cubicInOut,
+                  start: 0.8,
+                }}
+              >
+                <Sheet.Root>
+                  <Sheet.Trigger class={buttonVariants()}>
+                    <Icon class="size-4" />
+                    <span>{quickAction.label}</span>
+                    <span class="sr-only">
+                      {quickAction.label}
+                    </span>
+                  </Sheet.Trigger>
+                  <Sheet.Portal>
+                    <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
+                      <Sheet.Header class="border-b">
+                        <Sheet.Title>Add new Bill</Sheet.Title>
+                        <Sheet.Description>Enter billing info</Sheet.Description>
+                      </Sheet.Header>
                       {@render quickAction.content(quickAction.callback, user?.id || "")}
-                    {/if}
-                  </Sheet.Content>
-                </Sheet.Portal>
-              </Sheet.Root>
-            </span>
+                    </Sheet.Content>
+                  </Sheet.Portal>
+                </Sheet.Root>
+              </span>
+            {/if}
           {/each}
         </div>
 
