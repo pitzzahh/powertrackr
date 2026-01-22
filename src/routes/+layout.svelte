@@ -11,14 +11,13 @@
   import FocusRing from "$/components/focus-ring.svelte";
   import Header from "$routes/(components)/header.svelte";
   import { site } from "$/site";
-  import { dev } from "$app/environment";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
   import { pendingFetchContext } from "$/context.js";
   import { setSidebarStore } from "$/stores/sidebar.svelte";
   import { setBillingStore } from "$/stores/billing.svelte";
   import { Toaster } from "svelte-sonner";
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
   import { onNavigate } from "$app/navigation";
   import { setConsumptionStore } from "$/stores/consumption.svelte.js";
 
