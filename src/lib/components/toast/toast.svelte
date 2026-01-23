@@ -24,6 +24,34 @@
     class?: string;
     isLoading?: boolean;
   }
+
+  const VARIANT_CONFIG = {
+    info: {
+      icon: Info,
+      iconClass: "text-blue-500",
+    },
+    success: {
+      icon: CircleCheck,
+      iconClass: "text-emerald-500",
+    },
+    warning: {
+      icon: TriangleAlert,
+      iconClass: "text-amber-500",
+    },
+    error: {
+      icon: CircleAlert,
+      iconClass: "text-red-500",
+    },
+  };
+
+  const POSITION_CLASSES = {
+    "top-left": "fixed top-4 left-4",
+    "top-right": "fixed top-4 right-4",
+    "bottom-left": "fixed bottom-4 left-4",
+    "bottom-right": "fixed bottom-4 right-4",
+    "top-center": "fixed top-4 left-1/2 -translate-x-1/2",
+    "bottom-center": "fixed bottom-4 left-1/2 -translate-x-1/2",
+  };
 </script>
 
 <script lang="ts">
@@ -47,35 +75,7 @@
     isLoading = false,
   }: ToastProps = $props();
 
-  const variantConfig = {
-    info: {
-      icon: Info,
-      iconClass: "text-blue-500",
-    },
-    success: {
-      icon: CircleCheck,
-      iconClass: "text-emerald-500",
-    },
-    warning: {
-      icon: TriangleAlert,
-      iconClass: "text-amber-500",
-    },
-    error: {
-      icon: CircleAlert,
-      iconClass: "text-red-500",
-    },
-  };
-
-  const positionClasses = {
-    "top-left": "fixed top-4 left-4",
-    "top-right": "fixed top-4 right-4",
-    "bottom-left": "fixed bottom-4 left-4",
-    "bottom-right": "fixed bottom-4 right-4",
-    "top-center": "fixed top-4 left-1/2 -translate-x-1/2",
-    "bottom-center": "fixed bottom-4 left-1/2 -translate-x-1/2",
-  };
-
-  const config = $derived(variantConfig[variant]);
+  const config = $derived(VARIANT_CONFIG[variant]);
   const IconComponent = $derived(isLoading ? Loader2 : config.icon);
 </script>
 
@@ -84,7 +84,7 @@
   aria-live="polite"
   class={cn(
     "z-100 max-w-100 rounded-lg border border-border bg-background p-4 shadow-lg shadow-black/5",
-    positionClasses[position],
+    POSITION_CLASSES[position],
     className
   )}
 >
