@@ -40,7 +40,7 @@
 {/snippet}
 
 {#snippet NewBill(callback: BillingInfoWithSubMetersFormProps["callback"], userId: string)}
-  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
+  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto">
     {@const billingInfo = getLatestBillingInfo({ userId })}
     <div class="space-y-4 p-4">
       {#key billingInfo.current}
