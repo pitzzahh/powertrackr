@@ -55,13 +55,8 @@
 </script>
 
 <script lang="ts">
-  import { X } from "$/assets/icons";
+  import { X, Info, CircleCheck, TriangleAlert, CircleAlert, Loader2 } from "$/assets/icons";
   import { cn } from "$/utils/style";
-  import Info from "@lucide/svelte/icons/info";
-  import CircleCheck from "@lucide/svelte/icons/circle-check";
-  import TriangleAlert from "@lucide/svelte/icons/triangle-alert";
-  import CircleAlert from "@lucide/svelte/icons/circle-alert";
-  import Loader2 from "@lucide/svelte/icons/loader-2";
 
   let {
     title,
