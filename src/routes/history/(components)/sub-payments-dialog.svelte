@@ -29,26 +29,41 @@
           in:scale={{ duration: 1000, delay: index * 100, easing: cubicInOut }}
         >
           <h3 class="text-md mb-2 font-semibold">Sub Meter [{subMeter.label}]</h3>
-          <div class="overflow-hidden rounded-md border bg-background">
-            <Table>
+          <div class="max-w-full overflow-x-auto rounded-md border bg-background">
+            <Table class="min-w-0 table-fixed">
               <TableBody>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
-                  <TableCell class="bg-muted/50 py-2 font-medium">Reading</TableCell>
-                  <TableCell class="py-2">{subMeter.reading}</TableCell>
+                  <TableCell
+                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                    >Reading</TableCell
+                  >
+                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
+                    >{subMeter.reading}</TableCell
+                  >
                 </TableRow>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
-                  <TableCell class="bg-muted/50 py-2 font-medium">Used kWh</TableCell>
-                  <TableCell class="py-2">{subMeter.subkWh} kWh</TableCell>
+                  <TableCell
+                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                    >Used kWh</TableCell
+                  >
+                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
+                    >{subMeter.subkWh} kWh</TableCell
+                  >
                 </TableRow>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
-                  <TableCell class="bg-muted/50 py-2 font-medium">Payment Amount</TableCell>
-                  <TableCell class="py-2">{formatNumber(subMeter.payment?.amount || 0)}</TableCell>
+                  <TableCell
+                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                    >Payment Amount</TableCell
+                  >
+                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
+                    >{formatNumber(subMeter.payment?.amount || 0)}</TableCell
+                  >
                 </TableRow>
               </TableBody>
             </Table>
