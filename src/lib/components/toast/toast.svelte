@@ -55,7 +55,7 @@
 </script>
 
 <script lang="ts">
-  import { X, Info, CircleCheck, TriangleAlert, CircleAlert, Loader2 } from "$/assets/icons";
+  import { X, Info, CircleCheck, TriangleAlert, CircleAlert, Loader } from "$/assets/icons";
   import { cn } from "$/utils/style";
 
   let {
@@ -71,7 +71,7 @@
   }: ToastProps = $props();
 
   const config = $derived(VARIANT_CONFIG[variant]);
-  const IconComponent = $derived(isLoading ? Loader2 : config.icon);
+  const IconComponent = $derived(isLoading ? Loader : config.icon);
 </script>
 
 <div
