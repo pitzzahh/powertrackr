@@ -186,8 +186,9 @@
         </Table.Body>
       </Table.Root>
     </div>
+
+    <div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }} class="mt-2">
+      <DataTablePagination {table} {status} {...pagination_props} />
+    </div>
   </ScrollArea>
-</div>
-<div in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-  <DataTablePagination {table} {status} {...pagination_props} />
 </div>
