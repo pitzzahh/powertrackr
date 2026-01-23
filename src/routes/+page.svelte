@@ -1,18 +1,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { showSuccess } from "$/components/toast";
+  import { showSuccess, showWarning } from "$/components/toast";
   import { formatNumber } from "$/utils/format";
   import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { useBillingStore } from "$/stores/billing.svelte.js";
-  import { Loader, Banknote } from "$lib/assets/icons";
+  import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import * as Sheet from "$lib/components/ui/sheet/index.js";
+  import { NewBill } from "$/components/snippets.svelte";
+  import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
 
   let { data } = $props();
 
   const billingStore = useBillingStore();
+  const consumptionStore = useConsumptionStore();
+
+  let openNewBill = $state(false);
 
   onMount(() => {
     if (!data.user) return;
@@ -32,6 +38,55 @@
       <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
       <p class="text-muted-foreground">Overview of your energy billing and savings</p>
     </div>
+  </div>
+
+  <!-- Mobile-only compact New Bill card (inline with content, not fixed) -->
+  <div class="md:hidden">
+    <section class="mb-4">
+      <div
+        class="flex items-center justify-between gap-2 rounded-md border bg-card p-3 text-muted-foreground shadow-sm"
+      >
+        <div class="flex items-center gap-3">
+          <PhilippinePeso class="size-5" />
+          <div class="text-sm font-medium">Add new bill</div>
+        </div>
+        <Sheet.Root bind:open={openNewBill}>
+          <Sheet.Trigger
+            class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
+          >
+            New
+            <span class="sr-only">Open new bill</span>
+          </Sheet.Trigger>
+          <Sheet.Portal>
+            <Sheet.Content side="bottom" class="max-h-[90vh] w-full p-0">
+              <Sheet.Header class="border-b">
+                <Sheet.Title>Add new Bill</Sheet.Title>
+                <Sheet.Description>Enter billing info</Sheet.Description>
+              </Sheet.Header>
+              {@render NewBill((valid, action, metaData) => {
+                openNewBill = false;
+                if (valid) {
+                  billingStore.refresh();
+                  consumptionStore.refresh();
+                  showSuccess(
+                    action === "add"
+                      ? "Billing info created successfully!"
+                      : "Billing info updated successfully!"
+                  );
+                } else {
+                  showWarning(
+                    action === "add"
+                      ? "Failed to create billing info"
+                      : "Failed to update billing info",
+                    metaData?.error
+                  );
+                }
+              }, data.user?.id || "")}
+            </Sheet.Content>
+          </Sheet.Portal>
+        </Sheet.Root>
+      </div>
+    </section>
   </div>
 
   {@render Metrics()}
