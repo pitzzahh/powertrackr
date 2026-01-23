@@ -90,7 +90,13 @@
 >
   <div class="flex gap-3">
     <IconComponent
-      class={cn("shrink-0 self-start", isLoading ? "animate-spin" : "", config.iconClass)}
+      class={[
+        config.iconClass,
+        {
+          "selft-start shrink-0": true,
+          "animate-spin": isLoading,
+        },
+      ]}
       size={16}
       aria-hidden="true"
     />
