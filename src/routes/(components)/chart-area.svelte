@@ -30,7 +30,7 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
-
+  import { onMount, untrack } from "svelte";
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
   let { timeRange, visibleKeysSet } = $state({
@@ -61,20 +61,22 @@
     },
   });
 
-  $effect(() => {
-    const keys = Object.keys(CHART_CONFIG);
-    for (const key of keys) {
-      if (!visibleKeysSet.has(key)) {
-        visibleKeysSet.add(key);
+  $effect(() =>
+    untrack(() => {
+      const keys = Object.keys(CHART_CONFIG);
+      for (const key of keys) {
+        if (!visibleKeysSet.has(key)) {
+          visibleKeysSet.add(key);
+        }
       }
-    }
-    // Remove keys that are no longer in config
-    for (const key of Array.from(visibleKeysSet)) {
-      if (!keys.includes(key)) {
-        visibleKeysSet.delete(key);
+      // Remove keys that are no longer in config
+      for (const key of Array.from(visibleKeysSet)) {
+        if (!keys.includes(key)) {
+          visibleKeysSet.delete(key);
+        }
       }
-    }
-  });
+    })
+  );
 </script>
 
 <Card.Root>
@@ -187,10 +189,13 @@
           <button
             class="flex items-center gap-2 text-sm"
             style="opacity: {visibleKeys.includes(key) ? 1 : 0.5};"
-            onclick={() =>
-              (visibleKeys = visibleKeys.includes(key)
-                ? visibleKeys.filter((k) => k !== key)
-                : [...visibleKeys, key])}
+            onclick={() => {
+              if (visibleKeysSet.has(key)) {
+                visibleKeysSet.delete(key);
+              } else {
+                visibleKeysSet.add(key);
+              }
+            }}
           >
             <div style="background-color: {color};" class="size-3 rounded"></div>
             <span
