@@ -177,7 +177,7 @@
       {/each}
     </div>
   </Card.Header>
-  <Card.Content>
+  <Card.Content class="pl-12">
     <div class="mb-4 flex justify-end">
       <Select.Root type="single" bind:value={timeRange}>
         <Select.Trigger class="w-40 rounded-lg" aria-label="Select a time range">

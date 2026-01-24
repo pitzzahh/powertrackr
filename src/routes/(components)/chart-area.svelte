@@ -98,7 +98,7 @@
       </Select.Content>
     </Select.Root>
   </Card.Header>
-  <Card.Content class="pl-16">
+  <Card.Content class="pl-12">
     {#if status === "fetching"}
       <div class="flex flex-col items-center justify-center py-8">
         <Loader class="mb-2 h-8 w-8 animate-spin text-muted-foreground" />
