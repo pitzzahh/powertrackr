@@ -29,6 +29,7 @@
   import { deleteBillingInfo } from "$/api/billing-info.remote";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import { BillingInfoForm as UpdateBillingInfoForm } from "$/components/snippets.svelte";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
@@ -251,7 +252,7 @@
 
 <Sheet.Root bind:open={open_edit}>
   <Sheet.Portal>
-    <Sheet.Content class="min-w-[60%] gap-1" side="left">
+    <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
       <Sheet.Header class="border-b">
         <Sheet.Title>Edit billing info of {formatDate(new Date(row.original.date))}</Sheet.Title>
         <Sheet.Description>
@@ -261,25 +262,20 @@
           </span>
         </Sheet.Description>
       </Sheet.Header>
-
-      <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
-        <div class="space-y-4 p-4">
-          <BillingInfoForm
-            action="update"
-            billingInfo={billingInfoToDto(row.original)}
-            callback={(valid, _, metaData) => {
-              open_edit = false;
-              if (valid) {
-                billingStore.refresh();
-                consumptionStore.refresh();
-                showSuccess("Billing info updated successfully!");
-              } else {
-                showWarning("Failed to update billing info", metaData?.error);
-              }
-            }}
-          />
-        </div>
-      </ScrollArea>
+      {@render UpdateBillingInfoForm(
+        (valid, _, metaData) => {
+          open_edit = false;
+          if (valid) {
+            billingStore.refresh();
+            consumptionStore.refresh();
+            showSuccess("Billing info updated successfully!");
+          } else {
+            showWarning("Failed to update billing info", metaData?.error);
+          }
+        },
+        row.original.userId,
+        "update"
+      )}
     </Sheet.Content>
   </Sheet.Portal>
 </Sheet.Root>

@@ -4,7 +4,7 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-  import { BillingInfoForm } from "$routes/history/(components)";
+  import { BillingInfoForm as OriginalBillingInfoForm } from "$routes/history/(components)";
   import { showPromise } from "$/components/toast";
   import { Button } from "$/components/ui/button";
   import { Input } from "$/components/ui/input/";
@@ -16,7 +16,7 @@
   let minSubMeters = $state(2);
   let maxSubMeters = $state(5);
 
-  export { WarningBanner, LoadingDots, NewBill, GenerateRandomBills };
+  export { WarningBanner, LoadingDots, BillingInfoForm, GenerateRandomBills };
 </script>
 
 {#snippet WarningBanner({ message }: WarningBannerProps)}
@@ -39,24 +39,25 @@
   </span>
 {/snippet}
 
-{#snippet NewBill(callback: BillingInfoWithSubMetersFormProps["callback"], userId: string)}
-  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto">
+{#snippet BillingInfoForm(
+  callback: BillingInfoWithSubMetersFormProps["callback"],
+  userId: string,
+  action: BillingInfoWithSubMetersFormProps["action"]
+)}
+  <ScrollArea class="h-[calc(100vh-50px)]">
     {@const billingInfo = getLatestBillingInfo({ userId })}
     <div class="space-y-4 p-4">
       {#key billingInfo.current}
         {@const latestBillingInfo =
           (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
 
-        <BillingInfoForm action="add" {callback} billingInfo={latestBillingInfo} />
+        <OriginalBillingInfoForm {action} {callback} billingInfo={latestBillingInfo} />
       {/key}
     </div>
   </ScrollArea>
 {/snippet}
 
-{#snippet GenerateRandomBills(
-  callback: BillingInfoWithSubMetersFormProps["callback"],
-  userId: string
-)}
+{#snippet GenerateRandomBills(callback: BillingInfoWithSubMetersFormProps["callback"])}
   <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
     <div class="space-y-4 p-4">
       <div class="space-y-2">

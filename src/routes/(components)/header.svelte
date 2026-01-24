@@ -14,7 +14,8 @@
       label: string;
       content: (
         callback: BillingInfoWithSubMetersFormProps["callback"],
-        userId: string
+        userId: string,
+        action: BillingInfoWithSubMetersFormProps["action"]
       ) => ReturnType<Snippet<[]>>;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
@@ -35,7 +36,7 @@
   import { showSuccess, showWarning } from "$/components/toast";
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { NewBill, GenerateRandomBills } from "$/components/snippets.svelte";
+  import { BillingInfoForm, GenerateRandomBills } from "$/components/snippets.svelte";
   import { dev } from "$app/environment";
 
   let { user }: HeaderProps = $props();
@@ -50,7 +51,7 @@
         visible: true,
         icon: PhilippinePeso,
         label: "New Bill",
-        content: NewBill,
+        content: BillingInfoForm,
         callback: (valid, _, metaData) => {
           openMenu = false;
           if (valid) {
@@ -123,7 +124,7 @@
                         <Sheet.Title>Add new Bill</Sheet.Title>
                         <Sheet.Description>Enter billing info</Sheet.Description>
                       </Sheet.Header>
-                      {@render quickAction.content(quickAction.callback, user?.id || "")}
+                      {@render quickAction.content(quickAction.callback, user?.id || "", "add")}
                     </Sheet.Content>
                   </Sheet.Portal>
                 </Sheet.Root>
