@@ -262,20 +262,22 @@
           </span>
         </Sheet.Description>
       </Sheet.Header>
-      {@render UpdateBillingInfoForm(
-        (valid, _, metaData) => {
-          open_edit = false;
-          if (valid) {
-            billingStore.refresh();
-            consumptionStore.refresh();
-            showSuccess("Billing info updated successfully!");
-          } else {
-            showWarning("Failed to update billing info", metaData?.error);
-          }
-        },
-        row.original.userId,
-        "update"
-      )}
+      <ScrollArea class="min-h-0 flex-1">
+        {@render UpdateBillingInfoForm(
+          (valid, _, metaData) => {
+            open_edit = false;
+            if (valid) {
+              billingStore.refresh();
+              consumptionStore.refresh();
+              showSuccess("Billing info updated successfully!");
+            } else {
+              showWarning("Failed to update billing info", metaData?.error);
+            }
+          },
+          row.original.userId,
+          "update"
+        )}
+      </ScrollArea>
     </Sheet.Content>
   </Sheet.Portal>
 </Sheet.Root>

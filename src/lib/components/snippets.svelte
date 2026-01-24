@@ -44,85 +44,67 @@
   userId: string,
   action: BillingInfoWithSubMetersFormProps["action"]
 )}
-  <ScrollArea class="min-h-0 flex-1">
-    {@const billingInfo = getLatestBillingInfo({ userId })}
-    <div class="space-y-4 p-4 pb-8">
-      {#key billingInfo.current}
-        {@const latestBillingInfo =
-          (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
+  {@const billingInfo = getLatestBillingInfo({ userId })}
+  <div class="space-y-4 p-4 pb-8">
+    {#key billingInfo.current}
+      {@const latestBillingInfo =
+        (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
 
-        <OriginalBillingInfoForm {action} {callback} billingInfo={latestBillingInfo} />
-      {/key}
-    </div>
-  </ScrollArea>
+      <OriginalBillingInfoForm {action} {callback} billingInfo={latestBillingInfo} />
+    {/key}
+  </div>
 {/snippet}
 
 {#snippet GenerateRandomBills(callback: BillingInfoWithSubMetersFormProps["callback"])}
-  <ScrollArea class="min-h-0 flex-1 overflow-y-auto pr-2.5">
-    <div class="space-y-4 p-4 pb-8">
-      <div class="space-y-2">
-        <label for="count" class="text-sm font-medium">Number of Billing Infos</label>
-        <Input type="number" id="count" bind:value={count} min="1" max="100" required />
-      </div>
-      <div class="space-y-2">
-        <label for="minSubMeters" class="text-sm font-medium">Min Sub Meters per Bill</label>
-        <Input
-          type="number"
-          id="minSubMeters"
-          bind:value={minSubMeters}
-          min="0"
-          max="10"
-          required
-        />
-      </div>
-      <div class="space-y-2">
-        <label for="maxSubMeters" class="text-sm font-medium">Max Sub Meters per Bill</label>
-        <Input
-          type="number"
-          id="maxSubMeters"
-          bind:value={maxSubMeters}
-          min="0"
-          max="10"
-          required
-        />
-      </div>
-      <Button
-        onclick={() =>
-          showPromise(
-            generateRandomBillingInfos({
-              count,
-              minSubMeters,
-              maxSubMeters,
-            }),
-            {
-              loading: {
-                title: "Generating Bills",
-                description: "Please wait while we generate the random billing infos.",
-              },
-              success: {
-                title: "Success",
-                description: "Random billing infos have been generated successfully.",
-              },
-              error: {
-                title: "Error",
-                description: "Failed to generate random billing infos.",
-              },
-              onSuccess: (d) => {
-                callback?.(d.valid, "add", {
-                  error: d.message,
-                });
-              },
-              onError: (d) => {
-                callback?.(false, "add", {
-                  error: d,
-                });
-              },
-            }
-          )}
-        class="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        Generate Random Bills
-      </Button>
+  <div class="space-y-4 p-4 pb-8">
+    <div class="space-y-2">
+      <label for="count" class="text-sm font-medium">Number of Billing Infos</label>
+      <Input type="number" id="count" bind:value={count} min="1" max="100" required />
     </div>
-  </ScrollArea>
+    <div class="space-y-2">
+      <label for="minSubMeters" class="text-sm font-medium">Min Sub Meters per Bill</label>
+      <Input type="number" id="minSubMeters" bind:value={minSubMeters} min="0" max="10" required />
+    </div>
+    <div class="space-y-2">
+      <label for="maxSubMeters" class="text-sm font-medium">Max Sub Meters per Bill</label>
+      <Input type="number" id="maxSubMeters" bind:value={maxSubMeters} min="0" max="10" required />
+    </div>
+    <Button
+      onclick={() =>
+        showPromise(
+          generateRandomBillingInfos({
+            count,
+            minSubMeters,
+            maxSubMeters,
+          }),
+          {
+            loading: {
+              title: "Generating Bills",
+              description: "Please wait while we generate the random billing infos.",
+            },
+            success: {
+              title: "Success",
+              description: "Random billing infos have been generated successfully.",
+            },
+            error: {
+              title: "Error",
+              description: "Failed to generate random billing infos.",
+            },
+            onSuccess: (d) => {
+              callback?.(d.valid, "add", {
+                error: d.message,
+              });
+            },
+            onError: (d) => {
+              callback?.(false, "add", {
+                error: d,
+              });
+            },
+          }
+        )}
+      class="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+    >
+      Generate Random Bills
+    </Button>
+  </div>
 {/snippet}

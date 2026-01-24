@@ -37,6 +37,7 @@
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { BillingInfoForm, GenerateRandomBills } from "$/components/snippets.svelte";
+  import { ScrollArea } from "$/components/ui/scroll-area";
   import { dev } from "$app/environment";
 
   let { user }: HeaderProps = $props();
@@ -124,7 +125,9 @@
                         <Sheet.Title>Add new Bill</Sheet.Title>
                         <Sheet.Description>Enter billing info</Sheet.Description>
                       </Sheet.Header>
-                      {@render quickAction.content(quickAction.callback, user?.id || "", "add")}
+                      <ScrollArea class="min-h-0 flex-1">
+                        {@render quickAction.content(quickAction.callback, user?.id || "", "add")}
+                      </ScrollArea>
                     </Sheet.Content>
                   </Sheet.Portal>
                 </Sheet.Root>
