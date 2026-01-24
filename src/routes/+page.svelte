@@ -13,6 +13,8 @@
   import { BillingInfoForm } from "$/components/snippets.svelte";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info.js";
+  import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
 
   let { data } = $props();
 
@@ -65,20 +67,26 @@
                 <Sheet.Description>Enter billing info</Sheet.Description>
               </Sheet.Header>
               <ScrollArea class="min-h-0 flex-1">
-                {@render BillingInfoForm(
-                  (valid, _, metaData) => {
-                    openNewBill = false;
-                    if (valid) {
-                      billingStore.refresh();
-                      consumptionStore.refresh();
-                      showSuccess("Billing info created successfully!");
-                    } else {
-                      showWarning("Failed to create billing info", metaData?.error);
-                    }
-                  },
-                  data.user?.id || "",
-                  "add"
-                )}
+                {@const billingInfo = getLatestBillingInfo({ userId: data.user?.id || "" })}
+                {#key billingInfo.current}
+                  {@const latestBillingInfo =
+                    (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ??
+                    undefined}
+                  {@render BillingInfoForm(
+                    (valid, _, metaData) => {
+                      openNewBill = false;
+                      if (valid) {
+                        billingStore.refresh();
+                        consumptionStore.refresh();
+                        showSuccess("Billing info created successfully!");
+                      } else {
+                        showWarning("Failed to create billing info", metaData?.error);
+                      }
+                    },
+                    "add",
+                    latestBillingInfo
+                  )}
+                {/key}
               </ScrollArea>
             </Sheet.Content>
           </Sheet.Portal>

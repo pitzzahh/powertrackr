@@ -29,6 +29,7 @@
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { BillingInfoForm as UpdateBillingInfoForm } from "$/components/snippets.svelte";
+  import { billingInfoToDto } from "$/utils/mapper/billing-info";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
@@ -281,8 +282,8 @@
               showWarning("Failed to update billing info", metaData?.error);
             }
           },
-          row.original.userId,
-          "update"
+          "update",
+          billingInfoToDto(row.original)
         )}
       </ScrollArea>
     </Sheet.Content>

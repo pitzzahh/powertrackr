@@ -23,7 +23,7 @@
 
   type BillingInfoFormState = {
     dateValue: CalendarDate | undefined;
-    status: string;
+    status: BillingInfoDTO["status"];
     subMeters: SubMeterForm[];
     open: boolean;
   };
@@ -41,7 +41,7 @@
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import { toast } from "svelte-sonner";
@@ -59,12 +59,17 @@
 
   let { dateValue, status, open } = $derived<Omit<BillingInfoFormState, "subMeters">>({
     dateValue: undefined,
-    status: "pending",
+    status: "Pending",
     open: false,
   });
 
   const { currentAction } = $derived({
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
+  });
+
+  // Sync the local `status` state with the remote action field (Svelte 5 runes).
+  $effect(() => {
+    currentAction?.fields?.status?.set?.(status);
   });
 
   // Add a new sub meter
@@ -106,7 +111,7 @@
             latestDate.getDate()
           )
         : undefined;
-      status = "pending";
+      status = "Pending";
     }
 
     subMeters =
@@ -246,17 +251,18 @@
           <Select.Trigger id="{identity}-status" class="w-full">
             {convertToNormalText(status) || "Select status"}
           </Select.Trigger>
-          <Select.Content {...currentAction.fields.status.as("select")}>
+          <Select.Content>
             <Select.Group>
               <Select.Label>Status</Select.Label>
-              {#each [{ value: "paid", label: "Paid" }, { value: "pending", label: "Pending" }] as option (option.value)}
-                <Select.Item value={option.value} label={option.label}>
-                  {option.label}
+              {#each ["Paid", "Pending"] as option (option)}
+                <Select.Item value={option} label={option}>
+                  {option}
                 </Select.Item>
               {/each}
             </Select.Group>
           </Select.Content>
         </Select.Root>
+        <input hidden {...currentAction.fields.status.as("text")} value={status} />
         <Field.Description>Select billing status</Field.Description>
       </Field.Field>
     </Field.Group>

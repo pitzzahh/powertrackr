@@ -468,6 +468,8 @@ export const updateBillingInfo = form(
         }
       );
 
+      console.log({ updatedBillingInfo });
+
       if (!validBillingInfoUpdate || !updatedBillingInfo) {
         tx.rollback();
         throw error(400, "Failed to update billing info");

@@ -14,8 +14,8 @@
       label: string;
       content: (
         callback: BillingInfoWithSubMetersFormProps["callback"],
-        userId: string,
-        action: BillingInfoWithSubMetersFormProps["action"]
+        action: BillingInfoWithSubMetersFormProps["action"],
+        billingInfo?: BillingInfoDTOWithSubMeters
       ) => ReturnType<Snippet<[]>>;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
@@ -39,6 +39,8 @@
   import { BillingInfoForm, GenerateRandomBills } from "$/components/snippets.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { dev } from "$app/environment";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import { getLatestBillingInfo } from "$/api/billing-info.remote";
 
   let { user }: HeaderProps = $props();
 
@@ -126,7 +128,18 @@
                         <Sheet.Description>Enter billing info</Sheet.Description>
                       </Sheet.Header>
                       <ScrollArea class="min-h-0 flex-1">
-                        {@render quickAction.content(quickAction.callback, user?.id || "", "add")}
+                        {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
+                        {#key billingInfo.current}
+                          {@const latestBillingInfo =
+                            (billingInfo.current?.value[0] as
+                              | BillingInfoDTOWithSubMeters
+                              | undefined) ?? undefined}
+                          {@render quickAction.content(
+                            quickAction.callback,
+                            "add",
+                            latestBillingInfo
+                          )}
+                        {/key}
                       </ScrollArea>
                     </Sheet.Content>
                   </Sheet.Portal>
