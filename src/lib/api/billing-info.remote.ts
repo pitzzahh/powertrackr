@@ -19,6 +19,8 @@ import {
   getBillingInfoCountBy,
   deleteBillingInfoBy,
 } from "$/server/crud/billing-info-crud";
+
+import { getChangedData, omit } from "$/utils/mapper";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error, invalid } from "@sveltejs/kit";
 import type { NewSubMeter } from "$/types/sub-meter";
@@ -398,14 +400,15 @@ export const updateBillingInfo = form(
   async (data): Promise<BillingInfo> => {
     const { session } = requireAuth();
     const { id: billingInfoId, subMeters, ...updateData } = data;
-    console.log(JSON.stringify(data, null, 2));
+
     const {
       valid: validBillingInfo,
       value: [billingInfoWithSubMetersToUpdate],
     } = await getBillingInfoByCrud({
       query: { userId: session.userId, id: billingInfoId },
       options: {
-        fields: ["id", "date", "paymentId"],
+        fields: ["id", "date", "status", "balance", "totalkWh", "paymentId"],
+        with_payment: true,
         with_sub_meters_with_payment: true,
       },
     });
@@ -414,11 +417,75 @@ export const updateBillingInfo = form(
       throw error(400, "Failed to update billing info");
     }
 
+    const updatedData = {
+      ...updateData,
+      date: new Date(updateData.date),
+      ...(updateData.status && {
+        status: updateData.status as string,
+      }),
+    };
+
+    const changed_data = getChangedData(
+      omit(
+        {
+          ...billingInfoWithSubMetersToUpdate,
+          balance: billingInfoWithSubMetersToUpdate.payment?.amount,
+        },
+        ["id", "createdAt", "updatedAt", "paymentId", "createdAt", "updatedAt"]
+      ),
+      updatedData
+    );
+
+    // Determine whether provided subMeters actually differ from existing ones
+    // (cheap checks) so we can skip heavy work when they don't.
+    const existingSubMeters = billingInfoWithSubMetersToUpdate.subMeters ?? [];
+    let subMetersHaveChanges = false;
+    if (subMeters !== undefined && subMeters !== null) {
+      // If counts differ, there were additions/removals
+      if ((subMeters.length ?? 0) !== (existingSubMeters.length ?? 0)) {
+        subMetersHaveChanges = true;
+      }
+      // Quick scan: new items (no id) or any mismatch in id/label/reading
+      if (!subMetersHaveChanges) {
+        const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id);
+        for (const s of subMeters) {
+          if (!s.id) {
+            subMetersHaveChanges = true;
+            break;
+          }
+          const existing = existingSubMeters.find((m) => m.id === s.id);
+          if (!existing) {
+            subMetersHaveChanges = true;
+            break;
+          }
+          if (existing.label !== s.label || existing.reading !== s.reading) {
+            subMetersHaveChanges = true;
+            break;
+          }
+        }
+        // Also detect deletions (an existing id not present in provided ids)
+        if (!subMetersHaveChanges) {
+          for (const existing of existingSubMeters) {
+            if (!providedIds.includes(existing.id)) {
+              subMetersHaveChanges = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (Object.keys(changed_data).length === 0 && !subMetersHaveChanges) {
+      console.info("Bail out, no changed data");
+      return billingInfoWithSubMetersToUpdate as BillingInfo;
+    }
+
     // Prepare sub meters data first (compute without DB calls)
     const payPerkWh = calculatePayPerKwh(
       updateData.balance ?? billingInfoWithSubMetersToUpdate.balance,
       updateData.totalkWh ?? billingInfoWithSubMetersToUpdate.totalkWh
     );
+    // Only compute the rich subMetersData if there are changes to process
     let subMetersData =
       subMeters?.map((sub) => {
         if (sub.id) {
@@ -468,15 +535,13 @@ export const updateBillingInfo = form(
         }
       );
 
-      console.log({ updatedBillingInfo });
-
       if (!validBillingInfoUpdate || !updatedBillingInfo) {
         tx.rollback();
         throw error(400, "Failed to update billing info");
       }
 
-      // Handle sub meters update if provided
-      if (subMeters) {
+      // Handle sub meters update if provided and only if changes detected
+      if (subMeters && subMetersHaveChanges) {
         const existingIds = billingInfoWithSubMetersToUpdate.subMeters?.map((s) => s.id) || [];
         const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id!);
         const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
@@ -548,7 +613,7 @@ export const updateBillingInfo = form(
         throw error(400, "Billing info missing payment ID");
       }
 
-      const totalSubPayment = subMeters
+      const totalSubPayment = subMetersHaveChanges
         ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
         : (billingInfoWithSubMetersToUpdate.subMeters || []).reduce(
             (sum, sub) => sum + (sub.payment?.amount ?? 0),
