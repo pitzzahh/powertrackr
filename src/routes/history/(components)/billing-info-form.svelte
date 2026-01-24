@@ -42,7 +42,11 @@
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import type {
+    BillingInfo,
+    BillingInfoDTO,
+    BillingInfoDTOWithSubMeters,
+  } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import * as v from "valibot";
@@ -371,7 +375,12 @@
 
       <Field.Field>
         <Field.Label for="{identity}-status">Status</Field.Label>
-        <Select.Root type="single" bind:value={status} disabled={action === "add"}>
+        <Select.Root
+          type="single"
+          bind:value={status}
+          disabled={action === "add"}
+          onValueChange={(v) => currentAction?.fields?.status?.set?.(v as BillingInfoDTO["status"])}
+        >
           <Select.Trigger id="{identity}-status" class="w-full">
             {convertToNormalText(status) || "Select status"}
           </Select.Trigger>
