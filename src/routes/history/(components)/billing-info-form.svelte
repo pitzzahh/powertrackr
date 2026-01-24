@@ -47,7 +47,7 @@
   import { convertToNormalText } from "$/utils/text";
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
-  import { showLoading } from "$/components/toast";
+  import { showInspectorWarning, showLoading } from "$/components/toast";
   import Separator from "$/components/ui/separator/separator.svelte";
   import { sineInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
@@ -208,6 +208,10 @@
 <form
   id="{identity}-form"
   {...currentAction.enhance(async ({ form, submit }) => {
+    if (action === "update" && Object.keys(CHANGED_DATA).length === 0) {
+      showInspectorWarning();
+      return;
+    }
     const toastId = showLoading(
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );

@@ -160,7 +160,7 @@ export function showPromise<T>(
 export function showInspectorWarning() {
   return showWarning(
     "Nice try, Inspector!",
-    "Bypassing the disabled state won't work. You still need the correct confirmation code."
+    "Bypassing restrictions won't work. Please ensure all requirements are met."
   );
 }
 
