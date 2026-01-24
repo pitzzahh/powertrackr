@@ -138,6 +138,43 @@
     return { CHANGED_DATA: changed };
   });
 
+  // FORM_VALID: run client-side validation (valibot-backed) and expose a boolean
+  let { FORM_VALID } = $derived.by(() => {
+    // Touch the form value so this recomputes whenever any field changes
+    const fv = (currentAction?.fields as any)?.value?.() ?? {};
+    const issues = currentAction?.fields?.allIssues?.() ?? [];
+
+    // Basic fallback validation (used when client-side issues are empty or not run)
+    const fallbackValid = (() => {
+      // Date must be present (either from the action fields or local `dateValue`)
+      const dateStr = fv.date ?? (dateValue ? dateValue.toString() : "");
+      if (!dateStr) return false;
+
+      // Balance and total kWh must be numbers > 0
+      const balance = Number(fv.balance);
+      if (Number.isNaN(balance) || balance <= 0) return false;
+      const totalkWh = Number(fv.totalkWh);
+      if (Number.isNaN(totalkWh) || totalkWh <= 0) return false;
+
+      // For updates we should have an id
+      if (action === "update" && !fv.id) return false;
+
+      // Validate sub-meters: each must have a non-empty label and a non-negative reading
+      const subs = fv.subMeters ?? [];
+      if (!Array.isArray(subs)) return false;
+      for (const s of subs) {
+        if (!s || typeof s !== "object") return false;
+        if (!s.label || String(s.label).trim() === "") return false;
+        const reading = Number(s.reading);
+        if (Number.isNaN(reading) || reading < 0) return false;
+      }
+
+      return true;
+    })();
+
+    return { FORM_VALID: (issues?.length ?? 0) === 0 && fallbackValid };
+  });
+
   // Add a new sub meter
   function addSubMeter() {
     subMeters.push({
@@ -168,7 +205,7 @@
       // Set date
       const date = new Date(billingInfo.date);
       dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-      currentAction.fields.date.set(dateValue?.toString());
+      currentAction.fields.date.set(dateValue ? dateValue.toString() : "");
       status = billingInfo.status;
       //@ts-expect-error id exists for update action
       currentAction.fields.id.set(billingInfo.id);
@@ -186,6 +223,8 @@
           )
         : undefined;
       status = "Pending";
+      // Sync date with action fields so client-side validation can run
+      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
     }
 
     subMeters =
@@ -270,6 +309,8 @@
                   captionLayout="dropdown"
                   onValueChange={() => {
                     open = false;
+                    // Keep the action fields in sync when the user picks a date
+                    currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
                   }}
                   class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
                 />
@@ -293,7 +334,12 @@
             </Card.Root>
           </Popover.Content>
         </Popover.Root>
-        <input hidden name="date" value={dateValue ? dateValue.toString() : ""} required />
+        <input
+          hidden
+          {...currentAction.fields.date.as("text")}
+          value={dateValue ? dateValue.toString() : ""}
+          required
+        />
         <Field.Description>Pick billing date</Field.Description>
       </Field.Field>
 
@@ -441,10 +487,12 @@
       type="submit"
       form="{identity}-form"
       class="ml-auto min-w-32"
-      disabled={action === "update" && Object.keys(CHANGED_DATA).length === 0}
-      title={action === "update" && Object.keys(CHANGED_DATA).length === 0
-        ? "No changes to update"
-        : undefined}
+      disabled={(action === "update" && Object.keys(CHANGED_DATA).length === 0) || !FORM_VALID}
+      title={!FORM_VALID
+        ? "Please fix validation errors before submitting"
+        : action === "update" && Object.keys(CHANGED_DATA).length === 0
+          ? "No changes to update"
+          : undefined}
     >
       {action === "add" ? "Create Billing Info" : "Update Billing Info"}
     </Button>
