@@ -70,8 +70,6 @@
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
   });
 
-  // Build a billing-side normalized payload based on the current action fields
-  // (we do NOT normalize the form data - we normalize the billingInfo to match it)
   let { BILLING_NORMALIZED } = $derived.by(() => {
     const fv = (currentAction?.fields as any)?.value?.() ?? {};
     const out: Record<string, any> = {};
