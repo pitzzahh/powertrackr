@@ -97,7 +97,15 @@
             },
             highlight: { points: { r: 4 } },
           }}
-        />
+        >
+          {#snippet tooltip()}
+            <Chart.Tooltip
+              unit={chartUnit}
+              labelFormatter={(v: Date) => formatDate(v)}
+              indicator="line"
+            />
+          {/snippet}
+        </LineChart>
       </Chart.Container>
     {:else}
       <p class="py-8 text-center text-muted-foreground">No data available.</p>
