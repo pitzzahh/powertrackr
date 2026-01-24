@@ -51,21 +51,14 @@
         icon: PhilippinePeso,
         label: "New Bill",
         content: NewBill,
-        callback: (valid, action, metaData) => {
+        callback: (valid, _, metaData) => {
           openMenu = false;
           if (valid) {
             billingStore.refresh();
             consumptionStore.refresh();
-            showSuccess(
-              action === "add"
-                ? "Billing info created successfully!"
-                : "Billing info updated successfully!"
-            );
+            showSuccess("Billing info created successfully!");
           } else {
-            showWarning(
-              action === "add" ? "Failed to create billing info" : "Failed to update billing info",
-              metaData?.error
-            );
+            showWarning("Failed to create billing info", metaData?.error);
           }
         },
       },
