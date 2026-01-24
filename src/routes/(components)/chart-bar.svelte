@@ -23,9 +23,9 @@
   };
 
   const CHART_CONFIG = {
-    totalkWh: { label: "Total kWh", color: "var(--chart-1)" },
-    mainKWh: { label: "Main kWh", color: "var(--chart-2)" },
-    subkWh: { label: "Sub kWh", color: "var(--chart-3)" },
+    totalkWh: { label: "Total", color: "var(--chart-1)" },
+    mainKWh: { label: "Main", color: "var(--chart-2)" },
+    subkWh: { label: "Sub", color: "var(--chart-3)" },
   } satisfies Chart.ChartConfig;
 </script>
 
@@ -36,7 +36,7 @@
   import { BarChart, Highlight, type ChartContextValue } from "layerchart";
   import { scaleBand } from "d3-scale";
   import { quintInOut } from "svelte/easing";
-  import { formatDate } from "$/utils/format";
+  import { formatDate, formatNumber, formatEnergy } from "$/utils/format";
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
   import { browser } from "$app/environment";
   import type { Total } from "$lib/workers/total-calculator";
@@ -64,17 +64,17 @@
         ? [
             {
               key: "totalkWh",
-              label: "Total kWh",
+              label: CHART_CONFIG.totalkWh.label,
               color: CHART_CONFIG.totalkWh.color,
             },
             {
               key: "mainKWh",
-              label: "Main kWh",
+              label: CHART_CONFIG.mainKWh.label,
               color: CHART_CONFIG.mainKWh.color,
             },
             {
               key: "subkWh",
-              label: "Sub kWh",
+              label: CHART_CONFIG.subkWh.label,
               color: CHART_CONFIG.subkWh.color,
             },
           ]
@@ -86,6 +86,36 @@
             },
           ],
   });
+
+  const chartUnit = $derived.by(() => {
+    const max = filteredData.reduce(
+      (m, d) => Math.max(m, d?.totalkWh || 0, d?.mainKWh || 0, d?.subkWh || 0),
+      0
+    );
+    if (max >= 1_000_000_000) return "TWh";
+    if (max >= 1_000_000) return "GWh";
+    if (max >= 1_000) return "MWh";
+    return "kWh";
+  });
+
+  const chartDivisor = $derived.by(() =>
+    chartUnit === "TWh"
+      ? 1_000_000_000
+      : chartUnit === "GWh"
+        ? 1_000_000
+        : chartUnit === "MWh"
+          ? 1_000
+          : 1
+  );
+
+  const scaledData = $derived(
+    filteredData.map((d) => ({
+      date: d.date,
+      totalkWh: (d.totalkWh || 0) / chartDivisor || 0,
+      mainKWh: (d.mainKWh || 0) / chartDivisor || 0,
+      subkWh: (d.subkWh || 0) / chartDivisor || 0,
+    }))
+  );
 
   let worker: Worker | null = null;
 
@@ -114,7 +144,7 @@
   >
     <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
       <Card.Title>Energy Usage</Card.Title>
-      <Card.Description>Showing kWh usage over time</Card.Description>
+      <Card.Description>Showing {chartUnit} usage over time</Card.Description>
     </div>
     <div class="grid h-fit grid-cols-2 md:grid-cols-4">
       {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
@@ -136,13 +166,12 @@
             ]}
           >
             {key === "all"
-              ? (totalkWh + mainKWh + subkWh).toLocaleString()
-              : (key === "totalkWh"
-                  ? totalkWh
-                  : key === "mainKWh"
-                    ? mainKWh
-                    : subkWh
-                ).toLocaleString()}
+              ? formatEnergy(totalkWh + mainKWh + subkWh)
+              : key === "totalkWh"
+                ? formatEnergy(totalkWh)
+                : key === "mainKWh"
+                  ? formatEnergy(mainKWh)
+                  : formatEnergy(subkWh)}
           </span>
         </button>
       {/each}
@@ -154,7 +183,7 @@
         <Select.Trigger class="w-40 rounded-lg" aria-label="Select a time range">
           {selectedLabel}
         </Select.Trigger>
-        <Select.Content class="rounded-xl">
+        <Select.Content class="max-h-56 rounded-xl">
           {#each TIME_RANGE_OPTIONS as option (option.value)}
             <Select.Item value={option.value} class="rounded-lg">
               {option.label}
@@ -189,7 +218,7 @@
       <Chart.Container config={CHART_CONFIG} class="aspect-auto h-62.5 w-full">
         <BarChart
           bind:context
-          data={filteredData}
+          data={scaledData}
           x="date"
           xScale={scaleBand().padding(0.25)}
           series={activeSeries}
@@ -222,7 +251,7 @@
               },
             },
             yAxis: {
-              format: (v) => v.toLocaleString(),
+              format: (v) => `${formatNumber(v, { style: "decimal" })} ${chartUnit}`,
             },
           }}
         >
@@ -234,7 +263,7 @@
             />
           {/snippet}
           {#snippet tooltip()}
-            <Chart.Tooltip nameKey="kWh" labelFormatter={(v: Date) => formatDate(v)} />
+            <Chart.Tooltip unit={chartUnit} labelFormatter={(v: Date) => formatDate(v)} />
           {/snippet}
         </BarChart>
       </Chart.Container>

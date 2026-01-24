@@ -25,6 +25,7 @@
     formatAsCurrency = false,
     nameKey,
     color,
+    unit,
     ...restProps
   }: WithoutChildren<WithElementRef<HTMLAttributes<HTMLDivElement>>> & {
     hideLabel?: boolean;
@@ -47,6 +48,7 @@
       ]
     >;
     formatAsCurrency?: boolean;
+    unit?: string;
   } = $props();
 
   const chart = useChart();
@@ -147,7 +149,9 @@
                 <span class="font-mono font-medium text-foreground tabular-nums">
                   {formatAsCurrency && typeof item.value === "number"
                     ? formatNumber(item.value)
-                    : item.value.toLocaleString()}
+                    : unit && typeof item.value === "number"
+                      ? `${formatNumber(item.value, { style: "decimal" })} ${unit}`
+                      : item.value.toLocaleString()}
                 </span>
               {/if}
             </div>
