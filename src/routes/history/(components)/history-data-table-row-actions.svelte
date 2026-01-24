@@ -28,10 +28,12 @@
   import { Input } from "$/components/ui/input";
   import { deleteBillingInfo } from "$/api/billing-info.remote";
   import { useBillingStore } from "$/stores/billing.svelte";
+  import { useConsumptionStore } from "$/stores/consumption.svelte";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
   const billingStore = useBillingStore();
+  const consumptionStore = useConsumptionStore();
 
   let { app_state, active_dialog_content, open_view, open_edit, delete_confirm_value } =
     $state<ComponentState>({
@@ -262,7 +264,20 @@
 
       <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
         <div class="space-y-4 p-4">
-          <BillingInfoForm action="update" billingInfo={billingInfoToDto(row.original) as any} />
+          <BillingInfoForm
+            action="update"
+            billingInfo={billingInfoToDto(row.original)}
+            callback={(valid, _, metaData) => {
+              open_edit = false;
+              if (valid) {
+                billingStore.refresh();
+                consumptionStore.refresh();
+                showSuccess("Billing info updated successfully!");
+              } else {
+                showWarning("Failed to update billing info", metaData?.error);
+              }
+            }}
+          />
         </div>
       </ScrollArea>
     </Sheet.Content>
