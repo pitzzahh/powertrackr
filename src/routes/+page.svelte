@@ -9,6 +9,7 @@
   import { useBillingStore } from "$/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
+  import { ScrollArea } from "$/components/ui/scroll-area";
   import { BillingInfoForm } from "$/components/snippets.svelte";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
@@ -58,25 +59,27 @@
             <span class="sr-only">Open new bill</span>
           </Sheet.Trigger>
           <Sheet.Portal>
-            <Sheet.Content side="bottom" class="max-h-[90vh] w-full p-0">
+            <Sheet.Content side="bottom" class="h-[90vh] w-full p-0">
               <Sheet.Header class="border-b">
                 <Sheet.Title>Add new Bill</Sheet.Title>
                 <Sheet.Description>Enter billing info</Sheet.Description>
               </Sheet.Header>
-              {@render BillingInfoForm(
-                (valid, _, metaData) => {
-                  openNewBill = false;
-                  if (valid) {
-                    billingStore.refresh();
-                    consumptionStore.refresh();
-                    showSuccess("Billing info created successfully!");
-                  } else {
-                    showWarning("Failed to create billing info", metaData?.error);
-                  }
-                },
-                data.user?.id || "",
-                "add"
-              )}
+              <ScrollArea class="min-h-0 flex-1">
+                {@render BillingInfoForm(
+                  (valid, _, metaData) => {
+                    openNewBill = false;
+                    if (valid) {
+                      billingStore.refresh();
+                      consumptionStore.refresh();
+                      showSuccess("Billing info created successfully!");
+                    } else {
+                      showWarning("Failed to create billing info", metaData?.error);
+                    }
+                  },
+                  data.user?.id || "",
+                  "add"
+                )}
+              </ScrollArea>
             </Sheet.Content>
           </Sheet.Portal>
         </Sheet.Root>
