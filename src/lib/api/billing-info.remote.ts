@@ -575,7 +575,7 @@ export const updateBillingInfo = form(
 
       return updatedBillingInfo;
     });
-
+    getExtendedBillingInfos({ userId: session.userId }).refresh();
     return result;
   }
 );
