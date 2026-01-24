@@ -10,7 +10,7 @@ type ConsumptionSummary = {
   latestReading: number;
 };
 
-function computeConsumptionSummary(infos: ExtendedBillingInfo[]): ConsumptionSummary {
+export function computeConsumptionSummary(infos: ExtendedBillingInfo[]): ConsumptionSummary {
   if (infos.length === 0) {
     return {
       totalKWh: 0,
@@ -20,9 +20,14 @@ function computeConsumptionSummary(infos: ExtendedBillingInfo[]): ConsumptionSum
     };
   }
 
-  const allSubMeters = infos.flatMap((info) => info.subMeters);
-  const totalKWh = allSubMeters.reduce((sum, sub) => sum + sub.subkWh, 0);
-  const totalSubMeters = new Set(allSubMeters.map((sub) => sub.id)).size;
+  // Total consumption should always be derived from the billing record's `totalkWh`.
+  // This ensures metrics match the chart data (which uses `totalkWh`) and works
+  // whether or not sub-meters are present.
+  const totalKWh = infos.reduce((sum, info) => sum + (info.totalkWh ?? 0), 0);
+
+  // Collect all sub-meters (if any) and count unique ones.
+  const allSubMeters = infos.flatMap((info) => info.subMeters || []);
+  const totalSubMeters = new Set(allSubMeters.map((sub) => sub.id ?? sub.label)).size;
 
   const firstDate = new Date(infos[infos.length - 1].date);
   const lastDate = new Date(infos[0].date);
@@ -30,7 +35,9 @@ function computeConsumptionSummary(infos: ExtendedBillingInfo[]): ConsumptionSum
   const averageDailyKWh = totalKWh / totalDays;
 
   const latestInfo = infos[0];
-  const latestReading = latestInfo.subMeters.reduce((sum, sub) => sum + sub.reading, 0);
+  // Use the billing record's totalkWh as the latest reading so the metric matches
+  // the total consumption shown in the chart and works when no sub-meters exist.
+  const latestReading = latestInfo.totalkWh ?? 0;
 
   return {
     totalKWh,

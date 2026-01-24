@@ -20,9 +20,14 @@
   );
 
   onMount(() => {
-    consumptionStore.setUserId(data.user.id);
-    consumptionStore.setStatus("loading_data");
-    consumptionStore.fetchData();
+    const userId = data?.user?.id;
+    if (userId) {
+      consumptionStore.setUserId(userId);
+      consumptionStore.setStatus("loading_data");
+      consumptionStore.fetchData();
+    } else {
+      console.warn("No user id available to fetch consumption data");
+    }
   });
 </script>
 
