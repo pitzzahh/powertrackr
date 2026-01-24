@@ -36,6 +36,7 @@
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
   import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+  import { getChangedData, omit } from "$/utils/mapper";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
@@ -65,6 +66,76 @@
 
   const { currentAction } = $derived({
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
+  });
+
+  // Build a billing-side normalized payload based on the current action fields
+  // (we do NOT normalize the form data - we normalize the billingInfo to match it)
+  let { BILLING_NORMALIZED } = $derived.by(() => {
+    const fv = (currentAction?.fields as any)?.value?.() ?? {};
+    const out: Record<string, any> = {};
+    if (!billingInfo) return { BILLING_NORMALIZED: out };
+    for (const key of Object.keys(fv)) {
+      if (key === "subMeters") {
+        out.subMeters = (billingInfo.subMeters ?? []).map((s: any) => ({
+          id: s.id,
+          label: s.label,
+          reading: s.reading,
+        }));
+      } else if (key === "date") {
+        const d = new Date(billingInfo.date);
+        out.date = new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate()).toString();
+      } else if (Object.prototype.hasOwnProperty.call(billingInfo, key)) {
+        out[key] = (billingInfo as any)[key];
+      } else {
+        out[key] = undefined;
+      }
+    }
+    return { BILLING_NORMALIZED: out };
+  });
+
+  // CHANGED_DATA: top-level diffs (omitting subMeters) + a cheap sub-meter flag
+  let { CHANGED_DATA } = $derived.by(() => {
+    const fv = (currentAction?.fields as any)?.value?.() ?? {};
+    const topOriginal = omit((BILLING_NORMALIZED as any) ?? {}, ["subMeters"]);
+    const topUpdated = omit(fv ?? {}, ["subMeters"]);
+    const topChanges = getChangedData(topOriginal, topUpdated);
+    const changed: Record<string, any> = { ...topChanges };
+
+    if ("subMeters" in fv) {
+      const orig = (BILLING_NORMALIZED as any).subMeters ?? [];
+      const form = fv.subMeters ?? [];
+      let subsChanged = false;
+      if ((orig.length ?? 0) !== (form.length ?? 0)) subsChanged = true;
+      else {
+        const ids = form.map((s: any) => s.id).filter(Boolean);
+        for (const s of form) {
+          if (!s.id) {
+            subsChanged = true;
+            break;
+          }
+          const ex = orig.find((o: any) => o.id === s.id);
+          if (!ex) {
+            subsChanged = true;
+            break;
+          }
+          if (ex.label !== s.label || Number(ex.reading) !== Number(s.reading)) {
+            subsChanged = true;
+            break;
+          }
+        }
+        if (!subsChanged) {
+          for (const ex of orig) {
+            if (!ids.includes(ex.id)) {
+              subsChanged = true;
+              break;
+            }
+          }
+        }
+      }
+      if (subsChanged) changed.subMeters = true;
+    }
+
+    return { CHANGED_DATA: changed };
   });
 
   // Add a new sub meter
@@ -354,8 +425,19 @@
   </div>
   <!-- Submit Button -->
   <div class="mt-4 flex">
-    <Button type="submit" form="{identity}-form" class="ml-auto min-w-32">
+    <Button
+      type="submit"
+      form="{identity}-form"
+      class="ml-auto min-w-32"
+      disabled={action === "update" && Object.keys(CHANGED_DATA ?? {}).length === 0}
+      title={action === "update" && Object.keys(CHANGED_DATA ?? {}).length === 0
+        ? "No changes to update"
+        : undefined}
+    >
       {action === "add" ? "Create Billing Info" : "Update Billing Info"}
     </Button>
   </div>
+  <pre>CHANGED_DATA: {JSON.stringify(CHANGED_DATA ?? {}, null, 2)}</pre>
+  <pre>BILLING_NORMALIZED: {JSON.stringify(BILLING_NORMALIZED ?? {}, null, 2)}</pre>
+  <pre>FORM: {JSON.stringify(currentAction.fields.value(), null, 2)}</pre>
 </form>
