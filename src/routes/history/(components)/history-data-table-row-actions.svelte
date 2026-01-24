@@ -175,21 +175,29 @@
           <span class="font-mono text-primary">{formatDate(new Date(row.original.date))}</span>
         </Dialog.Description>
       </Dialog.Header>
-      <div class="p-4">
-        <div class="overflow-hidden rounded-md border bg-background">
-          <Table>
+      <ScrollArea class="max-h-[60vh] pr-2.5">
+        <div class="max-w-full overflow-x-auto rounded-md border bg-background">
+          <Table class="w-full">
             <TableBody>
               {#each BILLING_DETAILS as item}
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
-                  <TableCell class="bg-muted/50 py-2 font-medium">{item.label}</TableCell>
-                  <TableCell class="py-2 {item.class}">{item.value}</TableCell>
+                  <TableCell
+                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                    >{item.label}</TableCell
+                  >
+                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal {item.class}"
+                    >{item.value}</TableCell
+                  >
                 </TableRow>
               {/each}
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="bg-muted/50 py-2 font-medium">Sub Payments</TableCell>
-                <TableCell class="py-2">
+                <TableCell
+                  class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                  >Sub Payments</TableCell
+                >
+                <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
                   <SubPaymentsButton class="w-full" row={row.original} size="xs"
                     >View Sub Payments</SubPaymentsButton
                   >
@@ -198,7 +206,7 @@
             </TableBody>
           </Table>
         </div>
-      </div>
+      </ScrollArea>
     </Dialog.Content>
   {/if}
 
