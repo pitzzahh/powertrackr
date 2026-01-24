@@ -33,6 +33,7 @@
   );
 
   onMount(() => {
+    if (!data.user) return;
     billingStore.setUserId(data.user.id);
     billingStore.setStatus("loading_data");
     billingStore.fetchData();

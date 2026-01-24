@@ -44,9 +44,9 @@
   userId: string,
   action: BillingInfoWithSubMetersFormProps["action"]
 )}
-  <ScrollArea class="h-[calc(100vh-50px)]">
+  <ScrollArea class="min-h-0 flex-1">
     {@const billingInfo = getLatestBillingInfo({ userId })}
-    <div class="space-y-4 p-4">
+    <div class="space-y-4 p-4 pb-8">
       {#key billingInfo.current}
         {@const latestBillingInfo =
           (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ?? undefined}
@@ -58,8 +58,8 @@
 {/snippet}
 
 {#snippet GenerateRandomBills(callback: BillingInfoWithSubMetersFormProps["callback"])}
-  <ScrollArea class="h-[calc(100vh-50px)] overflow-y-auto pr-2.5">
-    <div class="space-y-4 p-4">
+  <ScrollArea class="min-h-0 flex-1 overflow-y-auto pr-2.5">
+    <div class="space-y-4 p-4 pb-8">
       <div class="space-y-2">
         <label for="count" class="text-sm font-medium">Number of Billing Infos</label>
         <Input type="number" id="count" bind:value={count} min="1" max="100" required />

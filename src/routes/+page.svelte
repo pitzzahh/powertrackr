@@ -9,7 +9,7 @@
   import { useBillingStore } from "$/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { NewBill } from "$/components/snippets.svelte";
+  import { BillingInfoForm } from "$/components/snippets.svelte";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
 
@@ -63,25 +63,20 @@
                 <Sheet.Title>Add new Bill</Sheet.Title>
                 <Sheet.Description>Enter billing info</Sheet.Description>
               </Sheet.Header>
-              {@render NewBill((valid, action, metaData) => {
-                openNewBill = false;
-                if (valid) {
-                  billingStore.refresh();
-                  consumptionStore.refresh();
-                  showSuccess(
-                    action === "add"
-                      ? "Billing info created successfully!"
-                      : "Billing info updated successfully!"
-                  );
-                } else {
-                  showWarning(
-                    action === "add"
-                      ? "Failed to create billing info"
-                      : "Failed to update billing info",
-                    metaData?.error
-                  );
-                }
-              }, data.user?.id || "")}
+              {@render BillingInfoForm(
+                (valid, _, metaData) => {
+                  openNewBill = false;
+                  if (valid) {
+                    billingStore.refresh();
+                    consumptionStore.refresh();
+                    showSuccess("Billing info created successfully!");
+                  } else {
+                    showWarning("Failed to create billing info", metaData?.error);
+                  }
+                },
+                data.user?.id || "",
+                "add"
+              )}
             </Sheet.Content>
           </Sheet.Portal>
         </Sheet.Root>

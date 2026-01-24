@@ -127,6 +127,7 @@
 </script>
 
 <form
+  id="{identity}-form"
   {...currentAction.enhance(async ({ form, submit }) => {
     const toastId = showLoading(
       action === "add" ? "Creating billing info..." : "Updating billing info..."
@@ -350,9 +351,10 @@
       </div>
     {/each}
   </div>
-
   <!-- Submit Button -->
-  <Button type="submit" class="mt-4 flex min-w-32 justify-self-end">
-    {action === "add" ? "Create Billing Info" : "Update Billing Info"}
-  </Button>
+  <div class="mt-4 flex">
+    <Button type="submit" form="{identity}-form" class="ml-auto min-w-32">
+      {action === "add" ? "Create Billing Info" : "Update Billing Info"}
+    </Button>
+  </div>
 </form>
