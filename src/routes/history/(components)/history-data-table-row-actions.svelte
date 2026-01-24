@@ -14,7 +14,7 @@
 <script lang="ts">
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
-  import { SubPaymentsButton, BillingInfoForm } from ".";
+  import { SubPaymentsButton } from ".";
   import { formatDate, formatNumber } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
@@ -23,7 +23,6 @@
   import * as Sheet from "$/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
-  import { billingInfoToDto } from "$/utils/mapper/billing-info";
   import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
   import { Input } from "$/components/ui/input";
   import { deleteBillingInfo } from "$/api/billing-info.remote";
