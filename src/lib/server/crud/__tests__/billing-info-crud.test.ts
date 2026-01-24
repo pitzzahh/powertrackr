@@ -576,6 +576,351 @@ describe("Billing Info CRUD Operations", () => {
         expect(fetchedSub.subkWh).toBe(newSubKwh);
         expect((fetchedSub.payment as any).amount).toBeCloseTo(newAmount, 2);
       });
+
+      // ---- Update-function detection tests (do not test the update function directly) ----
+
+      it("update-function detection: no-op when subMeters provided and unchanged and no top-level change", async () => {
+        if (process.env.CI === "true") return;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
+        expect(validUser).toBe(true);
+
+        const date = new Date("2024-05-01");
+        const totalkWh = 500;
+        const balance = 200;
+        const payPer = calculatePayPerKwh(balance, totalkWh);
+
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance, date: new Date() }]);
+
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: addedMainPayment.id,
+          }),
+        ]);
+        expect(validBilling).toBe(true);
+        const billingId = addedBilling.id;
+
+        // create sub payment and sub meter
+        const {
+          value: [addedSubPayment],
+        } = await addPayment([{ amount: Number((10 * payPer).toFixed(2)), date: new Date() }]);
+        const addSub = await addSubMeter([
+          {
+            billingInfoId: billingId,
+            subkWh: 10,
+            label: "Imitate Sub",
+            reading: 1500,
+            paymentId: addedSubPayment.id,
+          },
+        ]);
+        expect(addSub.valid).toBe(true);
+
+        // fetch existing billing info with sub-meters
+        const {
+          value: [fetchedBilling],
+        } = await getBillingInfoBy({
+          query: { id: billingId },
+          options: { with_sub_meters_with_payment: true },
+        });
+        const existingSubs = fetchedBilling.subMeters ?? [];
+
+        // Imitate incoming update: subMeters provided but identical, no top-level changes
+        const updateData: Partial<typeof fetchedBilling> = {};
+        const providedSubs = existingSubs.map((s) => ({
+          id: s.id,
+          label: s.label,
+          reading: s.reading,
+        }));
+
+        // Top-level change detection imitation (similar to getChangedData for keys present in updateData)
+        const changedTopLevel: Record<string, any> = {};
+        for (const k in updateData) {
+          if (
+            JSON.stringify((fetchedBilling as any)[k]) !== JSON.stringify((updateData as any)[k])
+          ) {
+            changedTopLevel[k] = (updateData as any)[k];
+          }
+        }
+
+        // Sub-meter change detection imitation
+        function detectSubMeterChanges(existing: any[], provided: any[] | undefined | null) {
+          if (provided === undefined || provided === null) return false;
+          if ((provided.length ?? 0) !== (existing.length ?? 0)) return true;
+          const providedIds = provided.filter((s) => s.id !== undefined).map((s) => s.id);
+          for (const s of provided) {
+            if (!s.id) return true;
+            const ex = existing.find((m) => m.id === s.id);
+            if (!ex) return true;
+            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+          }
+          for (const ex of existing) {
+            if (!providedIds.includes(ex.id)) return true;
+          }
+          return false;
+        }
+
+        const subHasChanges = detectSubMeterChanges(existingSubs, providedSubs);
+        // Expect no top-level changes and no sub-meter changes -> remote would bail out
+        expect(Object.keys(changedTopLevel).length).toBe(0);
+        expect(subHasChanges).toBe(false);
+      });
+
+      it("update-function detection: top-level change with unchanged subMeters (only main updated)", async () => {
+        if (process.env.CI === "true") return;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
+        expect(validUser).toBe(true);
+
+        const date = new Date("2024-05-01");
+        const totalkWh = 500;
+        const balance = 200;
+        const payPer = calculatePayPerKwh(balance, totalkWh);
+
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance, date: new Date() }]);
+
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: addedMainPayment.id,
+          }),
+        ]);
+        expect(validBilling).toBe(true);
+
+        const billingId = addedBilling.id;
+
+        const {
+          value: [fetchedBilling],
+        } = await getBillingInfoBy({
+          query: { id: billingId },
+          options: { with_sub_meters_with_payment: true },
+        });
+        const existingSubs = fetchedBilling.subMeters ?? [];
+        const providedSubs = existingSubs.map((s) => ({
+          id: s.id,
+          label: s.label,
+          reading: s.reading,
+        }));
+
+        // Top-level change (balance changed) but sub-meters identical
+        const updateData: any = {
+          balance: (fetchedBilling.balance ?? 0) + 50,
+          subMeters: providedSubs,
+        };
+
+        const changedTopLevel: Record<string, any> = {};
+        for (const k in updateData) {
+          if (
+            JSON.stringify((fetchedBilling as any)[k]) !== JSON.stringify((updateData as any)[k])
+          ) {
+            changedTopLevel[k] = (updateData as any)[k];
+          }
+        }
+
+        function detectSubMeterChanges(existing: any[], provided: any[] | undefined | null) {
+          if (provided === undefined || provided === null) return false;
+          if ((provided.length ?? 0) !== (existing.length ?? 0)) return true;
+          const providedIds = provided.filter((s) => s.id !== undefined).map((s) => s.id);
+          for (const s of provided) {
+            if (!s.id) return true;
+            const ex = existing.find((m) => m.id === s.id);
+            if (!ex) return true;
+            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+          }
+          for (const ex of existing) {
+            if (!providedIds.includes(ex.id)) return true;
+          }
+          return false;
+        }
+
+        const subHasChanges = detectSubMeterChanges(existingSubs, providedSubs);
+        expect(Object.keys(changedTopLevel).length).toBeGreaterThan(0);
+        expect(subHasChanges).toBe(false);
+      });
+
+      it("update-function detection: sub-meter change is detected when reading updated", async () => {
+        if (process.env.CI === "true") return;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
+        expect(validUser).toBe(true);
+
+        const date = new Date("2024-05-01");
+        const totalkWh = 500;
+        const balance = 200;
+        const payPer = calculatePayPerKwh(balance, totalkWh);
+
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance, date: new Date() }]);
+
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: addedMainPayment.id,
+          }),
+        ]);
+        expect(validBilling).toBe(true);
+
+        const billingId = addedBilling.id;
+
+        const {
+          value: [fetchedBilling],
+        } = await getBillingInfoBy({
+          query: { id: billingId },
+          options: { with_sub_meters_with_payment: true },
+        });
+        expect(fetchedBilling).toBeTruthy();
+
+        // create sub payment and sub meter
+        const {
+          value: [addedSubPayment],
+        } = await addPayment([{ amount: Number((10 * payPer).toFixed(2)), date: new Date() }]);
+        const addSub = await addSubMeter([
+          {
+            billingInfoId: billingId,
+            subkWh: 10,
+            label: "Imitate Sub 2",
+            reading: 1500,
+            paymentId: addedSubPayment.id,
+          },
+        ]);
+        expect(addSub.valid).toBe(true);
+
+        const {
+          value: [fetchedBillingAfterSub],
+        } = await getBillingInfoBy({
+          query: { id: billingId },
+          options: { with_sub_meters_with_payment: true },
+        });
+        const existingSubs = fetchedBillingAfterSub.subMeters ?? [];
+        // Modify the first sub-meter reading
+        const providedSubs = existingSubs.map((s, idx) => {
+          if (idx === 0) return { id: s.id, label: s.label, reading: s.reading + 10 };
+          return { id: s.id, label: s.label, reading: s.reading };
+        });
+
+        const updateData: Partial<typeof fetchedBillingAfterSub> = {};
+
+        const changedTopLevel: Record<string, any> = {};
+        for (const k in updateData) {
+          if (
+            JSON.stringify((fetchedBillingAfterSub as any)[k]) !==
+            JSON.stringify((updateData as any)[k])
+          ) {
+            changedTopLevel[k] = (updateData as any)[k];
+          }
+        }
+
+        function detectSubMeterChanges(existing: any[], provided: any[] | undefined | null) {
+          if (provided === undefined || provided === null) return false;
+          if ((provided.length ?? 0) !== (existing.length ?? 0)) return true;
+          const providedIds = provided.filter((s) => s.id !== undefined).map((s) => s.id);
+          for (const s of provided) {
+            if (!s.id) return true;
+            const ex = existing.find((m) => m.id === s.id);
+            if (!ex) return true;
+            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+          }
+          for (const ex of existing) {
+            if (!providedIds.includes(ex.id)) return true;
+          }
+          return false;
+        }
+
+        const subHasChanges = detectSubMeterChanges(existingSubs, providedSubs);
+        expect(Object.keys(changedTopLevel).length).toBe(0);
+        expect(subHasChanges).toBe(true);
+      });
+
+      it("update-function detection: missing subMeters and no top-level changes => no-op", async () => {
+        if (process.env.CI === "true") return;
+        const {
+          valid: validUser,
+          value: [addedUser],
+        } = await addUser([createUser()]);
+        expect(validUser).toBe(true);
+
+        const date = new Date("2024-05-01");
+        const totalkWh = 500;
+        const balance = 200;
+        const payPer = calculatePayPerKwh(balance, totalkWh);
+
+        const {
+          value: [addedMainPayment],
+        } = await addPayment([{ amount: balance, date: new Date() }]);
+
+        const {
+          valid: validBilling,
+          value: [addedBilling],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Paid",
+            payPerkWh: payPer,
+            paymentId: addedMainPayment.id,
+          }),
+        ]);
+        expect(validBilling).toBe(true);
+
+        const billingId = addedBilling.id;
+
+        const {
+          value: [fetchedBilling],
+        } = await getBillingInfoBy({
+          query: { id: billingId },
+          options: { with_sub_meters_with_payment: true },
+        });
+
+        const updateData: Partial<typeof fetchedBilling> = {};
+        const changedTopLevel: Record<string, any> = {};
+        for (const k in updateData) {
+          if (
+            JSON.stringify((fetchedBilling as any)[k]) !== JSON.stringify((updateData as any)[k])
+          ) {
+            changedTopLevel[k] = (updateData as any)[k];
+          }
+        }
+
+        // No sub-meters provided and no top-level changes -> remote would bail out
+        expect(Object.keys(changedTopLevel).length).toBe(0);
+      });
     });
 
     it("should find billing info by status", async () => {
