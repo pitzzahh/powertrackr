@@ -127,21 +127,9 @@
         <div class="flex h-[45%] flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
           <div class="flex h-full min-h-0 flex-1 flex-col gap-4">
             {#if active_setting === "Import Data"}
-              <div>
-                <h2 class="text-lg font-medium">Import Data</h2>
-                <p class="text-sm text-muted-foreground">
-                  Upload your data file to import records into the system.
-                </p>
-              </div>
-              <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+              {@render Import()}
             {:else if active_setting === "Export Data"}
-              <div>
-                <h2 class="text-lg font-medium">Export Data</h2>
-                <p class="text-sm text-muted-foreground">
-                  Export data from the system to a downloadable file.
-                </p>
-              </div>
-              <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+              {@render Export()}
             {/if}
           </div>
         </div>
@@ -149,3 +137,21 @@
     </Sidebar.Provider>
   </Dialog.Content>
 </Dialog.Root>
+
+{#snippet Import()}
+  <div>
+    <h2 class="text-lg font-medium">Import Data</h2>
+    <p class="text-sm text-muted-foreground">
+      Upload your data file to import records into the system.
+    </p>
+  </div>
+  <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+{/snippet}
+
+{#snippet Export()}
+  <div>
+    <h2 class="text-lg font-medium">Export Data</h2>
+    <p class="text-sm text-muted-foreground">Export data from the system to a downloadable file.</p>
+  </div>
+  <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+{/snippet}
