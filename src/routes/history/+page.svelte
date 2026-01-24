@@ -3,7 +3,7 @@
   import { HistoryDataTable } from "$routes/history/(components)";
   import { onMount } from "svelte";
   import { useBillingStore } from "$/stores/billing.svelte.js";
-  import { formatNumber } from "$/utils/format";
+  import { formatNumber, formatEnergy } from "$/utils/format";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { Loader, Banknote } from "$lib/assets/icons";
@@ -83,12 +83,10 @@
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{formatEnergy(0)}</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(totalEnergyConsumed, {
-              style: "decimal",
-            })} kWh</span
+            >{formatEnergy(totalEnergyConsumed)}</span
           >
         {/if}
       </div>
