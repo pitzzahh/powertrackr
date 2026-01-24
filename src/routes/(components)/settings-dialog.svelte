@@ -2,6 +2,14 @@
   export type SettingsDialogProps = {
     collapsed?: boolean;
   };
+  const NAV_DATA = {
+    nav: [
+      { name: "Import Data", icon: Upload },
+      { name: "Export Data", icon: Download },
+      { name: "Backup and Restore", icon: DatabaseBackupIcon },
+    ],
+  } as const;
+  type NavName = (typeof NAV_DATA.nav)[number]["name"];
 </script>
 
 <script lang="ts">
@@ -10,23 +18,13 @@
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Settings2, Upload, Download } from "$/assets/icons";
+  import { Settings2, Upload, Download, DatabaseBackupIcon } from "$/assets/icons";
   let { collapsed = false }: SettingsDialogProps = $props();
 
-  const NAV_DATA = {
-    nav: [
-      { name: "Import Data", icon: Upload },
-      { name: "Export Data", icon: Download },
-    ],
-  } as const;
-
-  type NavName = (typeof NAV_DATA.nav)[number]["name"];
-
-  // dialog open state
-  let open = $state(false);
-
-  // currently selected nav item (defaults to the first nav entry)
-  let active_setting = $state<NavName>(NAV_DATA.nav?.[0]?.name ?? "Import Data");
+  let { open, active_setting } = $state({
+    open: false,
+    active_setting: (NAV_DATA.nav?.[0]?.name as NavName) ?? "Import Data",
+  });
 </script>
 
 <Dialog.Root bind:open>
