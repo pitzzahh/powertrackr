@@ -68,7 +68,7 @@
     </Dialog.Trigger>
   {/if}
   <Dialog.Content
-    class="h-[90vh] overflow-hidden p-0 md:h-[85vh] md:max-w-175 lg:max-w-250"
+    class="h-[70vh] overflow-hidden p-0 md:h-[75vh] md:max-w-175 lg:max-w-350"
     trapFocus={false}
   >
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
@@ -106,7 +106,7 @@
           </Sidebar.Group>
         </Sidebar.Content>
       </Sidebar.Root>
-      <main class="flex h-full min-h-0 flex-1 flex-col overflow-y-auto">
+      <main class="flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto">
         <header
           class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
         >
@@ -125,7 +125,7 @@
           </div>
         </header>
         <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
-          <div class="flex min-h-0 flex-1 flex-col gap-4">
+          <div class="flex flex-1 flex-col gap-4">
             {#if active_setting === "Import Data"}
               {@render Import()}
             {:else if active_setting === "Export Data"}
@@ -145,7 +145,7 @@
       Upload your data file to import records into the system.
     </p>
   </div>
-  <div class="min-h-[320px] w-full max-w-3xl rounded-xl bg-muted/50"></div>
+  <div class="min-h-80 w-full rounded-xl bg-muted/50"></div>
 {/snippet}
 
 {#snippet Export()}
@@ -153,5 +153,5 @@
     <h2 class="text-lg font-medium">Export Data</h2>
     <p class="text-sm text-muted-foreground">Export data from the system to a downloadable file.</p>
   </div>
-  <div class="min-h-[320px] w-full max-w-3xl rounded-xl bg-muted/50"></div>
+  <div class="min-h-80 w-full rounded-xl bg-muted/50"></div>
 {/snippet}
