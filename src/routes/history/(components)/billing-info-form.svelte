@@ -67,11 +67,6 @@
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
   });
 
-  // Sync the local `status` state with the remote action field (Svelte 5 runes).
-  $effect(() => {
-    currentAction?.fields?.status?.set?.(status);
-  });
-
   // Add a new sub meter
   function addSubMeter() {
     subMeters.push({
