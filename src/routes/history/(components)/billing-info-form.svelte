@@ -145,12 +145,20 @@
       label: "",
       reading: 0,
     });
+    // Ensure action fields get updated so change detection picks up new sub-meters
+    currentAction?.fields?.subMeters?.set?.(
+      subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+    );
   }
 
   // Remove a sub meter
   function removeSubMeter(index: number) {
     if (subMeters.length >= 1) {
       subMeters.splice(index, 1);
+      // Sync the action fields after removal
+      currentAction?.fields?.subMeters?.set?.(
+        subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+      );
     }
   }
 
@@ -429,15 +437,12 @@
       type="submit"
       form="{identity}-form"
       class="ml-auto min-w-32"
-      disabled={action === "update" && Object.keys(CHANGED_DATA ?? {}).length === 0}
-      title={action === "update" && Object.keys(CHANGED_DATA ?? {}).length === 0
+      disabled={action === "update" && Object.keys(CHANGED_DATA).length === 0}
+      title={action === "update" && Object.keys(CHANGED_DATA).length === 0
         ? "No changes to update"
         : undefined}
     >
       {action === "add" ? "Create Billing Info" : "Update Billing Info"}
     </Button>
   </div>
-  <pre>CHANGED_DATA: {JSON.stringify(CHANGED_DATA ?? {}, null, 2)}</pre>
-  <pre>BILLING_NORMALIZED: {JSON.stringify(BILLING_NORMALIZED ?? {}, null, 2)}</pre>
-  <pre>FORM: {JSON.stringify(currentAction.fields.value(), null, 2)}</pre>
 </form>
