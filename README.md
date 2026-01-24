@@ -1,41 +1,45 @@
-# powertrackr
-Combining "power" with "track," indicating the ability to monitor and track electricity consumption.
-___
-# create-svelte
+# PowerTrackr
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+[![Build and Test](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg)](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml)
 
-## Creating a project
+PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
 
-If you're seeing this, you've probably already done this step. Congrats!
+### Primary use case
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- Multi-tenant buildings: manage per-unit sub-meter readings and allocate payments derived from a single utility account.
+- Personal owner with an additional rental unit: track the rental unit’s consumption, expenses, and payments when it is sub-metered on the main account.
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+### Key features
 
-## Developing
+- Record periodic billing entries with total kWh and balances per billing cycle.
+- Support multiple sub-meters per billing period so each unit’s usage can be tracked separately.
+- Associate payments with billing and sub-meter records for clear reconciliation.
+- Provide straightforward billing summaries and per-unit charge calculations to support tenant billing and bookkeeping.
+- User account flows including verification and optional two-factor authentication.
+- Input validation and tests to help ensure consistency and correctness.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Typical scenarios
 
-```bash
-npm run dev
+- A landlord who needs to bill tenants by actual usage measured at sub-meters and reconcile those amounts against the main utility bill.
+- A homeowner who also rents a unit on the same service connection and wants to track and separate the rental unit’s expenses and payments.
+- Property managers who require concise per-period accounting for multiple units without complex energy-generation features.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+### Localization and billing assumptions
 
-## Building
+Powertrackr uses a simple per-kWh allocation model and does not include jurisdiction-specific tariff components (for example, tiered rates, taxes, fixed charges, or time-of-use pricing). If you plan to use the system in a different jurisdiction, review and adapt the billing calculations to match local rules.
 
-To create a production version of your app:
+### Non-goals
 
-```bash
-npm run build
-```
+- Modeling energy generation (for example, solar production) or investment/return analytics. The system is designed for billing and expense allocation, not for generation forecasting or financial instruments.
 
-You can preview the production build with `npm run preview`.
+### Safety & compliance
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+- This project focuses on software-based tracking and billing; confirm local utility rules (not legal advice).
+
+### Contributing
+
+Contributions are welcome.
+
+### License
+
+TBA

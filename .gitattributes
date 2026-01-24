@@ -1,0 +1,6 @@
+# Ensure shell scripts always use LF line endings (even on Windows)
+*.sh text eol=lf
+.githooks/* text eol=lf
+
+# Windows batch files should use CRLF
+*.cmd text eol=crlf
