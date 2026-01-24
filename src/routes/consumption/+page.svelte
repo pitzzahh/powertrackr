@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { formatNumber } from "$/utils/format";
+  import { formatNumber, formatEnergy } from "$/utils/format";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { useConsumptionStore } from "$/stores/consumption.svelte.js";
@@ -73,12 +73,12 @@
                   <div>
                     <p class="font-medium">{subMeter.label}</p>
                     <p class="text-sm text-muted-foreground">
-                      Reading: {subMeter.reading}
+                      Reading: {formatNumber(subMeter.reading, { style: "decimal" })}
                     </p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold">{subMeter.subkWh} kWh</p>
+                  <p class="font-semibold">{formatEnergy(subMeter.subkWh)}</p>
                 </div>
               </div>
             {/each}
@@ -109,7 +109,7 @@
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0 kWh</div>
       {:else}
         <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          <span class="text-primary">{consumptionStore.summary?.totalKWh || 0}</span> kWh
+          <span class="text-primary">{formatEnergy(consumptionStore.summary?.totalKWh || 0)}</span>
         </div>
       {/if}
     </div>
@@ -123,9 +123,7 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(consumptionStore.summary?.averageDailyKWh || 0, {
-              style: "decimal",
-            })} kWh</span
+            >{formatEnergy(consumptionStore.summary?.averageDailyKWh || 0)} /day</span
           >
         {/if}
       </div>
@@ -149,7 +147,7 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
         {:else}
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{consumptionStore.summary?.latestReading || 0} kWh</span
+            >{formatEnergy(consumptionStore.summary?.latestReading || 0)}</span
           >
         {/if}
       </div>

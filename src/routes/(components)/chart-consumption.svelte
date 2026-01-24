@@ -31,12 +31,21 @@
   };
 
   const sortedData = $derived([...chartData].sort((a, b) => a.date.getTime() - b.date.getTime()));
+  const chartUnit = $derived.by(() => {
+    const max = sortedData.reduce((m, d) => Math.max(m, d.kWh || 0), 0);
+    if (max >= 1_000_000) return "GWh";
+    if (max >= 1_000) return "MWh";
+    return "kWh";
+  });
+  const chartDivisor = $derived.by(() =>
+    chartUnit === "GWh" ? 1_000_000 : chartUnit === "MWh" ? 1_000 : 1
+  );
 </script>
 
 <Card.Root>
   <Card.Header class="flex flex-col gap-2 space-y-0 border-b md:flex-row md:items-center">
     <div class="grid flex-1 gap-1">
-      <Card.Title>kWh Consumption Over Time</Card.Title>
+      <Card.Title>Consumption Over Time</Card.Title>
       <Card.Description>Historical energy usage</Card.Description>
     </div>
   </Card.Header>
@@ -72,7 +81,7 @@
           series={[
             {
               key: "kWh",
-              label: "kWh",
+              label: chartUnit,
               color: CHART_CONFIG.kWh.color,
             },
           ]}
@@ -83,15 +92,16 @@
             },
             yAxis: {
               format: (v) =>
-                formatNumber(v, {
-                  style: "decimal",
-                }),
+                `${formatNumber(v / (chartDivisor || 1), { style: "decimal" })} ${chartUnit}`,
             },
             highlight: { points: { r: 4 } },
           }}
         >
           {#snippet tooltip()}
-            <Chart.Tooltip hideLabel />
+            <Chart.Tooltip
+              hideLabel
+              formatter={({ value }) => formatEnergy(value ?? 0, { unit: chartUnit })}
+            />
           {/snippet}
         </LineChart>
       </Chart.Container>
