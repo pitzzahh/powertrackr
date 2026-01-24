@@ -45,6 +45,8 @@
   import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
+  import * as v from "valibot";
+  import { billFormSchema } from "$/validators/billing-info";
   import { toast } from "svelte-sonner";
   import { onMount } from "svelte";
   import { showInspectorWarning, showLoading } from "$/components/toast";
@@ -138,41 +140,39 @@
     return { CHANGED_DATA: changed };
   });
 
-  // FORM_VALID: run client-side validation (valibot-backed) and expose a boolean
   let { FORM_VALID } = $derived.by(() => {
-    // Touch the form value so this recomputes whenever any field changes
-    const fv = (currentAction?.fields as any)?.value?.() ?? {};
-    const issues = currentAction?.fields?.allIssues?.() ?? [];
+    // Read individual fields instead of grabbing the whole form to avoid `as any`
+    const dateStr = currentAction.fields.date.value() ?? (dateValue ? dateValue.toString() : "");
+    const balanceVal = currentAction.fields.balance.value();
+    const totalkWhVal = currentAction.fields.totalkWh.value();
+    const statusVal = currentAction.fields.status.value() ?? status;
 
-    // Basic fallback validation (used when client-side issues are empty or not run)
-    const fallbackValid = (() => {
-      // Date must be present (either from the action fields or local `dateValue`)
-      const dateStr = fv.date ?? (dateValue ? dateValue.toString() : "");
-      if (!dateStr) return false;
+    const balance =
+      typeof balanceVal === "string" || typeof balanceVal === "number" ? Number(balanceVal) : NaN;
+    const totalkWh =
+      typeof totalkWhVal === "string" || typeof totalkWhVal === "number"
+        ? Number(totalkWhVal)
+        : NaN;
 
-      // Balance and total kWh must be numbers > 0
-      const balance = Number(fv.balance);
-      if (Number.isNaN(balance) || balance <= 0) return false;
-      const totalkWh = Number(fv.totalkWh);
-      if (Number.isNaN(totalkWh) || totalkWh <= 0) return false;
+    // Build the payload from strongly-typed UI state where possible
+    const payloadBase = {
+      date: dateStr,
+      balance,
+      totalkWh,
+      status: statusVal,
+      subMeters: subMeters.map((s: SubMeterForm) => {
+        const mapped: { label: string; reading: number; id?: string } = {
+          label: s.label,
+          reading: Number(s.reading),
+        };
+        // Only include `id` for update operations where an id is meaningful
+        if (action === "update" && s.id) mapped.id = s.id;
+        return mapped;
+      }),
+    };
 
-      // For updates we should have an id
-      if (action === "update" && !fv.id) return false;
-
-      // Validate sub-meters: each must have a non-empty label and a non-negative reading
-      const subs = fv.subMeters ?? [];
-      if (!Array.isArray(subs)) return false;
-      for (const s of subs) {
-        if (!s || typeof s !== "object") return false;
-        if (!s.label || String(s.label).trim() === "") return false;
-        const reading = Number(s.reading);
-        if (Number.isNaN(reading) || reading < 0) return false;
-      }
-
-      return true;
-    })();
-
-    return { FORM_VALID: (issues?.length ?? 0) === 0 && fallbackValid };
+    const { success } = v.safeParse(billFormSchema, payloadBase);
+    return { FORM_VALID: success };
   });
 
   // Add a new sub meter
