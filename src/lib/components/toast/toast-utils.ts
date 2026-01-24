@@ -157,6 +157,13 @@ export function showPromise<T>(
   return loadingId; // Still returns the ID, but now with optional callbacks
 }
 
+export function showInspectorWarning() {
+  return showWarning(
+    "Nice try, Inspector!",
+    "Bypassing the disabled state won't work. You still need the correct confirmation code."
+  );
+}
+
 /**
  * Dismiss a specific toast
  */

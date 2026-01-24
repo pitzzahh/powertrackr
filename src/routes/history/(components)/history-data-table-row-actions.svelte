@@ -19,7 +19,7 @@
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
-  import { showSuccess, showWarning } from "$/components/toast";
+  import { showInspectorWarning, showSuccess, showWarning } from "$/components/toast";
   import * as Sheet from "$/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
@@ -90,11 +90,7 @@
 
   async function handle_remove_billing_info() {
     if (delete_confirm_value != row.original.date) {
-      showWarning(
-        "Nice try, Inspector!",
-        "Bypassing the disabled state won't work. You still need the correct confirmation code."
-      );
-      return;
+      return showInspectorWarning();
     }
     app_state = "processing";
 
