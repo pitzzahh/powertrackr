@@ -68,12 +68,12 @@
     </Dialog.Trigger>
   {/if}
   <Dialog.Content
-    class="overflow-hidden p-0 md:max-h-[70%] md:max-w-[50%] lg:max-w-[70]"
+    class="h-[90vh] overflow-hidden p-0 md:h-[85vh] md:max-w-175 lg:max-w-250"
     trapFocus={false}
   >
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
     <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
-    <Sidebar.Provider>
+    <Sidebar.Provider class="h-full min-h-0 items-start">
       <Sidebar.Root collapsible="none" class="hidden md:flex">
         <Sidebar.Content>
           <Sidebar.Group>
@@ -106,9 +106,9 @@
           </Sidebar.Group>
         </Sidebar.Content>
       </Sidebar.Root>
-      <main class="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+      <main class="flex h-full min-h-0 flex-1 flex-col overflow-y-auto">
         <header
-          class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+          class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
         >
           <div class="flex items-center gap-2 px-4">
             <Breadcrumb.Root>
@@ -124,8 +124,8 @@
             </Breadcrumb.Root>
           </div>
         </header>
-        <div class="flex h-[45%] flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0">
-          <div class="flex h-full min-h-0 flex-1 flex-col gap-4">
+        <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
+          <div class="flex min-h-0 flex-1 flex-col gap-4">
             {#if active_setting === "Import Data"}
               {@render Import()}
             {:else if active_setting === "Export Data"}
@@ -145,7 +145,7 @@
       Upload your data file to import records into the system.
     </p>
   </div>
-  <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+  <div class="min-h-[320px] w-full max-w-3xl rounded-xl bg-muted/50"></div>
 {/snippet}
 
 {#snippet Export()}
@@ -153,5 +153,5 @@
     <h2 class="text-lg font-medium">Export Data</h2>
     <p class="text-sm text-muted-foreground">Export data from the system to a downloadable file.</p>
   </div>
-  <div class="h-full min-h-0 w-full max-w-3xl rounded-xl bg-muted/50"></div>
+  <div class="min-h-[320px] w-full max-w-3xl rounded-xl bg-muted/50"></div>
 {/snippet}
