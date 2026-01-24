@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatEnergy } from "../format";
+import { formatEnergy, formatDate, DateFormat } from "../format";
 
 describe("formatEnergy", () => {
   it("formats small values as kWh without decimals by default", () => {
@@ -40,5 +40,46 @@ describe("formatEnergy", () => {
 
   it("formats very large numbers as TWh", () => {
     expect(formatEnergy(5e9)).toBe("5.00 TWh");
+  });
+});
+
+describe("formatDate", () => {
+  const date = new Date(Date.UTC(2024, 1, 10, 15, 30)); // 10 Feb 2024 15:30 UTC
+
+  it("formats DateOnly correctly", () => {
+    const expected = new Intl.DateTimeFormat("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+    expect(formatDate(date, { format: DateFormat.DateOnly, locale: "en-PH" })).toBe(expected);
+  });
+
+  it("formats DateTime correctly", () => {
+    const expected = new Intl.DateTimeFormat("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(date);
+    expect(formatDate(date, { format: DateFormat.DateTime, locale: "en-PH" })).toBe(expected);
+  });
+
+  it("formats MonthOnly correctly", () => {
+    const expected = new Intl.DateTimeFormat("en-PH", { month: "long" }).format(date);
+    expect(formatDate(date, { format: DateFormat.MonthOnly, locale: "en-PH" })).toBe(expected);
+  });
+
+  it("formats MonthYear correctly", () => {
+    const expected = new Intl.DateTimeFormat("en-PH", { month: "long", year: "numeric" }).format(
+      date
+    );
+    expect(formatDate(date, { format: DateFormat.MonthYear, locale: "en-PH" })).toBe(expected);
+  });
+
+  it("formats YearOnly correctly", () => {
+    const expected = new Intl.DateTimeFormat("en-PH", { year: "numeric" }).format(date);
+    expect(formatDate(date, { format: DateFormat.YearOnly, locale: "en-PH" })).toBe(expected);
   });
 });

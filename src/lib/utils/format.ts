@@ -14,6 +14,10 @@ export const formatNumber = (
 export enum DateFormat {
   DateOnly = "dateOnly",
   DateTime = "dateTime",
+  DayOnly = "dayOnly",
+  MonthOnly = "monthOnly",
+  MonthYear = "monthYear",
+  YearOnly = "yearOnly",
 }
 
 export const formatDate = (
@@ -21,16 +25,39 @@ export const formatDate = (
   options: { format?: DateFormat; locale?: string } = {}
 ): string => {
   const { format = DateFormat.DateOnly, locale = "en-PH" } = options;
-  const intlOptions: Intl.DateTimeFormatOptions =
-    format === DateFormat.DateOnly
-      ? { year: "numeric", month: "long", day: "numeric" }
-      : {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        };
+
+  let intlOptions: Intl.DateTimeFormatOptions;
+
+  switch (format) {
+    case DateFormat.DateTime:
+      intlOptions = {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      };
+      break;
+
+    case DateFormat.MonthOnly:
+      intlOptions = { month: "long" };
+      break;
+
+    case DateFormat.MonthYear:
+      intlOptions = { month: "long", year: "numeric" };
+      break;
+
+    case DateFormat.YearOnly:
+      intlOptions = { year: "numeric" };
+      break;
+    case DateFormat.DayOnly:
+      intlOptions = { weekday: "long" };
+      break;
+    case DateFormat.DateOnly:
+    default:
+      intlOptions = { year: "numeric", month: "long", day: "numeric" };
+  }
+
   return new Intl.DateTimeFormat(locale, intlOptions).format(date);
 };
 

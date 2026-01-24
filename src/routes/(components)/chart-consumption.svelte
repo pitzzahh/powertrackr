@@ -20,7 +20,7 @@
   import { curveStep } from "d3-shape";
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
-  import { formatNumber } from "$/utils/format";
+  import { DateFormat, formatDate, formatEnergy, formatNumber } from "$/utils/format";
   import { browser } from "$app/environment";
   import type { Status } from "$/types/state";
 
@@ -39,6 +39,11 @@
   });
   const chartDivisor = $derived.by(() =>
     chartUnit === "GWh" ? 1_000_000 : chartUnit === "MWh" ? 1_000 : 1
+  );
+
+  // Scale the data values so the chart & tooltip use the same unit across the whole chart.
+  const scaledData = $derived(
+    sortedData.map((d) => ({ date: d.date, kWh: (d.kWh || 0) / chartDivisor || 1 }))
   );
 </script>
 
@@ -75,7 +80,7 @@
     {:else if chartData.length > 0 && browser}
       <Chart.Container config={CHART_CONFIG}>
         <LineChart
-          data={sortedData}
+          data={scaledData}
           x="date"
           xScale={scaleUtc()}
           series={[
@@ -87,23 +92,12 @@
           ]}
           props={{
             spline: { curve: curveStep, motion: "tween", strokeWidth: 2 },
-            xAxis: {
-              format: (v: Date) => v.toLocaleDateString("en-US", { month: "short" }),
-            },
             yAxis: {
-              format: (v) =>
-                `${formatNumber(v / (chartDivisor || 1), { style: "decimal" })} ${chartUnit}`,
+              format: (v) => `${formatNumber(v, { style: "decimal" })} ${chartUnit}`,
             },
             highlight: { points: { r: 4 } },
           }}
-        >
-          {#snippet tooltip()}
-            <Chart.Tooltip
-              hideLabel
-              formatter={({ value }) => formatEnergy(value ?? 0, { unit: chartUnit })}
-            />
-          {/snippet}
-        </LineChart>
+        />
       </Chart.Container>
     {:else}
       <p class="py-8 text-center text-muted-foreground">No data available.</p>
