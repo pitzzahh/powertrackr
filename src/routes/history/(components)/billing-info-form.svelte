@@ -42,11 +42,7 @@
   import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type {
-    BillingInfo,
-    BillingInfoDTO,
-    BillingInfoDTOWithSubMeters,
-  } from "$/types/billing-info";
+  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { formatDate } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import * as v from "valibot";
@@ -424,7 +420,7 @@
                 <Button
                   variant="ghost"
                   size="sm"
-                  onclick={(e) => removeSubMeter(subIndex)}
+                  onclick={() => removeSubMeter(subIndex)}
                   class="size-8 p-0 text-destructive hover:text-destructive"
                 >
                   <Trash2 class="size-4" />
