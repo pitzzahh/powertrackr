@@ -1,28 +1,30 @@
 <script lang="ts">
-	import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
-	import * as AlertDialog from ".";
-	import { cn, flyAndScale } from "$lib/utils";
+  import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
+  import AlertDialogPortal from "./alert-dialog-portal.svelte";
+  import AlertDialogOverlay from "./alert-dialog-overlay.svelte";
+  import { cn } from "$lib/utils/style.js";
+  import type { ComponentProps } from "svelte";
+  import type { WithoutChild, WithoutChildrenOrChild } from "$/index";
 
-	type $$Props = AlertDialogPrimitive.ContentProps;
-
-	export let transition: $$Props["transition"] = flyAndScale;
-	export let transitionConfig: $$Props["transitionConfig"] = undefined;
-
-	let className: $$Props["class"] = undefined;
-	export { className as class };
+  let {
+    ref = $bindable(null),
+    class: className,
+    portalProps,
+    ...restProps
+  }: WithoutChild<AlertDialogPrimitive.ContentProps> & {
+    portalProps?: WithoutChildrenOrChild<ComponentProps<typeof AlertDialogPortal>>;
+  } = $props();
 </script>
 
-<AlertDialog.Portal>
-	<AlertDialog.Overlay />
-	<AlertDialogPrimitive.Content
-		{transition}
-		{transitionConfig}
-		class={cn(
-			"fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg md:w-full",
-			className
-		)}
-		{...$$restProps}
-	>
-		<slot />
-	</AlertDialogPrimitive.Content>
-</AlertDialog.Portal>
+<AlertDialogPortal {...portalProps}>
+  <AlertDialogOverlay />
+  <AlertDialogPrimitive.Content
+    bind:ref
+    data-slot="alert-dialog-content"
+    class={cn(
+      "fixed start-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
+      className
+    )}
+    {...restProps}
+  />
+</AlertDialogPortal>
