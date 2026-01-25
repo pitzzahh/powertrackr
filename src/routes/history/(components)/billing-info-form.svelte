@@ -471,7 +471,7 @@
 
               <Separator />
 
-              {#if currentMeter?.reading != 0}
+              {#if subMeter?.reading != 0}
                 <div class="text-sm text-muted-foreground">
                   Consumption: {isNaN(currentMeter.reading) || currentMeter.reading === 0
                     ? formatEnergy(0)
