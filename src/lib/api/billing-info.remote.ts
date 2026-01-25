@@ -186,13 +186,28 @@ async function createBillingInfoLogic(
   // Process multiple sub meters
   const subMetersData = subMeters.map((sub) => {
     const currentMeter = latestBillingInfo?.subMeters?.find((m) => m.label === sub.label);
-    // Assume previous reading is 0 if no matching sub meter exists (flexible for new sub meters)
-    const previousReading = currentMeter?.reading || 0;
-    const subkWh = sub.reading - previousReading;
-    if (subkWh < 0) {
-      throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+
+    // If there is a previous reading for this sub meter, compute consumption
+    // Otherwise treat it as a newly added meter: persist the provided reading as baseline and do not bill it.
+    // Persist the initial reading in `subkWh` (so it's available in DB as a baseline) but keep payment 0.
+    let subkWh = 0;
+    let paymentAmount = 0;
+    if (currentMeter) {
+      const previousReading = currentMeter.reading;
+      subkWh = sub.reading - previousReading;
+      if (subkWh < 0) {
+        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+      }
+      paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
+    } else {
+      if (sub.reading < 0) {
+        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+      }
+      // New sub meter: persist initial reading as subkWh baseline and do NOT bill it (payment = 0)
+      subkWh = sub.reading;
+      paymentAmount = 0;
     }
-    const paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
+
     return {
       label: sub.label,
       reading: sub.reading,
@@ -509,9 +524,12 @@ export const updateBillingInfo = form(
             paymentId: currentMeter.paymentId,
           };
         } else {
-          // new sub meter
-          const subkWh = sub.reading; // from 0
-          const paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
+          // new sub meter - persist initial reading as subkWh baseline and do NOT bill it
+          if (sub.reading < 0) {
+            throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+          }
+          const subkWh = sub.reading;
+          const paymentAmount = 0;
           return {
             label: sub.label,
             reading: sub.reading,
