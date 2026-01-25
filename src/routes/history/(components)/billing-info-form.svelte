@@ -43,7 +43,7 @@
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
   import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-  import { formatDate } from "$/utils/format";
+  import { formatDate, formatEnergy } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import * as v from "valibot";
   import { billFormSchema } from "$/validators/billing-info";
@@ -471,11 +471,11 @@
 
               <Separator />
 
-              {#if currentMeter}
+              {#if currentMeter?.reading != 0}
                 <div class="text-sm text-muted-foreground">
                   Consumption: {isNaN(currentMeter.reading) || currentMeter.reading === 0
-                    ? 0
-                    : currentMeter.reading - subMeter.reading} kWh
+                    ? formatEnergy(0)
+                    : formatEnergy(currentMeter.reading - subMeter.reading)}
                 </div>
               {/if}
             </Field.Group>
