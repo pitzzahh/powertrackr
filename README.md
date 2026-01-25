@@ -1,6 +1,6 @@
 # PowerTrackr
 
-[![Build and Test](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg)](https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml)
+<p style="white-space:nowrap; overflow-x:auto;"><a href="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml"><img src="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>&nbsp;&nbsp;<a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a></p>
 
 PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
 
@@ -38,8 +38,55 @@ Powertrackr uses a simple per-kWh allocation model and does not include jurisdic
 
 ### Contributing
 
-Contributions are welcome.
+Contributions are welcome. If you'd like to help, please open an issue or a pull request. A few guidelines to make the review process smoother:
+
+- Run the full test suite and ensure tests pass: `npm test` (see "Development" for environment requirements).
+- Add tests for new features and bug fixes.
+- Run the formatter and linter before submitting: `npm run format` and `npm run lint`.
+
+### Development
+
+Development setup
+
+Prerequisites:
+
+- Node.js 20.x or later
+- PostgreSQL (local or via Docker)
+- Optional: Docker for running PostgreSQL containers
+
+Environment variables
+
+Copy `.env.example` to `.env` and update the values for your environment (do not commit `.env`). At minimum, make sure `DATABASE_URL` and `ENCRYPTION_KEY` are set. See `.env.example` for a full sample.
+
+Local Postgres (Docker example)
+
+- Start Postgres in Docker:
+  `docker run --rm --name powertrackr-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=powertrackr -p 5432:5432 -d postgres:15`
+- Set `DATABASE_URL` as shown above.
+
+Install and run
+
+- Install dependencies: `npm ci`
+- Apply database migrations: `npm run db:push` (requires `DATABASE_URL`)
+- Start development server: `npm run dev` and open `http://localhost:5173`
+- Build and preview a production-like build: `npm run build` && `npm run preview`
+
+Database migrations
+
+- Migrations are managed with Drizzle; the `drizzle/` directory contains migrations and snapshots.
+- Create a migration with `npm run db:generate` and apply it with `npm run db:push`.
+
+Testing
+
+- Run tests: `npm test` (use `npm run test:ui` for the Vitest UI)
+- Note: several tests require a running Postgres instance and will throw if `DATABASE_URL` is not set (unless running in CI). To run the full test suite locally, point `DATABASE_URL` to a test Postgres instance.
+
+Formatting, linting and type checking
+
+- Format with Prettier: `npm run format`
+- Lint with oxlint: `npm run lint`
+- Type checking and Svelte diagnostics: `npm run check`
 
 ### License
 
-TBA
+This project is licensed under the BSD 3-Clause License. See the `LICENSE` file for the full text.
