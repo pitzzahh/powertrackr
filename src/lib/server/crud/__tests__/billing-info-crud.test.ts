@@ -2289,6 +2289,77 @@ describe("Billing Info CRUD Operations", () => {
         expect(subMeters[1].payment?.amount).toBe(25);
       });
 
+      it("does not bill new sub meters (initial readings) when creating billing info", async () => {
+        if (process.env.CI === "true") return;
+        const {
+          value: [addedUser],
+        } = await addUser([createUser()]);
+
+        const date = new Date();
+        const totalkWh = 287;
+        const balance = 200;
+
+        const payPer = calculatePayPerKwh(balance, totalkWh);
+
+        // Simulate the remote logic: create main payment + billing info then add a sub meter with initial reading
+        const {
+          value: [mainPayment],
+        } = await addPayment([{ amount: balance, date: new Date() }]);
+
+        const {
+          valid: validBillingInfo,
+          value: [billingInfo],
+        } = await addBillingInfo([
+          createBillingInfo({
+            userId: addedUser.id,
+            date,
+            totalkWh,
+            balance,
+            status: "Pending",
+            payPerkWh: payPer,
+            paymentId: mainPayment.id,
+          }),
+        ]);
+        expect(validBillingInfo).toBe(true);
+
+        // Add sub payment with zero amount (initial reading should NOT be billed, but baseline reading should be persisted)
+        const initialReading = 64370;
+        const {
+          value: [subPayment],
+        } = await addPayment([{ amount: 0, date: new Date() }]);
+
+        const addSubResult = await addSubMeter([
+          {
+            billingInfoId: billingInfo.id,
+            label: "New Sub",
+            subkWh: initialReading,
+            reading: initialReading,
+            paymentId: subPayment.id,
+          },
+        ]);
+        expect(addSubResult.valid).toBe(true);
+
+        const fetched = await getBillingInfoBy({
+          query: { id: billingInfo.id },
+          options: { with_payment: true, with_sub_meters_with_payment: true },
+        });
+
+        expect(fetched.valid).toBe(true);
+        const [fetchedBilling] = fetched.value;
+        const subs = (fetchedBilling.subMeters ?? []) as any[];
+        expect(subs).toHaveLength(1);
+        // Payment should be zero for initial baseline reading
+        expect(subs[0].payment?.amount).toBe(0);
+        // The initial reading should be persisted in subkWh (baseline stored)
+        expect(subs[0].subkWh).toBe(initialReading);
+
+        const mainPay = (
+          await getPaymentBy({ query: { id: fetchedBilling.paymentId }, options: {} })
+        ).value[0];
+        // Main payment should remain the billing balance (unchanged)
+        expect(mainPay.amount).toBeCloseTo(balance, 2);
+      });
+
       it("rolls back entire transaction when addBillingInfo fails (first failure)", async () => {
         if (process.env.CI === "true") return;
         await addUser([createUser()]);
