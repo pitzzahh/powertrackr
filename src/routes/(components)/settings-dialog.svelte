@@ -25,7 +25,7 @@
   import * as Alert from "$/components/ui/alert/index.js";
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
-  import { showInspectorWarning, showSuccess, showError } from "$/components/toast";
+  import { showInspectorWarning, showSuccess, showError, showLoading } from "$/components/toast";
   import { scale } from "svelte/transition";
   import { onMount, untrack } from "svelte";
   import { cubicInOut } from "svelte/easing";
@@ -34,6 +34,7 @@
   import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area/index.js";
   import type { BillingCreateForm } from "$/types/billing-info";
+  import { toast } from "svelte-sonner";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
@@ -505,15 +506,18 @@
             return;
           }
           if (isImporting) return;
+          const toastId = showLoading("Importing data", "Please wait...");
           isImporting = true;
           importErrors = [];
           importResult = null;
           try {
             if (!validatedItems) {
+              toast.dismiss(toastId);
               importErrors = ["No valid data to import (fix validation errors)"];
               return;
             }
             const res = await submit();
+            toast.dismiss(toastId);
             // Try to extract returned value if available (shape may vary)
             if (res && typeof res === "object" && "value" in res) {
               importResult = (res as any).value;
@@ -524,6 +528,7 @@
             if (issues.length > 0) {
               importErrors = issues.map((i: any) => i.message);
             } else {
+              showSuccess("Import successful");
               preview = null;
               importJson = null;
               importFile = null;
@@ -535,6 +540,7 @@
             const message = isHttpError(e) ? e.body.message : String(e);
             importErrors = [message || "Import failed"];
           } finally {
+            toast.dismiss(toastId);
             isImporting = false;
           }
         }
@@ -574,7 +580,7 @@
       <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 200 }}>
         <Button type="submit" disabled={isImporting || !validatedItems} class="w-full">
           {#if isImporting}
-            <Loader class="mr-2 h-4 w-4 animate-spin" />
+            <Loader class="h-4 w-4 animate-spin" />
             Importing…
           {:else}
             Submit
