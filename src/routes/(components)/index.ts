@@ -60,11 +60,20 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
 }
 
 export function toBarChartData(original: ExtendedBillingInfo): BarChartData {
-  const subkWh = original.subMeters.reduce((sum, sub) => sum + sub.subkWh, 0);
+  // Sum sub-meter usage directly; initial baseline readings are stored in `reading` and
+  // `subkWh` for starting meters is 0, so just sum `sub.subkWh`.
+  const subkWhRaw = (original.subMeters ?? []).reduce((sum, sub) => sum + (sub.subkWh ?? 0), 0);
+
+  // Clamp sub usage so it never exceeds the total usage for the billing period.
+  const subkWh = Math.min(subkWhRaw, original.totalkWh ?? 0);
+
+  // Ensure main kWh is non-negative and that main + sub = total (after clamping).
+  const mainKWh = Math.max(0, (original.totalkWh ?? 0) - subkWh);
+
   return {
     date: new Date(original.date),
     totalkWh: original.totalkWh,
-    mainKWh: original.totalkWh - subkWh,
+    mainKWh,
     subkWh,
   };
 }

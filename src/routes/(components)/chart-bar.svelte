@@ -166,7 +166,7 @@
             ]}
           >
             {key === "all"
-              ? formatEnergy(totalkWh + mainKWh + subkWh)
+              ? formatEnergy(totalkWh)
               : key === "totalkWh"
                 ? formatEnergy(totalkWh)
                 : key === "mainKWh"
