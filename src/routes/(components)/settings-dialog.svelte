@@ -32,6 +32,7 @@
   import { billFormSchema } from "$/validators/billing-info";
   import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area/index.js";
+  import type { BillingCreateForm } from "$/types/billing-info";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
@@ -203,7 +204,7 @@
       }
 
       // Build "items" array compatible with the existing import schema (billing create form)
-      const items = infos.map((info: any) => {
+      const items: BillingCreateForm[] = infos.map((info: any) => {
         return {
           date: new Date(info.date).toISOString(),
           totalkWh: info.totalkWh,
