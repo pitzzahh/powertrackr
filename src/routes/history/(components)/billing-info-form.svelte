@@ -323,6 +323,7 @@
                       dateValue = today(getLocalTimeZone())?.add({
                         days: preset.value,
                       });
+                      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
                     }}
                   >
                     {preset.label}
