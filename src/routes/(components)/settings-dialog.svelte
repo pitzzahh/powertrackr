@@ -18,19 +18,10 @@
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import {
-    Settings2,
-    Upload,
-    Download,
-    DatabaseBackupIcon,
-    X,
-    Loader,
-    CircleCheck,
-  } from "$/assets/icons";
+  import { Settings2, Upload, Download, DatabaseBackupIcon, X, Loader } from "$/assets/icons";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import * as FileDropZone from "$/components/file-drop-zone/index.js";
-  import * as Card from "$/components/ui/card/index.js";
   import * as Alert from "$/components/ui/alert/index.js";
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
@@ -250,7 +241,7 @@
           </Sidebar.Group>
         </Sidebar.Content>
       </Sidebar.Root>
-      <main class="flex h-full min-h-0 w-full flex-1 flex-col">
+      <main class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
         <header
           class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
         >
@@ -268,19 +259,17 @@
             </Breadcrumb.Root>
           </div>
         </header>
-        <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
-          <ScrollArea class="flex-1 rounded-md">
-            <div class="p-0">
-              <div class="flex flex-1 flex-col gap-4">
-                {#if active_setting === "Import Data"}
-                  {@render Import()}
-                {:else if active_setting === "Export Data"}
-                  {@render Export()}
-                {/if}
-              </div>
+        <ScrollArea class="h-72 flex-1 rounded-md">
+          <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
+            <div class="flex flex-1 flex-col gap-4">
+              {#if active_setting === "Import Data"}
+                {@render Import()}
+              {:else if active_setting === "Export Data"}
+                {@render Export()}
+              {/if}
             </div>
-          </ScrollArea>
-        </div>
+          </div>
+        </ScrollArea>
       </main>
     </Sidebar.Provider>
   </Dialog.Content>
