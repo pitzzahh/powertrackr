@@ -37,6 +37,10 @@
   import { showInspectorWarning } from "$/components/toast";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
+  import * as v from "valibot";
+  import { billFormSchema } from "$/validators/billing-info";
+  import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
+  import { ScrollArea } from "$/components/ui/scroll-area/index.js";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
@@ -52,6 +56,7 @@
     importFile,
     importJson,
     preview,
+    validatedItems,
     importErrors,
     importResult,
     isImporting,
@@ -60,6 +65,7 @@
     importForm: null as HTMLFormElement | null,
     importFile: null as File | null,
     importJson: null as any,
+    validatedItems: null as any[] | null,
     preview: null as { payments: number; billingInfos: number; subMeters: number } | null,
     importErrors: [] as string[],
     importResult: null as any,
@@ -97,7 +103,7 @@
       const parsed = JSON.parse(text);
       importJson = parsed;
 
-      // Lightweight client-side preview (counts)
+      // Determine items (array-form) and validate strictly against schema
       let items: any[] | undefined;
       if (Array.isArray(parsed)) items = parsed;
       else if (parsed && Array.isArray(parsed.items)) items = parsed.items;
@@ -109,8 +115,35 @@
         ];
         importJson = null;
         preview = null;
+        validatedItems = null;
       } else {
-        preview = { payments: 0, billingInfos: items.length, subMeters: 0 };
+        try {
+          // Strict client-side validation using the shared schema
+          const validated = v.parse(v.array(billFormSchema), items);
+
+          // Compute counts for preview
+          const payments = validated.reduce(
+            (acc, it) =>
+              acc + (Array.isArray((it as any).payments) ? (it as any).payments.length : 0),
+            0
+          );
+          const subMeters = validated.reduce(
+            (acc, it) =>
+              acc + (Array.isArray((it as any).subMeters) ? (it as any).subMeters.length : 0),
+            0
+          );
+
+          preview = { payments, billingInfos: validated.length, subMeters };
+          importErrors = [];
+          importResult = null;
+          validatedItems = validated;
+        } catch (err: any) {
+          // Show validation error(s) and prevent submit
+          importErrors = [err?.message ?? String(err)];
+          importJson = null;
+          preview = null;
+          validatedItems = null;
+        }
       }
     } catch (err: any) {
       importErrors = [err?.message ?? String(err)];
@@ -126,6 +159,7 @@
   function clearImport() {
     importFile = null;
     importJson = null;
+    validatedItems = null;
     preview = null;
     importErrors = [];
     importResult = null;
@@ -324,87 +358,7 @@
         </FileDropZone.Root>
       </div>
 
-      {#if isPreviewing}
-        <div class="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-          <Loader class="h-4 w-4 animate-spin" />
-          <span>Generating preview…</span>
-        </div>
-      {/if}
-
-      {#if importErrors?.length}
-        <Alert.Root variant="destructive" class="mt-2">
-          <Alert.Title>Import errors</Alert.Title>
-          <Alert.Description>
-            {#each importErrors as err}
-              <div>{err}</div>
-            {/each}
-          </Alert.Description>
-        </Alert.Root>
-      {/if}
-
-      {#if preview}
-        <Card.Root class="mt-2">
-          <Card.Content class="flex items-center justify-between gap-4">
-            <div>
-              <div class="text-sm text-muted-foreground">Preview</div>
-              <div class="text-lg font-medium">{preview.billingInfos} billing items</div>
-            </div>
-            <div class="flex gap-6">
-              <div class="text-center text-sm text-muted-foreground">
-                <div class="text-xs">Payments</div>
-                <div class="font-medium">{preview.payments}</div>
-              </div>
-              <div class="text-center text-sm text-muted-foreground">
-                <div class="text-xs">Sub-meters</div>
-                <div class="font-medium">{preview.subMeters}</div>
-              </div>
-            </div>
-          </Card.Content>
-        </Card.Root>
-      {/if}
-
-      {#if importResult}
-        <div class="mt-2 flex items-start gap-3 rounded-md border bg-muted/50 p-3">
-          <CircleCheck class="size-5 text-green-500" />
-          <div>
-            <div class="font-medium">Import result</div>
-            <div class="text-sm text-muted-foreground">
-              {typeof importResult === "string" ? importResult : JSON.stringify(importResult)}
-            </div>
-          </div>
-        </div>
-      {/if}
-
-      {#if importJson}
-        <div class="mt-2 rounded-md bg-muted/10 p-3">
-          <div class="mb-2 text-sm font-medium">JSON Preview</div>
-          {#if Array.isArray(importJson)}
-            {#each importJson.slice(0, 5) as item}
-              <pre class="mb-2 overflow-auto rounded bg-card p-2 text-xs">{JSON.stringify(
-                  item
-                )}</pre>
-            {/each}
-            {#if importJson.length > 5}
-              <div class="text-xs text-muted-foreground">
-                and {importJson.length - 5} more items...
-              </div>
-            {/if}
-          {:else if importJson && Array.isArray(importJson.items)}
-            {#each importJson.items.slice(0, 5) as item}
-              <pre class="mb-2 overflow-auto rounded bg-card p-2 text-xs">{JSON.stringify(
-                  item
-                )}</pre>
-            {/each}
-            {#if importJson.items.length > 5}
-              <div class="text-xs text-muted-foreground">
-                and {importJson.items.length - 5} more items...
-              </div>
-            {/if}
-          {:else}
-            <pre class="overflow-auto text-xs">{JSON.stringify(importJson, null, 2)}</pre>
-          {/if}
-        </div>
-      {/if}
+      <!-- preview moved below submit button -->
 
       <div
         in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 100 }}
@@ -421,7 +375,7 @@
         {/if}
       </div>
       <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 200 }}>
-        <Button type="submit" disabled={isImporting || (!file && !importJson)} class="w-full">
+        <Button type="submit" disabled={isImporting || !validatedItems} class="w-full">
           {#if isImporting}
             <Loader class="mr-2 h-4 w-4 animate-spin" />
             Importing…
@@ -430,6 +384,44 @@
           {/if}
         </Button>
       </div>
+
+      {#if importErrors?.length}
+        <Alert.Root variant="destructive" class="mt-4">
+          <Alert.Title>Validation errors</Alert.Title>
+          <Alert.Description>
+            {#each importErrors as err}
+              <div>{err}</div>
+            {/each}
+          </Alert.Description>
+        </Alert.Root>
+      {/if}
+
+      {#if validatedItems}
+        <div class="mt-4 space-y-4">
+          <Table class="max-w-full rounded-md border bg-background">
+            <TableBody>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Billing Infos</TableCell>
+                <TableCell class="min-w-0 py-2">{preview?.billingInfos ?? 0}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Sub-meters</TableCell>
+                <TableCell class="min-w-0 py-2">{preview?.subMeters ?? 0}</TableCell>
+              </TableRow>
+              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+                <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Payments</TableCell>
+                <TableCell class="min-w-0 py-2">{preview?.payments ?? 0}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+
+          <div class="max-h-72 overflow-hidden rounded-md border bg-muted/10">
+            <ScrollArea class="max-h-72 pr-2.5">
+              <pre class="p-4 text-xs">{JSON.stringify(validatedItems, null, 2)}</pre>
+            </ScrollArea>
+          </div>
+        </div>
+      {/if}
     </form>
   </div>
 {/snippet}
