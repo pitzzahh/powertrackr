@@ -18,10 +18,20 @@
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Settings2, Upload, Download, DatabaseBackupIcon, X } from "$/assets/icons";
+  import {
+    Settings2,
+    Upload,
+    Download,
+    DatabaseBackupIcon,
+    X,
+    Loader,
+    CircleCheck,
+  } from "$/assets/icons";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import * as FileDropZone from "$/components/file-drop-zone/index.js";
+  import * as Card from "$/components/ui/card/index.js";
+  import * as Alert from "$/components/ui/alert/index.js";
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
   import { showInspectorWarning } from "$/components/toast";
@@ -314,6 +324,88 @@
         </FileDropZone.Root>
       </div>
 
+      {#if isPreviewing}
+        <div class="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+          <Loader class="h-4 w-4 animate-spin" />
+          <span>Generating preview…</span>
+        </div>
+      {/if}
+
+      {#if importErrors?.length}
+        <Alert.Root variant="destructive" class="mt-2">
+          <Alert.Title>Import errors</Alert.Title>
+          <Alert.Description>
+            {#each importErrors as err}
+              <div>{err}</div>
+            {/each}
+          </Alert.Description>
+        </Alert.Root>
+      {/if}
+
+      {#if preview}
+        <Card.Root class="mt-2">
+          <Card.Content class="flex items-center justify-between gap-4">
+            <div>
+              <div class="text-sm text-muted-foreground">Preview</div>
+              <div class="text-lg font-medium">{preview.billingInfos} billing items</div>
+            </div>
+            <div class="flex gap-6">
+              <div class="text-center text-sm text-muted-foreground">
+                <div class="text-xs">Payments</div>
+                <div class="font-medium">{preview.payments}</div>
+              </div>
+              <div class="text-center text-sm text-muted-foreground">
+                <div class="text-xs">Sub-meters</div>
+                <div class="font-medium">{preview.subMeters}</div>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/if}
+
+      {#if importResult}
+        <div class="mt-2 flex items-start gap-3 rounded-md border bg-muted/50 p-3">
+          <CircleCheck class="size-5 text-green-500" />
+          <div>
+            <div class="font-medium">Import result</div>
+            <div class="text-sm text-muted-foreground">
+              {typeof importResult === "string" ? importResult : JSON.stringify(importResult)}
+            </div>
+          </div>
+        </div>
+      {/if}
+
+      {#if importJson}
+        <div class="mt-2 rounded-md bg-muted/10 p-3">
+          <div class="mb-2 text-sm font-medium">JSON Preview</div>
+          {#if Array.isArray(importJson)}
+            {#each importJson.slice(0, 5) as item}
+              <pre class="mb-2 overflow-auto rounded bg-card p-2 text-xs">{JSON.stringify(
+                  item
+                )}</pre>
+            {/each}
+            {#if importJson.length > 5}
+              <div class="text-xs text-muted-foreground">
+                and {importJson.length - 5} more items...
+              </div>
+            {/if}
+          {:else if importJson && Array.isArray(importJson.items)}
+            {#each importJson.items.slice(0, 5) as item}
+              <pre class="mb-2 overflow-auto rounded bg-card p-2 text-xs">{JSON.stringify(
+                  item
+                )}</pre>
+            {/each}
+            {#if importJson.items.length > 5}
+              <div class="text-xs text-muted-foreground">
+                and {importJson.items.length - 5} more items...
+              </div>
+            {/if}
+          {:else}
+            <pre class="overflow-auto text-xs">{JSON.stringify(importJson, null, 2)}</pre>
+          {/if}
+        </div>
+      {/if}
+
       <div
         in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 100 }}
         class="flex place-items-center justify-between gap-2"
@@ -329,7 +421,14 @@
         {/if}
       </div>
       <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 200 }}>
-        <Button type="submit" disabled={!file} class="w-full">Submit</Button>
+        <Button type="submit" disabled={isImporting || (!file && !importJson)} class="w-full">
+          {#if isImporting}
+            <Loader class="mr-2 h-4 w-4 animate-spin" />
+            Importing…
+          {:else}
+            Submit
+          {/if}
+        </Button>
       </div>
     </form>
   </div>
