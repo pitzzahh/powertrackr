@@ -25,7 +25,7 @@
   import * as Alert from "$/components/ui/alert/index.js";
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
-  import { showInspectorWarning } from "$/components/toast";
+  import { showInspectorWarning, showSuccess, showError } from "$/components/toast";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import * as v from "valibot";
@@ -52,6 +52,12 @@
     importResult,
     isImporting,
     isPreviewing,
+    exportJson,
+    exportItems,
+    exportPreview,
+    exportErrors,
+    exportResult,
+    isExporting,
   } = $state({
     importForm: null as HTMLFormElement | null,
     importFile: null as File | null,
@@ -62,6 +68,13 @@
     importResult: null as any,
     isImporting: false,
     isPreviewing: false,
+    // EXPORT state
+    exportJson: null as string | null,
+    exportItems: null as any[] | null,
+    exportPreview: null as { payments: number; billingInfos: number; subMeters: number } | null,
+    exportErrors: [] as string[],
+    exportResult: null as any,
+    isExporting: false,
   });
 
   async function handleUpload(files: File[]) {
@@ -162,6 +175,182 @@
       importBillingFile.fields.file.set(null as any);
     } catch (e) {}
   }
+
+  /**
+   * Export helpers
+   */
+  async function generateExport() {
+    exportErrors = [];
+    exportResult = null;
+    exportJson = null;
+    exportItems = null;
+    exportPreview = null;
+    isExporting = true;
+    try {
+      // Ensure latest data loaded (best-effort)
+      try {
+        if (billingStore.status !== "success") {
+          await billingStore.fetchData();
+        }
+      } catch (e) {
+        // ignore - we'll proceed with current store data
+      }
+
+      const infos = billingStore.extendedBillingInfos ?? [];
+      if (!infos || infos.length === 0) {
+        exportErrors = ["No billing data available to export"];
+        return;
+      }
+
+      // Build "items" array compatible with the existing import schema (billing create form)
+      const items = infos.map((info: any) => {
+        return {
+          date: new Date(info.date).toISOString(),
+          totalkWh: info.totalkWh,
+          balance: info.balance,
+          status: info.status ?? "Pending",
+          subMeters: (info.subMeters ?? []).map((s: any) => ({
+            label: s.label,
+            reading: s.reading,
+          })),
+          // Include payments inline where available to make the export more useful for inspection.
+          payments: [
+            ...(info.payment
+              ? [
+                  {
+                    id: info.payment.id,
+                    amount: info.payment.amount,
+                    date: info.payment.date ? new Date(info.payment.date).toISOString() : undefined,
+                  },
+                ]
+              : []),
+            ...(info.subMeters ?? []).flatMap((s: any) =>
+              s.payment
+                ? [
+                    {
+                      id: s.payment.id,
+                      amount: s.payment.amount,
+                      date: s.payment.date ? new Date(s.payment.date).toISOString() : undefined,
+                    },
+                  ]
+                : []
+            ),
+          ],
+        };
+      });
+
+      // Also prepare full backup arrays (payments, billingInfos, subMeters)
+      const paymentsMap = new Map<string, any>();
+      const billingInfos: any[] = [];
+      const subMeters: any[] = [];
+
+      for (const info of infos) {
+        if (info.payment) {
+          paymentsMap.set(info.payment.id, {
+            id: info.payment.id,
+            amount: info.payment.amount,
+            date: info.payment.date ? new Date(info.payment.date).toISOString() : undefined,
+          });
+        }
+
+        billingInfos.push({
+          id: info.id,
+          userId: info.userId,
+          date: new Date(info.date).toISOString(),
+          totalkWh: info.totalkWh,
+          balance: info.balance,
+          status: info.status,
+          payPerkWh: info.payPerkWh,
+          paymentId: info.payment?.id ?? null,
+          createdAt: info.createdAt ? new Date(info.createdAt).toISOString() : undefined,
+          updatedAt: info.updatedAt ? new Date(info.updatedAt).toISOString() : undefined,
+        });
+
+        for (const s of info.subMeters ?? []) {
+          subMeters.push({
+            id: s.id,
+            billingInfoId: info.id,
+            subkWh: (s as any).subkWh ?? undefined,
+            label: s.label,
+            reading: s.reading,
+            paymentId: s.payment?.id ?? null,
+            createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : undefined,
+            updatedAt: s.updatedAt ? new Date(s.updatedAt).toISOString() : undefined,
+          });
+
+          if (s.payment) {
+            paymentsMap.set(s.payment.id, {
+              id: s.payment.id,
+              amount: s.payment.amount,
+              date: s.payment.date ? new Date(s.payment.date).toISOString() : undefined,
+            });
+          }
+        }
+      }
+
+      const payments = Array.from(paymentsMap.values());
+      const payload = {
+        items,
+        billingInfos,
+        subMeters,
+        payments,
+      };
+
+      exportItems = items;
+      exportJson = JSON.stringify(payload, null, 2);
+      exportResult = payload;
+      exportPreview = {
+        billingInfos: billingInfos.length,
+        subMeters: subMeters.length,
+        payments: payments.length,
+      };
+    } catch (err: any) {
+      exportErrors = [err?.message ?? String(err)];
+    } finally {
+      isExporting = false;
+    }
+  }
+
+  function downloadExport() {
+    if (!exportJson) {
+      exportErrors = ["Nothing to export"];
+      return;
+    }
+    const blob = new Blob([exportJson], { type: "application/json" });
+    const filename = `powertrackr-backup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showSuccess("Export downloaded");
+  }
+
+  async function copyExport() {
+    if (!exportJson) {
+      exportErrors = ["Nothing to copy"];
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(exportJson);
+      showSuccess("Copied export to clipboard");
+    } catch (err: any) {
+      showError("Failed to copy to clipboard", String(err));
+    }
+  }
+
+  // Auto-generate export when the Export tab is opened (best-effort, non-blocking)
+  $effect(() => {
+    if (active_setting === "Export Data") {
+      if (!exportItems && !isExporting) {
+        // fire-and-forget
+        void generateExport();
+      }
+    }
+  });
 </script>
 
 <Dialog.Root bind:open>
@@ -422,7 +611,90 @@
 {#snippet Export()}
   <div>
     <h2 class="text-lg font-medium">Export Data</h2>
-    <p class="text-sm text-muted-foreground">Export data from the system to a downloadable file.</p>
+    <p class="text-sm text-muted-foreground">
+      Export data from the system to a downloadable file. The exported file contains an <code
+        >items</code
+      >
+      array (compatible with the import flow) and full backup arrays (<code>billingInfos</code>,
+      <code>subMeters</code>, <code>payments</code>).
+    </p>
   </div>
-  <div class="min-h-80 w-full rounded-xl bg-muted/50"></div>
+
+  <div class="w-full rounded-xl bg-muted/50 p-4">
+    <div class="flex items-center justify-between gap-2">
+      <div class="flex flex-col">
+        <div class="mt-2 flex items-center gap-2">
+          <Button onclick={() => generateExport()} disabled={isExporting}>
+            {#if isExporting}
+              <Loader class="mr-2 h-4 w-4 animate-spin" />
+              Generating…
+            {:else}
+              Generate
+            {/if}
+          </Button>
+          <Button
+            onclick={() => downloadExport()}
+            variant="outline"
+            disabled={!exportJson}
+            title="Download JSON"
+          >
+            <Download />
+            Download
+          </Button>
+          <Button
+            onclick={() => copyExport()}
+            variant="ghost"
+            disabled={!exportJson}
+            title="Copy JSON to clipboard"
+          >
+            Copy
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    {#if exportErrors?.length}
+      <Alert.Root variant="destructive" class="mt-4">
+        <Alert.Title>Export errors</Alert.Title>
+        <Alert.Description>
+          {#each exportErrors as err}
+            <div>{err}</div>
+          {/each}
+        </Alert.Description>
+      </Alert.Root>
+    {/if}
+
+    {#if exportItems}
+      <div class="mt-4 space-y-4">
+        <Table class="max-w-full rounded-md border bg-background">
+          <TableBody>
+            <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+              <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Billing Infos</TableCell>
+              <TableCell class="min-w-0 py-2"
+                >{exportPreview?.billingInfos ?? exportItems.length}</TableCell
+              >
+            </TableRow>
+            <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+              <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Sub-meters</TableCell>
+              <TableCell class="min-w-0 py-2">{exportPreview?.subMeters ?? 0}</TableCell>
+            </TableRow>
+            <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+              <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Payments</TableCell>
+              <TableCell class="min-w-0 py-2">{exportPreview?.payments ?? 0}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+
+        <ScrollArea class="h-72 rounded-md border bg-muted/10">
+          <div class="p-4">
+            <pre class="text-xs whitespace-pre-wrap">{exportJson}</pre>
+          </div>
+        </ScrollArea>
+      </div>
+    {/if}
+
+    {#if !exportItems && !exportErrors?.length}
+      <div class="mt-4 text-sm text-muted-foreground">No data available to export.</div>
+    {/if}
+  </div>
 {/snippet}
