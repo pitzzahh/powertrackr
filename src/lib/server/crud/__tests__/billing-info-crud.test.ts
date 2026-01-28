@@ -2332,7 +2332,7 @@ describe("Billing Info CRUD Operations", () => {
           {
             billingInfoId: billingInfo.id,
             label: "New Sub",
-            subkWh: initialReading,
+            subkWh: 0,
             reading: initialReading,
             paymentId: subPayment.id,
           },
@@ -2350,8 +2350,9 @@ describe("Billing Info CRUD Operations", () => {
         expect(subs).toHaveLength(1);
         // Payment should be zero for initial baseline reading
         expect(subs[0].payment?.amount).toBe(0);
-        // The initial reading should be persisted in subkWh (baseline stored)
-        expect(subs[0].subkWh).toBe(initialReading);
+        // The initial reading should be persisted in `reading` (baseline stored), and `subkWh` (usage) should be 0
+        expect(subs[0].reading).toBe(initialReading);
+        expect(subs[0].subkWh).toBe(0);
 
         const mainPay = (
           await getPaymentBy({ query: { id: fetchedBilling.paymentId }, options: {} })
