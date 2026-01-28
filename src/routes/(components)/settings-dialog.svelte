@@ -27,6 +27,7 @@
   import { isHttpError } from "@sveltejs/kit";
   import { showInspectorWarning, showSuccess, showError } from "$/components/toast";
   import { scale } from "svelte/transition";
+  import { onMount, untrack } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import * as v from "valibot";
   import { billFormSchema } from "$/validators/billing-info";
@@ -59,6 +60,7 @@
     exportErrors,
     exportResult,
     isExporting,
+    runtimeErrors,
   } = $state({
     importForm: null as HTMLFormElement | null,
     importFile: null as File | null,
@@ -76,6 +78,7 @@
     exportErrors: [] as string[],
     exportResult: null as any,
     isExporting: false,
+    runtimeErrors: [] as string[],
   });
 
   async function handleUpload(files: File[]) {
@@ -204,89 +207,110 @@
       }
 
       // Build "items" array compatible with the existing import schema (billing create form)
-      const items: BillingCreateForm[] = infos.map((info: any) => {
-        return {
-          date: new Date(info.date).toISOString(),
-          totalkWh: info.totalkWh,
-          balance: info.balance,
-          status: info.status ?? "Pending",
-          subMeters: (info.subMeters ?? []).map((s: any) => ({
-            label: s.label,
-            reading: s.reading,
-          })),
-          // Include payments inline where available to make the export more useful for inspection.
-          payments: [
-            ...(info.payment
-              ? [
-                  {
-                    id: info.payment.id,
-                    amount: info.payment.amount,
-                    date: info.payment.date ? new Date(info.payment.date).toISOString() : undefined,
-                  },
-                ]
-              : []),
-            ...(info.subMeters ?? []).flatMap((s: any) =>
-              s.payment
-                ? [
-                    {
-                      id: s.payment.id,
-                      amount: s.payment.amount,
-                      date: s.payment.date ? new Date(s.payment.date).toISOString() : undefined,
-                    },
-                  ]
-                : []
-            ),
-          ],
-        };
-      });
-
-      // Also prepare full backup arrays (payments, billingInfos, subMeters)
-      const paymentsMap = new Map<string, any>();
+      // Defensive per-item mapping (avoid throws on bad/missing data)
+      const items: any[] = [];
       const billingInfos: any[] = [];
       const subMeters: any[] = [];
+      const paymentsMap = new Map<string, any>();
+      const mappingErrors: string[] = [];
+
+      function safeISOString(value: unknown) {
+        try {
+          if (value === undefined || value === null) return undefined;
+          const d = new Date(value as any);
+          if (!Number.isFinite(d.getTime())) return undefined;
+          return d.toISOString();
+        } catch {
+          return undefined;
+        }
+      }
 
       for (const info of infos) {
-        if (info.payment) {
-          paymentsMap.set(info.payment.id, {
-            id: info.payment.id,
-            amount: info.payment.amount,
-            date: info.payment.date ? new Date(info.payment.date).toISOString() : undefined,
-          });
-        }
+        try {
+          const dateIso =
+            safeISOString(info?.date) ?? safeISOString(info?.createdAt) ?? new Date().toISOString();
 
-        billingInfos.push({
-          id: info.id,
-          userId: info.userId,
-          date: new Date(info.date).toISOString(),
-          totalkWh: info.totalkWh,
-          balance: info.balance,
-          status: info.status,
-          payPerkWh: info.payPerkWh,
-          paymentId: info.payment?.id ?? null,
-          createdAt: info.createdAt ? new Date(info.createdAt).toISOString() : undefined,
-          updatedAt: info.updatedAt ? new Date(info.updatedAt).toISOString() : undefined,
-        });
+          const sms = Array.isArray(info?.subMeters) ? info.subMeters : [];
+          const mappedSubMeters = sms.map((s: any) => ({
+            label: s?.label ?? "",
+            reading: typeof s?.reading === "number" ? s.reading : Number(s?.reading ?? 0),
+          }));
 
-        for (const s of info.subMeters ?? []) {
-          subMeters.push({
-            id: s.id,
-            billingInfoId: info.id,
-            subkWh: (s as any).subkWh ?? undefined,
-            label: s.label,
-            reading: s.reading,
-            paymentId: s.payment?.id ?? null,
-            createdAt: s.createdAt ? new Date(s.createdAt).toISOString() : undefined,
-            updatedAt: s.updatedAt ? new Date(s.updatedAt).toISOString() : undefined,
-          });
-
-          if (s.payment) {
-            paymentsMap.set(s.payment.id, {
-              id: s.payment.id,
-              amount: s.payment.amount,
-              date: s.payment.date ? new Date(s.payment.date).toISOString() : undefined,
+          const inlinePayments: any[] = [];
+          if (info?.payment && info.payment?.id) {
+            const pid = info.payment.id;
+            paymentsMap.set(pid, {
+              id: pid,
+              amount: info.payment.amount ?? null,
+              date: safeISOString(info.payment.date),
+            });
+            inlinePayments.push({
+              id: pid,
+              amount: info.payment.amount ?? null,
+              date: safeISOString(info.payment.date),
             });
           }
+
+          for (const s of sms) {
+            if (s?.payment && s.payment?.id) {
+              const pid = s.payment.id;
+              paymentsMap.set(pid, {
+                id: pid,
+                amount: s.payment.amount ?? null,
+                date: safeISOString(s.payment.date),
+              });
+              inlinePayments.push({
+                id: pid,
+                amount: s.payment.amount ?? null,
+                date: safeISOString(s.payment.date),
+              });
+            }
+          }
+
+          items.push({
+            date: dateIso,
+            totalkWh: Number(info?.totalkWh ?? 0),
+            balance: Number(info?.balance ?? 0),
+            status: info?.status ?? "Pending",
+            subMeters: mappedSubMeters,
+            ...(inlinePayments.length > 0 ? { payments: inlinePayments } : {}),
+          });
+
+          billingInfos.push({
+            id: info.id,
+            userId: info.userId,
+            date: dateIso,
+            totalkWh: Number(info.totalkWh ?? 0),
+            balance: Number(info.balance ?? 0),
+            status: info.status,
+            payPerkWh: info.payPerkWh,
+            paymentId: info.payment?.id ?? null,
+            createdAt: safeISOString(info.createdAt),
+            updatedAt: safeISOString(info.updatedAt),
+          });
+
+          for (const s of sms) {
+            subMeters.push({
+              id: s.id,
+              billingInfoId: s.billingInfoId ?? info.id,
+              subkWh: s.subkWh ?? undefined,
+              label: s.label,
+              reading: s.reading,
+              paymentId: s.payment?.id ?? null,
+              createdAt: safeISOString(s.createdAt),
+              updatedAt: safeISOString(s.updatedAt),
+            });
+          }
+        } catch (err: any) {
+          mappingErrors.push(
+            `Failed to map billing info ${String(info?.id ?? "(unknown)")}: ${String(err)}`
+          );
         }
+      }
+
+      if (items.length === 0 && mappingErrors.length > 0) {
+        exportErrors = mappingErrors;
+        return;
       }
 
       const payments = Array.from(paymentsMap.values());
@@ -342,16 +366,6 @@
       showError("Failed to copy to clipboard", String(err));
     }
   }
-
-  // Auto-generate export when the Export tab is opened (best-effort, non-blocking)
-  $effect(() => {
-    if (active_setting === "Export Data") {
-      if (!exportItems && !isExporting) {
-        // fire-and-forget
-        void generateExport();
-      }
-    }
-  });
 </script>
 
 <Dialog.Root bind:open>
