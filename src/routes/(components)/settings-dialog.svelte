@@ -294,7 +294,7 @@
       )}
       enctype="multipart/form-data"
       bind:this={importForm}
-      class="flex w-full flex-col gap-2 p-6"
+      class="flex w-full flex-col gap-2"
     >
       <FileDropZone.Root
         maxFileSize={1 * FileDropZone.MEGABYTE}
