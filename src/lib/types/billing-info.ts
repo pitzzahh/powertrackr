@@ -56,3 +56,11 @@ export type BillingSummary = {
   averageDailyReturn: number;
   averageMonthlyReturn: number;
 };
+
+export type BillingCreateForm = {
+  date: string;
+  totalkWh: number;
+  balance: number;
+  status: string;
+  subMeters: { label: string; reading: number }[];
+};

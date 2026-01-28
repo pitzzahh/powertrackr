@@ -13,17 +13,14 @@ import {
 import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
 import { requireAuth } from "$/server/auth";
 import {
-  addBillingInfo,
   updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
-  getBillingInfoCountBy,
   deleteBillingInfoBy,
+  createBillingInfoLogic,
 } from "$/server/crud/billing-info-crud";
-
 import { getChangedData, omit } from "$/utils/mapper";
 import { addPayment } from "$/server/crud/payment-crud";
 import { error, invalid } from "@sveltejs/kit";
-import type { NewSubMeter } from "$/types/sub-meter";
 import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
@@ -148,159 +145,6 @@ export const getBillingSummary = query(
     };
   }
 );
-
-async function createBillingInfoLogic(
-  data: {
-    date: string;
-    totalkWh: number;
-    balance: number;
-    status: string;
-    subMeters: { label: string; reading: number }[];
-  },
-  userId: string
-): Promise<BillingInfo> {
-  const { date, totalkWh, balance, status, subMeters } = data;
-  const payPerkWh = calculatePayPerKwh(balance, totalkWh);
-
-  const { value: billingInfoCount } = await getBillingInfoCountBy({
-    query: { userId },
-    options: { limit: 1 },
-  });
-
-  const {
-    valid: validLatestBillingInfo,
-    value: [latestBillingInfo],
-  } = await getBillingInfoByCrud({
-    query: { userId },
-    options: {
-      with_sub_meters: true,
-      order: "desc",
-      limit: 1,
-    },
-  });
-
-  if (billingInfoCount > 0 && !validLatestBillingInfo) {
-    throw error(400, "Failed to add new billing info, cannot get previous billing info");
-  }
-
-  // Process multiple sub meters
-  const subMetersData = subMeters.map((sub) => {
-    const currentMeter = latestBillingInfo?.subMeters?.find((m) => m.label === sub.label);
-
-    // If there is a previous reading for this sub meter, compute consumption
-    // Otherwise treat it as a newly added meter: persist the provided reading as baseline and do not bill it.
-    // Persist the initial reading in `subkWh` (so it's available in DB as a baseline) but keep payment 0.
-    let subkWh = 0;
-    let paymentAmount = 0;
-    if (currentMeter) {
-      const previousReading = currentMeter.reading;
-      subkWh = sub.reading - previousReading;
-      if (subkWh < 0) {
-        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
-      }
-      paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
-    } else {
-      if (sub.reading < 0) {
-        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
-      }
-      // New sub meter: persist initial reading as subkWh baseline and do NOT bill it (payment = 0)
-      subkWh = sub.reading;
-      paymentAmount = 0;
-    }
-
-    return {
-      label: sub.label,
-      reading: sub.reading,
-      subkWh,
-      paymentAmount,
-    };
-  });
-
-  const { totalSubPaymentAmount, totalSubkWh } = {
-    totalSubPaymentAmount: subMetersData
-      .map((s) => s.paymentAmount)
-      .reduce((sum, amount) => sum + amount, 0),
-    totalSubkWh: subMetersData.map((e) => e.subkWh).reduce((sum, kWh) => sum + kWh, 0),
-  };
-
-  const mainPaymentAmount = Number((balance - totalSubPaymentAmount).toFixed(2));
-  if (mainPaymentAmount < 0) {
-    throw error(400, "Main payment amount cannot be negative");
-  }
-
-  const mainTotalkWhUsed = totalkWh - totalSubkWh;
-
-  if (mainTotalkWhUsed + totalSubkWh != totalkWh) {
-    throw error(400, "Invalid meter readings, computed kWh usage does not meet total kWh usage");
-  }
-
-  const subMeterInserts: Omit<NewSubMeter, "id">[] = [];
-  const result = await db.transaction(async (tx) => {
-    let {
-      valid: validMainPayment,
-      value: [mainPayment],
-    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], tx);
-
-    if (!validMainPayment) {
-      tx.rollback();
-      throw error(400, "Failed to add billing info, main payment not processed");
-    }
-
-    const {
-      valid: validBillingInfo,
-      value: [result],
-    } = await addBillingInfo(
-      [
-        {
-          userId,
-          date: new Date(date),
-          totalkWh,
-          balance,
-          status,
-          payPerkWh,
-          paymentId: mainPayment.id,
-        },
-      ],
-      tx
-    );
-
-    if (!validBillingInfo) {
-      tx.rollback();
-      throw error(400, "Failed to add billing info, billing info not processed");
-    }
-    // Create sub payments and prepare sub meters
-    for (const subData of subMetersData) {
-      const {
-        valid: validPayment,
-        value: [addedPayment],
-        message,
-      } = await addPayment(
-        [
-          {
-            amount: subData.paymentAmount,
-          },
-        ],
-        tx
-      );
-      if (!validPayment) {
-        tx.rollback();
-        throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
-      }
-      subMeterInserts.push({
-        billingInfoId: result.id,
-        label: subData.label,
-        subkWh: subData.subkWh,
-        reading: subData.reading,
-        paymentId: addedPayment.id,
-      });
-    }
-    return result;
-  });
-
-  // Add sub meters
-  await addSubMeter(subMeterInserts);
-  return result;
-}
 
 // Form to create a new billing info with multiple sub meters
 export const createBillingInfo = form(
