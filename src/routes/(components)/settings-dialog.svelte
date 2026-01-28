@@ -18,13 +18,113 @@
   import * as Dialog from "$/components/ui/dialog/index.js";
   import * as Sidebar from "$/components/ui/sidebar/index.js";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Settings2, Upload, Download, DatabaseBackupIcon } from "$/assets/icons";
+  import { Settings2, Upload, Download, DatabaseBackupIcon, X } from "$/assets/icons";
+  import { useBillingStore } from "$/stores/billing.svelte";
+  import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import * as FileDropZone from "$/components/file-drop-zone/index.js";
+  import { importBillingFile } from "$/api/import.remote";
+  import { isHttpError } from "@sveltejs/kit";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
     open: false,
     active_setting: (NAV_DATA.nav?.[0]?.name as NavName) ?? "Import Data",
   });
+
+  const billingStore = useBillingStore();
+  const consumptionStore = useConsumptionStore();
+
+  // Import UI state (billing-focused)
+  let {
+    importForm,
+    importFile,
+    importJson,
+    preview,
+    importErrors,
+    importResult,
+    isImporting,
+    isPreviewing,
+  } = $state({
+    importForm: null as HTMLFormElement | null,
+    importFile: null as File | null,
+    importJson: null as any,
+    preview: null as { payments: number; billingInfos: number; subMeters: number } | null,
+    importErrors: [] as string[],
+    importResult: null as any,
+    isImporting: false,
+    isPreviewing: false,
+  });
+
+  async function handleUpload(files: File[]) {
+    importResult = null;
+    importErrors = [];
+    preview = null;
+    importJson = null;
+    importFile = null;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.name.endsWith(".json") && file.type !== "application/json") {
+      importErrors = ["Please upload a JSON file (.json)"];
+      return;
+    }
+
+    // keep local reference for UI
+    importFile = file;
+
+    // ensure the remote form field holds the File since the native input is cleared
+    // by FileDropZone after selection (so users can re-upload the same file)
+    try {
+      importBillingFile.fields.file.set(file);
+    } catch (e) {
+      // ignore if runtime typing differs
+    }
+
+    isPreviewing = true;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      importJson = parsed;
+
+      // Lightweight client-side preview (counts)
+      let items: any[] | undefined;
+      if (Array.isArray(parsed)) items = parsed;
+      else if (parsed && Array.isArray(parsed.items)) items = parsed.items;
+      else items = undefined;
+
+      if (!items) {
+        importErrors = [
+          "JSON must be an array of billing items or an object with an `items` array",
+        ];
+        importJson = null;
+        preview = null;
+      } else {
+        preview = { payments: 0, billingInfos: items.length, subMeters: 0 };
+      }
+    } catch (err: any) {
+      importErrors = [err?.message ?? String(err)];
+      importJson = null;
+      preview = null;
+    } finally {
+      isPreviewing = false;
+    }
+  }
+
+  // Import is handled by the remote form `importBillingFile` via the form's enhance handler.
+
+  function clearImport() {
+    importFile = null;
+    importJson = null;
+    preview = null;
+    importErrors = [];
+    importResult = null;
+    isImporting = false;
+    isPreviewing = false;
+    if (importForm) importForm.reset();
+    // also clear remote form state (cast to any to avoid strict typing around File)
+    try {
+      importBillingFile.fields.file.set(null as any);
+    } catch (e) {}
+  }
 </script>
 
 <Dialog.Root bind:open>
@@ -137,13 +237,99 @@
 </Dialog.Root>
 
 {#snippet Import()}
+  {@const file = importBillingFile.fields.file.value()}
   <div>
-    <h2 class="text-lg font-medium">Import Data</h2>
+    <h2 class="text-lg font-medium">Import Billing Data</h2>
     <p class="text-sm text-muted-foreground">
-      Upload your data file to import records into the system.
+      Upload a JSON file containing an array of billing items. Each item should follow the billing
+      form (fields: <code>date</code>, <code>totalkWh</code>, <code>balance</code>,
+      <code>status</code>,
+      <code>subMeters</code>).
     </p>
   </div>
-  <div class="min-h-80 w-full rounded-xl bg-muted/50"></div>
+  <div class="w-full rounded-xl bg-muted/50 p-4">
+    <form
+      {...importBillingFile.enhance(
+        async ({
+          submit,
+          form,
+        }: {
+          submit: (...args: any[]) => Promise<any>;
+          form: HTMLFormElement;
+        }) => {
+          if (isImporting) return;
+          isImporting = true;
+          importErrors = [];
+          importResult = null;
+          try {
+            if (!importFile && !importJson) {
+              importErrors = ["No file selected"];
+              return;
+            }
+            const res = await submit();
+            // Try to extract returned value if available (shape may vary)
+            if (res && typeof res === "object" && "value" in res) {
+              importResult = (res as any).value;
+            } else {
+              importResult = res;
+            }
+            const issues = importBillingFile.fields?.allIssues?.() || [];
+            if (issues.length > 0) {
+              importErrors = issues.map((i: any) => i.message);
+            } else {
+              preview = null;
+              importJson = null;
+              importFile = null;
+              form.reset();
+              billingStore.refresh();
+              consumptionStore.refresh();
+            }
+          } catch (e) {
+            const message = isHttpError(e) ? e.body.message : String(e);
+            importErrors = [message || "Import failed"];
+          } finally {
+            isImporting = false;
+          }
+        }
+      )}
+      enctype="multipart/form-data"
+      bind:this={importForm}
+      class="flex w-full flex-col gap-2 p-6"
+    >
+      <FileDropZone.Root
+        maxFileSize={1 * FileDropZone.MEGABYTE}
+        name="file"
+        maxFiles={1}
+        accept=".json,application/json"
+        onUpload={handleUpload}
+      >
+        <FileDropZone.Trigger />
+      </FileDropZone.Root>
+      {#if file}
+        <div class="flex flex-col gap-2">
+          <div class="flex place-items-center justify-between gap-2">
+            <div class="flex flex-col">
+              <span>{file.name}</span>
+              <span class="text-xs text-muted-foreground"
+                >{FileDropZone.displaySize(file.size)}</span
+              >
+            </div>
+            <Button
+              variant="outline"
+              size="icon"
+              onclick={() => {
+                // clear everything for the import
+                clearImport();
+              }}
+            >
+              <X />
+            </Button>
+          </div>
+        </div>
+      {/if}
+      <Button type="submit" class="w-full">Submit</Button>
+    </form>
+  </div>
 {/snippet}
 
 {#snippet Export()}
