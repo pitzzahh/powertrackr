@@ -172,8 +172,8 @@
   >
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
     <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
-    <Sidebar.Provider class="h-full min-h-0 items-start">
-      <Sidebar.Root collapsible="none" class="hidden md:flex">
+    <Sidebar.Provider class="items-start">
+      <Sidebar.Root>
         <Sidebar.Content>
           <Sidebar.Group>
             <Sidebar.GroupContent>
