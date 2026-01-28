@@ -40,7 +40,12 @@
           <span class="text-sm text-muted-foreground/75">
             {#if triggerState.rootState.opts.maxFiles.current}
               <span>
-                You can upload {triggerState.rootState.opts.maxFiles.current} files
+                You can upload {triggerState.rootState.opts.maxFiles.current}
+                {#if triggerState.rootState.opts.maxFiles.current > 1}
+                  files
+                {:else}
+                  file
+                {/if}
               </span>
             {/if}
             {#if triggerState.rootState.opts.maxFiles.current && triggerState.rootState.opts.maxFileSize.current}
