@@ -25,6 +25,8 @@
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
   import { showInspectorWarning } from "$/components/toast";
+  import { scale } from "svelte/transition";
+  import { cubicInOut } from "svelte/easing";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
@@ -35,7 +37,6 @@
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
 
-  // Import UI state (billing-focused)
   let {
     importForm,
     importFile,
@@ -301,31 +302,35 @@
       bind:this={importForm}
       class="flex w-full flex-col gap-2"
     >
-      <FileDropZone.Root
-        maxFileSize={10 * FileDropZone.MEGABYTE}
-        name="file"
-        maxFiles={1}
-        accept=".json,application/json"
-        onUpload={handleUpload}
+      <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+        <FileDropZone.Root
+          maxFileSize={10 * FileDropZone.MEGABYTE}
+          name="file"
+          maxFiles={1}
+          accept=".json,application/json"
+          onUpload={handleUpload}
+        >
+          <FileDropZone.Trigger />
+        </FileDropZone.Root>
+      </div>
+
+      <div
+        in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 100 }}
+        class="flex place-items-center justify-between gap-2"
       >
-        <FileDropZone.Trigger />
-      </FileDropZone.Root>
-      {#if file}
-        <div class="flex flex-col gap-2">
-          <div class="flex place-items-center justify-between gap-2">
-            <div class="flex flex-col">
-              <span>{file.name}</span>
-              <span class="text-xs text-muted-foreground"
-                >{FileDropZone.displaySize(file.size)}</span
-              >
-            </div>
-            <Button variant="hover-text-destructive" size="icon" onclick={() => clearImport()}>
-              <X />
-            </Button>
+        {#if file}
+          <div class="flex flex-col">
+            <span>{file.name}</span>
+            <span class="text-xs text-muted-foreground">{FileDropZone.displaySize(file.size)}</span>
           </div>
-        </div>
-      {/if}
-      <Button type="submit" disabled={!file} class="w-full">Submit</Button>
+          <Button variant="hover-text-destructive" size="icon" onclick={() => clearImport()}>
+            <X />
+          </Button>
+        {/if}
+      </div>
+      <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8, delay: 200 }}>
+        <Button type="submit" disabled={!file} class="w-full">Submit</Button>
+      </div>
     </form>
   </div>
 {/snippet}
