@@ -339,10 +339,10 @@
       bind:this={importForm}
       class="flex w-full flex-col gap-2"
     >
+      <input hidden {...importBillingFile.fields.file.as("file")} />
       <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
         <FileDropZone.Root
           maxFileSize={10 * FileDropZone.MEGABYTE}
-          name="file"
           maxFiles={1}
           accept=".json,application/json"
           onUpload={handleUpload}
