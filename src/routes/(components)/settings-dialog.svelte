@@ -24,6 +24,7 @@
   import * as FileDropZone from "$/components/file-drop-zone/index.js";
   import { importBillingFile } from "$/api/import.remote";
   import { isHttpError } from "@sveltejs/kit";
+  import { showInspectorWarning } from "$/components/toast";
   let { collapsed = false }: SettingsDialogProps = $props();
 
   let { open, active_setting } = $state({
@@ -257,6 +258,10 @@
           submit: (...args: any[]) => Promise<any>;
           form: HTMLFormElement;
         }) => {
+          if (!file) {
+            showInspectorWarning();
+            return;
+          }
           if (isImporting) return;
           isImporting = true;
           importErrors = [];
@@ -314,20 +319,13 @@
                 >{FileDropZone.displaySize(file.size)}</span
               >
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onclick={() => {
-                // clear everything for the import
-                clearImport();
-              }}
-            >
+            <Button variant="hover-text-destructive" size="icon" onclick={() => clearImport()}>
               <X />
             </Button>
           </div>
         </div>
       {/if}
-      <Button type="submit" class="w-full">Submit</Button>
+      <Button type="submit" disabled={!file} class="w-full">Submit</Button>
     </form>
   </div>
 {/snippet}
