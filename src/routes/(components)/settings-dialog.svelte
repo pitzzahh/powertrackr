@@ -297,7 +297,7 @@
       class="flex w-full flex-col gap-2"
     >
       <FileDropZone.Root
-        maxFileSize={1 * FileDropZone.MEGABYTE}
+        maxFileSize={10 * FileDropZone.MEGABYTE}
         name="file"
         maxFiles={1}
         accept=".json,application/json"
