@@ -217,7 +217,7 @@
   >
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
     <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
-    <Sidebar.Provider class="items-start">
+    <Sidebar.Provider class="h-full min-h-0 items-start">
       <Sidebar.Root>
         <Sidebar.Content>
           <Sidebar.Group>
@@ -250,7 +250,7 @@
           </Sidebar.Group>
         </Sidebar.Content>
       </Sidebar.Root>
-      <main class="flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto">
+      <main class="flex h-full min-h-0 w-full flex-1 flex-col">
         <header
           class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
         >
@@ -269,13 +269,17 @@
           </div>
         </header>
         <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
-          <div class="flex flex-1 flex-col gap-4">
-            {#if active_setting === "Import Data"}
-              {@render Import()}
-            {:else if active_setting === "Export Data"}
-              {@render Export()}
-            {/if}
-          </div>
+          <ScrollArea class="flex-1 rounded-md">
+            <div class="p-0">
+              <div class="flex flex-1 flex-col gap-4">
+                {#if active_setting === "Import Data"}
+                  {@render Import()}
+                {:else if active_setting === "Export Data"}
+                  {@render Export()}
+                {/if}
+              </div>
+            </div>
+          </ScrollArea>
         </div>
       </main>
     </Sidebar.Provider>
@@ -312,8 +316,8 @@
           importErrors = [];
           importResult = null;
           try {
-            if (!importFile && !importJson) {
-              importErrors = ["No file selected"];
+            if (!validatedItems) {
+              importErrors = ["No valid data to import (fix validation errors)"];
               return;
             }
             const res = await submit();
@@ -408,18 +412,18 @@
                 <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Sub-meters</TableCell>
                 <TableCell class="min-w-0 py-2">{preview?.subMeters ?? 0}</TableCell>
               </TableRow>
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell class="min-w-0 bg-muted/50 py-2 font-medium">Payments</TableCell>
-                <TableCell class="min-w-0 py-2">{preview?.payments ?? 0}</TableCell>
-              </TableRow>
             </TableBody>
           </Table>
 
-          <div class="max-h-72 overflow-hidden rounded-md border bg-muted/10">
-            <ScrollArea class="max-h-72 pr-2.5">
-              <pre class="p-4 text-xs">{JSON.stringify(validatedItems, null, 2)}</pre>
-            </ScrollArea>
-          </div>
+          <ScrollArea class="h-72 rounded-md border bg-muted/10">
+            <div class="p-4">
+              <pre class="text-xs whitespace-pre-wrap">{JSON.stringify(
+                  validatedItems,
+                  null,
+                  2
+                )}</pre>
+            </div>
+          </ScrollArea>
         </div>
       {/if}
     </form>
