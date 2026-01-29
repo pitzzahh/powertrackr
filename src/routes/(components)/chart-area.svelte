@@ -30,7 +30,7 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
   let { timeRange, visibleKeysSet } = $state({
