@@ -320,6 +320,7 @@
                     size="sm"
                     class="flex-1"
                     onclick={() => {
+                      open = false;
                       dateValue = today(getLocalTimeZone())?.add({
                         days: preset.value,
                       });
