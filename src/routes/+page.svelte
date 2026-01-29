@@ -1,3 +1,34 @@
+<script lang="ts" module>
+  function signedCurrency(value?: number | null): string {
+    const v = value ?? 0;
+    const absFormatted = formatNumber(Math.abs(v));
+    if (v > 0) return `+${absFormatted}`;
+    if (v < 0) return `-${absFormatted}`;
+    return absFormatted;
+  }
+
+  function signedPercent(value?: number | null): string {
+    const v = value ?? 0;
+    // `formatNumber` with style 'percent' expects a decimal fraction (e.g. 0.12 => 12%)
+    const formatted = formatNumber(Math.abs(v) / 100, { style: "percent" });
+    if (v > 0) return `+${formatted}`;
+    if (v < 0) return `-${formatted}`;
+    return formatted;
+  }
+
+  function signClass(
+    value?: number | null,
+    positiveClass = "text-green-600",
+    negativeClass = "text-destructive"
+  ): string {
+    const v = value ?? 0;
+    if (v > 0) return positiveClass;
+    if (v < 0) return negativeClass;
+    // zero -> no color class
+    return "";
+  }
+</script>
+
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
@@ -153,11 +184,15 @@
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
         {:else}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(billingStore.summary?.totalReturns || 0)}</span
+          <span
+            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+              billingStore.summary?.totalReturns
+            )}"
           >
+            {signedCurrency(billingStore.summary?.totalReturns)}
+          </span>
         {/if}
       </div>
       <div class="flex flex-col gap-1">
@@ -165,23 +200,39 @@
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0%</span>
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0%</span>
         {:else}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(billingStore.summary?.netReturns || 0)}%</span
+          <span
+            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+              billingStore.summary?.netReturns
+            )}"
           >
+            {signedPercent(billingStore.summary?.netReturns)}
+          </span>
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">1 Day Savings</span>
+        <span class="text-sm">Period Change</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl">+0</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
+            <span class="text-xs text-muted-foreground">0%</span>
+          </div>
         {:else}
-          <span class="text-2xl font-semibold text-green-600 md:text-xl lg:text-2xl"
-            >+{formatNumber(billingStore.summary?.oneDayReturns || 0)}</span
-          >
+          <div class="flex items-baseline gap-2">
+            <span
+              class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+                billingStore.summary?.periodPaymentChange
+              )}"
+            >
+              {signedCurrency(billingStore.summary?.periodPaymentChange)}
+            </span>
+            <span class="text-xs text-muted-foreground">
+              {signedPercent(billingStore.summary?.periodPaymentChangePct)}
+            </span>
+          </div>
         {/if}
       </div>
     </div>

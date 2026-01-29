@@ -320,9 +320,11 @@
                     size="sm"
                     class="flex-1"
                     onclick={() => {
+                      open = false;
                       dateValue = today(getLocalTimeZone())?.add({
                         days: preset.value,
                       });
+                      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
                     }}
                   >
                     {preset.label}

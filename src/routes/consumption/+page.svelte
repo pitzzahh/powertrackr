@@ -12,22 +12,14 @@
 
   const consumptionStore = useConsumptionStore();
 
-  const chartData = $derived(
-    consumptionStore.extendedBillingInfos.map((info) => ({
-      date: new Date(info.date),
-      kWh: info.totalkWh,
-    }))
-  );
-
   onMount(() => {
-    const userId = data?.user?.id;
-    if (userId) {
-      consumptionStore.setUserId(userId);
-      consumptionStore.setStatus("loading_data");
-      consumptionStore.fetchData();
-    } else {
+    if (!data.user) {
       console.warn("No user id available to fetch consumption data");
+      return;
     }
+    consumptionStore.setUserId(data?.user?.id);
+    consumptionStore.setStatus("loading_data");
+    consumptionStore.fetchData();
   });
 </script>
 
@@ -43,7 +35,10 @@
 
   <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
     <ChartConsumption
-      {chartData}
+      chartData={consumptionStore.extendedBillingInfos.map((info) => ({
+        date: new Date(info.date),
+        kWh: info.totalkWh,
+      }))}
       status={consumptionStore.status}
       refetch={() => consumptionStore.fetchData()}
     />
@@ -140,7 +135,7 @@
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Latest Reading</span>
+        <span class="text-sm">Latest Consumption</span>
         {#if consumptionStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if consumptionStore.status === "error"}
