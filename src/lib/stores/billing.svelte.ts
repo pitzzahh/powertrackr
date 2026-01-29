@@ -13,30 +13,52 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
       oneDayReturns: 0,
       averageDailyReturn: 0,
       averageMonthlyReturn: 0,
+      periodPaymentChange: 0,
+      periodPaymentChangePct: 0,
     };
   }
   const latest = infos[0];
   const current = latest?.balance ?? 0;
-  const invested = infos.reduce((sum, info) => sum + info.totalkWh * info.payPerkWh, 0);
-  const totalReturns = infos.reduce(
+  // Use actual payments as the authoritative amounts to compute investments and
+  // returns. This matches the server-side `getBillingSummary` semantics and
+  // avoids small rounding artefacts caused by rounding `payPerkWh` to cents.
+  const invested = infos.reduce(
     (sum, info) =>
       sum +
-      (info.totalkWh * info.payPerkWh -
-        ((info.payment?.amount ?? 0) +
-          info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0))),
+      ((info.payment?.amount ?? 0) +
+        info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
     0
   );
+
+  // Total savings/returns are the amounts attributable to sub-meters (i.e.
+  // how much sub-meter payments contributed to offsetting the main bill).
+  const totalReturns = infos.reduce(
+    (sum, info) =>
+      sum + info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
+    0
+  );
+
   const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
-  const oneDayReturns =
-    latest.totalkWh * latest.payPerkWh -
-    ((latest.payment?.amount ?? 0) +
-      latest.subMeters.reduce((sum, sub) => sum + (sub.payment?.amount ?? 0), 0));
+
+  // For the latest period we show the total sub-meter payments (savings) for that bill.
+  const oneDayReturns = latest.subMeters.reduce((sum, sub) => sum + (sub.payment?.amount ?? 0), 0);
   const firstDate = new Date(infos[infos.length - 1].date);
   const lastDate = new Date(latest.date);
   const totalDays = Math.max(1, (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
   const averageDailyReturn = totalReturns / totalDays;
   const totalMonths = totalDays / 30;
   const averageMonthlyReturn = totalReturns / totalMonths;
+
+  // Period-to-period payment change (previous_totalPayment - latest_totalPayment).
+  const totalPayment = (info: ExtendedBillingInfo) =>
+    (info.payment?.amount ?? 0) +
+    info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0);
+  const latestTotalPayment = totalPayment(latest);
+  const prevTotalPayment = infos[1] ? totalPayment(infos[1]) : latestTotalPayment;
+  const periodPaymentChange = prevTotalPayment - latestTotalPayment;
+  const periodPaymentChangePct =
+    prevTotalPayment > 0 ? (periodPaymentChange / prevTotalPayment) * 100 : 0;
+
   return {
     current,
     invested,
@@ -45,6 +67,8 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
     oneDayReturns,
     averageDailyReturn,
     averageMonthlyReturn,
+    periodPaymentChange,
+    periodPaymentChangePct,
   };
 }
 

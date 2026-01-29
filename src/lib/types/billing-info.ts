@@ -53,6 +53,11 @@ export type BillingSummary = {
   totalReturns: number;
   netReturns: number;
   oneDayReturns: number;
+  // Period-to-period change in total payments (previous_totalPayment - latest_totalPayment).
+  // Positive means payments decreased compared to the previous period (i.e. saved money).
+  periodPaymentChange: number;
+  // Percent change relative to the previous period (e.g. 12.5 === 12.5%).
+  periodPaymentChangePct: number;
   averageDailyReturn: number;
   averageMonthlyReturn: number;
 };

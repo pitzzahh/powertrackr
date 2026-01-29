@@ -30,7 +30,7 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
-  import { onMount, untrack } from "svelte";
+  import { untrack } from "svelte";
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
   let { timeRange, visibleKeysSet } = $state({
@@ -89,7 +89,7 @@
       <Select.Trigger class="ms-auto w-40 rounded-lg" aria-label="Select a value">
         {selectedLabel}
       </Select.Trigger>
-      <Select.Content class="rounded-xl">
+      <Select.Content class="max-h-56 rounded-xl">
         {#each TIME_RANGE_OPTIONS as option (option.value)}
           <Select.Item value={option.value} class="rounded-lg">
             {option.label}

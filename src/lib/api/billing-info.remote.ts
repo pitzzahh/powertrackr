@@ -10,7 +10,12 @@ import {
   deleteBillingInfoSchemaBatch,
   generateRandomBillingInfosSchema,
 } from "$/validators/billing-info";
-import type { BillingInfo, BillingSummary, NewBillingInfo } from "$/types/billing-info";
+import type {
+  BillingInfo,
+  BillingInfoWithPaymentAndSubMetersWithPayment,
+  BillingSummary,
+  NewBillingInfo,
+} from "$/types/billing-info";
 import { requireAuth } from "$/server/auth";
 import {
   updateBillingInfoBy as updateBillingInfoCrud,
@@ -86,7 +91,7 @@ export const getBillingSummary = query(
   getBillingInfosSchema,
   async ({ userId }): Promise<BillingSummary> => {
     const result = await getExtendedBillingInfos({ userId });
-    const extendedInfos = result.value as any;
+    const extendedInfos = result.value as BillingInfoWithPaymentAndSubMetersWithPayment[];
 
     if (extendedInfos.length === 0) {
       return {
@@ -97,10 +102,12 @@ export const getBillingSummary = query(
         oneDayReturns: 0,
         averageDailyReturn: 0,
         averageMonthlyReturn: 0,
+        periodPaymentChange: 0,
+        periodPaymentChangePct: 0,
       };
     }
 
-    const latest: any = extendedInfos[0];
+    const latest = extendedInfos[0];
     const current = latest?.balance ?? 0;
     const invested = extendedInfos.reduce(
       (sum: number, info: any) =>
@@ -119,13 +126,11 @@ export const getBillingSummary = query(
       0
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
-    const oneDayReturns = latest.subMeters.reduce(
-      (sum: number, sub: any) => sum + (sub.payment?.amount ?? 0),
-      0
-    );
+    const oneDayReturns =
+      latest.subMeters?.reduce((sum: number, sub: any) => sum + (sub.payment?.amount ?? 0), 0) ?? 0;
 
-    const firstDate = new Date(extendedInfos[extendedInfos.length - 1].date as string);
-    const lastDate = new Date(latest.date as string);
+    const firstDate = extendedInfos[extendedInfos.length - 1].date;
+    const lastDate = latest.date;
     const totalDays = Math.max(
       1,
       (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -133,6 +138,16 @@ export const getBillingSummary = query(
     const averageDailyReturn = totalReturns / totalDays;
     const totalMonths = totalDays / 30;
     const averageMonthlyReturn = totalReturns / totalMonths;
+
+    // period change (previous_totalPayment - latest_totalPayment)
+    const totalPayment = (info: any) =>
+      (info.payment?.amount ?? 0) +
+      info.subMeters.reduce((subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0), 0);
+    const latestTotalPayment = totalPayment(latest);
+    const prevTotalPayment = extendedInfos[1] ? totalPayment(extendedInfos[1]) : latestTotalPayment;
+    const periodPaymentChange = prevTotalPayment - latestTotalPayment;
+    const periodPaymentChangePct =
+      prevTotalPayment > 0 ? (periodPaymentChange / prevTotalPayment) * 100 : 0;
 
     return {
       current,
@@ -142,6 +157,8 @@ export const getBillingSummary = query(
       oneDayReturns,
       averageDailyReturn,
       averageMonthlyReturn,
+      periodPaymentChange,
+      periodPaymentChangePct,
     };
   }
 );
@@ -272,6 +289,17 @@ export const updateBillingInfo = form(
       },
     });
 
+    console.log(
+      JSON.stringify(
+        {
+          validBillingInfo,
+          billingInfoWithSubMetersToUpdate,
+        },
+        null,
+        2
+      )
+    );
+
     if (!validBillingInfo) {
       throw error(400, "Failed to update billing info");
     }
@@ -368,11 +396,11 @@ export const updateBillingInfo = form(
             paymentId: currentMeter.paymentId,
           };
         } else {
-          // new sub meter - persist initial reading as subkWh baseline and do NOT bill it
+          // new sub meter - persist initial reading as baseline (reading) but do NOT bill it
           if (sub.reading < 0) {
             throw error(400, `Invalid reading for sub meter "${sub.label}"`);
           }
-          const subkWh = sub.reading;
+          const subkWh = 0; // starting sub meter => 0 usage
           const paymentAmount = 0;
           return {
             label: sub.label,
@@ -382,6 +410,16 @@ export const updateBillingInfo = form(
           };
         }
       }) ?? [];
+
+    // Validate that total sub-meter kWh does not exceed total billing kWh (prevents negative main usage)
+    const totalSubkWh = subMetersData.reduce((sum, s) => sum + s.subkWh, 0);
+    const totalkWhForCheck = updateData.totalkWh ?? billingInfoWithSubMetersToUpdate.totalkWh ?? 0;
+    if (totalSubkWh > totalkWhForCheck) {
+      throw error(
+        400,
+        "Invalid meter readings, sub-meter kWh exceeds total kWh (main usage negative)"
+      );
+    }
 
     // Perform all DB operations in a transaction
     const result = await db.transaction(async (tx) => {
