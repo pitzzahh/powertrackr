@@ -212,19 +212,27 @@
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">1 Day Savings</span>
+        <span class="text-sm">Period Change</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
+          <div class="flex items-baseline gap-2">
+            <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
+            <span class="text-xs text-muted-foreground">0%</span>
+          </div>
         {:else}
-          <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-              billingStore.summary?.oneDayReturns
-            )}"
-          >
-            {signedCurrency(billingStore.summary?.oneDayReturns)}
-          </span>
+          <div class="flex items-baseline gap-2">
+            <span
+              class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+                billingStore.summary?.periodPaymentChange
+              )}"
+            >
+              {signedCurrency(billingStore.summary?.periodPaymentChange)}
+            </span>
+            <span class="text-xs text-muted-foreground">
+              {signedPercent(billingStore.summary?.periodPaymentChangePct)}
+            </span>
+          </div>
         {/if}
       </div>
     </div>

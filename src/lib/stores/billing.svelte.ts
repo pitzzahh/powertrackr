@@ -13,6 +13,8 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
       oneDayReturns: 0,
       averageDailyReturn: 0,
       averageMonthlyReturn: 0,
+      periodPaymentChange: 0,
+      periodPaymentChangePct: 0,
     };
   }
   const latest = infos[0];
@@ -46,6 +48,17 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   const averageDailyReturn = totalReturns / totalDays;
   const totalMonths = totalDays / 30;
   const averageMonthlyReturn = totalReturns / totalMonths;
+
+  // Period-to-period payment change (previous_totalPayment - latest_totalPayment).
+  const totalPayment = (info: ExtendedBillingInfo) =>
+    (info.payment?.amount ?? 0) +
+    info.subMeters.reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0);
+  const latestTotalPayment = totalPayment(latest);
+  const prevTotalPayment = infos[1] ? totalPayment(infos[1]) : latestTotalPayment;
+  const periodPaymentChange = prevTotalPayment - latestTotalPayment;
+  const periodPaymentChangePct =
+    prevTotalPayment > 0 ? (periodPaymentChange / prevTotalPayment) * 100 : 0;
+
   return {
     current,
     invested,
@@ -54,6 +67,8 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
     oneDayReturns,
     averageDailyReturn,
     averageMonthlyReturn,
+    periodPaymentChange,
+    periodPaymentChangePct,
   };
 }
 
