@@ -89,7 +89,7 @@
       <Select.Trigger class="ms-auto w-40 rounded-lg" aria-label="Select a value">
         {selectedLabel}
       </Select.Trigger>
-      <Select.Content class="rounded-xl">
+      <Select.Content class="max-h-56 rounded-xl">
         {#each TIME_RANGE_OPTIONS as option (option.value)}
           <Select.Item value={option.value} class="rounded-lg">
             {option.label}
