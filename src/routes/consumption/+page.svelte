@@ -140,7 +140,7 @@
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Latest Reading</span>
+        <span class="text-sm">Latest Consumption</span>
         {#if consumptionStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if consumptionStore.status === "error"}
