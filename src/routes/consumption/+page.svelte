@@ -12,13 +12,6 @@
 
   const consumptionStore = useConsumptionStore();
 
-  const chartData = $derived(
-    consumptionStore.extendedBillingInfos.map((info) => ({
-      date: new Date(info.date),
-      kWh: info.totalkWh,
-    }))
-  );
-
   onMount(() => {
     if (!data.user) {
       console.warn("No user id available to fetch consumption data");
@@ -42,7 +35,10 @@
 
   <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
     <ChartConsumption
-      {chartData}
+      chartData={consumptionStore.extendedBillingInfos.map((info) => ({
+        date: new Date(info.date),
+        kWh: info.totalkWh,
+      }))}
       status={consumptionStore.status}
       refetch={() => consumptionStore.fetchData()}
     />
