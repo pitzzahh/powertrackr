@@ -82,6 +82,7 @@
 </script>
 
 <Sheet.Root bind:open={openMenu}>
+  {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
   <header
     class="absolute top-0 right-0 left-0 z-5 flex items-center justify-between p-4 backdrop-blur-xs"
   >
@@ -128,7 +129,6 @@
                         <Sheet.Description>Enter billing info</Sheet.Description>
                       </Sheet.Header>
                       <ScrollArea class="min-h-0 flex-1">
-                        {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
                         {#key billingInfo.current}
                           {@const latestBillingInfo =
                             (billingInfo.current?.value[0] as
