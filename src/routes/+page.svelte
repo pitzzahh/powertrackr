@@ -19,7 +19,7 @@
   function signClass(
     value?: number | null,
     positiveClass = "text-green-600",
-    negativeClass = "text-red-600"
+    negativeClass = "text-destructive"
   ): string {
     const v = value ?? 0;
     if (v > 0) return positiveClass;
