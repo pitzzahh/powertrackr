@@ -9,7 +9,13 @@ import type {
   BillingInfo,
   BillingInfoDTO,
   BillingInfoWithPaymentAndSubMetersWithPayment,
+  BillingCreateForm,
 } from "$/types/billing-info";
+import { calculatePayPerKwh } from "$lib";
+import { addPayment } from "$/server/crud/payment-crud";
+import { addSubMeter } from "$/server/crud/sub-meter-crud";
+import type { NewSubMeter } from "$/types/sub-meter";
+import { error } from "@sveltejs/kit";
 
 type BillingInfoQueryOptions = {
   where?: Record<string, unknown>;
@@ -272,4 +278,235 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+/*
+ * createBillingInfoLogic
+ *
+ * - Recreates the logic previously in the billing-info remote layer.
+ * - Uses the CRUD helpers (addPayment, addBillingInfo, addSubMeter) only.
+ * - Accepts an optional `tx` so callers can run a whole import inside a
+ *   single transaction (atomic batch imports).
+ */
+export async function createBillingInfoLogic(
+  data: BillingCreateForm,
+  userId: string,
+  tx?: HelperParamOptions<NewBillingInfo>["tx"]
+): Promise<BillingInfo> {
+  const { date, totalkWh, balance, status, subMeters } = data;
+  const payPerkWh = calculatePayPerKwh(balance, totalkWh);
+
+  // Use tx in read operations if provided so we have consistent view inside a parent transaction
+  const { value: billingInfoCount } = await getBillingInfoCountBy({
+    query: { userId },
+    options: { limit: 1, ...(tx ? { tx } : {}) },
+  });
+
+  const {
+    valid: validLatestBillingInfo,
+    value: [latestBillingInfo],
+  } = await getBillingInfoBy({
+    query: { userId },
+    options: {
+      with_sub_meters: true,
+      order: "desc",
+      limit: 1,
+      ...(tx ? { tx } : {}),
+    },
+  });
+
+  if (billingInfoCount > 0 && !validLatestBillingInfo) {
+    throw error(400, "Failed to add new billing info, cannot get previous billing info");
+  }
+
+  // Process multiple sub meters (compute subkWh and payment amounts)
+  const subMetersData = subMeters.map((sub) => {
+    const currentMeter = latestBillingInfo?.subMeters?.find((m) => m.label === sub.label);
+
+    let subkWh = 0;
+    let paymentAmount = 0;
+    if (currentMeter) {
+      const previousReading = currentMeter.reading;
+      subkWh = sub.reading - previousReading;
+      if (subkWh < 0) {
+        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+      }
+      paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
+    } else {
+      if (sub.reading < 0) {
+        throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+      }
+      // New sub meter: persist initial reading as baseline, do not bill it now
+      subkWh = sub.reading;
+      paymentAmount = 0;
+    }
+
+    return {
+      label: sub.label,
+      reading: sub.reading,
+      subkWh,
+      paymentAmount,
+    };
+  });
+
+  const totalSubPaymentAmount = subMetersData.reduce((sum, s) => sum + s.paymentAmount, 0);
+  const totalSubkWh = subMetersData.reduce((sum, s) => sum + s.subkWh, 0);
+
+  const mainPaymentAmount = Number((balance - totalSubPaymentAmount).toFixed(2));
+  if (mainPaymentAmount < 0) {
+    throw error(400, "Main payment amount cannot be negative");
+  }
+
+  const mainTotalkWhUsed = totalkWh - totalSubkWh;
+
+  if (mainTotalkWhUsed + totalSubkWh != totalkWh) {
+    throw error(400, "Invalid meter readings, computed kWh usage does not meet total kWh usage");
+  }
+
+  const subMeterInserts: Omit<NewSubMeter, "id">[] = [];
+
+  // If an outer transaction was provided, run all operations inside it (atomic with caller),
+  // otherwise use the original internal transaction and keep post-transaction sub-meter insertion behavior.
+  if (tx) {
+    const {
+      valid: validMainPayment,
+      value: [mainPayment],
+    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], tx);
+
+    if (!validMainPayment) {
+      throw error(400, "Failed to add billing info, main payment not processed");
+    }
+
+    const {
+      valid: validBillingInfo,
+      value: [createdBillingInfo],
+    } = await addBillingInfo(
+      [
+        {
+          userId,
+          date: new Date(date),
+          totalkWh,
+          balance,
+          status,
+          payPerkWh,
+          paymentId: mainPayment.id,
+        },
+      ],
+      tx
+    );
+
+    if (!validBillingInfo) {
+      throw error(400, "Failed to add billing info, billing info not processed");
+    }
+
+    // Create sub payments and prepare sub meter inserts inside same tx
+    for (const subData of subMetersData) {
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+        message,
+      } = await addPayment(
+        [
+          {
+            amount: subData.paymentAmount,
+          },
+        ],
+        tx
+      );
+
+      if (!validPayment) {
+        throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
+      }
+
+      subMeterInserts.push({
+        billingInfoId: createdBillingInfo.id,
+        label: subData.label,
+        subkWh: subData.subkWh,
+        reading: subData.reading,
+        paymentId: addedPayment.id,
+      });
+    }
+
+    if (subMeterInserts.length > 0) {
+      const { valid: subMeterAdded, message } = await addSubMeter(subMeterInserts, tx);
+      if (!subMeterAdded) {
+        throw error(500, `Failed to insert sub meters: ${message || "Unknown reason"}`);
+      }
+    }
+
+    return createdBillingInfo;
+  }
+
+  // Backwards-compatible path: internal transaction for payments/billing and add sub meters afterwards
+  const result = await db.transaction(async (txInner) => {
+    let {
+      valid: validMainPayment,
+      value: [mainPayment],
+    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], txInner);
+
+    if (!validMainPayment) {
+      txInner.rollback();
+      throw error(400, "Failed to add billing info, main payment not processed");
+    }
+
+    const {
+      valid: validBillingInfo,
+      value: [billingResult],
+    } = await addBillingInfo(
+      [
+        {
+          userId,
+          date: new Date(date),
+          totalkWh,
+          balance,
+          status,
+          payPerkWh,
+          paymentId: mainPayment.id,
+        },
+      ],
+      txInner
+    );
+
+    if (!validBillingInfo) {
+      txInner.rollback();
+      throw error(400, "Failed to add billing info, billing info not processed");
+    }
+
+    for (const subData of subMetersData) {
+      const {
+        valid: validPayment,
+        value: [addedPayment],
+        message,
+      } = await addPayment(
+        [
+          {
+            amount: subData.paymentAmount,
+          },
+        ],
+        txInner
+      );
+      if (!validPayment) {
+        txInner.rollback();
+        throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
+      }
+      subMeterInserts.push({
+        billingInfoId: billingResult.id,
+        label: subData.label,
+        subkWh: subData.subkWh,
+        reading: subData.reading,
+        paymentId: addedPayment.id,
+      });
+    }
+
+    return billingResult;
+  });
+
+  // Add sub meters after internal transaction (original behavior preserved)
+  if (subMeterInserts.length > 0) {
+    const { valid: subMeterAdded, message } = await addSubMeter(subMeterInserts);
+    if (!subMeterAdded)
+      throw error(500, `Failed to insert sub meters: ${message || "Unknown reason"}`);
+  }
+
+  return result;
 }
