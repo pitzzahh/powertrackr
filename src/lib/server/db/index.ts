@@ -8,10 +8,13 @@ if (!DATABASE_URL) {
   throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
-});
+let _db: ReturnType<typeof drizzle> | undefined;
+let _pool: Pool | undefined;
 
-const db = drizzle({ client: pool, schema, relations });
-
-export { db, pool };
+export function db() {
+  if (!_db) {
+    _pool = new Pool({ connectionString: DATABASE_URL });
+    _db = drizzle({ client: _pool, schema, relations });
+  }
+  return _db;
+}
