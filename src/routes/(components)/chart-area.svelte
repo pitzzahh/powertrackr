@@ -67,9 +67,9 @@
     },
   });
 
-  $effect(() =>
+  $effect(() => {
+    const keys = Object.keys(CHART_CONFIG);
     untrack(() => {
-      const keys = Object.keys(CHART_CONFIG);
       for (const key of keys) {
         if (!visibleKeysSet.has(key)) {
           visibleKeysSet.add(key);
@@ -81,8 +81,8 @@
           visibleKeysSet.delete(key);
         }
       }
-    })
-  );
+    });
+  });
 </script>
 
 <Card.Root>
