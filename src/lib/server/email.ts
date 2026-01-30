@@ -231,8 +231,8 @@ export async function createAndSendEmailVerification(
 
   const verification = added.value[0] as NewEmailVerificationRequest;
 
-  // Best-effort send (do not throw if sending fails)
-  await sendVerificationEmail(email, verification.code, timeoutMinutes).catch(() => null);
+  // Fire-and-forget send (do not block page load)
+  void sendVerificationEmail(email, verification.code, timeoutMinutes).catch(() => null);
 
   return verification;
 }
@@ -380,8 +380,8 @@ export async function createAndSendPasswordReset(
     return null;
   }
 
-  // Best-effort send (do not throw if sending fails)
-  await sendPasswordResetEmail(email, resetSession.code, timeoutMinutes);
+  // Fire-and-forget send (do not block page load)
+  void sendPasswordResetEmail(email, resetSession.code, timeoutMinutes).catch(() => null);
 
   return resetSession;
 }
