@@ -27,7 +27,7 @@ export async function addPayment(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(payment)
     .values(
       data.map((payment_data) => {
@@ -75,7 +75,7 @@ export async function updatePaymentBy(
     };
   }
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(payment)
     .set(changed_data)
     .returning()
@@ -108,7 +108,7 @@ export async function getPaymentBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.payment.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.payment.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -142,7 +142,7 @@ export async function getPaymentCountBy(
   const { query, options } = data;
   const { id, amount } = query;
   const conditions = generatePaymentQueryConditions(data);
-  const request_query = (options?.tx || db).select({ count: count() }).from(payment);
+  const request_query = (options?.tx || db()).select({ count: count() }).from(payment);
 
   if (id || amount) {
     request_query.limit(1);
@@ -177,7 +177,7 @@ export async function deletePaymentBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(payment).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(payment).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

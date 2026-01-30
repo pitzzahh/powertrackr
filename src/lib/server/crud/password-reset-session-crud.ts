@@ -29,7 +29,7 @@ export async function addPasswordResetSession(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(passwordResetSession)
     .values(
       data.map((session_data) => ({
@@ -75,7 +75,7 @@ export async function updatePasswordResetSessionBy(
     };
   }
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(passwordResetSession)
     .set(changed_data)
     .returning()
@@ -108,7 +108,9 @@ export async function getPasswordResetSessionBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.passwordResetSession.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.passwordResetSession.findMany(
+    queryOptions
+  );
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -148,7 +150,7 @@ export async function getPasswordResetSessionCountBy(
   const { id, email } = query;
   const conditions = generatePasswordResetSessionQueryConditions(data);
   console.log({ conditions });
-  const request_query = (options?.tx || db).select({ count: count() }).from(passwordResetSession);
+  const request_query = (options?.tx || db()).select({ count: count() }).from(passwordResetSession);
 
   if (id || email) {
     request_query.limit(1);
@@ -183,7 +185,7 @@ export async function deletePasswordResetSessionBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(passwordResetSession).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(passwordResetSession).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

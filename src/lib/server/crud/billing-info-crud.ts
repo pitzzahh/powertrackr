@@ -87,7 +87,7 @@ export async function updateBillingInfoBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(billingInfo)
     .set(changed_data)
     .returning()
@@ -146,7 +146,7 @@ export async function getBillingInfoBy(
       updatedAt: true,
     };
   }
-  const queryDBResult = await (options?.tx || db).query.billingInfo.findMany(findManyOptions);
+  const queryDBResult = await (options?.tx || db()).query.billingInfo.findMany(findManyOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -186,7 +186,7 @@ export async function getBillingInfoCountBy(
   const { query, options } = data;
   const { id, userId } = query;
   const conditions = generateBillingInfoQueryConditions(data);
-  const request_query = (options?.tx || db).select({ count: count() }).from(billingInfo);
+  const request_query = (options?.tx || db()).select({ count: count() }).from(billingInfo);
 
   if (id || userId) {
     request_query.limit(1);
@@ -242,7 +242,7 @@ export async function deleteBillingInfoBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(billingInfo).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(billingInfo).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
@@ -438,7 +438,7 @@ export async function createBillingInfoLogic(
   }
 
   // Backwards-compatible path: internal transaction for payments/billing and add sub meters afterwards
-  const result = await db.transaction(async (txInner) => {
+  const result = await db().transaction(async (txInner) => {
     let {
       valid: validMainPayment,
       value: [mainPayment],

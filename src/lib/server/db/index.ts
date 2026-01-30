@@ -13,8 +13,14 @@ let _pool: Pool | undefined;
 
 export function db() {
   if (!_db) {
-    _pool = new Pool({ connectionString: DATABASE_URL });
-    _db = drizzle({ client: _pool, schema, relations });
+    _db = drizzle({ client: pool(), schema, relations });
   }
   return _db;
+}
+
+export function pool() {
+  if (!_pool) {
+    _pool = new Pool({ connectionString: DATABASE_URL });
+  }
+  return _pool;
 }

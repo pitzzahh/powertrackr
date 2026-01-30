@@ -27,7 +27,7 @@ export async function addUser(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(user)
     .values(
       data.map((user_data) => {
@@ -76,7 +76,7 @@ export async function updateUserBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(user)
     .set(changed_data)
     .returning()
@@ -110,7 +110,7 @@ export async function getUserBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.user.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.user.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -146,7 +146,7 @@ export async function getUserCountBy(data: HelperParam<NewUser>): Promise<Helper
   const { query, options } = data;
   const { id, email } = query;
   const conditions = generateUserQueryConditions(data);
-  const request_query = (options?.tx || db).select({ count: count() }).from(user);
+  const request_query = (options?.tx || db()).select({ count: count() }).from(user);
 
   if (id || email) {
     request_query.limit(1);
@@ -179,7 +179,7 @@ export async function deleteUserBy(data: HelperParam<NewUser>): Promise<HelperRe
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(user).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(user).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

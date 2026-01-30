@@ -26,7 +26,7 @@ export async function addSession(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(session)
     .values(
       data.map((session_data) => {
@@ -75,7 +75,7 @@ export async function updateSessionBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(session)
     .set(changed_data)
     .returning()
@@ -108,7 +108,7 @@ export async function getSessionBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.session.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.session.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -142,7 +142,7 @@ export async function getSessionCountBy(
   const { query } = data;
   const { id, userId } = query;
   const conditions = generateSessionQueryConditions(data);
-  const request_query = (data.options?.tx || db).select({ count: count() }).from(session);
+  const request_query = (data.options?.tx || db()).select({ count: count() }).from(session);
 
   if (id || userId) {
     request_query.limit(1);
@@ -177,7 +177,7 @@ export async function deleteSessionBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(session).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(session).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

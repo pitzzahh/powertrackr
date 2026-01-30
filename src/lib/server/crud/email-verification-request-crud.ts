@@ -33,8 +33,7 @@ export async function addEmailVerificationRequest(
     };
   }
 
-  const dbToUse = tx || db;
-  const insert_result = await dbToUse
+  const insert_result = await (tx || db())
     .insert(emailVerificationRequest)
     .values(
       data.map((request_data) => ({
@@ -81,7 +80,7 @@ export async function updateEmailVerificationRequestBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(emailVerificationRequest)
     .set(changed_data)
     .returning()
@@ -115,7 +114,7 @@ export async function getEmailVerificationRequestBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.emailVerificationRequest.findMany(
+  const queryDBResult = await (options?.tx || db()).query.emailVerificationRequest.findMany(
     queryOptions
   );
 
@@ -157,7 +156,7 @@ export async function getEmailVerificationRequestCountBy(
   const { query, options } = data;
   const { id, email } = query;
   const conditions = generateEmailVerificationRequestQueryConditions(data);
-  const request_query = (options?.tx || db)
+  const request_query = (options?.tx || db())
     .select({ count: count() })
     .from(emailVerificationRequest);
 
@@ -194,7 +193,7 @@ export async function deleteEmailVerificationRequestBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(emailVerificationRequest).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(emailVerificationRequest).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
