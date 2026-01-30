@@ -14,7 +14,7 @@
   };
 
   type ChartBarState = {
-    timeRange: string;
+    timeRange: TimeRangeOption["value"];
     activeChart: "totalkWh" | "mainKWh" | "subkWh" | "all";
     context: ChartContextValue;
     totalkWh: number;
@@ -44,11 +44,12 @@
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
+  import type { TimeRangeOption } from "./types";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
   let { timeRange, activeChart, context, totalkWh, mainKWh, subkWh }: ChartBarState = $state({
-    timeRange: "all",
+    timeRange: "30d",
     activeChart: "all",
     context: null!,
     totalkWh: 0,

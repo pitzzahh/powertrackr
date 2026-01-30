@@ -12,6 +12,11 @@
     retryStatus?: Status;
     refetch?: (callback: () => void) => void;
   };
+
+  type ChartAreaState = {
+    timeRange: TimeRangeOption["value"];
+    visibleKeysSet: SvelteSet<string>;
+  };
 </script>
 
 <script lang="ts">
@@ -31,10 +36,11 @@
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
   import { untrack } from "svelte";
+  import type { TimeRangeOption } from "./types";
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
-  let { timeRange, visibleKeysSet } = $state({
-    timeRange: "all",
+  let { timeRange, visibleKeysSet } = $state<ChartAreaState>({
+    timeRange: "30d",
     visibleKeysSet: new SvelteSet<string>(),
   });
 
