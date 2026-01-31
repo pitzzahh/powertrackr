@@ -1,15 +1,16 @@
 import type { ExtendedBillingInfo } from "$/types/billing-info";
 import type { ChartData } from "./chart-area.svelte";
 import type { BarChartData } from "./chart-bar.svelte";
+import type { TimeRangeOption } from "./types";
 
-export const TIME_RANGE_OPTIONS = [
+export const TIME_RANGE_OPTIONS: TimeRangeOption[] = [
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },
   { value: "90d", label: "Last 3 months" },
   { value: "6m", label: "Last 6 months" },
   { value: "1y", label: "Last year" },
   ...Array.from({ length: 10 - 1 }, (_, i) => ({
-    value: `${i + 2}y`,
+    value: `${i + 2}y` as TimeRangeOption["value"],
     label: `Last ${i + 2} years`,
   })),
   { value: "all", label: "Show All" },
