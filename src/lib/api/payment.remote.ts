@@ -12,6 +12,8 @@ import {
   updatePaymentBy,
 } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
+import type { HelperResult } from "$/server/types/helper";
+import type { Payment } from "$/types/payment";
 
 // Query to get all payments
 export const getPayments = query(async () => {
@@ -20,12 +22,12 @@ export const getPayments = query(async () => {
 
 // Query to get a single payment by id
 export const getPayment = query(getPaymentSchema, async (id) => {
-  return await getPaymentBy({
+  return (await getPaymentBy({
     query: {
       id,
     },
     options: { limit: 1 },
-  });
+  })) as HelperResult<Payment[]>;
 });
 
 // Form to create a new payment

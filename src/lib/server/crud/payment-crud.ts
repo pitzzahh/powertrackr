@@ -5,8 +5,7 @@ import { payment } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewPayment, PaymentDTO } from "$/types/payment";
-import type { HelperParamOptions } from "../types/helper";
+import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;
@@ -92,7 +91,7 @@ export async function updatePaymentBy(
 
 export async function getPaymentBy(
   data: HelperParam<NewPayment>
-): Promise<HelperResult<Partial<NewPayment>[]>> {
+): Promise<HelperResult<Partial<Payment>[]>> {
   const { options } = data;
   const conditions = generatePaymentQueryConditions(data);
   const queryOptions: PaymentQueryOptions = {
