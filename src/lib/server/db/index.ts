@@ -1,10 +1,10 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { DATABASE_URL } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import { relations } from "./relations";
 import * as schema from "./schema";
 
-if (!DATABASE_URL) {
+if (!env.DATABASE_URL) {
   throw new Error("DATABASE_URL is not defined in environment variables");
 }
 
@@ -33,7 +33,7 @@ export function db(): Database {
 
 export function pool() {
   if (!_pool) {
-    _pool = new Pool({ connectionString: DATABASE_URL });
+    _pool = new Pool({ connectionString: env.DATABASE_URL });
   }
   return _pool;
 }
