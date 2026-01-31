@@ -422,7 +422,7 @@ export const updateBillingInfo = form(
     }
 
     // Perform all DB operations in a transaction
-    const result = await db.transaction(async (tx) => {
+    const result = await db().transaction(async (tx) => {
       // Update the main billing info
       const {
         valid: validBillingInfoUpdate,

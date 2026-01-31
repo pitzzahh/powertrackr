@@ -2201,7 +2201,7 @@ describe("Billing Info CRUD Operations", () => {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const result = await db.transaction(async (tx) => {
+        const result = await db().transaction(async (tx) => {
           const {
             valid: validMainPayment,
             value: [mainPayment],
@@ -2366,7 +2366,7 @@ describe("Billing Info CRUD Operations", () => {
         await addUser([createUser()]);
 
         await expect(
-          db.transaction(async (tx) => {
+          db().transaction(async (tx) => {
             await addPayment([{ amount: 200, date: new Date() }], tx);
             // Force billing info failure via invalid user id (foreign key)
             await addBillingInfo(
@@ -2397,7 +2397,7 @@ describe("Billing Info CRUD Operations", () => {
         } = await addUser([createUser()]);
 
         await expect(
-          db.transaction(async (tx) => {
+          db().transaction(async (tx) => {
             const {
               value: [mainPayment],
             } = await addPayment([{ amount: 200, date: new Date() }], tx);
@@ -2434,7 +2434,7 @@ describe("Billing Info CRUD Operations", () => {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const { billingInfo, subMeterInserts, mainPayment } = await db.transaction(async (tx) => {
+        const { billingInfo, subMeterInserts, mainPayment } = await db().transaction(async (tx) => {
           const {
             value: [mainPayment],
           } = await addPayment([{ amount: 200, date: new Date() }], tx);

@@ -1,7 +1,4 @@
 import { query, form, command } from "$app/server";
-import { eq } from "drizzle-orm";
-import { db } from "$lib/server/db/index";
-import { session } from "$lib/server/db/schema/session";
 import {
   createSessionSchema,
   updateSessionSchema,
@@ -9,7 +6,12 @@ import {
   getSessionSchema,
   deleteSessionSchema,
 } from "$/validators/session";
-import { addSession, updateSessionBy, getSessionBy } from "$/server/crud/session-crud";
+import {
+  addSession,
+  updateSessionBy,
+  getSessionBy,
+  deleteSessionBy,
+} from "$/server/crud/session-crud";
 import { error } from "@sveltejs/kit";
 
 // Query to get all sessions for a user
@@ -54,5 +56,10 @@ export const updateSession = form(updateSessionSchema, async (data) => {
 
 // Command to delete a session
 export const deleteSession = command(deleteSessionSchema, async ({ id }) => {
-  await db.delete(session).where(eq(session.id, id));
+  const { valid } = await deleteSessionBy({ query: { id } });
+  if (!valid) {
+    error(400, "Failed to delete session");
+  }
+
+  return valid;
 });

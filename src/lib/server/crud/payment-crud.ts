@@ -1,11 +1,11 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { payment } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
-import type { NewPayment, PaymentDTO } from "$/types/payment";
-import type { HelperParamOptions } from "../types/helper";
+import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;
@@ -17,7 +17,7 @@ type PaymentQueryOptions = {
 
 export async function addPayment(
   data: Omit<NewPayment, "id">[],
-  tx?: HelperParamOptions<NewPayment>["tx"]
+  tx?: Transaction
 ): Promise<HelperResult<NewPayment[]>> {
   if (data.length === 0) {
     return {
@@ -27,7 +27,7 @@ export async function addPayment(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(payment)
     .values(
       data.map((payment_data) => {
@@ -75,7 +75,7 @@ export async function updatePaymentBy(
     };
   }
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db)
+  const updateDBRequest = await (options?.tx || db())
     .update(payment)
     .set(changed_data)
     .returning()
@@ -91,7 +91,7 @@ export async function updatePaymentBy(
 
 export async function getPaymentBy(
   data: HelperParam<NewPayment>
-): Promise<HelperResult<Partial<NewPayment>[]>> {
+): Promise<HelperResult<Partial<Payment>[]>> {
   const { options } = data;
   const conditions = generatePaymentQueryConditions(data);
   const queryOptions: PaymentQueryOptions = {
@@ -108,7 +108,7 @@ export async function getPaymentBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.payment.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.payment.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -142,7 +142,7 @@ export async function getPaymentCountBy(
   const { query, options } = data;
   const { id, amount } = query;
   const conditions = generatePaymentQueryConditions(data);
-  const request_query = (options?.tx || db).select({ count: count() }).from(payment);
+  const request_query = (options?.tx || db()).select({ count: count() }).from(payment);
 
   if (id || amount) {
     request_query.limit(1);
@@ -177,7 +177,7 @@ export async function deletePaymentBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(payment).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(payment).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

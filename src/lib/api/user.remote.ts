@@ -1,25 +1,27 @@
 import { query, form, command } from "$app/server";
-import { eq } from "drizzle-orm";
 import * as v from "valibot";
-import { db } from "$lib/server/db/index";
-import { user } from "$lib/server/db/schema/user";
 import {
   createUserSchema,
   updateUserSchema,
   getUserSchema,
   deleteUserSchema,
 } from "$/validators/user";
-import { addUser, getUserBy } from "$/server/crud/user-crud";
+import { addUser, deleteUserBy, getUserBy, updateUserBy } from "$/server/crud/user-crud";
 import { error } from "@sveltejs/kit";
 
 // Query to get all users
 export const getUsers = query(v.object({}), async () => {
-  return await db.query.user.findMany();
+  return await getUserBy({ query: {} });
 });
 
 // Query to get a single user by id
 export const getUser = query(getUserSchema, async (id) => {
-  return await db.query.user.findFirst({ where: { id } });
+  return await getUserBy({
+    query: {
+      id,
+    },
+    options: { limit: 1 },
+  });
 });
 
 // Query to get a single user by github id
@@ -28,7 +30,9 @@ export const getUserFromGitHubId = query(v.number(), async (githubId) => {
     query: {
       githubId,
     },
-    options: {},
+    options: {
+      limit: 1,
+    },
   });
 });
 
@@ -47,11 +51,29 @@ export const createUser = form(createUserSchema, async (user) => {
 // Form to update an existing user
 export const updateUser = form(updateUserSchema, async (data) => {
   const { id, ...updateData } = data;
-  const result = await db.update(user).set(updateData).where(eq(user.id, id)).returning();
-  return result[0];
+  const {
+    valid,
+    value: [updatedUser],
+    message,
+  } = await updateUserBy(
+    {
+      query: { id },
+    },
+    updateData
+  );
+
+  if (!valid) {
+    error(400, message || "Failed to update user");
+  }
+  return updatedUser;
 });
 
 // Command to delete a user
 export const deleteUser = command(deleteUserSchema, async ({ id }) => {
-  await db.delete(user).where(eq(user.id, id));
+  const { valid, message } = await deleteUserBy({ query: { id } });
+  if (!valid) {
+    error(400, message || "Failed to delete user");
+  }
+
+  return valid;
 });

@@ -1,7 +1,8 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { subMeter } from "$/server/db/schema";
-import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
+import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
@@ -25,7 +26,7 @@ type SubMeterQueryOptions = {
 
 export async function addSubMeter(
   data: Omit<NewSubMeter, "id">[],
-  tx?: HelperParamOptions<NewSubMeter>["tx"]
+  tx?: Transaction
 ): Promise<HelperResult<NewSubMeter[]>> {
   if (data.length === 0) {
     return {
@@ -35,7 +36,7 @@ export async function addSubMeter(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(subMeter)
     .values(
       data.map((sub_meter_data) => {
@@ -96,7 +97,7 @@ export async function updateSubMeterBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (by.options?.tx || db)
+  const updateDBRequest = await (by.options?.tx || db())
     .update(subMeter)
     .set(changed_data)
     .returning()
@@ -135,7 +136,7 @@ export async function getSubMeterBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db).query.subMeter.findMany(queryOptions);
+  const queryDBResult = await (options?.tx || db()).query.subMeter.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -212,7 +213,7 @@ export async function getSubMeterCountBy(
   const { query } = data;
   const { id, billingInfoId } = query;
   const conditions = generateSubMeterQueryConditions(data);
-  const request_query = (data.options?.tx || db).select({ count: count() }).from(subMeter);
+  const request_query = (data.options?.tx || db()).select({ count: count() }).from(subMeter);
 
   if (id || billingInfoId) {
     request_query.limit(1);
@@ -247,7 +248,7 @@ export async function deleteSubMeterBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db).delete(subMeter).where(whereSQL);
+  const deleteResult = await (options?.tx || db()).delete(subMeter).where(whereSQL);
 
   const deletedCount = deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

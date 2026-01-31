@@ -49,8 +49,9 @@
       onclick={() => (payment = getPayment(paymentId))}>Retry</Button
     >
   {:else}
-    <Badge variant="secondary" title={formatNumber(payment.current?.amount || 0)}>
-      {formatNumber(payment.current?.amount || 0)}
+    {@const value = payment.current?.value[0]}
+    <Badge variant="secondary" title={formatNumber(value?.amount || 0)}>
+      {formatNumber(value?.amount || 0)}
     </Badge>
   {/if}
 {:else}

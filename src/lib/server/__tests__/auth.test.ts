@@ -86,7 +86,7 @@ describe("auth module", () => {
     const userId = "user-1";
 
     // Ensure user exists (session has a FK to user)
-    await db
+    await db()
       .insert(user)
       .values({
         id: userId,
@@ -104,7 +104,7 @@ describe("auth module", () => {
     expect(sess.expiresAt).toBeInstanceOf(Date);
 
     // Verify session exists in DB
-    const rows = await db.select().from(session).where(eq(session.id, sess.id));
+    const rows = await db().select().from(session).where(eq(session.id, sess.id));
     expect(rows.length).toBeGreaterThan(0);
   });
 
@@ -117,7 +117,7 @@ describe("auth module", () => {
   it("validateSessionToken deletes expired sessions and returns nulls", async () => {
     if (process.env.CI === "true") return;
     const userId = "u1";
-    await db
+    await db()
       .insert(user)
       .values({
         id: userId,
@@ -132,7 +132,7 @@ describe("auth module", () => {
     const sess = await createSession(token, userId, { twoFactorVerified: false } as any);
 
     // Expire the session
-    await db
+    await db()
       .update(session)
       .set({ expiresAt: new Date(Date.now() - 1000) })
       .where(eq(session.id, sess.id));
@@ -141,14 +141,14 @@ describe("auth module", () => {
     expect(res).toEqual({ session: null, user: null });
 
     // Ensure session removed from DB
-    const rows = await db.select().from(session).where(eq(session.id, sess.id));
+    const rows = await db().select().from(session).where(eq(session.id, sess.id));
     expect(rows.length).toBe(0);
   });
 
   it("validateSessionToken renews sessions close to expiry", async () => {
     if (process.env.CI === "true") return;
     const userId = "u2";
-    await db
+    await db()
       .insert(user)
       .values({
         id: userId,
@@ -165,7 +165,7 @@ describe("auth module", () => {
 
     // Set near expiry (~10 days from now)
     const nearExpiry = new Date(Date.now() + DAY_IN_MS * 10);
-    await db.update(session).set({ expiresAt: nearExpiry }).where(eq(session.id, sess.id));
+    await db().update(session).set({ expiresAt: nearExpiry }).where(eq(session.id, sess.id));
 
     const res = await validateSessionToken(token);
 
@@ -179,14 +179,14 @@ describe("auth module", () => {
     expect((res.user as any).githubId).toBeUndefined();
 
     // also verify DB has updated expiration
-    const [dbRow] = await db.select().from(session).where(eq(session.id, sess.id));
+    const [dbRow] = await db().select().from(session).where(eq(session.id, sess.id));
     expect(dbRow.expiresAt.getTime()).toBeGreaterThan(nearExpiry.getTime());
   });
 
   it("invalidateSession calls delete on db", async () => {
     if (process.env.CI === "true") return;
     const userId = "u3";
-    await db
+    await db()
       .insert(user)
       .values({ id: userId, name: "C", email: "c@d.com", emailVerified: true })
       .returning();
@@ -194,12 +194,12 @@ describe("auth module", () => {
     const sess = await createSession(token, userId, { twoFactorVerified: false } as any);
 
     // Ensure session exists
-    let rows = await db.select().from(session).where(eq(session.id, sess.id));
+    let rows = await db().select().from(session).where(eq(session.id, sess.id));
     expect(rows.length).toBeGreaterThan(0);
 
     await invalidateSession(sess.id);
 
-    rows = await db.select().from(session).where(eq(session.id, sess.id));
+    rows = await db().select().from(session).where(eq(session.id, sess.id));
     expect(rows.length).toBe(0);
   });
 

@@ -1,4 +1,5 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { addPayment } from "$/server/crud/payment-crud";
 import { addBillingInfo, createBillingInfoLogic } from "$/server/crud/billing-info-crud";
 import { addSubMeter } from "$/server/crud/sub-meter-crud";
@@ -6,7 +7,6 @@ import { addSubMeter } from "$/server/crud/sub-meter-crud";
 import type { NewPayment } from "$/types/payment";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { BillingInfo, NewSubMeter } from "$/types/sub-meter";
-import type { HelperParamOptions } from "./types/helper";
 
 type AnyRecord = Record<string, unknown>;
 
@@ -170,7 +170,7 @@ export async function importBillingData(payload: ImportPayload): Promise<ImportR
   } = extractArrays(payload);
 
   try {
-    await db.transaction(async (tx) => {
+    await db().transaction(async (tx) => {
       // PAYMENTS
       if (Array.isArray(rawPayments) && rawPayments.length > 0) {
         const toInsert = rawPayments.map(normalizePayment);
@@ -361,7 +361,7 @@ export function summarizeImportPayload(payload: ImportPayload) {
 export async function importBillingHandler(
   items: Parameters<typeof createBillingInfoLogic>[0][],
   userId: string,
-  tx?: HelperParamOptions<NewBillingInfo>["tx"]
+  tx?: Transaction
 ): Promise<BillingInfo[]> {
   const created: BillingInfo[] = [];
 
@@ -375,13 +375,9 @@ export async function importBillingHandler(
   }
 
   // Create a transaction for the whole import
-  return await db.transaction(async (txLocal) => {
+  return await db().transaction(async (txLocal) => {
     for (const item of items) {
-      const ci = await createBillingInfoLogic(
-        item,
-        userId,
-        txLocal as HelperParamOptions<NewBillingInfo>["tx"]
-      );
+      const ci = await createBillingInfoLogic(item, userId, txLocal);
       created.push(ci);
     }
     return created;

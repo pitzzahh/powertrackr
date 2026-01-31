@@ -65,12 +65,9 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = createSessions(3, { userId: addedUser.id }).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
-
-      const { valid, value: addedSessions } = await addSession(sessionsData);
+      const { valid, value: addedSessions } = await addSession(
+        createSessions(3, { userId: addedUser.id })
+      );
 
       expect(valid).toBe(true);
       expect(addedSessions).toHaveLength(3);
@@ -154,10 +151,7 @@ describe("Session CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const { valid: validSessions } = await addSession(
-        createSessions(2, { userId: addedUser.id }).map((s) => {
-          const { id: _, ...rest } = s;
-          return rest;
-        })
+        createSessions(2, { userId: addedUser.id })
       );
 
       expect(validSessions).toBe(true);
@@ -287,10 +281,7 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      const sessionsData = createSessions(5, { userId: addedUser.id });
       const { valid: validSessions } = await addSession(sessionsData);
 
       expect(validSessions).toBe(true);
@@ -316,10 +307,7 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      const sessionsData = createSessions(5, { userId: addedUser.id });
       const { valid: validSessions } = await addSession(sessionsData);
 
       expect(validSessions).toBe(true);
@@ -345,12 +333,13 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const { id: _, ...sessionWithoutId } = createSession({
+      const sessionToAdd = createSession({
+        id: `token-${Date.now()}`,
         userId: addedUser.id,
         ipAddress: "1.2.3.4",
         userAgent: "Agent/3.0",
       });
-      const { valid: validSession } = await addSession([sessionWithoutId]);
+      const { valid: validSession } = await addSession([sessionToAdd]);
 
       expect(validSession).toBe(true);
 
@@ -377,10 +366,7 @@ describe("Session CRUD Operations", () => {
       expect(addedUser).toBeDefined();
 
       const { valid: validSessions, value: addedSessions } = await addSession(
-        createSessions(2, { userId: addedUser.id }).map((s) => {
-          const { id: _, ...rest } = s;
-          return rest;
-        })
+        createSessions(2, { userId: addedUser.id })
       );
 
       expect(validSessions).toBe(true);
@@ -526,10 +512,7 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = createSessions(5, { userId: addedUser.id }).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      const sessionsData = createSessions(5, { userId: addedUser.id });
       const { valid: validSessions } = await addSession(sessionsData);
 
       expect(validSessions).toBe(true);
@@ -572,10 +555,7 @@ describe("Session CRUD Operations", () => {
         createSession({ userId: addedUser.id, twoFactorVerified: true }),
         createSession({ userId: addedUser.id, twoFactorVerified: true }),
         createSession({ userId: addedUser.id, twoFactorVerified: false }),
-      ].map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      ];
 
       const { valid: validSessions } = await addSession(sessionsData);
 
@@ -705,10 +685,7 @@ describe("Session CRUD Operations", () => {
       expect(validUser).toBe(true);
       expect(addedUser).toBeDefined();
 
-      const sessionsData = createSessions(3, { userId: addedUser.id }).map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      const sessionsData = createSessions(3, { userId: addedUser.id });
 
       const { valid: validSessions, value: addedSessions } = await addSession(sessionsData);
 
