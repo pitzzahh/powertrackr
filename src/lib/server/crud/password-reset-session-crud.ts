@@ -1,7 +1,8 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { passwordResetSession } from "$/server/db/schema";
-import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
+import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
@@ -19,7 +20,7 @@ type PasswordResetSessionQueryOptions = {
 
 export async function addPasswordResetSession(
   data: Omit<NewPasswordResetSession, "id">[],
-  tx?: HelperParamOptions<NewPasswordResetSession>["tx"]
+  tx?: Transaction
 ): Promise<HelperResult<NewPasswordResetSession[]>> {
   if (data.length === 0) {
     return {

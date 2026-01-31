@@ -1,4 +1,5 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { payment } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
@@ -17,7 +18,7 @@ type PaymentQueryOptions = {
 
 export async function addPayment(
   data: Omit<NewPayment, "id">[],
-  tx?: HelperParamOptions<NewPayment>["tx"]
+  tx?: Transaction
 ): Promise<HelperResult<NewPayment[]>> {
   if (data.length === 0) {
     return {

@@ -488,7 +488,7 @@ describe("User CRUD Operations", () => {
         image: "profile.jpg",
       });
 
-      const result = await mapNewUser_to_DTO([userData]);
+      const result = mapNewUser_to_DTO([userData]);
 
       expect(result).toHaveLength(1);
       expect(result[0].email).toBe("map@example.com");
@@ -499,7 +499,7 @@ describe("User CRUD Operations", () => {
       expect(result[0].registeredTwoFactor).toBe(false);
     });
 
-    it("should handle users with null/undefined values", async () => {
+    it("should handle users with null/undefined values", () => {
       if (process.env.CI === "true") return;
       const userData = createUser({
         githubId: null,
@@ -508,16 +508,16 @@ describe("User CRUD Operations", () => {
         recoveryCode: null,
       });
 
-      const result = await mapNewUser_to_DTO([userData]);
+      const result = mapNewUser_to_DTO([userData]);
 
       expect(result).toHaveLength(1);
       expect(result[0].githubId).toBeNull();
       expect(result[0].image).toBeNull();
     });
 
-    it("should handle empty array input", async () => {
+    it("should handle empty array input", () => {
       if (process.env.CI === "true") return;
-      const result = await mapNewUser_to_DTO([]);
+      const result = mapNewUser_to_DTO([]);
 
       expect(result).toHaveLength(0);
     });
@@ -613,7 +613,7 @@ describe("User CRUD Operations", () => {
         name: "Tx Isolation",
       });
 
-      await db.transaction(async (tx) => {
+      await db().transaction(async (tx) => {
         const addResult = await addUser([userDataWithoutId], tx);
         expect(addResult.valid).toBe(true);
 
@@ -637,7 +637,7 @@ describe("User CRUD Operations", () => {
       });
 
       await expect(
-        db.transaction(async (tx) => {
+        db().transaction(async (tx) => {
           await addUser([userDataWithoutId], tx);
           throw new Error("force rollback");
         })
@@ -660,7 +660,7 @@ describe("User CRUD Operations", () => {
       expect(insertValid).toBe(true);
       const userId = addedUser.id;
 
-      await db.transaction(async (tx) => {
+      await db().transaction(async (tx) => {
         const updateResult = await updateUserBy(
           { query: { id: userId }, options: { tx } },
           { name: "After" }
@@ -692,7 +692,7 @@ describe("User CRUD Operations", () => {
       const userId = addedUser.id;
 
       await expect(
-        db.transaction(async (tx) => {
+        db().transaction(async (tx) => {
           await updateUserBy({ query: { id: userId }, options: { tx } }, { name: "Changed" });
           throw new Error("force rollback");
         })

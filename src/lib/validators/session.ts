@@ -1,6 +1,7 @@
 import * as v from "valibot";
 
 export const createSessionSchema = v.object({
+  id: v.string(),
   userId: v.string(),
   expiresAt: v.pipe(
     v.string(),

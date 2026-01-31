@@ -1,24 +1,31 @@
 import { query, form, command } from "$app/server";
-import { eq } from "drizzle-orm";
-import { db } from "$lib/server/db/index";
-import { payment } from "$lib/server/db/schema/payment";
 import {
   createPaymentSchema,
   updatePaymentSchema,
   getPaymentSchema,
   deletePaymentSchema,
 } from "$/validators/payment";
-import { addPayment, updatePaymentBy } from "$/server/crud/payment-crud";
+import {
+  addPayment,
+  deletePaymentBy,
+  getPaymentBy,
+  updatePaymentBy,
+} from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
 
 // Query to get all payments
 export const getPayments = query(async () => {
-  return await db.query.payment.findMany();
+  return await getPaymentBy({ query: {} });
 });
 
 // Query to get a single payment by id
 export const getPayment = query(getPaymentSchema, async (id) => {
-  return await db.query.payment.findFirst({ where: { id } });
+  return await getPaymentBy({
+    query: {
+      id,
+    },
+    options: { limit: 1 },
+  });
 });
 
 // Form to create a new payment
@@ -63,5 +70,11 @@ export const updatePayment = form(updatePaymentSchema, async (data) => {
 
 // Command to delete a payment
 export const deletePayment = command(deletePaymentSchema, async ({ id }) => {
-  await db.delete(payment).where(eq(payment.id, id));
+  const { valid } = await deletePaymentBy({ query: { id } });
+
+  if (!valid) {
+    error(400, `Failed to delete payment with id ${id}`);
+  }
+
+  return valid;
 });

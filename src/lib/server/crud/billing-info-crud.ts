@@ -1,4 +1,5 @@
 import { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult, HelperParamOptions } from "$/server/types/helper";
@@ -27,7 +28,7 @@ type BillingInfoQueryOptions = {
 
 export async function addBillingInfo(
   data: Omit<NewBillingInfo, "id">[],
-  tx?: HelperParamOptions<NewBillingInfo>["tx"]
+  tx?: Transaction
 ): Promise<HelperResult<BillingInfo[]>> {
   if (data.length === 0) {
     return {
@@ -37,7 +38,7 @@ export async function addBillingInfo(
     };
   }
 
-  const insert_result = await (tx || db)
+  const insert_result = await (tx || db())
     .insert(billingInfo)
     .values(
       data.map((billing_info_data) => {
@@ -291,7 +292,7 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
 export async function createBillingInfoLogic(
   data: BillingCreateForm,
   userId: string,
-  tx?: HelperParamOptions<NewBillingInfo>["tx"]
+  tx?: Transaction
 ): Promise<BillingInfo> {
   const { date, totalkWh, balance, status, subMeters } = data;
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
