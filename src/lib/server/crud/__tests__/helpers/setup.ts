@@ -13,11 +13,11 @@ if (!process.env.CI) {
  * Tests will run against a real Postgres instance pointed to via DATABASE_URL.
  */
 export function getTestDb() {
-  return db;
+  return db();
 }
 
 export function getTestPool() {
-  return pool;
+  return pool();
 }
 
 export async function cleanupTestDatabase() {

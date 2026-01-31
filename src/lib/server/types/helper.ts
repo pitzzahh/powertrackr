@@ -1,4 +1,4 @@
-import type { db } from "$/server/db";
+import type { Transaction } from "$/server/db";
 
 export type HelperResult<T = any> = {
   valid: boolean;
@@ -31,7 +31,7 @@ export type HelperParamOptions<T> = {
   with_billing_info: boolean;
   with_sub_meters: boolean;
   with_sub_meters_with_payment: boolean;
-  tx: Parameters<Parameters<typeof db.transaction>[0]>[0];
+  tx: Transaction;
 };
 
 export type APIReturnedData<T> = {

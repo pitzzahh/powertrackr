@@ -7,6 +7,7 @@ import { getRequestEvent } from "$app/server";
 import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { Session, SessionFlags } from "$/types/session";
 import { omit } from "$/utils/mapper";
+import { addSession, deleteSessionBy, updateSessionBy } from "./crud/session-crud";
 
 export function requireAuth() {
   const { locals } = getRequestEvent();
@@ -40,22 +41,23 @@ export async function createSession(
   userId: string,
   flags: SessionFlags
 ): Promise<Session> {
-  const [sess] = await db
-    .insert(session)
-    .values({
+  const {
+    value: [session],
+  } = await addSession([
+    {
       id: encodeHexLowerCase(sha256(new TextEncoder().encode(token))),
       userId,
       expiresAt: new Date(Date.now() + DAY_IN_MS * 30),
       ...flags,
-    })
-    .returning();
+    },
+  ]);
 
-  return sess;
+  return session;
 }
 
 export async function validateSessionToken(token: string) {
   const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const [result] = await db
+  const [result] = await db()
     .select({
       // Adjust user table here to tweak returned data
       user: {
@@ -82,14 +84,14 @@ export async function validateSessionToken(token: string) {
 
   // delete expired sessions
   if (Date.now() >= expiresAtMs) {
-    await db.delete(session).where(eq(session.id, sessionId));
+    await invalidateSession(sessionId);
     return { session: null, user: null };
   }
 
   // renew session if it's within 15 days of expiry
   if (Date.now() >= expiresAtMs - DAY_IN_MS * 15) {
     const newExpires = new Date(Date.now() + DAY_IN_MS * 30);
-    await db.update(session).set({ expiresAt: newExpires }).where(eq(session.id, sessionId));
+    await updateSessionBy({ query: { id: sessionResult.id } }, { expiresAt: newExpires });
     // reflect the updated expiresAt as a Date in the returned session object
     sessionResult.expiresAt = newExpires;
   }
@@ -109,7 +111,7 @@ export async function validateSessionToken(token: string) {
 export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;
 
 export async function invalidateSession(sessionId: string) {
-  await db.delete(session).where(eq(session.id, sessionId));
+  await deleteSessionBy({ query: { id: sessionId } });
 }
 
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
