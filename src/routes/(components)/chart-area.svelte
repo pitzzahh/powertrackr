@@ -43,9 +43,8 @@
     timeRange: "1y",
   });
 
-  const { selectedLabel, uniqueLabels, filteredData } = $derived({
+  const { selectedLabel, filteredData } = $derived({
     filteredData: getFilteredData(chartData, timeRange),
-    uniqueLabels: Array.from(new Set(chartData.flatMap((d) => Object.keys(d.subPayments)))),
     selectedLabel: getSelectedLabel(timeRange),
   });
 
@@ -60,7 +59,9 @@
       balance: { label: "Balance", color: "var(--chart-1)" },
       payment: { label: "Payment", color: "var(--chart-2)" },
       ...Object.fromEntries(
-        uniqueLabels.map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
+        chartData
+          .flatMap((d) => Object.keys(d.subPayments))
+          .map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
       ),
     },
   });
