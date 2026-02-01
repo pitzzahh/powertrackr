@@ -26,6 +26,7 @@
     status: BillingInfoDTO["status"];
     subMeters: SubMeterForm[];
     open: boolean;
+    asyncState: AsyncState;
   };
 </script>
 
@@ -39,7 +40,7 @@
   import { getChangedData, omit } from "$/utils/mapper";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
-  import { ChevronDown, CirclePlus, Trash2 } from "$/assets/icons";
+  import { ChevronDown, CirclePlus, Loader, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
   import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
@@ -53,6 +54,7 @@
   import Separator from "$/components/ui/separator/separator.svelte";
   import { sineInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
+  import type { AsyncState } from "$/types/state";
 
   let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
 
@@ -60,10 +62,11 @@
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
 
-  let { dateValue, status, open } = $derived<Omit<BillingInfoFormState, "subMeters">>({
+  let { dateValue, status, open, asyncState } = $derived<Omit<BillingInfoFormState, "subMeters">>({
     dateValue: undefined,
     status: "Pending",
     open: false,
+    asyncState: "idle",
   });
 
   const { currentAction } = $derived({
@@ -253,6 +256,7 @@
       action === "add" ? "Creating billing info..." : "Updating billing info..."
     );
     try {
+      asyncState = "processing";
       await submit();
       const issues = currentAction.fields.allIssues?.() || [];
       if (issues.length > 0) {
@@ -264,6 +268,7 @@
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {
+      asyncState = "idle";
       toast.dismiss(toastId);
     }
   })}
@@ -492,14 +497,21 @@
       type="submit"
       form="{identity}-form"
       class="ml-auto min-w-32"
-      disabled={(action === "update" && Object.keys(CHANGED_DATA).length === 0) || !FORM_VALID}
+      disabled={asyncState === "processing" ||
+        (action === "update" && Object.keys(CHANGED_DATA).length === 0) ||
+        !FORM_VALID}
       title={!FORM_VALID
         ? "Please fix validation errors before submitting"
         : action === "update" && Object.keys(CHANGED_DATA).length === 0
           ? "No changes to update"
           : undefined}
     >
-      {action === "add" ? "Create Billing Info" : "Update Billing Info"}
+      {#if asyncState === "processing"}
+        <Loader class="size-5 animate-spin" />
+        Please wait
+      {:else}
+        {action === "add" ? "Create Billing Info" : "Update Billing Info"}
+      {/if}
     </Button>
   </div>
 </form>
