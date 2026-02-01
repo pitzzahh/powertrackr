@@ -4,7 +4,7 @@
   export interface HistoryDataTableProps {
     data: ExtendedBillingInfoTableView[];
     data_table_props?: Partial<DataTableProps<ExtendedBillingInfoTableView, unknown>>;
-    status: Status;
+    status: AsyncState;
   }
 </script>
 
@@ -15,7 +15,7 @@
   import { useBillingStore } from "$/stores/billing.svelte";
   import { historyTableColumns, HistoryDataTableToolbar } from ".";
   import { DataTable, DataTableFloatingBar } from "$/components/data-table";
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import { deleteBillingInfoBatch } from "$/api/billing-info.remote";
 
   let { data, data_table_props, status }: HistoryDataTableProps = $props();

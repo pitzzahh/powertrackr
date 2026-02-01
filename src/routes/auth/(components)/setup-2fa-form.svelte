@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
 
@@ -26,7 +26,7 @@
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
-  let { status }: { status: Status } = $state({
+  let { status }: { status: AsyncState } = $state({
     status: "idle",
   });
 

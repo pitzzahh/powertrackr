@@ -1,12 +1,12 @@
 <script lang="ts" module>
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
 
   export type VerifyEmailFormProps = WithElementRef<HTMLFormAttributes>;
 
   type VerifyEmailFormState = {
-    status: Status;
+    status: AsyncState;
     countdown: number;
     cooldownTime: number | undefined;
     timer: ReturnType<typeof setInterval> | undefined;
