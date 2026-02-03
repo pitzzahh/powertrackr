@@ -68,15 +68,13 @@
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
 
-  let { dateValue, status, openDatePicker, asyncState } = $derived<Omit<BillingInfoFormState, "subMeters">>({
+  let { dateValue, status, openDatePicker, asyncState } = $derived<
+    Omit<BillingInfoFormState, "subMeters">
+  >({
     dateValue: undefined,
     status: "Pending",
     openDatePicker: false,
     asyncState: "idle",
-  let { dateValue, status, openDatePicker } = $derived<Omit<BillingInfoFormState, "subMeters">>({
-    dateValue: undefined,
-    status: "Pending",
-    openDatePicker: false,
   });
 
   const { currentAction } = $derived({
