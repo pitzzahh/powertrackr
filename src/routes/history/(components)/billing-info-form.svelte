@@ -221,9 +221,9 @@
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
-            latestDate.getFullYear(),
-            latestDate.getMonth() + 2,
-            latestDate.getDate()
+            latestDate.getFullYear() + (latestDate.getMonth() === 11 ? 1 : 0),
+            ((latestDate.getMonth() + 1) % 12) + 1,
+            1
           )
         : undefined;
       status = "Pending";
