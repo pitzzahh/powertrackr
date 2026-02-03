@@ -35,20 +35,17 @@
   import { Button } from "$/components/ui/button";
   import type { Status } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
-  import { untrack } from "svelte";
   import type { TimeRangeOption } from "./types";
+
   let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
 
-  let { timeRange, visibleKeysSet } = $state<ChartAreaState>({
-    timeRange: "30d",
-    visibleKeysSet: new SvelteSet<string>(),
+  let { timeRange } = $state<Omit<ChartAreaState, "visibleKeysSet">>({
+    timeRange: "1y",
   });
 
-  let { visibleKeys, filteredData, selectedLabel, uniqueLabels } = $derived({
-    visibleKeys: Array.from(visibleKeysSet),
+  const { selectedLabel, filteredData } = $derived({
     filteredData: getFilteredData(chartData, timeRange),
     selectedLabel: getSelectedLabel(timeRange),
-    uniqueLabels: Array.from(new Set(chartData.flatMap((d) => Object.keys(d.subPayments)))),
   });
 
   const { transformedData, CHART_CONFIG } = $derived({
@@ -62,26 +59,15 @@
       balance: { label: "Balance", color: "var(--chart-1)" },
       payment: { label: "Payment", color: "var(--chart-2)" },
       ...Object.fromEntries(
-        uniqueLabels.map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
+        chartData
+          .flatMap((d) => Object.keys(d.subPayments))
+          .map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
       ),
     },
   });
 
-  $effect(() => {
-    const keys = Object.keys(CHART_CONFIG);
-    untrack(() => {
-      for (const key of keys) {
-        if (!visibleKeysSet.has(key)) {
-          visibleKeysSet.add(key);
-        }
-      }
-      // Remove keys that are no longer in config
-      for (const key of Array.from(visibleKeysSet)) {
-        if (!keys.includes(key)) {
-          visibleKeysSet.delete(key);
-        }
-      }
-    });
+  const { visibleKeysSet } = $derived<Omit<ChartAreaState, "timeRange">>({
+    visibleKeysSet: new SvelteSet<string>(Object.keys(CHART_CONFIG)),
   });
 </script>
 
@@ -134,7 +120,7 @@
           x="date"
           xScale={scaleUtc()}
           series={Object.entries(CHART_CONFIG)
-            .filter(([key]) => visibleKeys.includes(key))
+            .filter(([key]) => visibleKeysSet.has(key))
             .map(([key, { label, color }]) => ({
               key,
               label,
@@ -194,7 +180,7 @@
         {#each Object.entries(CHART_CONFIG) as [key, { label, color }] (key)}
           <button
             class="flex items-center gap-2 text-sm"
-            style="opacity: {visibleKeys.includes(key) ? 1 : 0.5};"
+            style="opacity: {visibleKeysSet.has(key) ? 1 : 0.5};"
             onclick={() => {
               if (visibleKeysSet.has(key)) {
                 visibleKeysSet.delete(key);
@@ -206,7 +192,7 @@
             <div style="background-color: {color};" class="size-3 rounded"></div>
             <span
               class={{
-                "line-through": !visibleKeys.includes(key),
+                "line-through": !visibleKeysSet.has(key),
               }}>{label}</span
             >
           </button>
