@@ -8,8 +8,8 @@
 
   export type AreaChartInteractiveProps = {
     chartData: ChartData[];
-    status: Status;
-    retryStatus?: Status;
+    status: AsyncState;
+    retryStatus?: AsyncState;
     refetch?: (callback: () => void) => void;
   };
 
@@ -33,7 +33,7 @@
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import { SvelteSet } from "svelte/reactivity";
   import type { TimeRangeOption } from "./types";
 

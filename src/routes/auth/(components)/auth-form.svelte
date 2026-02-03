@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
@@ -14,8 +14,8 @@
 
   type AuthFormState = {
     statuses: {
-      email: Status;
-      github: Status;
+      email: AsyncState;
+      github: AsyncState;
     };
   };
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
 
   export type SidebarContentProps = {
     open: boolean;
@@ -9,7 +9,7 @@
   };
 
   type SidebarContentState = {
-    status: Status;
+    status: AsyncState;
     logoutAttempt: boolean;
   };
 </script>

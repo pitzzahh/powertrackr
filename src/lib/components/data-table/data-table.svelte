@@ -7,7 +7,7 @@
     floating_bar?: Snippet<[{ table: TableCore<TData> }]>;
     custom_row_count?: number;
     class?: string;
-    status?: Status;
+    status?: AsyncState;
     pagination_props?: Omit<DataTablePaginationProps<TData>, "table" | "pagination">;
   }
 
@@ -44,7 +44,7 @@
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { ScrollArea } from "../ui/scroll-area";
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
   import { pendingFetchContext } from "$/context";
 
   let {

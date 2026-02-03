@@ -1,5 +1,5 @@
 import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
-import type { Status } from "$/types/state.js";
+import type { AsyncState } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
 import { getContext, setContext } from "svelte";
 
@@ -74,7 +74,7 @@ function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
 
 class BillingState {
   extendedBillingInfos = $state<ExtendedBillingInfo[]>([]);
-  status = $state<Status>("idle");
+  status = $state<AsyncState>("idle");
   summary = $state<BillingSummary | null>(null);
   userId = $state<string | null>(null);
 
@@ -82,7 +82,7 @@ class BillingState {
     this.userId = id;
   }
 
-  setStatus(status: Status) {
+  setStatus(status: AsyncState) {
     this.status = status;
   }
 
