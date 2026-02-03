@@ -49,7 +49,7 @@
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
   let { timeRange, activeChart, context, totalkWh, mainKWh, subkWh }: ChartBarState = $state({
-    timeRange: "30d",
+    timeRange: "1y",
     activeChart: "all",
     context: null!,
     totalkWh: 0,
