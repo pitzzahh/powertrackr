@@ -1,6 +1,6 @@
 # PowerTrackr
 
-<p style="white-space:nowrap; overflow-x:auto;"><a href="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml"><img src="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>&nbsp;&nbsp;<a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a></p>
+<p style="white-space:nowrap; overflow-x:auto;"><a href="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml"><img src="https://github.com/pitzzahh/powertrackr/actions/workflows/ci.yml/badge.svg" alt="Build and Test"></a>&nbsp;&nbsp;<a href="https://opensource.org/licenses/BSD-3-Clause"><img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg" alt="License"></a>&nbsp;&nbsp;<a href="https://svelte.dev"><img src="https://img.shields.io/badge/Svelte-v5-red?style=flat-square&logo=svelte" alt="Svelte" /></a></p>
 
 PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
 

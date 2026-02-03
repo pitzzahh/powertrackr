@@ -6,8 +6,8 @@
 
   export type ConsumptionChartProps = {
     chartData: ConsumptionChartData[];
-    status: Status;
-    retryStatus?: Status;
+    status: AsyncState;
+    retryStatus?: AsyncState;
     refetch?: (callback: () => void) => void;
   };
 </script>
@@ -22,7 +22,7 @@
   import { Button } from "$/components/ui/button";
   import { DateFormat, formatDate, formatEnergy, formatNumber } from "$/utils/format";
   import { browser } from "$app/environment";
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
 
   let { chartData, status, retryStatus, refetch }: ConsumptionChartProps = $props();
 

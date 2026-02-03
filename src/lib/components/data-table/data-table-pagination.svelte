@@ -1,7 +1,7 @@
 <script module lang="ts">
   export interface DataTablePaginationProps<TData> {
     table: Table<TData>;
-    status?: Status;
+    status?: AsyncState;
     hide_show_row_count?: boolean;
   }
 </script>
@@ -18,7 +18,7 @@
   import { scale } from "svelte/transition";
   import type { Icon } from "@lucide/svelte";
   import { pendingFetchContext } from "$/context";
-  import type { Status } from "$/types/state";
+  import type { AsyncState } from "$/types/state";
 
   const ctx = pendingFetchContext.get();
 

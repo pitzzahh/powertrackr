@@ -62,9 +62,13 @@ export const log: Handle = async ({ event, resolve }) => {
   const {
     request: { method },
     url: { pathname, origin },
+    locals: { user, session },
   } = event;
+
+  const isAuthenticated = user && session ? "Authenticated" : "Unauthenticated";
+
   console.info(
-    `${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
+    `[${isAuthenticated}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
   );
 
   return resolve(event);

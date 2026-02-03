@@ -7,4 +7,4 @@ export type State = {
   history: ExtendedBillingInfo[] | undefined;
 };
 
-export type Status = "processing" | "loading_data" | "fetching" | "success" | "error" | "idle";
+export type AsyncState = "processing" | "loading_data" | "fetching" | "success" | "error" | "idle";
