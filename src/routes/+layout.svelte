@@ -68,7 +68,7 @@
 
 <ModeWatcher />
 <FocusRing />
-<Toaster theme={mode.current} expand />
+<Toaster theme={mode.current} expand position="top-right" />
 {#if dev}
   <RenderScan />
 {/if}
