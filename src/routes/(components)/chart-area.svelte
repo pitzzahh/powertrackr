@@ -59,9 +59,9 @@
       balance: { label: "Balance", color: "var(--chart-1)" },
       payment: { label: "Payment", color: "var(--chart-2)" },
       ...Object.fromEntries(
-        Array.from(new Set(chartData.flatMap((d) => Object.keys(d.subPayments)))).map(
-          (label, index) => [label, { label, color: `var(--chart-${(index % 13) + 3})` }]
-        )
+        chartData
+          .flatMap((d) => Object.keys(d.subPayments))
+          .map((label, index) => [label, { label, color: `var(--chart-${index + 3})` }])
       ),
     },
   });

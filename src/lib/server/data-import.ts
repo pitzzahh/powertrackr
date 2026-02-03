@@ -365,21 +365,9 @@ export async function importBillingHandler(
 ): Promise<BillingInfo[]> {
   const created: BillingInfo[] = [];
 
-  // Process billing items chronologically (oldest first). If items are
-  // supplied out-of-order (e.g. newest first) sub-meter usage calculations
-  // can become negative because a newer reading would be inserted before
-  // an older one. Sorting here ensures proper baseline readings are present.
-  const sortedItems = [...items].sort((a, b) => {
-    const ta = new Date(a.date).getTime();
-    const tb = new Date(b.date).getTime();
-    const na = Number.isFinite(ta) ? ta : 0;
-    const nb = Number.isFinite(tb) ? tb : 0;
-    return na - nb;
-  });
-
   if (tx) {
     // Already in a transaction provided by caller
-    for (const item of sortedItems) {
+    for (const item of items) {
       const ci = await createBillingInfoLogic(item, userId, tx);
       created.push(ci);
     }
@@ -388,7 +376,7 @@ export async function importBillingHandler(
 
   // Create a transaction for the whole import
   return await db().transaction(async (txLocal) => {
-    for (const item of sortedItems) {
+    for (const item of items) {
       const ci = await createBillingInfoLogic(item, userId, txLocal);
       created.push(ci);
     }
