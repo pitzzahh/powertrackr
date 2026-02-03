@@ -1,5 +1,4 @@
 <script lang="ts" module>
-  import type { Snippet } from "svelte";
   import { Icon } from "@lucide/svelte";
 
   export type HeaderProps = {
@@ -11,12 +10,8 @@
     quickActions: {
       visible: boolean;
       icon: typeof Icon;
-      label: string;
-      content: (
-        callback: BillingInfoWithSubMetersFormProps["callback"],
-        action: BillingInfoWithSubMetersFormProps["action"],
-        billingInfo?: BillingInfoDTOWithSubMeters
-      ) => ReturnType<Snippet<[]>>;
+      label: "New Bill" | "Generate Random Bills";
+      open: boolean;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
@@ -26,21 +21,20 @@
   import Logo from "$/components/logo.svelte";
   import { Button, buttonVariants } from "$/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun, Dice6 } from "$/assets/icons";
+  import { Menu, PhilippinePeso, Moon, Sun, Dice6, Loader } from "$/assets/icons";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { cn } from "$/utils/style";
   import { toggleMode } from "mode-watcher";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
   import { type BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
   import { showSuccess, showWarning } from "$/components/toast";
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { BillingInfoForm, GenerateRandomBills } from "$/components/snippets.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { dev } from "$app/environment";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { getLatestBillingInfo } from "$/api/billing-info.remote";
+  import { Badge } from "$/components/ui/badge";
+  import { BillingInfoForm } from "$routes/history/(components)";
 
   let { user }: HeaderProps = $props();
 
@@ -54,9 +48,8 @@
         visible: true,
         icon: PhilippinePeso,
         label: "New Bill",
-        content: BillingInfoForm,
-        callback: (valid, _, metaData) => {
-          openMenu = false;
+        open: false,
+        callback: (valid, _action, metaData) => {
           if (valid) {
             billingStore.refresh();
             consumptionStore.refresh();
@@ -64,17 +57,6 @@
           } else {
             showWarning("Failed to create billing info", metaData?.error);
           }
-        },
-      },
-      {
-        visible: dev,
-        icon: Dice6,
-        label: "Generate Random Bills",
-        content: GenerateRandomBills,
-        callback: (_valid, _action, _metaData) => {
-          openMenu = false;
-          billingStore.refresh();
-          consumptionStore.refresh();
         },
       },
     ],
@@ -103,48 +85,55 @@
 
       <div class="flex items-center justify-center gap-4">
         <div class="hidden items-center justify-center gap-2 md:flex">
-          {#each quickActions as quickAction, index (quickAction.label)}
+          {#each quickActions as quickAction (quickAction.label)}
             {#if quickAction.visible}
               {@const Icon = quickAction.icon}
-              <span
-                in:scale={{
-                  duration: 250,
-                  delay: index * 150,
-                  easing: cubicInOut,
-                  start: 0.8,
-                }}
-              >
-                <Sheet.Root>
-                  <Sheet.Trigger class={buttonVariants()}>
-                    <Icon class="size-4" />
-                    <span>{quickAction.label}</span>
-                    <span class="sr-only">
-                      {quickAction.label}
-                    </span>
-                  </Sheet.Trigger>
-                  <Sheet.Portal>
-                    <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-                      <Sheet.Header class="border-b">
+              <Sheet.Root bind:open={quickAction.open}>
+                <Sheet.Trigger class={buttonVariants()}>
+                  <Icon class="size-4" />
+                  <span>{quickAction.label}</span>
+                  <span class="sr-only">
+                    {quickAction.label}
+                  </span>
+                </Sheet.Trigger>
+                <Sheet.Portal>
+                  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
+                    <Sheet.Header class="flex flex-row items-center justify-between border-b pr-10">
+                      <div class="flex flex-col">
                         <Sheet.Title>Add new Bill</Sheet.Title>
                         <Sheet.Description>Enter billing info</Sheet.Description>
-                      </Sheet.Header>
-                      <ScrollArea class="min-h-0 flex-1">
-                        {#key billingInfo.current}
-                          {@const latestBillingInfo =
-                            (billingInfo.current?.value[0] as
-                              | BillingInfoDTOWithSubMeters
-                              | undefined) ?? undefined}
-                          {@render quickAction.content(
-                            quickAction.callback,
-                            "add",
-                            latestBillingInfo
-                          )}
-                        {/key}
-                      </ScrollArea>
-                    </Sheet.Content>
-                  </Sheet.Portal>
-                </Sheet.Root>
-              </span>
+                      </div>
+                      {#if billingInfo.loading}
+                        <Badge
+                          variant="secondary"
+                          class="flex h-6 animate-pulse items-center text-sm font-medium"
+                        >
+                          <Loader class="mr-1 h-3.5 w-3.5 animate-spin" />
+                          Filling form with previous data...
+                        </Badge>
+                      {/if}
+                    </Sheet.Header>
+                    <ScrollArea class="min-h-0 flex-1">
+                      {#key billingInfo.current}
+                        {@const latestBillingInfo =
+                          (billingInfo.current?.value[0] as
+                            | BillingInfoDTOWithSubMeters
+                            | undefined) ?? undefined}
+                        <div class="space-y-4 p-4 pb-8">
+                          {#if quickAction.label === "New Bill"}
+                            <BillingInfoForm
+                              action="add"
+                              callback={quickAction.callback}
+                              billingInfo={latestBillingInfo}
+                              bind:open={quickAction.open}
+                            />
+                          {/if}
+                        </div>
+                      {/key}
+                    </ScrollArea>
+                  </Sheet.Content>
+                </Sheet.Portal>
+              </Sheet.Root>
             {/if}
           {/each}
         </div>
