@@ -3,6 +3,7 @@
   export type BillingInfoWithSubMetersFormProps = {
     action: Action;
     billingInfo?: BillingInfoDTOWithSubMeters;
+    open?: boolean;
     /**
      * Callback to be called when the form is submitted.
      */
@@ -25,7 +26,7 @@
     dateValue: CalendarDate | undefined;
     status: BillingInfoDTO["status"];
     subMeters: SubMeterForm[];
-    open: boolean;
+    openDatePicker: boolean;
   };
 </script>
 
@@ -54,16 +55,21 @@
   import { sineInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
 
-  let { action, billingInfo, callback }: BillingInfoWithSubMetersFormProps = $props();
+  let {
+    action,
+    open = $bindable(false),
+    billingInfo,
+    callback,
+  }: BillingInfoWithSubMetersFormProps = $props();
 
   const identity = $props.id();
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
 
-  let { dateValue, status, open } = $derived<Omit<BillingInfoFormState, "subMeters">>({
+  let { dateValue, status, openDatePicker } = $derived<Omit<BillingInfoFormState, "subMeters">>({
     dateValue: undefined,
     status: "Pending",
-    open: false,
+    openDatePicker: false,
   });
 
   const { currentAction } = $derived({
@@ -215,9 +221,9 @@
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
-            latestDate.getFullYear(),
-            latestDate.getMonth() + 2,
-            latestDate.getDate()
+            latestDate.getFullYear() + (latestDate.getMonth() === 11 ? 1 : 0),
+            ((latestDate.getMonth() + 1) % 12) + 1,
+            1
           )
         : undefined;
       status = "Pending";
@@ -258,6 +264,7 @@
       if (issues.length > 0) {
         callback?.(false, action, { error: issues.map((i) => i.message).join(", ") });
       } else {
+        open = false;
         callback?.(true, action);
       }
       form.reset();
@@ -289,7 +296,7 @@
 
       <Field.Field>
         <Label for="{identity}-date" class="px-1">Date</Label>
-        <Popover.Root bind:open>
+        <Popover.Root bind:open={openDatePicker}>
           <Popover.Trigger id="{identity}-date">
             {#snippet child({ props })}
               <Button {...props} variant="outline" class="w-full justify-between font-normal">
@@ -306,7 +313,7 @@
                   bind:value={dateValue}
                   captionLayout="dropdown"
                   onValueChange={() => {
-                    open = false;
+                    openDatePicker = false;
                     // Keep the action fields in sync when the user picks a date
                     currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
                   }}
@@ -320,7 +327,7 @@
                     size="sm"
                     class="flex-1"
                     onclick={() => {
-                      open = false;
+                      openDatePicker = false;
                       dateValue = today(getLocalTimeZone())?.add({
                         days: preset.value,
                       });
