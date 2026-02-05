@@ -82,10 +82,10 @@
   });
 
   let { BILLING_NORMALIZED } = $derived.by(() => {
-    const fv = (currentAction?.fields as any)?.value?.() ?? {};
+    const fv = currentAction?.fields?.value?.() ?? {};
     const out: Record<string, any> = {};
     if (!billingInfo) return { BILLING_NORMALIZED: out };
-    for (const key of Object.keys(fv)) {
+    for (const key of Object.keys(fv) as (keyof typeof fv)[]) {
       if (key === "subMeters") {
         out.subMeters = (billingInfo.subMeters ?? []).map((s: any) => ({
           id: s.id,
