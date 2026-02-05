@@ -1,4 +1,4 @@
-import { pgTable, uniqueIndex, index, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, index, foreignKey } from "drizzle-orm/pg-core";
 import { user } from "./user";
 
 export const session = pgTable(
@@ -15,7 +15,6 @@ export const session = pgTable(
     twoFactorVerified: t.boolean("two_factor_verified").notNull().default(false),
   }),
   (table) => [
-    uniqueIndex("session_id_key").on(table.id),
     index("session_user_id_idx").on(table.userId),
     foreignKey({
       columns: [table.userId],
