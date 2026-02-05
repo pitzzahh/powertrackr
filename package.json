@@ -24,7 +24,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@internationalized/date": "^3.10.1",
+    "@internationalized/date": "^3.11.0",
     "@libsql/client": "^0.17.0",
     "@oslojs/binary": "^1.0.0",
     "@oslojs/crypto": "^1.0.1",
@@ -69,7 +69,7 @@
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.4.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "svelte": "^5.49.1",
+    "svelte": "^5.49.2",
     "svelte-check": "^4.3.6",
     "svelte-render-scan": "^1.1.0",
     "svelte-sonner": "^1.0.7",
