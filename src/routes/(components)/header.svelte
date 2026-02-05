@@ -132,7 +132,6 @@
                               callback={quickAction.callback}
                               billingInfo={latestBillingInfo}
                               bind:open={quickAction.open}
-                              userId={user?.id || ""}
                             />
                           {/if}
                         </div>
