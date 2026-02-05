@@ -30,7 +30,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   }
 
   // Skip auth checks for auth-related paths
-  if (event.url.pathname.startsWith("/auth") || event.url.pathname.startsWith("/.well-known")) {
+  if (event.url.pathname.startsWith("/auth")) {
     return resolve(event);
   }
 
@@ -65,10 +65,8 @@ export const log: Handle = async ({ event, resolve }) => {
     locals: { user, session },
   } = event;
 
-  const isAuthenticated = user && session ? "Authenticated" : "Unauthenticated";
-
   console.info(
-    `[${isAuthenticated}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
+    `[${user && session ? "Authenticated" : "Unauthenticated"}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
   );
 
   return resolve(event);
