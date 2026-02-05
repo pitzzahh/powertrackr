@@ -76,7 +76,8 @@ class BillingState {
   extendedBillingInfos = $state<ExtendedBillingInfo[]>([]);
   status = $state<AsyncState>("idle");
   summary = $state<BillingSummary | null>(null);
-  userId = $state<string | null>(null);
+  userId = $state<string>("");
+  query = getExtendedBillingInfos({ userId: this.userId });
 
   setUserId(id: string) {
     this.userId = id;
@@ -92,9 +93,8 @@ class BillingState {
   }
 
   async fetchData() {
-    if (!this.userId) return;
     try {
-      const { value } = await getExtendedBillingInfos({ userId: this.userId });
+      const { value } = await this.query;
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);
       this.status = "success";
