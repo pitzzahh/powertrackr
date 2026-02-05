@@ -12,6 +12,7 @@
       icon: typeof Icon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
+      onclick?: ButtonProps["onclick"];
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
@@ -19,9 +20,9 @@
 
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
-  import { Button, buttonVariants } from "$/components/ui/button";
+  import { Button, buttonVariants, type ButtonProps } from "$/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun, Dice6, Loader } from "$/assets/icons";
+  import { Menu, PhilippinePeso, Moon, Sun, Loader } from "$/assets/icons";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { cn } from "$/utils/style";
   import { toggleMode } from "mode-watcher";
@@ -30,7 +31,6 @@
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { dev } from "$app/environment";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { getLatestBillingInfo } from "$/api/billing-info.remote";
   import { Badge } from "$/components/ui/badge";
@@ -41,6 +41,10 @@
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
 
+  let { billingInfo } = $derived({
+    billingInfo: getLatestBillingInfo({ userId: user?.id || "" }),
+  });
+
   let { openMenu, quickActions }: HeaderState = $state({
     openMenu: false,
     quickActions: [
@@ -49,6 +53,9 @@
         icon: PhilippinePeso,
         label: "New Bill",
         open: false,
+        onclick: () => {
+          billingInfo = getLatestBillingInfo({ userId: user?.id || "" });
+        },
         callback: (valid, _action, metaData) => {
           if (valid) {
             billingStore.refresh();
@@ -64,7 +71,6 @@
 </script>
 
 <Sheet.Root bind:open={openMenu}>
-  {@const billingInfo = getLatestBillingInfo({ userId: user?.id || "" })}
   <header
     class="absolute top-0 right-0 left-0 z-5 flex items-center justify-between p-4 backdrop-blur-xs"
   >
@@ -89,7 +95,7 @@
             {#if quickAction.visible}
               {@const Icon = quickAction.icon}
               <Sheet.Root bind:open={quickAction.open}>
-                <Sheet.Trigger class={buttonVariants()}>
+                <Sheet.Trigger class={buttonVariants()} onclick={quickAction.onclick}>
                   <Icon class="size-4" />
                   <span>{quickAction.label}</span>
                   <span class="sr-only">
@@ -126,6 +132,7 @@
                               callback={quickAction.callback}
                               billingInfo={latestBillingInfo}
                               bind:open={quickAction.open}
+                              userId={user?.id || ""}
                             />
                           {/if}
                         </div>
