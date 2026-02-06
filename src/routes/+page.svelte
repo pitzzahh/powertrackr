@@ -41,11 +41,11 @@
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { BillingInfoForm } from "$/components/snippets.svelte";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info.js";
   import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
+  import { BillingInfoForm } from "./history/(components)/index.js";
 
   let { data } = $props();
 
@@ -103,8 +103,9 @@
                   {@const latestBillingInfo =
                     (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ??
                     undefined}
-                  {@render BillingInfoForm(
-                    (valid, _, metaData) => {
+                  <BillingInfoForm
+                    action="add"
+                    callback={(valid, _, metaData) => {
                       openNewBill = false;
                       if (valid) {
                         billingStore.refresh();
@@ -113,10 +114,10 @@
                       } else {
                         showWarning("Failed to create billing info", metaData?.error);
                       }
-                    },
-                    "add",
-                    latestBillingInfo
-                  )}
+                    }}
+                    billingInfo={latestBillingInfo}
+                    bind:open={openNewBill}
+                  />
                 {/key}
               </ScrollArea>
             </Sheet.Content>
