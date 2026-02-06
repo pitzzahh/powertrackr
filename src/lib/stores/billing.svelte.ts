@@ -77,7 +77,7 @@ class BillingState {
   status = $state<AsyncState>("idle");
   summary = $state<BillingSummary | null>(null);
   userId = $state<string>("");
-  query = getExtendedBillingInfos({ userId: this.userId });
+  query = $derived(getExtendedBillingInfos({ userId: this.userId }));
 
   setUserId(id: string) {
     this.userId = id;
