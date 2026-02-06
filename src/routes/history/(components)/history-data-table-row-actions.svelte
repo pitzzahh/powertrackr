@@ -14,7 +14,7 @@
 <script lang="ts">
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
-  import { SubPaymentsButton } from ".";
+  import { BillingInfoForm, SubPaymentsButton } from ".";
   import { formatDate, formatNumber } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
@@ -28,7 +28,6 @@
   import { deleteBillingInfo } from "$/api/billing-info.remote";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { BillingInfoForm as UpdateBillingInfoForm } from "$/components/snippets.svelte";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
@@ -267,20 +266,22 @@
         </Sheet.Description>
       </Sheet.Header>
       <ScrollArea class="min-h-0 flex-1">
-        {@render UpdateBillingInfoForm(
-          (valid, _, metaData) => {
-            open_edit = false;
-            if (valid) {
-              billingStore.refresh();
-              consumptionStore.refresh();
-              showSuccess("Billing info updated successfully!");
-            } else {
-              showWarning("Failed to update billing info", metaData?.error);
-            }
-          },
-          "update",
-          billingInfoToDto(row.original)
-        )}
+        <div class="space-y-4 p-4 pb-8">
+          <BillingInfoForm
+            action="update"
+            callback={(valid, _, metaData) => {
+              open_edit = false;
+              if (valid) {
+                billingStore.refresh();
+                consumptionStore.refresh();
+                showSuccess("Billing info updated successfully!");
+              } else {
+                showWarning("Failed to update billing info", metaData?.error);
+              }
+            }}
+            billingInfo={billingInfoToDto(row.original)}
+          />
+        </div>
       </ScrollArea>
     </Sheet.Content>
   </Sheet.Portal>

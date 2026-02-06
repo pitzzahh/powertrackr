@@ -289,17 +289,6 @@ export const updateBillingInfo = form(
       },
     });
 
-    console.log(
-      JSON.stringify(
-        {
-          validBillingInfo,
-          billingInfoWithSubMetersToUpdate,
-        },
-        null,
-        2
-      )
-    );
-
     if (!validBillingInfo) {
       throw error(400, "Failed to update billing info");
     }
@@ -312,16 +301,15 @@ export const updateBillingInfo = form(
       }),
     };
 
+    // Use the current billing info as-is for comparison.
+    // Overriding `balance` with the payment amount can cause false-positive
+    // change detection when the payment amount differs from the stored balance.
     const changed_data = getChangedData(
-      omit(
-        {
-          ...billingInfoWithSubMetersToUpdate,
-          balance: billingInfoWithSubMetersToUpdate.payment?.amount,
-        },
-        ["id", "createdAt", "updatedAt", "paymentId", "createdAt", "updatedAt"]
-      ),
+      omit(billingInfoWithSubMetersToUpdate, ["id", "createdAt", "updatedAt", "paymentId"]),
       updatedData
     );
+
+    console.log({ billingInfoWithSubMetersToUpdate, changed_data });
 
     // Determine whether provided subMeters actually differ from existing ones
     // (cheap checks) so we can skip heavy work when they don't.
