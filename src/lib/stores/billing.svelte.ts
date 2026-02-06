@@ -2,6 +2,7 @@ import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
 import type { AsyncState } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
 import { getContext, setContext } from "svelte";
+import { sleep } from "..";
 
 function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   if (infos.length === 0) {
@@ -87,13 +88,14 @@ class BillingState {
     this.status = status;
   }
 
-  refresh() {
+  async refresh() {
     this.setStatus("fetching");
-    this.fetchData();
+    return this.fetchData();
   }
 
   async fetchData() {
     try {
+      await sleep(4000);
       const { value } = await this.query;
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);

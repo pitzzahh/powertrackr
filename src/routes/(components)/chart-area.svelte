@@ -9,7 +9,7 @@
   export type AreaChartInteractiveProps = {
     chartData: ChartData[];
     status: AsyncState;
-    retryStatus?: AsyncState;
+    asyncState?: AsyncState;
     refetch?: (callback: () => void) => void;
   };
 
@@ -37,7 +37,7 @@
   import { SvelteSet } from "svelte/reactivity";
   import type { TimeRangeOption } from "./types";
 
-  let { chartData, status, retryStatus, refetch }: AreaChartInteractiveProps = $props();
+  let { chartData, status, asyncState, refetch }: AreaChartInteractiveProps = $props();
 
   let { timeRange } = $state<Omit<ChartAreaState, "visibleKeysSet">>({
     timeRange: "1y",
@@ -91,7 +91,7 @@
     </Select.Root>
   </Card.Header>
   <Card.Content class="pl-16">
-    {#if status === "fetching"}
+    {#if status === "loading_data" || status === "fetching"}
       <div class="flex flex-col items-center justify-center py-8">
         <Loader class="mb-2 h-8 w-8 animate-spin text-muted-foreground" />
         <p class="text-muted-foreground">Fetching data...</p>
@@ -101,13 +101,13 @@
         <p class="py-8 text-center text-muted-foreground">Error loading data.</p>
         <Button
           onclick={() => {
-            retryStatus = "fetching";
-            refetch?.(() => (retryStatus = "success"));
+            asyncState = "fetching";
+            refetch?.(() => (asyncState = "success"));
           }}
           ><RefreshCw
             class={[
               {
-                "animate-spin": retryStatus === "fetching",
+                "animate-spin": asyncState === "fetching",
               },
             ]}
           /> Refetch</Button
