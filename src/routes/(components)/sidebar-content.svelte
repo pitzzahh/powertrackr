@@ -192,7 +192,7 @@
     class={[
       "mt-4",
       {
-        " w-full": !collapsed,
+        "w-full": !collapsed,
       },
     ]}
   >
