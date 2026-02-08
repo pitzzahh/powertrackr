@@ -79,7 +79,7 @@
   >
     <Button
       onclick={() => sidebar.toggleCollapse()}
-      variant="outline"
+      variant="ghost"
       size="icon"
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
