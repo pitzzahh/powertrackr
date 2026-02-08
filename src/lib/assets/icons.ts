@@ -67,3 +67,4 @@ export { default as ShieldAlert } from "phosphor-svelte/lib/ShieldIcon";
 export { default as CircleAlert } from "phosphor-svelte/lib/WarningCircleIcon";
 export { default as Dice6 } from "@lucide/svelte/icons/dice-6";
 export { default as DatabaseBackupIcon } from "phosphor-svelte/lib/CloudIcon";
+export { default as PlusIcon } from "phosphor-svelte/lib/PlusIcon";
