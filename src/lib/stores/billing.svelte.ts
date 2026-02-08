@@ -2,7 +2,6 @@ import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
 import type { AsyncState } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
 import { getContext, setContext } from "svelte";
-import { sleep } from "..";
 
 function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   if (infos.length === 0) {
