@@ -95,7 +95,6 @@ class BillingState {
 
   async fetchData() {
     try {
-      await sleep(4000);
       const { value } = await this.query;
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeSummary(this.extendedBillingInfos);
