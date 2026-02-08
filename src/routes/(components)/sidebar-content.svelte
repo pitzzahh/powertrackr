@@ -184,6 +184,7 @@
 
 <div class="flex justify-center">
   <Button
+    variant="outline"
     onclick={() => sidebar.toggleCollapse()}
     size={collapsed ? "icon" : "default"}
     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
