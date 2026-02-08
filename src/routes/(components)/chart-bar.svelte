@@ -223,6 +223,7 @@
           x="date"
           xScale={scaleBand().padding(0.25)}
           series={activeSeries}
+          seriesLayout="group"
           props={{
             bars: {
               stroke: "none",
