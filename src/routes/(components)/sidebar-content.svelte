@@ -115,10 +115,8 @@
         {
           "justify-center": collapsed,
           "p-1": collapsed,
-          "hover:bg-sidebar-accent": true,
-          "gap-2": !collapsed,
+          "gap-2 px-2!": !collapsed,
           "hover:text-sidebar-accent-foreground": !collapsed,
-          "data-[state=open]:bg-sidebar-accent": !collapsed,
           "data-[state=open]:text-sidebar-accent-foreground": !collapsed,
         },
       ]}
