@@ -87,9 +87,9 @@ class BillingState {
     this.status = status;
   }
 
-  refresh() {
+  async refresh() {
     this.setStatus("fetching");
-    this.fetchData();
+    return this.fetchData();
   }
 
   async fetchData() {

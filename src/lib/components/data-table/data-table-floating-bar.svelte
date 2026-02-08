@@ -30,6 +30,7 @@
   import { showError, showWarning } from "$/components/toast";
   import { cubicInOut } from "svelte/easing";
   import { Input } from "$/components/ui/input";
+  import { WarningBanner } from "$/components/snippets.svelte";
 
   let {
     table,
@@ -161,6 +162,9 @@
       <Dialog.Title>Are you sure?</Dialog.Title>
       <Dialog.Description>
         {dialogDescription || default_dialog_description}
+        {@render WarningBanner({
+          message: "This action cannot be undone, please confirm",
+        })}
       </Dialog.Description>
     </Dialog.Header>
     <Input

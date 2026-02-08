@@ -193,7 +193,7 @@
         </Select.Content>
       </Select.Root>
     </div>
-    {#if status === "fetching"}
+    {#if status === "loading_data" || status === "fetching"}
       <div class="flex flex-col items-center justify-center py-8">
         <Loader class="mb-2 h-8 w-8 animate-spin text-muted-foreground" />
         <p class="text-muted-foreground">Fetching data...</p>

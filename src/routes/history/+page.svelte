@@ -12,25 +12,29 @@
 
   const billingStore = useBillingStore();
 
-  const totalBillingPeriods = $derived(billingStore.extendedBillingInfos.length);
-  const totalEnergyConsumed = $derived(
-    billingStore.extendedBillingInfos.reduce((sum, info) => sum + info.totalkWh, 0)
-  );
-  const totalPaymentsMade = $derived(
-    billingStore.extendedBillingInfos.reduce((sum, info) => sum + (info.payment?.amount || 0), 0)
-  );
-  const averageBalance = $derived(
-    totalBillingPeriods > 0
-      ? billingStore.extendedBillingInfos.reduce((sum, info) => sum + info.balance, 0) /
-          totalBillingPeriods
-      : 0
-  );
-  const paidBills = $derived(
-    billingStore.extendedBillingInfos.filter((info) => info.status === "Paid").length
-  );
-  const pendingBills = $derived(
-    billingStore.extendedBillingInfos.filter((info) => info.status === "Pending").length
-  );
+  const { totalBillingPeriods } = $derived({
+    totalBillingPeriods: billingStore.extendedBillingInfos.length,
+  });
+
+  const { totalEnergyConsumed, totalPaymentsMade, averageBalance, paidBills, pendingBills } =
+    $derived({
+      totalEnergyConsumed: billingStore.extendedBillingInfos.reduce(
+        (sum, info) => sum + info.totalkWh,
+        0
+      ),
+      totalPaymentsMade: billingStore.extendedBillingInfos.reduce(
+        (sum, info) => sum + (info.payment?.amount || 0),
+        0
+      ),
+      averageBalance:
+        totalBillingPeriods > 0
+          ? billingStore.extendedBillingInfos.reduce((sum, info) => sum + info.balance, 0) /
+            totalBillingPeriods
+          : 0,
+      paidBills: billingStore.extendedBillingInfos.filter((info) => info.status === "Paid").length,
+      pendingBills: billingStore.extendedBillingInfos.filter((info) => info.status === "Pending")
+        .length,
+    });
 
   onMount(() => {
     if (!data.user) return;
@@ -77,7 +81,8 @@
       {/if}
     </div>
 
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
+    <!-- expanded grid to include Average Balance -->
+    <div class="grid grid-cols-2 gap-8 md:grid-cols-5 xl:gap-16">
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Energy</span>
         {#if billingStore.status === "fetching"}
@@ -90,6 +95,7 @@
           >
         {/if}
       </div>
+
       <div class="flex flex-col gap-1">
         <span class="text-sm">Total Payments</span>
         {#if billingStore.status === "fetching"}
@@ -102,6 +108,20 @@
           >
         {/if}
       </div>
+
+      <div class="flex flex-col gap-1">
+        <span class="text-sm">Average Balance</span>
+        {#if billingStore.status === "fetching"}
+          <Loader class="h-4 w-4 animate-spin" />
+        {:else if billingStore.status === "error"}
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{formatNumber(0)}</span>
+        {:else}
+          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">
+            {formatNumber(averageBalance)}
+          </span>
+        {/if}
+      </div>
+
       <div class="flex flex-col gap-1">
         <span class="text-sm">Paid Bills</span>
         {#if billingStore.status === "fetching"}
@@ -112,6 +132,7 @@
           <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{paidBills}</span>
         {/if}
       </div>
+
       <div class="flex flex-col gap-1">
         <span class="text-sm">Pending Bills</span>
         {#if billingStore.status === "fetching"}
