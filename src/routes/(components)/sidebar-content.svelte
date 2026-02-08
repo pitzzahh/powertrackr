@@ -61,44 +61,6 @@
   });
 </script>
 
-<!-- Collapse toggle button - only show on desktop -->
-{#if !isMobileSheet}
-  <div
-    class={[
-      "transition-all duration-150 ease-in-out",
-      {
-        flex: collapsed,
-        "justify-center": collapsed,
-        "mb-2": collapsed,
-        absolute: !collapsed,
-        "-right-4": !collapsed,
-        "top-2": !collapsed,
-        "z-50": !collapsed,
-      },
-    ]}
-  >
-    <Button
-      onclick={() => sidebar.toggleCollapse()}
-      variant="ghost"
-      size="icon"
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-    >
-      <span
-        class={[
-          "transition-transform duration-150 ease-in-out",
-          {
-            "rotate-180": collapsed,
-            "rotate-0": !collapsed,
-          },
-        ]}
-      >
-        <PanelLeftClose class="size-4" />
-      </span>
-    </Button>
-  </div>
-{/if}
-
 <nav
   class={[
     "flex flex-col gap-4",
@@ -148,8 +110,8 @@
   <DropdownMenu.Root>
     <DropdownMenu.Trigger
       class={[
-        buttonVariants({ variant: "secondary" }),
-        "flex w-full items-center rounded-lg transition-all duration-150 ease-in-out",
+        buttonVariants({ variant: "ghost" }),
+        "flex w-full items-center rounded-lg p-0 transition-all duration-150 ease-in-out",
         {
           "justify-center": collapsed,
           "p-1": collapsed,
@@ -218,6 +180,34 @@
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
+</div>
+
+<div class="flex justify-center">
+  <Button
+    onclick={() => sidebar.toggleCollapse()}
+    size={collapsed ? "icon" : "default"}
+    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    class={[
+      "mt-4",
+      {
+        " w-full": !collapsed,
+      },
+    ]}
+  >
+    <PanelLeftClose
+      class={[
+        "size-4 transition-transform duration-150 ease-in-out",
+        {
+          "rotate-180": collapsed,
+          "rotate-0": !collapsed,
+        },
+      ]}
+    />
+    {#if !collapsed}
+      Collapse
+    {/if}
+  </Button>
 </div>
 
 <AlertDialog.Root bind:open={logoutAttempt}>
