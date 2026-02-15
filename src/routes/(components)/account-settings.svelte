@@ -6,12 +6,12 @@
     openAccountSettings: boolean;
   };
 
-  type AsyncState = "idle" | "processing" | "success" | "error";
-
   type OverviewFormState = {
     name: string;
     email: string;
-    phone: string;
+    image: string;
+    emailVerified: boolean;
+    registeredTwoFactor: boolean;
     asyncState: AsyncState;
   };
 
@@ -39,6 +39,7 @@
   import { toast } from "svelte-sonner";
   import { scale } from "svelte/transition";
   import { sineInOut } from "svelte/easing";
+  import type { AsyncState } from "$/types/state";
 
   let { trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -51,7 +52,9 @@
   let overviewForm = $state<OverviewFormState>({
     name: "",
     email: "",
-    phone: "",
+    image: "",
+    emailVerified: false,
+    registeredTwoFactor: false,
     asyncState: "idle",
   });
 
@@ -110,7 +113,9 @@
       // Simulate loading user data
       overviewForm.name = "John Doe";
       overviewForm.email = "john.doe@example.com";
-      overviewForm.phone = "+1 (555) 123-4567";
+      overviewForm.image = "";
+      overviewForm.emailVerified = true;
+      overviewForm.registeredTwoFactor = false;
     }
   });
 
@@ -129,7 +134,7 @@
       // In real app, make API call here
       // const response = await fetch('/api/profile', {
       //   method: 'PATCH',
-      //   body: JSON.stringify({ name: overviewForm.name, email: overviewForm.email, phone: overviewForm.phone })
+      //   body: JSON.stringify({ name: overviewForm.name, email: overviewForm.email, image: overviewForm.image })
       // });
 
       overviewForm.asyncState = "success";
@@ -245,7 +250,7 @@
     </UnderlineTabs.List>
 
     <UnderlineTabs.Content value="overview">
-      <ScrollArea orientation="vertical" class="h-96 rounded-md md:max-h-[60vh]">
+      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
         <div class="p-4">
           <form onsubmit={handleOverviewSubmit} class="space-y-6">
             <div class="space-y-4">
@@ -283,22 +288,70 @@
                 </Field.Field>
 
                 <Field.Field>
-                  <Field.Label for="account-phone" class="px-1">
-                    Phone Number <span class="text-muted-foreground">(Optional)</span>
+                  <Field.Label for="account-image" class="px-1">
+                    Profile Image <span class="text-muted-foreground">(Optional)</span>
                   </Field.Label>
                   <Input
-                    id="account-phone"
-                    type="tel"
-                    bind:value={overviewForm.phone}
-                    placeholder="+1 (555) 000-0000"
+                    id="account-image"
+                    type="url"
+                    bind:value={overviewForm.image}
+                    placeholder="https://example.com/avatar.jpg"
                     disabled={overviewForm.asyncState === "processing"}
                     class="w-full"
                   />
                   <Field.Description>
-                    Add a phone number for two-factor authentication.
+                    Enter a URL to your profile image or avatar.
                   </Field.Description>
                 </Field.Field>
               </Field.Group>
+            </div>
+
+            <Separator />
+
+            <div class="space-y-4">
+              <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                Account Status
+              </h4>
+
+              <div class="grid gap-4 md:grid-cols-2">
+                <div class="flex items-center justify-between rounded-lg border p-4">
+                  <div class="space-y-0.5">
+                    <div class="text-sm font-medium">Email Verification</div>
+                    <div class="text-xs text-muted-foreground">
+                      {overviewForm.emailVerified ? "Your email is verified" : "Email not verified"}
+                    </div>
+                  </div>
+                  <div
+                    class={[
+                      "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      overviewForm.emailVerified
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                    ]}
+                  >
+                    {overviewForm.emailVerified ? "Verified" : "Pending"}
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between rounded-lg border p-4">
+                  <div class="space-y-0.5">
+                    <div class="text-sm font-medium">Two-Factor Authentication</div>
+                    <div class="text-xs text-muted-foreground">
+                      {overviewForm.registeredTwoFactor ? "2FA is enabled" : "2FA not enabled"}
+                    </div>
+                  </div>
+                  <div
+                    class={[
+                      "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                      overviewForm.registeredTwoFactor
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                    ]}
+                  >
+                    {overviewForm.registeredTwoFactor ? "Enabled" : "Disabled"}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <Separator />
@@ -335,7 +388,7 @@
     </UnderlineTabs.Content>
 
     <UnderlineTabs.Content value="change-password">
-      <ScrollArea orientation="vertical" class="h-96 rounded-md md:max-h-[60vh]">
+      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
         <div class="p-4">
           <form onsubmit={handlePasswordSubmit} class="space-y-6">
             <div class="space-y-4">
