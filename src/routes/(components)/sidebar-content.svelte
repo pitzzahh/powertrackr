@@ -23,15 +23,7 @@
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
-  import {
-    Loader,
-    PanelLeftClose,
-    LogOut,
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-  } from "$/assets/icons";
+  import { Loader, PanelLeftClose, LogOut, BadgeCheck, Bell, ChevronsUpDown } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
   import * as Avatar from "$/components/ui/avatar/index.js";
@@ -164,10 +156,6 @@
         <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
           <BadgeCheck />
           Account
-        </DropdownMenu.Item>
-        <DropdownMenu.Item>
-          <CreditCard />
-          Billing
         </DropdownMenu.Item>
         <DropdownMenu.Item>
           <Bell />
