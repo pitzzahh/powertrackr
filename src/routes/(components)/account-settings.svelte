@@ -1,0 +1,449 @@
+<script lang="ts" module>
+  import type { Snippet } from "svelte";
+
+  export type AccountSettingsProps = {
+    trigger?: Snippet<[]>;
+    openAccountSettings: boolean;
+  };
+
+  type AsyncState = "idle" | "processing" | "success" | "error";
+
+  type OverviewFormState = {
+    name: string;
+    email: string;
+    phone: string;
+    asyncState: AsyncState;
+  };
+
+  type PasswordFormState = {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+    asyncState: AsyncState;
+  };
+</script>
+
+<script lang="ts">
+  import * as Drawer from "$lib/components/ui/drawer/index.js";
+  import { buttonVariants } from "$lib/components/ui/button/index.js";
+  import { MediaQuery } from "svelte/reactivity";
+  import * as Dialog from "$/components/ui/dialog";
+  import { Portal } from "bits-ui";
+  import * as UnderlineTabs from "$/components/underline-tabs";
+  import * as Field from "$lib/components/ui/field/index.js";
+  import { Input } from "$lib/components/ui/input/index.js";
+  import { Button } from "$lib/components/ui/button/index.js";
+  import { Separator } from "$lib/components/ui/separator/index.js";
+  import { ScrollArea } from "$/components/ui/scroll-area";
+  import { Loader, Check, CircleAlert, Lock, User } from "$lib/assets/icons.js";
+  import { toast } from "svelte-sonner";
+  import { scale } from "svelte/transition";
+  import { sineInOut } from "svelte/easing";
+
+  let { trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
+
+  const isDesktop = new MediaQuery("(min-width: 768px)");
+
+  // Tab state
+  let activeTab = $state<"overview" | "change-password">("overview");
+
+  // Overview form state
+  let overviewForm = $state<OverviewFormState>({
+    name: "",
+    email: "",
+    phone: "",
+    asyncState: "idle",
+  });
+
+  // Password form state
+  let passwordForm = $state<PasswordFormState>({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    asyncState: "idle",
+  });
+
+  // Form validation
+  let overviewValid = $derived.by(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return (
+      overviewForm.name.trim().length > 0 &&
+      overviewForm.email.trim().length > 0 &&
+      emailRegex.test(overviewForm.email.trim())
+    );
+  });
+
+  let passwordValid = $derived.by(() => {
+    return (
+      passwordForm.currentPassword.trim().length > 0 &&
+      passwordForm.newPassword.trim().length >= 8 &&
+      passwordForm.newPassword === passwordForm.confirmPassword &&
+      passwordForm.currentPassword !== passwordForm.newPassword
+    );
+  });
+
+  let passwordErrors = $derived.by(() => {
+    const errors: string[] = [];
+    if (passwordForm.newPassword.length > 0 && passwordForm.newPassword.length < 8) {
+      errors.push("Password must be at least 8 characters");
+    }
+    if (
+      passwordForm.newPassword.length > 0 &&
+      passwordForm.confirmPassword.length > 0 &&
+      passwordForm.newPassword !== passwordForm.confirmPassword
+    ) {
+      errors.push("Passwords do not match");
+    }
+    if (
+      passwordForm.currentPassword.length > 0 &&
+      passwordForm.newPassword.length > 0 &&
+      passwordForm.currentPassword === passwordForm.newPassword
+    ) {
+      errors.push("New password must be different from current password");
+    }
+    return errors;
+  });
+
+  // Load initial data (in real app, this would fetch from API)
+  $effect(() => {
+    if (openAccountSettings) {
+      // Simulate loading user data
+      overviewForm.name = "John Doe";
+      overviewForm.email = "john.doe@example.com";
+      overviewForm.phone = "+1 (555) 123-4567";
+    }
+  });
+
+  // Handle overview form submission
+  async function handleOverviewSubmit(e: Event) {
+    e.preventDefault();
+    if (!overviewValid) return;
+
+    overviewForm.asyncState = "processing";
+    const toastId = toast.loading("Updating profile...");
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // In real app, make API call here
+      // const response = await fetch('/api/profile', {
+      //   method: 'PATCH',
+      //   body: JSON.stringify({ name: overviewForm.name, email: overviewForm.email, phone: overviewForm.phone })
+      // });
+
+      overviewForm.asyncState = "success";
+      toast.success("Profile updated successfully", { id: toastId });
+
+      setTimeout(() => {
+        overviewForm.asyncState = "idle";
+      }, 2000);
+    } catch (error) {
+      overviewForm.asyncState = "error";
+      toast.error("Failed to update profile. Please try again.", { id: toastId });
+
+      setTimeout(() => {
+        overviewForm.asyncState = "idle";
+      }, 2000);
+    }
+  }
+
+  // Handle password form submission
+  async function handlePasswordSubmit(e: Event) {
+    e.preventDefault();
+    if (!passwordValid) return;
+
+    passwordForm.asyncState = "processing";
+    const toastId = toast.loading("Changing password...");
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // In real app, make API call here
+      // const response = await fetch('/api/profile/password', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword })
+      // });
+
+      passwordForm.asyncState = "success";
+      toast.success("Password changed successfully", { id: toastId });
+
+      // Clear password fields
+      passwordForm.currentPassword = "";
+      passwordForm.newPassword = "";
+      passwordForm.confirmPassword = "";
+
+      setTimeout(() => {
+        passwordForm.asyncState = "idle";
+      }, 2000);
+    } catch (error) {
+      passwordForm.asyncState = "error";
+      toast.error("Failed to change password. Please try again.", { id: toastId });
+
+      setTimeout(() => {
+        passwordForm.asyncState = "idle";
+      }, 2000);
+    }
+  }
+
+  function clearPasswordForm() {
+    passwordForm.currentPassword = "";
+    passwordForm.newPassword = "";
+    passwordForm.confirmPassword = "";
+  }
+</script>
+
+{#if isDesktop.current}
+  <Dialog.Root bind:open={openAccountSettings}>
+    {#if trigger}
+      <Dialog.Trigger>
+        {@render trigger?.()}
+      </Dialog.Trigger>
+    {/if}
+    <Portal>
+      <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-250">
+        <Dialog.Header>
+          <Dialog.Title>Account Settings</Dialog.Title>
+          <Dialog.Description>
+            Manage your account settings and preferences. Changes are saved automatically.
+          </Dialog.Description>
+        </Dialog.Header>
+        {@render content()}
+      </Dialog.Content>
+    </Portal>
+  </Dialog.Root>
+{:else}
+  <Drawer.Root bind:open={openAccountSettings}>
+    {#if trigger}
+      <Drawer.Trigger>
+        {@render trigger?.()}
+      </Drawer.Trigger>
+    {/if}
+    <Portal>
+      <Drawer.Content>
+        <Drawer.Header class="text-start">
+          <Drawer.Title>Account Settings</Drawer.Title>
+          <Drawer.Description>
+            Manage your account settings and preferences. Changes are saved automatically.
+          </Drawer.Description>
+        </Drawer.Header>
+        {@render content()}
+        <Drawer.Footer class="pt-2">
+          <Drawer.Close class={buttonVariants({ variant: "outline" })}>Close</Drawer.Close>
+        </Drawer.Footer>
+      </Drawer.Content>
+    </Portal>
+  </Drawer.Root>
+{/if}
+
+{#snippet content()}
+  <UnderlineTabs.Root bind:value={activeTab}>
+    <UnderlineTabs.List>
+      <UnderlineTabs.Trigger value="overview">Overview</UnderlineTabs.Trigger>
+      <UnderlineTabs.Trigger value="change-password">Change Password</UnderlineTabs.Trigger>
+    </UnderlineTabs.List>
+
+    <UnderlineTabs.Content value="overview">
+      <ScrollArea orientation="vertical" class="h-96 rounded-md md:max-h-[60vh]">
+        <div class="p-4">
+          <form onsubmit={handleOverviewSubmit} class="space-y-6">
+            <div class="space-y-4">
+              <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                Profile Information
+              </h4>
+
+              <Field.Group>
+                <Field.Field>
+                  <Field.Label for="account-name" class="px-1">Full Name</Field.Label>
+                  <Input
+                    id="account-name"
+                    type="text"
+                    bind:value={overviewForm.name}
+                    placeholder="Enter your full name"
+                    disabled={overviewForm.asyncState === "processing"}
+                    class="w-full"
+                  />
+                  <Field.Description>This is your public display name.</Field.Description>
+                </Field.Field>
+
+                <Field.Field>
+                  <Field.Label for="account-email" class="px-1">Email Address</Field.Label>
+                  <Input
+                    id="account-email"
+                    type="email"
+                    bind:value={overviewForm.email}
+                    placeholder="Enter your email"
+                    disabled={overviewForm.asyncState === "processing"}
+                    class="w-full"
+                  />
+                  <Field.Description>
+                    Your email address is used for notifications and account recovery.
+                  </Field.Description>
+                </Field.Field>
+
+                <Field.Field>
+                  <Field.Label for="account-phone" class="px-1">
+                    Phone Number <span class="text-muted-foreground">(Optional)</span>
+                  </Field.Label>
+                  <Input
+                    id="account-phone"
+                    type="tel"
+                    bind:value={overviewForm.phone}
+                    placeholder="+1 (555) 000-0000"
+                    disabled={overviewForm.asyncState === "processing"}
+                    class="w-full"
+                  />
+                  <Field.Description>
+                    Add a phone number for two-factor authentication.
+                  </Field.Description>
+                </Field.Field>
+              </Field.Group>
+            </div>
+
+            <Separator />
+
+            <div class="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onclick={() => (openAccountSettings = false)}
+                disabled={overviewForm.asyncState === "processing"}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={!overviewValid || overviewForm.asyncState === "processing"}
+                class="min-w-32"
+              >
+                {#if overviewForm.asyncState === "processing"}
+                  <Loader class="mr-2 size-4 animate-spin" />
+                  Saving...
+                {:else if overviewForm.asyncState === "success"}
+                  <Check class="mr-2 size-4" />
+                  Saved!
+                {:else}
+                  <User class="mr-2 size-4" />
+                  Save Changes
+                {/if}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </ScrollArea>
+    </UnderlineTabs.Content>
+
+    <UnderlineTabs.Content value="change-password">
+      <ScrollArea orientation="vertical" class="h-96 rounded-md md:max-h-[60vh]">
+        <div class="p-4">
+          <form onsubmit={handlePasswordSubmit} class="space-y-6">
+            <div class="space-y-4">
+              <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                Change Password
+              </h4>
+
+              <Field.Group>
+                <Field.Field>
+                  <Field.Label for="current-password" class="px-1">Current Password</Field.Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    bind:value={passwordForm.currentPassword}
+                    placeholder="Enter current password"
+                    disabled={passwordForm.asyncState === "processing"}
+                    class="w-full"
+                    autocomplete="current-password"
+                  />
+                  <Field.Description>
+                    Enter your current password to verify your identity.
+                  </Field.Description>
+                </Field.Field>
+
+                <Field.Field>
+                  <Field.Label for="new-password" class="px-1">New Password</Field.Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    bind:value={passwordForm.newPassword}
+                    placeholder="Enter new password"
+                    disabled={passwordForm.asyncState === "processing"}
+                    class="w-full"
+                    autocomplete="new-password"
+                  />
+                  <Field.Description>Password must be at least 8 characters long.</Field.Description
+                  >
+                </Field.Field>
+
+                <Field.Field>
+                  <Field.Label for="confirm-password" class="px-1">Confirm New Password</Field.Label
+                  >
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    bind:value={passwordForm.confirmPassword}
+                    placeholder="Confirm new password"
+                    disabled={passwordForm.asyncState === "processing"}
+                    class="w-full"
+                    autocomplete="new-password"
+                  />
+                  <Field.Description>Re-enter your new password to confirm.</Field.Description>
+                </Field.Field>
+              </Field.Group>
+
+              {#if passwordErrors.length > 0}
+                <div
+                  class="rounded-lg border border-destructive/50 bg-destructive/10 p-4"
+                  in:scale={{ duration: 200, easing: sineInOut }}
+                >
+                  <div class="flex items-start gap-3">
+                    <CircleAlert class="size-5 text-destructive" />
+                    <div class="flex-1 space-y-1">
+                      <p class="text-sm font-medium text-destructive">
+                        Please fix the following errors:
+                      </p>
+                      <ul class="list-inside list-disc space-y-1 text-sm text-destructive/90">
+                        {#each passwordErrors as error (error)}
+                          <li>{error}</li>
+                        {/each}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {/if}
+            </div>
+
+            <Separator />
+
+            <div class="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onclick={clearPasswordForm}
+                disabled={passwordForm.asyncState === "processing"}
+              >
+                Clear
+              </Button>
+              <Button
+                type="submit"
+                disabled={!passwordValid || passwordForm.asyncState === "processing"}
+                class="min-w-32"
+              >
+                {#if passwordForm.asyncState === "processing"}
+                  <Loader class="mr-2 size-4 animate-spin" />
+                  Changing...
+                {:else if passwordForm.asyncState === "success"}
+                  <Check class="mr-2 size-4" />
+                  Changed!
+                {:else}
+                  <Lock class="mr-2 size-4" />
+                  Change Password
+                {/if}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </ScrollArea>
+    </UnderlineTabs.Content>
+  </UnderlineTabs.Root>
+{/snippet}
