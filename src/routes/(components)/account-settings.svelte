@@ -47,7 +47,7 @@
   import { sineInOut } from "svelte/easing";
   import type { AsyncState } from "$/types/state";
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
-  import { showInspectorWarning } from "$/components/toast";
+  import { showError, showInspectorWarning, showLoading, showSuccess } from "$/components/toast";
 
   let { trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -222,7 +222,7 @@
     }
 
     deleteAccountForm.asyncState = "processing";
-    const toastId = toast.loading("Deleting account...");
+    const toastId = showLoading("Deleting account...");
 
     try {
       // Simulate API call
@@ -234,8 +234,9 @@
       // });
 
       deleteAccountForm.asyncState = "success";
-      toast.success("Account deleted successfully", { id: toastId });
-
+      showSuccess("Account deleted successfully", undefined, undefined, {
+        id: toastId,
+      });
       // Close dialog and redirect or logout
       setTimeout(() => {
         openAccountSettings = false;
@@ -244,8 +245,9 @@
       }, 1000);
     } catch (error) {
       deleteAccountForm.asyncState = "error";
-      toast.error("Failed to delete account. Please try again.", { id: toastId });
-
+      showError("Failed to delete account. Please try again.", undefined, undefined, {
+        id: toastId,
+      });
       setTimeout(() => {
         deleteAccountForm.asyncState = "idle";
       }, 2000);
