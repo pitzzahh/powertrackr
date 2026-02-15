@@ -22,6 +22,24 @@
     reading: number;
   };
 
+  type NormalizedBillingData = {
+    id?: string;
+    date?: string;
+    balance?: number;
+    totalkWh?: number;
+    status?: string;
+    subMeters?: SubMeterForm[];
+  };
+
+  type FormFieldsValue = {
+    id?: string;
+    date?: string;
+    balance?: number | string;
+    totalkWh?: number | string;
+    status?: string;
+    subMeters?: SubMeterForm[];
+  };
+
   type BillingInfoFormState = {
     dateValue: CalendarDate | undefined;
     status: BillingInfoDTO["status"];
@@ -83,11 +101,11 @@
 
   let { BILLING_NORMALIZED } = $derived.by(() => {
     const fv = currentAction?.fields?.value?.() ?? {};
-    const out: Record<string, any> = {};
+    const out: NormalizedBillingData = {};
     if (!billingInfo) return { BILLING_NORMALIZED: out };
-    for (const key of Object.keys(fv) as (keyof typeof fv)[]) {
+    for (const key of Object.keys(fv) as (keyof FormFieldsValue)[]) {
       if (key === "subMeters") {
-        out.subMeters = (billingInfo.subMeters ?? []).map((s: any) => ({
+        out.subMeters = (billingInfo.subMeters ?? []).map((s) => ({
           id: s.id,
           label: s.label,
           reading: s.reading,
@@ -95,10 +113,14 @@
       } else if (key === "date") {
         const d = new Date(billingInfo.date);
         out.date = new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate()).toString();
-      } else if (Object.prototype.hasOwnProperty.call(billingInfo, key)) {
-        out[key] = (billingInfo as any)[key];
-      } else {
-        out[key] = undefined;
+      } else if (key === "id" && billingInfo.id) {
+        out.id = billingInfo.id;
+      } else if (key === "balance" && typeof billingInfo.balance === "number") {
+        out.balance = billingInfo.balance;
+      } else if (key === "totalkWh" && typeof billingInfo.totalkWh === "number") {
+        out.totalkWh = billingInfo.totalkWh;
+      } else if (key === "status" && billingInfo.status) {
+        out.status = billingInfo.status;
       }
     }
     return { BILLING_NORMALIZED: out };
@@ -106,25 +128,35 @@
 
   // CHANGED_DATA: top-level diffs (omitting subMeters) + a cheap sub-meter flag
   let { CHANGED_DATA } = $derived.by(() => {
-    const fv = (currentAction?.fields as any)?.value?.() ?? {};
-    const topOriginal = omit((BILLING_NORMALIZED as any) ?? {}, ["subMeters"]);
-    const topUpdated = omit(fv ?? {}, ["subMeters"]);
+    const fv = currentAction?.fields?.value?.() as FormFieldsValue | undefined;
+
+    // Normalize form values to match NormalizedBillingData types
+    const normalizedFv: Partial<NormalizedBillingData> = fv
+      ? {
+          ...fv,
+          balance: typeof fv.balance === "string" ? Number(fv.balance) : fv.balance,
+          totalkWh: typeof fv.totalkWh === "string" ? Number(fv.totalkWh) : fv.totalkWh,
+        }
+      : {};
+
+    const topOriginal = omit(BILLING_NORMALIZED ?? {}, ["subMeters"]);
+    const topUpdated = omit(normalizedFv, ["subMeters"]);
     const topChanges = getChangedData(topOriginal, topUpdated);
     const changed: Record<string, any> = { ...topChanges };
 
-    if ("subMeters" in fv) {
-      const orig = (BILLING_NORMALIZED as any).subMeters ?? [];
-      const form = fv.subMeters ?? [];
+    if (fv && "subMeters" in fv) {
+      const orig: SubMeterForm[] = BILLING_NORMALIZED.subMeters ?? [];
+      const form: SubMeterForm[] = fv.subMeters ?? [];
       let subsChanged = false;
       if ((orig.length ?? 0) !== (form.length ?? 0)) subsChanged = true;
       else {
-        const ids = form.map((s: any) => s.id).filter(Boolean);
+        const ids = form.map((s) => s.id).filter(Boolean);
         for (const s of form) {
           if (!s.id) {
             subsChanged = true;
             break;
           }
-          const ex = orig.find((o: any) => o.id === s.id);
+          const ex = orig.find((o) => o.id === s.id);
           if (!ex) {
             subsChanged = true;
             break;
