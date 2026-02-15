@@ -11,6 +11,7 @@
   type SidebarContentState = {
     status: AsyncState;
     logoutAttempt: boolean;
+    openAccountSettings: boolean;
   };
 </script>
 
@@ -39,14 +40,16 @@
   import { toShortName } from "$/utils/text";
   import { showLoading, showSuccess, toast } from "$/components/toast";
   import { goto } from "$app/navigation";
+  import { AccountSettings } from ".";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
   const sidebar = useSidebarStore();
 
-  let { status, logoutAttempt }: SidebarContentState = $state({
+  let { status, logoutAttempt, openAccountSettings }: SidebarContentState = $state({
     status: "idle",
     logoutAttempt: false,
+    openAccountSettings: false,
   });
 
   const pendingFetches = pendingFetchContext.get();
@@ -158,7 +161,7 @@
       </DropdownMenu.Label>
       <DropdownMenu.Separator />
       <DropdownMenu.Group>
-        <DropdownMenu.Item>
+        <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
           <BadgeCheck />
           Account
         </DropdownMenu.Item>
@@ -242,3 +245,5 @@
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
+
+<AccountSettings bind:openAccountSettings />
