@@ -36,6 +36,7 @@
   import { Separator } from "$/components/ui/separator/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { Loader, Check, CircleAlert, Lock, User } from "$lib/assets/icons.js";
+  import { Badge } from "$/components/ui/badge";
   import { toast } from "svelte-sonner";
   import { scale } from "svelte/transition";
   import { sineInOut } from "svelte/easing";
@@ -321,16 +322,17 @@
                       {overviewForm.emailVerified ? "Your email is verified" : "Email not verified"}
                     </div>
                   </div>
-                  <div
+                  <Badge
                     class={[
-                      "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                      overviewForm.emailVerified
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                      {
+                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
+                          overviewForm.emailVerified,
+                      },
                     ]}
                   >
                     {overviewForm.emailVerified ? "Verified" : "Pending"}
-                  </div>
+                  </Badge>
                 </div>
 
                 <div class="flex items-center justify-between rounded-lg border p-4">
@@ -340,16 +342,17 @@
                       {overviewForm.registeredTwoFactor ? "2FA is enabled" : "2FA not enabled"}
                     </div>
                   </div>
-                  <div
+                  <Badge
                     class={[
-                      "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                      overviewForm.registeredTwoFactor
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                      "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                      {
+                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
+                          overviewForm.registeredTwoFactor,
+                      },
                     ]}
                   >
                     {overviewForm.registeredTwoFactor ? "Enabled" : "Disabled"}
-                  </div>
+                  </Badge>
                 </div>
               </div>
             </div>
