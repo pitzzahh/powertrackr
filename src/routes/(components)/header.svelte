@@ -12,7 +12,7 @@
       icon: typeof Icon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
-      onclick?: ButtonProps["onclick"];
+      onclick?: (userId: string) => void;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
@@ -53,8 +53,8 @@
         icon: PhilippinePeso,
         label: "New Bill",
         open: false,
-        onclick: () => {
-          billingInfo = getLatestBillingInfo({ userId: user?.id || "" });
+        onclick: (userId: string) => {
+          billingInfo = getLatestBillingInfo({ userId });
         },
         callback: (valid, _action, metaData) => {
           if (valid) {
@@ -95,7 +95,14 @@
             {#if quickAction.visible}
               {@const Icon = quickAction.icon}
               <Sheet.Root bind:open={quickAction.open}>
-                <Sheet.Trigger class={buttonVariants()} onclick={quickAction.onclick}>
+                <Sheet.Trigger
+                  class={buttonVariants()}
+                  onclick={() => {
+                    if (quickAction.onclick) {
+                      quickAction.onclick(user?.id || "");
+                    }
+                  }}
+                >
                   <Icon class="size-4" />
                   <span>{quickAction.label}</span>
                   <span class="sr-only">
