@@ -1,7 +1,7 @@
 export { default as ChevronRight } from "@lucide/svelte/icons/chevron-right";
 export { default as UploadSimpleIcon } from "phosphor-svelte/lib/UploadSimpleIcon";
 export { default as Upload } from "phosphor-svelte/lib/UploadSimpleIcon";
-export { DownloadSimple as Download } from "phosphor-svelte";
+export { default as Download } from "phosphor-svelte/lib/DownloadIcon";
 export { default as ChevronLeft } from "@lucide/svelte/icons/chevron-left";
 export { default as ChevronDown } from "@lucide/svelte/icons/chevron-down";
 export { default as ChevronUp } from "@lucide/svelte/icons/chevron-up";
