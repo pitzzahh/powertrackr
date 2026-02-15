@@ -21,6 +21,11 @@
     confirmPassword: string;
     asyncState: AsyncState;
   };
+
+  type DeleteAccountFormState = {
+    confirmEmail: string;
+    asyncState: AsyncState;
+  };
 </script>
 
 <script lang="ts">
@@ -35,19 +40,21 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Separator } from "$/components/ui/separator/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { Loader, Check, CircleAlert, Lock, User } from "$lib/assets/icons.js";
+  import { Loader, Check, CircleAlert, Lock, User, Trash2 } from "$lib/assets/icons.js";
   import { Badge } from "$/components/ui/badge";
   import { toast } from "svelte-sonner";
   import { scale } from "svelte/transition";
   import { sineInOut } from "svelte/easing";
   import type { AsyncState } from "$/types/state";
+  import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
+  import { showInspectorWarning } from "$/components/toast";
 
   let { trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
   const isDesktop = new MediaQuery("(min-width: 768px)");
 
   // Tab state
-  let activeTab = $state<"overview" | "change-password">("overview");
+  let activeTab = $state<"overview" | "change-password" | "delete-account">("overview");
 
   // Overview form state
   let overviewForm = $state<OverviewFormState>({
@@ -64,6 +71,12 @@
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+    asyncState: "idle",
+  });
+
+  // Delete account form state
+  let deleteAccountForm = $state<DeleteAccountFormState>({
+    confirmEmail: "",
     asyncState: "idle",
   });
 
@@ -117,6 +130,9 @@
       overviewForm.image = "";
       overviewForm.emailVerified = true;
       overviewForm.registeredTwoFactor = false;
+    } else {
+      // Reset delete confirmation when dialog closes
+      deleteAccountForm.confirmEmail = "";
     }
   });
 
@@ -198,6 +214,43 @@
     passwordForm.newPassword = "";
     passwordForm.confirmPassword = "";
   }
+
+  // Handle account deletion
+  async function handleDeleteAccount() {
+    if (deleteAccountForm.confirmEmail !== overviewForm.email) {
+      return showInspectorWarning();
+    }
+
+    deleteAccountForm.asyncState = "processing";
+    const toastId = toast.loading("Deleting account...");
+
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // In real app, make API call here
+      // const response = await fetch('/api/account', {
+      //   method: 'DELETE'
+      // });
+
+      deleteAccountForm.asyncState = "success";
+      toast.success("Account deleted successfully", { id: toastId });
+
+      // Close dialog and redirect or logout
+      setTimeout(() => {
+        openAccountSettings = false;
+        deleteAccountForm.asyncState = "idle";
+        // In real app: redirect to login or logout
+      }, 1000);
+    } catch (error) {
+      deleteAccountForm.asyncState = "error";
+      toast.error("Failed to delete account. Please try again.", { id: toastId });
+
+      setTimeout(() => {
+        deleteAccountForm.asyncState = "idle";
+      }, 2000);
+    }
+  }
 </script>
 
 {#if isDesktop.current}
@@ -248,6 +301,7 @@
     <UnderlineTabs.List>
       <UnderlineTabs.Trigger value="overview">Overview</UnderlineTabs.Trigger>
       <UnderlineTabs.Trigger value="change-password">Change Password</UnderlineTabs.Trigger>
+      <UnderlineTabs.Trigger value="delete-account">Delete Account</UnderlineTabs.Trigger>
     </UnderlineTabs.List>
 
     <UnderlineTabs.Content value="overview">
@@ -374,13 +428,13 @@
                 class="min-w-32"
               >
                 {#if overviewForm.asyncState === "processing"}
-                  <Loader class="mr-2 size-4 animate-spin" />
+                  <Loader class="size-4 animate-spin" />
                   Saving...
                 {:else if overviewForm.asyncState === "success"}
-                  <Check class="mr-2 size-4" />
+                  <Check class="size-4" />
                   Saved!
                 {:else}
-                  <User class="mr-2 size-4" />
+                  <User class="size-4" />
                   Save Changes
                 {/if}
               </Button>
@@ -486,18 +540,106 @@
                 class="min-w-32"
               >
                 {#if passwordForm.asyncState === "processing"}
-                  <Loader class="mr-2 size-4 animate-spin" />
+                  <Loader class="size-4 animate-spin" />
                   Changing...
                 {:else if passwordForm.asyncState === "success"}
-                  <Check class="mr-2 size-4" />
+                  <Check class="size-4" />
                   Changed!
                 {:else}
-                  <Lock class="mr-2 size-4" />
+                  <Lock class="size-4" />
                   Change Password
                 {/if}
               </Button>
             </div>
           </form>
+        </div>
+      </ScrollArea>
+    </UnderlineTabs.Content>
+
+    <UnderlineTabs.Content value="delete-account">
+      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
+        <div class="p-4">
+          <div class="space-y-6">
+            <div class="space-y-4">
+              <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                Danger Zone
+              </h4>
+
+              {@render WarningBanner({
+                message:
+                  "This action cannot be undone. This will permanently delete your account and remove all your data from our servers.",
+              })}
+
+              <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <div class="space-y-3">
+                  <div>
+                    <h5 class="text-sm font-semibold text-destructive">What will be deleted:</h5>
+                    <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-destructive/90">
+                      <li>Your profile and account information</li>
+                      <li>All billing information and history</li>
+                      <li>All sub-meter readings and payments</li>
+                      <li>All consumption data and analytics</li>
+                      <li>Your preferences and settings</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+                <Field.Label for="delete-confirm-email" class="px-1">
+                  Type your email to confirm:
+                  <span class="font-mono text-primary">{overviewForm.email}</span>
+                </Field.Label>
+                <Input
+                  id="delete-confirm-email"
+                  type="email"
+                  bind:value={deleteAccountForm.confirmEmail}
+                  placeholder={overviewForm.email}
+                  disabled={deleteAccountForm.asyncState === "processing"}
+                  class="w-full text-center"
+                  autocomplete="off"
+                />
+                <Field.Description>
+                  Enter your email address exactly as shown above to confirm deletion.
+                </Field.Description>
+              </div>
+            </div>
+
+            <Separator />
+
+            <div class="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onclick={() => {
+                  deleteAccountForm.confirmEmail = "";
+                }}
+                disabled={deleteAccountForm.asyncState === "processing"}
+              >
+                Clear
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onclick={handleDeleteAccount}
+                disabled={deleteAccountForm.confirmEmail !== overviewForm.email ||
+                  deleteAccountForm.asyncState === "processing"}
+                class="min-w-32"
+              >
+                {#if deleteAccountForm.asyncState === "processing"}
+                  <Loader class="size-4 animate-spin" />
+                  Deleting
+                  {@render LoadingDots()}
+                {:else if deleteAccountForm.asyncState === "success"}
+                  <Check class="size-4" />
+                  Deleted!
+                {:else}
+                  <Trash2 class="size-4" />
+                  Delete Account
+                {/if}
+              </Button>
+            </div>
+          </div>
         </div>
       </ScrollArea>
     </UnderlineTabs.Content>
