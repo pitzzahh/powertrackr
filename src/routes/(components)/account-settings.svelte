@@ -24,16 +24,16 @@
 </script>
 
 <script lang="ts">
-  import * as Drawer from "$lib/components/ui/drawer/index.js";
-  import { buttonVariants } from "$lib/components/ui/button/index.js";
+  import * as Drawer from "$/components/ui/drawer/index.js";
+  import { buttonVariants } from "$/components/ui/button/index.js";
   import { MediaQuery } from "svelte/reactivity";
   import * as Dialog from "$/components/ui/dialog";
   import { Portal } from "bits-ui";
   import * as UnderlineTabs from "$/components/underline-tabs";
-  import * as Field from "$lib/components/ui/field/index.js";
-  import { Input } from "$lib/components/ui/input/index.js";
-  import { Button } from "$lib/components/ui/button/index.js";
-  import { Separator } from "$lib/components/ui/separator/index.js";
+  import * as Field from "$/components/ui/field/index.js";
+  import { Input } from "$/components/ui/input/index.js";
+  import { Button } from "$/components/ui/button/index.js";
+  import { Separator } from "$/components/ui/separator/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { Loader, Check, CircleAlert, Lock, User } from "$lib/assets/icons.js";
   import { toast } from "svelte-sonner";
