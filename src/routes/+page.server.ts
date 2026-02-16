@@ -1,5 +1,7 @@
-import { requireAuth } from "$/server/auth.js";
+import { redirect } from "@sveltejs/kit";
 
-export async function load() {
-  requireAuth();
+export async function load({ locals }) {
+  if (locals.user) {
+    redirect(302, "/dashboard");
+  }
 }

@@ -3,7 +3,7 @@ import { getContext, setContext } from "svelte";
 
 class SidebarStore {
   navItems = $state([
-    { icon: House, label: "DASHBOARD", active: false, route: "/" },
+    { icon: House, label: "DASHBOARD", active: false, route: "/dashboard" },
     { icon: Zap, label: "CONSUMPTION", active: false, route: "/consumption" },
     { icon: Clock, label: "HISTORY", active: false, route: "/history" },
   ]);
