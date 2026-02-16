@@ -105,7 +105,7 @@
     if (!billingInfo) return { BILLING_NORMALIZED: out };
     for (const key of Object.keys(fv) as (keyof FormFieldsValue)[]) {
       if (key === "subMeters") {
-        out.subMeters = (billingInfo.subMeters ?? []).map((s) => ({
+        out.subMeters = billingInfo.subMeters.map((s) => ({
           id: s.id,
           label: s.label,
           reading: s.reading,
@@ -218,24 +218,53 @@
 
   // Add a new sub meter
   function addSubMeter() {
+    // Get current form values before adding new sub meter
+    const currentFormValues = currentAction?.fields?.subMeters?.value?.() ?? [];
+
     subMeters.push({
       id: crypto.randomUUID(),
       label: "",
       reading: 0,
     });
-    // Ensure action fields get updated so change detection picks up new sub-meters
+
+    // Ensure action fields get updated with current form values plus the new sub-meter
     currentAction?.fields?.subMeters?.set?.(
-      subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+      subMeters.map((s, idx) => {
+        // Use current form values if they exist, otherwise use the subMeter values
+        if (currentFormValues[idx]) {
+          return {
+            id: s.id,
+            label: currentFormValues[idx].label ?? s.label,
+            reading: currentFormValues[idx].reading ?? s.reading,
+          };
+        }
+        return { id: s.id, label: s.label, reading: s.reading };
+      })
     );
   }
 
   // Remove a sub meter
   function removeSubMeter(index: number) {
     if (subMeters.length >= 1) {
+      // Get current form values before removing
+      const currentFormValues = currentAction?.fields?.subMeters?.value?.() ?? [];
+
       subMeters.splice(index, 1);
-      // Sync the action fields after removal
+
+      // Sync the action fields after removal, preserving current form values
       currentAction?.fields?.subMeters?.set?.(
-        subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+        subMeters.map((s, idx) => {
+          // Map to the correct form value (accounting for the removed index)
+          const formIdx = idx < index ? idx : idx + 1;
+          if (currentFormValues[formIdx]) {
+            return {
+              id: s.id,
+              label: currentFormValues[formIdx].label ?? s.label,
+              reading: currentFormValues[formIdx].reading ?? s.reading,
+            };
+          }
+          return { id: s.id, label: s.label, reading: s.reading };
+        })
       );
     }
   }
