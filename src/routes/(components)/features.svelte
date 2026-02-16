@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
   import { ChartLine, Users, Shield, Clock } from "$lib/assets/icons";
-  import { SplitReveal } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
 </script>
 
 <section class="relative z-10 py-24">
@@ -17,7 +17,13 @@
       </SplitReveal>
     </div>
 
-    <div class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <ScrollStagger
+      preset="slide-up"
+      stagger={0.1}
+      duration={0.6}
+      distance={40}
+      class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-4"
+    >
       <Card
         class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
       >
@@ -82,6 +88,6 @@
           </CardDescription>
         </CardHeader>
       </Card>
-    </div>
+    </ScrollStagger>
   </div>
 </section>

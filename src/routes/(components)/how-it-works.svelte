@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SplitReveal } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
 
   const steps = [
     {
@@ -36,7 +36,13 @@
       </SplitReveal>
     </div>
 
-    <div class="mx-auto grid max-w-5xl gap-8 md:grid-cols-3">
+    <ScrollStagger
+      preset="slide-up"
+      stagger={0.15}
+      duration={0.6}
+      distance={40}
+      class="mx-auto grid max-w-5xl gap-8 md:grid-cols-3"
+    >
       {#each steps as step, i}
         <div class="group relative">
           <div
@@ -65,6 +71,6 @@
           {/if}
         </div>
       {/each}
-    </div>
+    </ScrollStagger>
   </div>
 </section>

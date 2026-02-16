@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SplitReveal } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
 
   const stats = [
     { value: "10K+", label: "Active Users" },
@@ -11,7 +11,13 @@
 
 <section class="relative z-10 border-y border-border/50 bg-muted/30 py-20">
   <div class="container mx-auto px-4">
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+    <ScrollStagger
+      preset="slide-up"
+      stagger={0.1}
+      duration={0.6}
+      distance={30}
+      class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
+    >
       {#each stats as stat, i}
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
@@ -26,6 +32,6 @@
           </div>
         </div>
       {/each}
-    </div>
+    </ScrollStagger>
   </div>
 </section>
