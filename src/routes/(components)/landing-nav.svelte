@@ -33,12 +33,23 @@
 
 <div class="h-18">
   <header
-    class="fixed top-0 right-0 left-0 z-50 transition-all duration-300 ease-out"
-    class:floating={isFloating}
+    class="fixed inset-x-0 z-50 transition-all duration-300 ease-out"
+    style:top={isFloating ? "0.75rem" : "0"}
+    style:padding-left={isFloating ? "1rem" : "0"}
+    style:padding-right={isFloating ? "1rem" : "0"}
   >
     <div
-      class="nav-inner mx-auto flex items-center justify-between border-border/50 bg-background/80 px-4 py-4 backdrop-blur-lg transition-all duration-300"
-      class:floating={isFloating}
+      class={[
+        "mx-auto flex items-center justify-between border-border/50 bg-background/50 px-4 backdrop-blur-lg transition-all duration-300 ease-out",
+        isFloating ? "border" : "border-b",
+      ]}
+      style:max-width={isFloating ? "70%" : "100%"}
+      style:border-radius={isFloating ? "1rem" : "0"}
+      style:padding-top={isFloating ? "0.75rem" : "1rem"}
+      style:padding-bottom={isFloating ? "0.75rem" : "1rem"}
+      style:box-shadow={isFloating
+        ? "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)"
+        : "none"}
     >
       <Logo
         variant="ghost"
@@ -72,38 +83,3 @@
     </div>
   </header>
 </div>
-
-<style>
-  header {
-    padding: 0;
-  }
-
-  header.floating {
-    padding: 0.75rem 1rem 0;
-  }
-
-  .nav-inner {
-    border-bottom-width: 1px;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .nav-inner.floating {
-    border-width: 1px;
-    border-radius: 1rem;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    background: oklch(from var(--background) l c h / 0.95);
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.1),
-      0 2px 4px -2px rgb(0 0 0 / 0.1),
-      0 0 0 1px rgb(0 0 0 / 0.05);
-  }
-
-  :global(.dark) .nav-inner.floating {
-    box-shadow:
-      0 4px 6px -1px rgb(0 0 0 / 0.3),
-      0 2px 4px -2px rgb(0 0 0 / 0.2),
-      0 0 0 1px rgb(255 255 255 / 0.05);
-  }
-</style>
