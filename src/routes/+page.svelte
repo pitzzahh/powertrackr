@@ -12,15 +12,17 @@
     Stats,
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
+
+  let { data } = $props();
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
   <AnimatedBackground />
-  <LandingNav />
+  <LandingNav user={data.user} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero />
+    <Hero user={data.user} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -107,7 +109,7 @@
       class="absolute right-1/4 bottom-1/4 hidden h-px w-40 -rotate-45 bg-linear-to-r from-transparent via-primary/20 to-transparent lg:block"
     ></div>
     <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta />
+      <Cta user={data.user} />
     </ScrollParallax>
   </div>
 
