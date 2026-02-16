@@ -24,9 +24,9 @@
       distance={40}
       class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-4"
     >
-      <Magnetic>
+      <Magnetic class="h-full">
         <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+          class="group relative h-full overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
         >
           <CardHeader>
             <div
@@ -42,9 +42,9 @@
         </Card>
       </Magnetic>
 
-      <Magnetic>
+      <Magnetic class="h-full">
         <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+          class="group relative h-full overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
         >
           <CardHeader>
             <div
@@ -60,9 +60,9 @@
         </Card>
       </Magnetic>
 
-      <Magnetic>
+      <Magnetic class="h-full">
         <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+          class="group relative h-full overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
         >
           <CardHeader>
             <div
@@ -78,9 +78,9 @@
         </Card>
       </Magnetic>
 
-      <Magnetic>
+      <Magnetic class="h-full">
         <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+          class="group relative h-full overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
         >
           <CardHeader>
             <div
