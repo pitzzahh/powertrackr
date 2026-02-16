@@ -84,49 +84,73 @@
     };
   });
 
+  async function waitForFonts(): Promise<void> {
+    // Check if document.fonts API is available
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      await document.fonts.ready;
+    }
+  }
+
   function initSplitReveal(node: HTMLSpanElement) {
     gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
     CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
 
-    const split = SplitText.create(node, {
-      type: "lines, words, chars",
-      tag: as,
-      mask: "lines",
-    });
+    let split: SplitText | null = null;
+    let tween: gsap.core.Tween | null = null;
 
-    const targets =
-      mode === "lines"
-        ? (split.lines ?? [])
-        : mode === "words"
-          ? (split.words ?? [])
-          : (split.chars ?? []);
+    // Hide the node initially to prevent flash of unstyled content
+    gsap.set(node, { visibility: "hidden" });
 
-    if (!targets.length) {
-      split.revert();
-      return () => {};
-    }
+    // Wait for fonts to load before splitting text
+    waitForFonts().then(() => {
+      // Make visible again
+      gsap.set(node, { visibility: "visible" });
 
-    gsap.set(targets, { yPercent: 110 });
+      split = SplitText.create(node, {
+        type: "lines, words, chars",
+        tag: as,
+        mask: "lines",
+      });
 
-    const tween = gsap.to(targets, {
-      yPercent: 0,
-      duration: resolvedConfig.duration,
-      stagger: resolvedConfig.stagger,
-      ease: "motion-core-ease",
-      lazy: false,
-      delay: delay,
-      scrollTrigger: triggerOnScroll
-        ? {
-            trigger: node,
-            scroller: scrollElement,
-            start: "top 85%",
-          }
-        : undefined,
+      const targets =
+        mode === "lines"
+          ? (split.lines ?? [])
+          : mode === "words"
+            ? (split.words ?? [])
+            : (split.chars ?? []);
+
+      if (!targets.length) {
+        split.revert();
+        split = null;
+        return;
+      }
+
+      gsap.set(targets, { yPercent: 110 });
+
+      tween = gsap.to(targets, {
+        yPercent: 0,
+        duration: resolvedConfig.duration,
+        stagger: resolvedConfig.stagger,
+        ease: "motion-core-ease",
+        lazy: false,
+        delay: delay,
+        scrollTrigger: triggerOnScroll
+          ? {
+              trigger: node,
+              scroller: scrollElement,
+              start: "top 85%",
+            }
+          : undefined,
+      });
     });
 
     return () => {
-      tween.kill();
-      split.revert();
+      if (tween) {
+        tween.kill();
+      }
+      if (split) {
+        split.revert();
+      }
     };
   }
 </script>
