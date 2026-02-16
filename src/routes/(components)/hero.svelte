@@ -18,10 +18,10 @@
     </div>
 
     <!-- Hero Title -->
-    <div class="hero-title-container mb-4">
+    <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
       <h1 class="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
         Track{" "}
-        <span class="textloop-wrapper">
+        <span class="inline-flex justify-center align-baseline">
           <TextLoop
             class="text-primary"
             texts={["Billing", "Payments", "Usage", "Expenses"]}
@@ -35,7 +35,7 @@
       </p>
     </div>
 
-    <p class="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl">
+    <p class="mx-auto my-6 mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
       Record, organize, and reconcile electricity usage and payments across your account and
       sub-meters. Built for landlords, property managers, and multi-unit properties who need
       practical billing and expense allocation.
@@ -117,33 +117,3 @@
     </div>
   </div>
 </section>
-
-<style>
-  /* Hero title container - fixed height to prevent layout shift */
-  .hero-title-container {
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  @media (min-width: 768px) {
-    .hero-title-container {
-      min-height: 220px;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .hero-title-container {
-      min-height: 260px;
-    }
-  }
-
-  /* TextLoop wrapper - prevent layout shift */
-  .textloop-wrapper {
-    display: inline-flex;
-    justify-content: center;
-    vertical-align: baseline;
-  }
-</style>
