@@ -1,4 +1,4 @@
-import { query, form, command } from "$app/server";
+import { query, form, command, getRequestEvent } from "$app/server";
 import { db } from "$lib/server/db/index";
 import { calculatePayPerKwh } from "$lib";
 import {
@@ -44,7 +44,20 @@ const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
 ] as const;
 
 // Query to get total energy usage (summed totalKwh) for a user, formatted
+// Public endpoint with origin check - only allows requests from same origin
 export const getTotalEnergyUsage = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
   return await getTotalEnergyUsageCrud();
 });
 
