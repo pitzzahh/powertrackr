@@ -97,7 +97,7 @@ export const login = form(loginSchema, async (user, issues) => {
   if (userResult.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const register = form(registerSchema, async (newUser, issues) => {
@@ -231,7 +231,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
   if (updatedUser.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const setup2FA = form(setup2FASchema, async (data, _issues) => {
@@ -249,7 +249,7 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   if (!updateResult.valid) {
     error(400, "Failed to set up 2FA");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const forgotPassword = form(forgotPasswordSchema, async (user) => {

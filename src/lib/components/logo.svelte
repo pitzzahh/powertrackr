@@ -26,7 +26,7 @@
 </script>
 
 <Button
-  href="/"
+  href="/dashboard"
   aria-label="Homepage"
   style="view-transition-name: {viewTransitionName};"
   class={cn("flex cursor-pointer items-center justify-center rounded-sm", className)}

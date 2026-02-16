@@ -45,7 +45,7 @@
   import { goto } from "$app/navigation";
   import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info.js";
   import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
-  import { BillingInfoForm } from "./history/(components)/index.js";
+  import { BillingInfoForm } from "../history/(components)/index.js";
 
   let { data } = $props();
 
