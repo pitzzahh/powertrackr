@@ -55,7 +55,7 @@
   import { Input } from "$/components/ui/input";
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
-  import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+  import { CalendarDate, today } from "@internationalized/date";
   import { getChangedData, omit } from "$/utils/mapper";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
@@ -112,7 +112,9 @@
         }));
       } else if (key === "date") {
         const d = new Date(billingInfo.date);
-        out.date = new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate()).toString();
+        const calDate = new CalendarDate(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        // Convert to UTC ISO string to prevent timezone issues during comparison
+        out.date = new Date(Date.UTC(calDate.year, calDate.month - 1, calDate.day)).toISOString();
       } else if (key === "id" && billingInfo.id) {
         out.id = billingInfo.id;
       } else if (key === "balance" && typeof billingInfo.balance === "number") {
@@ -183,7 +185,11 @@
 
   let { FORM_VALID } = $derived.by(() => {
     // Read individual fields instead of grabbing the whole form to avoid `as any`
-    const dateStr = currentAction.fields.date.value() ?? (dateValue ? dateValue.toString() : "");
+    const dateStr =
+      currentAction.fields.date.value() ??
+      (dateValue
+        ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+        : "");
     const balanceVal = currentAction.fields.balance.value();
     const totalkWhVal = currentAction.fields.totalkWh.value();
     const statusVal = currentAction.fields.status.value() ?? status;
@@ -274,8 +280,17 @@
     if (action === "update" && billingInfo) {
       // Set date
       const date = new Date(billingInfo.date);
-      dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-      currentAction.fields.date.set(dateValue ? dateValue.toString() : "");
+      dateValue = new CalendarDate(
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        date.getUTCDate()
+      );
+      // Convert CalendarDate to UTC ISO string to prevent timezone issues
+      currentAction.fields.date.set(
+        dateValue
+          ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+          : ""
+      );
       status = billingInfo.status;
       //@ts-expect-error id exists for update action
       currentAction.fields.id.set(billingInfo.id);
@@ -287,14 +302,19 @@
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
-            latestDate.getFullYear() + (latestDate.getMonth() === 11 ? 1 : 0),
-            ((latestDate.getMonth() + 1) % 12) + 1,
+            latestDate.getUTCFullYear() + (latestDate.getUTCMonth() === 11 ? 1 : 0),
+            ((latestDate.getUTCMonth() + 1) % 12) + 1,
             1
           )
         : undefined;
       status = "Pending";
       // Sync date with action fields so client-side validation can run
-      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+      // Convert CalendarDate to UTC ISO string to prevent timezone issues
+      currentAction?.fields?.date?.set?.(
+        dateValue
+          ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+          : ""
+      );
     }
 
     subMeters =
@@ -368,7 +388,11 @@
           <Popover.Trigger id="{identity}-date">
             {#snippet child({ props })}
               <Button {...props} variant="outline" class="w-full justify-between font-normal">
-                {dateValue ? formatDate(dateValue.toDate(getLocalTimeZone())) : "Select date"}
+                {dateValue
+                  ? formatDate(
+                      new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day))
+                    )
+                  : "Select date"}
                 <ChevronDown />
               </Button>
             {/snippet}
@@ -382,8 +406,14 @@
                   captionLayout="dropdown"
                   onValueChange={() => {
                     openDatePicker = false;
-                    // Keep the action fields in sync when the user picks a date
-                    currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+                    // Keep the action fields in sync when the user picks a date (use UTC ISO string)
+                    currentAction?.fields?.date?.set?.(
+                      dateValue
+                        ? new Date(
+                            Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                          ).toISOString()
+                        : ""
+                    );
                   }}
                   class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
                 />
@@ -396,10 +426,17 @@
                     class="flex-1"
                     onclick={() => {
                       openDatePicker = false;
-                      dateValue = today(getLocalTimeZone())?.add({
+                      const utcToday = today("UTC");
+                      dateValue = utcToday?.add({
                         days: preset.value,
                       });
-                      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+                      currentAction?.fields?.date?.set?.(
+                        dateValue
+                          ? new Date(
+                              Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                            ).toISOString()
+                          : ""
+                      );
                     }}
                   >
                     {preset.label}
@@ -412,7 +449,9 @@
         <input
           hidden
           {...currentAction.fields.date.as("text")}
-          value={dateValue ? dateValue.toString() : ""}
+          value={dateValue
+            ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+            : ""}
           required
         />
         <Field.Description>Pick billing date</Field.Description>

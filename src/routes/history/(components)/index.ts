@@ -5,7 +5,7 @@ import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
-import { formatNumber } from "$/utils/format";
+import { formatNumber, formatDate, parseCalendarDate } from "$/utils/format";
 
 export function historyTableColumns() {
   return [
@@ -40,7 +40,7 @@ export function historyTableColumns() {
         renderComponent(Badge, {
           children: createRawSnippet(() => {
             return {
-              render: () => `<span>${row.original.date}</span>`,
+              render: () => `<span>${formatDate(parseCalendarDate(row.original.date))}</span>`,
             };
           }),
         }),
