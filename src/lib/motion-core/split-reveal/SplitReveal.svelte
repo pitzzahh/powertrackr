@@ -4,7 +4,6 @@
   import { SplitText } from "gsap/dist/SplitText";
   import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
   import type { Snippet } from "svelte";
-  import { onMount } from "svelte";
   import { cn } from "../utils/cn";
 
   type SplitMode = "lines" | "words" | "chars";
@@ -64,13 +63,6 @@
     chars: { duration: 0.4, stagger: 0.008 },
   };
 
-  onMount(() => {
-    gsap.registerPlugin(SplitText);
-    gsap.registerPlugin(CustomEase);
-    gsap.registerPlugin(ScrollTrigger);
-    CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
-  });
-
   let {
     children,
     class: className = "",
@@ -92,13 +84,9 @@
     };
   });
 
-  let wrapperRef: HTMLSpanElement | null = null;
-
-  $effect(() => {
-    if (typeof window === "undefined") return;
-
-    const node = wrapperRef;
-    if (!node) return;
+  function initSplitReveal(node: HTMLSpanElement) {
+    gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
+    CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
 
     const split = SplitText.create(node, {
       type: "lines, words, chars",
@@ -115,7 +103,7 @@
 
     if (!targets.length) {
       split.revert();
-      return;
+      return () => {};
     }
 
     gsap.set(targets, { yPercent: 110 });
@@ -140,13 +128,13 @@
       tween.kill();
       split.revert();
     };
-  });
+  }
 </script>
 
 <span
   {...restProps}
+  {@attach initSplitReveal}
   class={cn("font-inherit relative align-baseline text-inherit", className)}
-  bind:this={wrapperRef}
 >
   {@render children?.()}
 </span>
