@@ -26,6 +26,9 @@ importers:
       '@pilcrowjs/object-parser':
         specifier: ^0.0.4
         version: 0.0.4
+      '@types/gsap':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@zxcvbn-ts/core':
         specifier: ^3.0.4
         version: 3.0.4
@@ -50,6 +53,9 @@ importers:
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      gsap:
+        specifier: ^3.14.2
+        version: 3.14.2
       mode-watcher:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.51.2)
@@ -1484,6 +1490,10 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/gsap@3.0.0':
+    resolution: {integrity: sha512-BbWLi4WRHGze4C8NV7U7yRevuBFiPkPZZyGa0rryanvh/9HPUFXTNBXsGQxJZJq7Ix7j4RXMYodP3s+OsqCErg==}
+    deprecated: This is a stub types definition. gsap provides its own type definitions, so you do not need this installed.
+
   '@types/mssql@9.1.9':
     resolution: {integrity: sha512-P0nCgw6vzY23UxZMnbI4N7fnLGANt4LI4yvxze1paPj+LuN28cFv5EI+QidP8udnId/BKhkcRhm/BleNsjK65A==}
 
@@ -2011,6 +2021,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  gsap@3.14.2:
+    resolution: {integrity: sha512-P8/mMxVLU7o4+55+1TCnQrPmgjPKnwkzkXOK1asnR9Jg2lna4tEY5qBJjMmAaOBDDZWtlRjBXjLa0w53G/uBLA==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -3905,6 +3918,10 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
+  '@types/gsap@3.0.0':
+    dependencies:
+      gsap: 3.14.2
+
   '@types/mssql@9.1.9':
     dependencies:
       '@types/node': 25.0.10
@@ -4379,6 +4396,8 @@ snapshots:
       resolve-pkg-maps: 1.0.0
 
   graceful-fs@4.2.11: {}
+
+  gsap@3.14.2: {}
 
   has-flag@4.0.0: {}
 
