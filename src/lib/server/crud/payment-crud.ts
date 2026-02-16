@@ -1,7 +1,7 @@
 import { db } from "$/server/db";
 import type { Transaction } from "$/server/db";
 import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
-import { payment } from "$/server/db/schema";
+import { payment, billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
@@ -54,7 +54,11 @@ export type TotalPaymentsAmountResult = {
 };
 
 export async function getTotalPaymentsAmount(tx?: Transaction): Promise<TotalPaymentsAmountResult> {
-  const result = await (tx || db()).select({ total: sum(payment.amount) }).from(payment);
+  // Only sum payments that are linked to billing info (main payments, not sub-meter payments)
+  const result = await (tx || db())
+    .select({ total: sum(payment.amount) })
+    .from(payment)
+    .innerJoin(billingInfo, eq(billingInfo.paymentId, payment.id));
 
   const total = Number(result[0]?.total ?? 0);
   const formatted = formatNumber(total);
