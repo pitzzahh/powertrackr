@@ -36,6 +36,10 @@
   import { changePassword } from "$/api/auth.remote";
   import { isHttpError } from "@sveltejs/kit";
   import * as Password from "$/components/password";
+  import { Checkbox } from "$/components/ui/checkbox/index.js";
+  import { Label } from "$/components/ui/label/index.js";
+  import { fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
 
   let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -48,6 +52,26 @@
       passwordAsyncState: "idle",
       deleteAsyncState: "idle",
     });
+
+  // Derived state for checking if email matches
+  const emailMatches = $derived(deleteUser.fields.confirmEmail.value() === user?.email);
+
+  let { deleteCheckbox1 } = $derived({ deleteCheckbox1: false });
+  let { deleteCheckbox2 } = $derived({ deleteCheckbox2: !deleteCheckbox1 });
+  let { deleteCheckbox3 } = $derived({ deleteCheckbox3: !deleteCheckbox2 });
+
+  // Derived state for all confirmations
+  const allConfirmed = $derived(
+    emailMatches && deleteCheckbox1 && deleteCheckbox2 && deleteCheckbox3
+  );
+
+  $effect(() => {
+    if (!emailMatches) {
+      deleteCheckbox1 = false;
+      deleteCheckbox2 = false;
+      deleteCheckbox3 = false;
+    }
+  });
 </script>
 
 {#if isDesktop.current}
@@ -509,6 +533,79 @@
                   <Field.Error errors={deleteUser.fields.confirmEmail.issues()} />
                 </Field.Field>
               </Field.Group>
+
+              {#if emailMatches}
+                <div class="space-y-3" transition:fly={{ y: 10, duration: 300, easing: cubicOut }}>
+                  <h5 class="text-sm font-semibold text-destructive">
+                    Please confirm the following to proceed:
+                  </h5>
+
+                  <Label
+                    class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
+                  >
+                    <Checkbox
+                      id="delete-confirm-1"
+                      bind:checked={deleteCheckbox1}
+                      disabled={deleteAsyncState === "processing"}
+                      class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"
+                    />
+                    <div class="grid gap-1.5 font-normal">
+                      <p class="text-sm leading-none font-medium">
+                        I understand this action is permanent
+                      </p>
+                      <p class="text-xs text-muted-foreground">
+                        All data will be permanently deleted and cannot be recovered.
+                      </p>
+                    </div>
+                  </Label>
+
+                  {#if deleteCheckbox1}
+                    <div transition:fly={{ y: 10, duration: 300, delay: 100, easing: cubicOut }}>
+                      <Label
+                        class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
+                      >
+                        <Checkbox
+                          id="delete-confirm-2"
+                          bind:checked={deleteCheckbox2}
+                          disabled={deleteAsyncState === "processing"}
+                          class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"
+                        />
+                        <div class="grid gap-1.5 font-normal">
+                          <p class="text-sm leading-none font-medium">
+                            I have backed up any important data
+                          </p>
+                          <p class="text-xs text-muted-foreground">
+                            Ensure you've saved any information you need before proceeding.
+                          </p>
+                        </div>
+                      </Label>
+                    </div>
+                  {/if}
+
+                  {#if deleteCheckbox1 && deleteCheckbox2}
+                    <div transition:fly={{ y: 10, duration: 300, delay: 100, easing: cubicOut }}>
+                      <Label
+                        class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
+                      >
+                        <Checkbox
+                          id="delete-confirm-3"
+                          bind:checked={deleteCheckbox3}
+                          disabled={deleteAsyncState === "processing"}
+                          class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"
+                        />
+                        <div class="grid gap-1.5 font-normal">
+                          <p class="text-sm leading-none font-medium">
+                            I want to permanently delete my account
+                          </p>
+                          <p class="text-xs text-muted-foreground">
+                            Final confirmation to proceed with account deletion.
+                          </p>
+                        </div>
+                      </Label>
+                    </div>
+                  {/if}
+                </div>
+              {/if}
             </div>
 
             <Separator />
@@ -520,6 +617,10 @@
                 onclick={(e) => {
                   const form = e.currentTarget.closest("form");
                   form?.reset();
+                  deleteUser.fields.confirmEmail.set("");
+                  deleteCheckbox1 = false;
+                  deleteCheckbox2 = false;
+                  deleteCheckbox3 = false;
                 }}
                 disabled={deleteAsyncState === "processing"}
               >
@@ -528,7 +629,7 @@
               <Button
                 type="submit"
                 variant="destructive"
-                disabled={deleteAsyncState === "processing"}
+                disabled={!allConfirmed || deleteAsyncState === "processing"}
                 class="min-w-32"
               >
                 {#if deleteAsyncState === "processing"}
