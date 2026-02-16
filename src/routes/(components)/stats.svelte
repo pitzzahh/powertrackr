@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { getTotalEnergyUsage } from "$/api/billing-info.remote";
+  import { getTotalEnergyUsage, getTotalBillingInfoCount } from "$/api/billing-info.remote";
   import { getTotalUserCount } from "$/api/user.remote";
+  import { getTotalPaymentsAmount } from "$/api/payment.remote";
   import { SplitReveal, ScrollStagger } from "$lib/motion-core";
 
-  const [energyUsed, userCount] = await Promise.all([getTotalEnergyUsage(), getTotalUserCount()]);
+  const [energyUsed, userCount, billingCount, paymentsAmount] = await Promise.all([
+    getTotalEnergyUsage(),
+    getTotalUserCount(),
+    getTotalBillingInfoCount(),
+    getTotalPaymentsAmount(),
+  ]);
 
-  const formatUserCount = (count: number) => {
+  const formatCount = (count: number) => {
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K+`;
     }
@@ -13,10 +19,10 @@
   };
 
   const stats = [
-    { value: formatUserCount(userCount), label: `Active ${userCount === 1 ? "User" : "Users"}` },
+    { value: formatCount(userCount), label: `Active ${userCount === 1 ? "User" : "Users"}` },
     { value: energyUsed.formatted, label: `${energyUsed.energyUnit} Tracked` },
-    { value: "99.9%", label: "Uptime" },
-    { value: "4.9★", label: "User Rating" },
+    { value: formatCount(billingCount), label: "Bills Tracked" },
+    { value: paymentsAmount.formatted, label: "Payments Managed" },
   ];
 </script>
 
