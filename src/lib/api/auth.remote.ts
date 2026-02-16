@@ -42,11 +42,11 @@ export const requireAuth = query(() => requireAuthServer());
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return redirect(303, "/auth?act=login");
+    return redirect(303, "/");
   }
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
-  redirect(303, "/auth?act=login");
+  redirect(303, "/");
 });
 
 export const login = form(loginSchema, async (user, issues) => {

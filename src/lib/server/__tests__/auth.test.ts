@@ -39,7 +39,7 @@ describe("auth module", () => {
   it("requireAuth redirects to login when no user or session", () => {
     mockGetRequestEvent.mockImplementation(() => ({ locals: { user: null, session: null } }));
     const res = requireAuth();
-    expect(res).toEqual({ status: 307, location: "/auth?act=login" });
+    expect(res).toEqual({ status: 307, location: "/" });
   });
 
   it("requireAuth redirects to verify-email when email not verified", () => {
