@@ -1,5 +1,6 @@
 <script lang="ts" module>
   type LogoProps = {
+    href?: ButtonProps["href"];
     variant?: ButtonVariant;
     size?: ButtonSize;
     class?: string;
@@ -10,6 +11,7 @@
 <script lang="ts">
   import { site } from "$/site";
   import Button, {
+    type ButtonProps,
     type ButtonSize,
     type ButtonVariant,
   } from "$/components/ui/button/button.svelte";
@@ -17,6 +19,7 @@
   import { Zap } from "$/assets/icons";
 
   let {
+    href = "/",
     class: className,
     variant = "default",
     size = "default",
@@ -26,7 +29,7 @@
 </script>
 
 <Button
-  href="/dashboard"
+  {href}
   aria-label="Homepage"
   style="view-transition-name: {viewTransitionName};"
   class={cn("flex cursor-pointer items-center justify-center rounded-sm", className)}
