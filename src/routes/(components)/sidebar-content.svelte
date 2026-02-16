@@ -234,4 +234,4 @@
   </AlertDialog.Content>
 </AlertDialog.Root>
 
-<AccountSettings bind:openAccountSettings />
+<AccountSettings {user} bind:openAccountSettings />

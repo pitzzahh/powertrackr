@@ -2,6 +2,7 @@
   import type { Snippet } from "svelte";
 
   export type AccountSettingsProps = {
+    user: App.Locals["user"];
     trigger?: Snippet<[]>;
     openAccountSettings: boolean;
   };
@@ -49,7 +50,7 @@
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
   import { showError, showInspectorWarning, showLoading, showSuccess } from "$/components/toast";
 
-  let { trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
+  let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
   const isDesktop = new MediaQuery("(min-width: 768px)");
 
@@ -57,12 +58,12 @@
   let activeTab = $state<"overview" | "change-password" | "delete-account">("overview");
 
   // Overview form state
-  let overviewForm = $state<OverviewFormState>({
-    name: "",
-    email: "",
-    image: "",
-    emailVerified: false,
-    registeredTwoFactor: false,
+  let overviewForm = $derived<OverviewFormState>({
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    image: user?.image ?? "",
+    emailVerified: user?.emailVerified ?? false,
+    registeredTwoFactor: user?.registeredTwoFactor ?? false,
     asyncState: "idle",
   });
 
@@ -119,21 +120,6 @@
       errors.push("New password must be different from current password");
     }
     return errors;
-  });
-
-  // Load initial data (in real app, this would fetch from API)
-  $effect(() => {
-    if (openAccountSettings) {
-      // Simulate loading user data
-      overviewForm.name = "John Doe";
-      overviewForm.email = "john.doe@example.com";
-      overviewForm.image = "";
-      overviewForm.emailVerified = true;
-      overviewForm.registeredTwoFactor = false;
-    } else {
-      // Reset delete confirmation when dialog closes
-      deleteAccountForm.confirmEmail = "";
-    }
   });
 
   // Handle overview form submission
