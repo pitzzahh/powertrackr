@@ -52,14 +52,11 @@
       deleteAsyncState: "idle",
     });
 
-  // Derived state for checking if email matches
-  const emailMatches = $derived(deleteUser.fields.confirmEmail.value() === user?.email);
-
   let { deleteCheckbox1 } = $derived({ deleteCheckbox1: false });
   let { deleteCheckbox2 } = $derived({ deleteCheckbox2: !deleteCheckbox1 });
   let { deleteCheckbox3 } = $derived({ deleteCheckbox3: !deleteCheckbox2 });
 
-  // Derived state for all confirmations
+  const emailMatches = $derived(deleteUser.fields.confirmEmail.value() === user?.email);
   const allConfirmed = $derived(
     emailMatches && deleteCheckbox1 && deleteCheckbox2 && deleteCheckbox3
   );
