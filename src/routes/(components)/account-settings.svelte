@@ -262,17 +262,15 @@
         {@render trigger?.()}
       </Dialog.Trigger>
     {/if}
-    <Portal>
-      <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-250">
-        <Dialog.Header>
-          <Dialog.Title>Account Settings</Dialog.Title>
-          <Dialog.Description>
-            Manage your account settings and preferences. Changes are saved automatically.
-          </Dialog.Description>
-        </Dialog.Header>
-        {@render content()}
-      </Dialog.Content>
-    </Portal>
+    <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-300">
+      <Dialog.Header>
+        <Dialog.Title>Account Settings</Dialog.Title>
+        <Dialog.Description>
+          Manage your account settings and preferences. Changes are saved automatically.
+        </Dialog.Description>
+      </Dialog.Header>
+      {@render content()}
+    </Dialog.Content>
   </Dialog.Root>
 {:else}
   <Drawer.Root
@@ -294,20 +292,18 @@
         {@render trigger?.()}
       </Drawer.Trigger>
     {/if}
-    <Portal>
-      <Drawer.Content>
-        <Drawer.Header class="text-start">
-          <Drawer.Title>Account Settings</Drawer.Title>
-          <Drawer.Description>
-            Manage your account settings and preferences. Changes are saved automatically.
-          </Drawer.Description>
-        </Drawer.Header>
-        {@render content()}
-        <Drawer.Footer class="pt-2">
-          <Drawer.Close class={buttonVariants({ variant: "outline" })}>Close</Drawer.Close>
-        </Drawer.Footer>
-      </Drawer.Content>
-    </Portal>
+    <Drawer.Content>
+      <Drawer.Header class="text-start">
+        <Drawer.Title>Account Settings</Drawer.Title>
+        <Drawer.Description>
+          Manage your account settings and preferences. Changes are saved automatically.
+        </Drawer.Description>
+      </Drawer.Header>
+      {@render content()}
+      <Drawer.Footer class="pt-2">
+        <Drawer.Close class={buttonVariants({ variant: "outline" })}>Close</Drawer.Close>
+      </Drawer.Footer>
+    </Drawer.Content>
   </Drawer.Root>
 {/if}
 
@@ -320,8 +316,8 @@
     </UnderlineTabs.List>
 
     <UnderlineTabs.Content value="overview">
-      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
-        <div class="p-4">
+      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[80vh]">
+        <div class="p-1 pr-3">
           <form onsubmit={handleOverviewSubmit} class="space-y-6">
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
@@ -461,7 +457,7 @@
 
     <UnderlineTabs.Content value="change-password">
       <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
-        <div class="p-4">
+        <div class="p-1 pr-3">
           <form onsubmit={handlePasswordSubmit} class="space-y-6">
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
@@ -573,7 +569,7 @@
 
     <UnderlineTabs.Content value="delete-account">
       <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
-        <div class="p-4">
+        <div class="p-1 pr-3">
           <div class="space-y-6">
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
