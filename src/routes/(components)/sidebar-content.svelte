@@ -11,6 +11,7 @@
   type SidebarContentState = {
     status: AsyncState;
     logoutAttempt: boolean;
+    openAccountSettings: boolean;
   };
 </script>
 
@@ -22,15 +23,7 @@
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
-  import {
-    Loader,
-    PanelLeftClose,
-    LogOut,
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-  } from "$/assets/icons";
+  import { Loader, PanelLeftClose, LogOut, BadgeCheck, Bell, ChevronsUpDown } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
   import * as Avatar from "$/components/ui/avatar/index.js";
@@ -39,14 +32,16 @@
   import { toShortName } from "$/utils/text";
   import { showLoading, showSuccess, toast } from "$/components/toast";
   import { goto } from "$app/navigation";
+  import { AccountSettings } from ".";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
   const sidebar = useSidebarStore();
 
-  let { status, logoutAttempt }: SidebarContentState = $state({
+  let { status, logoutAttempt, openAccountSettings }: SidebarContentState = $state({
     status: "idle",
     logoutAttempt: false,
+    openAccountSettings: false,
   });
 
   const pendingFetches = pendingFetchContext.get();
@@ -115,10 +110,8 @@
         {
           "justify-center": collapsed,
           "p-1": collapsed,
-          "hover:bg-sidebar-accent": true,
-          "gap-2": !collapsed,
+          "gap-2 px-2!": !collapsed,
           "hover:text-sidebar-accent-foreground": !collapsed,
-          "data-[state=open]:bg-sidebar-accent": !collapsed,
           "data-[state=open]:text-sidebar-accent-foreground": !collapsed,
         },
       ]}
@@ -160,13 +153,9 @@
       </DropdownMenu.Label>
       <DropdownMenu.Separator />
       <DropdownMenu.Group>
-        <DropdownMenu.Item>
+        <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
           <BadgeCheck />
           Account
-        </DropdownMenu.Item>
-        <DropdownMenu.Item>
-          <CreditCard />
-          Billing
         </DropdownMenu.Item>
         <DropdownMenu.Item>
           <Bell />
@@ -244,3 +233,5 @@
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
+
+<AccountSettings {user} bind:openAccountSettings />

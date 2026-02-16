@@ -176,6 +176,9 @@ export const createBillingInfo = form(
       getExtendedBillingInfos({
         userId,
       }).refresh();
+      getLatestBillingInfo({
+        userId,
+      }).refresh();
       return result;
     } catch (err) {
       if (err instanceof Error && err.message.includes("Invalid meter readings")) {

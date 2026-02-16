@@ -22,6 +22,24 @@
     reading: number;
   };
 
+  type NormalizedBillingData = {
+    id?: string;
+    date?: string;
+    balance?: number;
+    totalkWh?: number;
+    status?: string;
+    subMeters?: SubMeterForm[];
+  };
+
+  type FormFieldsValue = {
+    id?: string;
+    date?: string;
+    balance?: number | string;
+    totalkWh?: number | string;
+    status?: string;
+    subMeters?: SubMeterForm[];
+  };
+
   type BillingInfoFormState = {
     dateValue: CalendarDate | undefined;
     status: BillingInfoDTO["status"];
@@ -37,7 +55,7 @@
   import { Input } from "$/components/ui/input";
   import * as Popover from "$/components/ui/popover";
   import * as Select from "$/components/ui/select";
-  import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+  import { CalendarDate, today } from "@internationalized/date";
   import { getChangedData, omit } from "$/utils/mapper";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
@@ -83,22 +101,28 @@
 
   let { BILLING_NORMALIZED } = $derived.by(() => {
     const fv = currentAction?.fields?.value?.() ?? {};
-    const out: Record<string, any> = {};
+    const out: NormalizedBillingData = {};
     if (!billingInfo) return { BILLING_NORMALIZED: out };
-    for (const key of Object.keys(fv) as (keyof typeof fv)[]) {
+    for (const key of Object.keys(fv) as (keyof FormFieldsValue)[]) {
       if (key === "subMeters") {
-        out.subMeters = (billingInfo.subMeters ?? []).map((s: any) => ({
+        out.subMeters = billingInfo.subMeters.map((s) => ({
           id: s.id,
           label: s.label,
           reading: s.reading,
         }));
       } else if (key === "date") {
         const d = new Date(billingInfo.date);
-        out.date = new CalendarDate(d.getFullYear(), d.getMonth() + 1, d.getDate()).toString();
-      } else if (Object.prototype.hasOwnProperty.call(billingInfo, key)) {
-        out[key] = (billingInfo as any)[key];
-      } else {
-        out[key] = undefined;
+        const calDate = new CalendarDate(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+        // Convert to UTC ISO string to prevent timezone issues during comparison
+        out.date = new Date(Date.UTC(calDate.year, calDate.month - 1, calDate.day)).toISOString();
+      } else if (key === "id" && billingInfo.id) {
+        out.id = billingInfo.id;
+      } else if (key === "balance" && typeof billingInfo.balance === "number") {
+        out.balance = billingInfo.balance;
+      } else if (key === "totalkWh" && typeof billingInfo.totalkWh === "number") {
+        out.totalkWh = billingInfo.totalkWh;
+      } else if (key === "status" && billingInfo.status) {
+        out.status = billingInfo.status;
       }
     }
     return { BILLING_NORMALIZED: out };
@@ -106,25 +130,35 @@
 
   // CHANGED_DATA: top-level diffs (omitting subMeters) + a cheap sub-meter flag
   let { CHANGED_DATA } = $derived.by(() => {
-    const fv = (currentAction?.fields as any)?.value?.() ?? {};
-    const topOriginal = omit((BILLING_NORMALIZED as any) ?? {}, ["subMeters"]);
-    const topUpdated = omit(fv ?? {}, ["subMeters"]);
+    const fv = currentAction?.fields?.value?.() as FormFieldsValue | undefined;
+
+    // Normalize form values to match NormalizedBillingData types
+    const normalizedFv: Partial<NormalizedBillingData> = fv
+      ? {
+          ...fv,
+          balance: typeof fv.balance === "string" ? Number(fv.balance) : fv.balance,
+          totalkWh: typeof fv.totalkWh === "string" ? Number(fv.totalkWh) : fv.totalkWh,
+        }
+      : {};
+
+    const topOriginal = omit(BILLING_NORMALIZED ?? {}, ["subMeters"]);
+    const topUpdated = omit(normalizedFv, ["subMeters"]);
     const topChanges = getChangedData(topOriginal, topUpdated);
     const changed: Record<string, any> = { ...topChanges };
 
-    if ("subMeters" in fv) {
-      const orig = (BILLING_NORMALIZED as any).subMeters ?? [];
-      const form = fv.subMeters ?? [];
+    if (fv && "subMeters" in fv) {
+      const orig: SubMeterForm[] = BILLING_NORMALIZED.subMeters ?? [];
+      const form: SubMeterForm[] = fv.subMeters ?? [];
       let subsChanged = false;
       if ((orig.length ?? 0) !== (form.length ?? 0)) subsChanged = true;
       else {
-        const ids = form.map((s: any) => s.id).filter(Boolean);
+        const ids = form.map((s) => s.id).filter(Boolean);
         for (const s of form) {
           if (!s.id) {
             subsChanged = true;
             break;
           }
-          const ex = orig.find((o: any) => o.id === s.id);
+          const ex = orig.find((o) => o.id === s.id);
           if (!ex) {
             subsChanged = true;
             break;
@@ -151,7 +185,11 @@
 
   let { FORM_VALID } = $derived.by(() => {
     // Read individual fields instead of grabbing the whole form to avoid `as any`
-    const dateStr = currentAction.fields.date.value() ?? (dateValue ? dateValue.toString() : "");
+    const dateStr =
+      currentAction.fields.date.value() ??
+      (dateValue
+        ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+        : "");
     const balanceVal = currentAction.fields.balance.value();
     const totalkWhVal = currentAction.fields.totalkWh.value();
     const statusVal = currentAction.fields.status.value() ?? status;
@@ -186,24 +224,53 @@
 
   // Add a new sub meter
   function addSubMeter() {
+    // Get current form values before adding new sub meter
+    const currentFormValues = currentAction?.fields?.subMeters?.value?.() ?? [];
+
     subMeters.push({
       id: crypto.randomUUID(),
       label: "",
       reading: 0,
     });
-    // Ensure action fields get updated so change detection picks up new sub-meters
+
+    // Ensure action fields get updated with current form values plus the new sub-meter
     currentAction?.fields?.subMeters?.set?.(
-      subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+      subMeters.map((s, idx) => {
+        // Use current form values if they exist, otherwise use the subMeter values
+        if (currentFormValues[idx]) {
+          return {
+            id: s.id,
+            label: currentFormValues[idx].label ?? s.label,
+            reading: currentFormValues[idx].reading ?? s.reading,
+          };
+        }
+        return { id: s.id, label: s.label, reading: s.reading };
+      })
     );
   }
 
   // Remove a sub meter
   function removeSubMeter(index: number) {
     if (subMeters.length >= 1) {
+      // Get current form values before removing
+      const currentFormValues = currentAction?.fields?.subMeters?.value?.() ?? [];
+
       subMeters.splice(index, 1);
-      // Sync the action fields after removal
+
+      // Sync the action fields after removal, preserving current form values
       currentAction?.fields?.subMeters?.set?.(
-        subMeters.map((s) => ({ id: s.id, label: s.label, reading: s.reading }))
+        subMeters.map((s, idx) => {
+          // Map to the correct form value (accounting for the removed index)
+          const formIdx = idx < index ? idx : idx + 1;
+          if (currentFormValues[formIdx]) {
+            return {
+              id: s.id,
+              label: currentFormValues[formIdx].label ?? s.label,
+              reading: currentFormValues[formIdx].reading ?? s.reading,
+            };
+          }
+          return { id: s.id, label: s.label, reading: s.reading };
+        })
       );
     }
   }
@@ -213,8 +280,17 @@
     if (action === "update" && billingInfo) {
       // Set date
       const date = new Date(billingInfo.date);
-      dateValue = new CalendarDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
-      currentAction.fields.date.set(dateValue ? dateValue.toString() : "");
+      dateValue = new CalendarDate(
+        date.getUTCFullYear(),
+        date.getUTCMonth() + 1,
+        date.getUTCDate()
+      );
+      // Convert CalendarDate to UTC ISO string to prevent timezone issues
+      currentAction.fields.date.set(
+        dateValue
+          ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+          : ""
+      );
       status = billingInfo.status;
       //@ts-expect-error id exists for update action
       currentAction.fields.id.set(billingInfo.id);
@@ -226,14 +302,19 @@
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
-            latestDate.getFullYear() + (latestDate.getMonth() === 11 ? 1 : 0),
-            ((latestDate.getMonth() + 1) % 12) + 1,
+            latestDate.getUTCFullYear() + (latestDate.getUTCMonth() === 11 ? 1 : 0),
+            ((latestDate.getUTCMonth() + 1) % 12) + 1,
             1
           )
         : undefined;
       status = "Pending";
       // Sync date with action fields so client-side validation can run
-      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+      // Convert CalendarDate to UTC ISO string to prevent timezone issues
+      currentAction?.fields?.date?.set?.(
+        dateValue
+          ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+          : ""
+      );
     }
 
     subMeters =
@@ -307,7 +388,11 @@
           <Popover.Trigger id="{identity}-date">
             {#snippet child({ props })}
               <Button {...props} variant="outline" class="w-full justify-between font-normal">
-                {dateValue ? formatDate(dateValue.toDate(getLocalTimeZone())) : "Select date"}
+                {dateValue
+                  ? formatDate(
+                      new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day))
+                    )
+                  : "Select date"}
                 <ChevronDown />
               </Button>
             {/snippet}
@@ -321,8 +406,14 @@
                   captionLayout="dropdown"
                   onValueChange={() => {
                     openDatePicker = false;
-                    // Keep the action fields in sync when the user picks a date
-                    currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+                    // Keep the action fields in sync when the user picks a date (use UTC ISO string)
+                    currentAction?.fields?.date?.set?.(
+                      dateValue
+                        ? new Date(
+                            Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                          ).toISOString()
+                        : ""
+                    );
                   }}
                   class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
                 />
@@ -335,10 +426,17 @@
                     class="flex-1"
                     onclick={() => {
                       openDatePicker = false;
-                      dateValue = today(getLocalTimeZone())?.add({
+                      const utcToday = today("UTC");
+                      dateValue = utcToday?.add({
                         days: preset.value,
                       });
-                      currentAction?.fields?.date?.set?.(dateValue ? dateValue.toString() : "");
+                      currentAction?.fields?.date?.set?.(
+                        dateValue
+                          ? new Date(
+                              Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                            ).toISOString()
+                          : ""
+                      );
                     }}
                   >
                     {preset.label}
@@ -351,7 +449,9 @@
         <input
           hidden
           {...currentAction.fields.date.as("text")}
-          value={dateValue ? dateValue.toString() : ""}
+          value={dateValue
+            ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
+            : ""}
           required
         />
         <Field.Description>Pick billing date</Field.Description>

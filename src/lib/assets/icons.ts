@@ -1,7 +1,7 @@
 export { default as ChevronRight } from "@lucide/svelte/icons/chevron-right";
 export { default as UploadSimpleIcon } from "phosphor-svelte/lib/UploadSimpleIcon";
 export { default as Upload } from "phosphor-svelte/lib/UploadSimpleIcon";
-export { DownloadSimple as Download } from "phosphor-svelte";
+export { default as Download } from "phosphor-svelte/lib/DownloadIcon";
 export { default as ChevronLeft } from "@lucide/svelte/icons/chevron-left";
 export { default as ChevronDown } from "@lucide/svelte/icons/chevron-down";
 export { default as ChevronUp } from "@lucide/svelte/icons/chevron-up";
@@ -67,3 +67,4 @@ export { default as ShieldAlert } from "phosphor-svelte/lib/ShieldIcon";
 export { default as CircleAlert } from "phosphor-svelte/lib/WarningCircleIcon";
 export { default as Dice6 } from "@lucide/svelte/icons/dice-6";
 export { default as DatabaseBackupIcon } from "phosphor-svelte/lib/CloudIcon";
+export { default as PlusIcon } from "phosphor-svelte/lib/PlusIcon";

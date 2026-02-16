@@ -10,6 +10,10 @@
  * // Show success
  * showSuccess("Saved!", "Your changes have been saved.");
  *
+ * // Dismiss loading toast and show success
+ * const loadingId = showLoading("Processing...");
+ * showSuccess("Done!", "Processing complete", undefined, { id: loadingId });
+ *
  * // Show error
  * showError("Error", "Something went wrong.");
  *
@@ -86,29 +90,69 @@ export function showToast(options: ShowToastOptions) {
 
 /**
  * Show a success toast
+ * @param options - Options object with { id } to dismiss previous toast
  */
-export function showSuccess(title: string, description?: string, duration?: number) {
+export function showSuccess(
+  title: string,
+  description?: string,
+  duration?: number,
+  options?: { id: string | number }
+) {
+  if (options) {
+    const { id } = options;
+    dismissToast(id);
+  }
   return showToast({ title, description, variant: "success", duration });
 }
 
 /**
  * Show an error toast
+ * @param options - Options object with { id } to dismiss previous toast
  */
-export function showError(title: string, description?: string, duration?: number) {
+export function showError(
+  title: string,
+  description?: string,
+  duration?: number,
+  options?: { id: string | number }
+) {
+  if (options) {
+    const { id } = options;
+    dismissToast(id);
+  }
   return showToast({ title, description, variant: "error", duration });
 }
 
 /**
  * Show a warning toast
+ * @param options - Options object with { id } to dismiss previous toast
  */
-export function showWarning(title: string, description?: string, duration?: number) {
+export function showWarning(
+  title: string,
+  description?: string,
+  duration?: number,
+  options?: { id: string | number }
+) {
+  if (options) {
+    const { id } = options;
+    dismissToast(id);
+  }
   return showToast({ title, description, variant: "warning", duration });
 }
 
 /**
  * Show an info toast
+ * @param options - Options object with { id } to dismiss previous toast
  */
-export function showInfo(title: string, description?: string, duration?: number) {
+export function showInfo(
+  title: string,
+  description?: string,
+  duration?: number,
+  options?: { id: string | number }
+) {
+  if (options) {
+    const { id } = options;
+    dismissToast(id);
+  }
   return showToast({ title, description, variant: "info", duration });
 }
 
