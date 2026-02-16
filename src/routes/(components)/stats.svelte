@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { getTotalEnergyUsage } from "$/api/billing-info.remote";
   import { SplitReveal, ScrollStagger } from "$lib/motion-core";
+
+  const energyUsed = await getTotalEnergyUsage();
 
   const stats = [
     { value: "10K+", label: "Active Users" },
-    { value: "50M+", label: "kWh Tracked" },
+    { value: energyUsed.formatted, label: `${energyUsed.energyUnit} Tracked` },
     { value: "99.9%", label: "Uptime" },
     { value: "4.9★", label: "User Rating" },
   ];

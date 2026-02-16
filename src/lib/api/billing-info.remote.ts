@@ -22,6 +22,7 @@ import {
   getBillingInfoBy as getBillingInfoByCrud,
   deleteBillingInfoBy,
   createBillingInfoLogic,
+  getTotalEnergyUsage as getTotalEnergyUsageCrud,
 } from "$/server/crud/billing-info-crud";
 import { getChangedData, omit } from "$/utils/mapper";
 import { addPayment } from "$/server/crud/payment-crud";
@@ -41,6 +42,12 @@ const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "payPerkWh",
   "paymentId",
 ] as const;
+
+// Query to get total energy usage (summed totalKwh) for a user, formatted
+export const getTotalEnergyUsage = query(async () => {
+  return await getTotalEnergyUsageCrud();
+});
+
 // Query to get all billing infos for a user
 export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) => {
   return await getBillingInfoByCrud({
