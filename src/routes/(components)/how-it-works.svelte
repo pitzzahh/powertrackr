@@ -68,7 +68,7 @@
           </Magnetic>
           {#if i < steps.length - 1}
             <div
-              class="absolute top-1/2 -right-4 hidden h-0.5 w-8 bg-linear-to-r from-primary/50 to-transparent md:block"
+              class="absolute top-1/2 right-0 hidden h-px w-8.5 translate-x-full -translate-y-1/2 bg-linear-to-r from-primary/50 via-primary/30 to-primary/50 md:block"
             ></div>
           {/if}
         </div>
