@@ -17,7 +17,6 @@
 
 <script lang="ts">
   import * as Drawer from "$/components/ui/drawer/index.js";
-  import { buttonVariants } from "$/components/ui/button/index.js";
   import { MediaQuery } from "svelte/reactivity";
   import * as Dialog from "$/components/ui/dialog";
   import * as UnderlineTabs from "$/components/underline-tabs";
@@ -126,27 +125,30 @@
         {@render trigger?.()}
       </Drawer.Trigger>
     {/if}
-    <Drawer.Content class="flex max-h-[85vh] flex-col">
+    <Drawer.Content class="flex h-[85vh] flex-col">
       <Drawer.Header class="text-start">
         <Drawer.Title>Account Settings</Drawer.Title>
         <Drawer.Description>Manage your account settings and preferences.</Drawer.Description>
       </Drawer.Header>
-      <div class="min-h-0 flex-1 overflow-hidden px-2">
+      <div class="min-h-0 flex-1 overflow-hidden p-2">
         {@render content()}
       </div>
-      <Drawer.Footer class="pt-2">
-        <Drawer.Close class={buttonVariants({ variant: "outline" })}>Close</Drawer.Close>
-      </Drawer.Footer>
     </Drawer.Content>
   </Drawer.Root>
 {/if}
 
 {#snippet content()}
   <UnderlineTabs.Root bind:value={activeTab} class="flex h-full flex-col">
-    <UnderlineTabs.List>
-      <UnderlineTabs.Trigger value="overview">Overview</UnderlineTabs.Trigger>
-      <UnderlineTabs.Trigger value="change-password">Change Password</UnderlineTabs.Trigger>
-      <UnderlineTabs.Trigger value="delete-account">Delete Account</UnderlineTabs.Trigger>
+    <UnderlineTabs.List class="w-full justify-center md:w-auto md:justify-start">
+      <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="overview"
+        >Overview</UnderlineTabs.Trigger
+      >
+      <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="change-password"
+        >Change Password</UnderlineTabs.Trigger
+      >
+      <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="delete-account"
+        >Delete Account</UnderlineTabs.Trigger
+      >
     </UnderlineTabs.List>
 
     <UnderlineTabs.Content value="overview" class="min-h-0 flex-1">
