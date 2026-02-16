@@ -3,7 +3,7 @@
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
 </script>
 
-<section class="relative z-10 py-24">
+<section class="relative z-10 py-32">
   <div class="container mx-auto px-4">
     <ScrollReveal preset="scale" duration={0.8} scale={0.95}>
       <div
