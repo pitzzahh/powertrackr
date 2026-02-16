@@ -12,6 +12,11 @@ vi.mock("$/server/crud/email-verification-request-crud", () => ({
   addEmailVerificationRequest,
 }));
 
+const addPasswordResetSession = vi.fn();
+vi.mock("$/server/crud/password-reset-session-crud", () => ({
+  addPasswordResetSession,
+}));
+
 afterEach(() => {
   // Clean up any global fetch we set in tests
   // @ts-ignore
@@ -25,6 +30,7 @@ afterEach(() => {
     delete env[k];
   }
   addEmailVerificationRequest.mockReset();
+  addPasswordResetSession.mockReset();
 
   vi.restoreAllMocks();
   vi.resetAllMocks();
