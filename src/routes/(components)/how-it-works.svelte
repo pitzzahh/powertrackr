@@ -23,7 +23,7 @@
   ];
 </script>
 
-<section class="relative z-10 py-24">
+<section id="how-it-works" class="relative z-10 py-24">
   <div class="container mx-auto px-4">
     <div class="mb-16 text-center">
       <SplitReveal mode="words" triggerOnScroll>

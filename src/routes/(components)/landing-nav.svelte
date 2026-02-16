@@ -1,7 +1,29 @@
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
-  import { Magnetic } from "$lib/motion-core";
+
+  const navItems = [
+    { label: "How It Works", href: "#how-it-works" },
+    { label: "Features", href: "#features" },
+    { label: "Use Cases", href: "#use-cases" },
+  ];
+
+  function handleNavClick(event: MouseEvent, href: string) {
+    event.preventDefault();
+    const targetId = href.replace("#", "");
+    const targetElement = document.getElementById(targetId);
+
+    if (targetElement) {
+      const headerOffset = 80; // Account for sticky header height
+      const elementPosition = targetElement.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth",
+      });
+    }
+  }
 </script>
 
 <header
@@ -14,13 +36,26 @@
       viewTransitionName="logo"
     />
 
+    <!-- Centered nav items - hidden on mobile, visible on md+ -->
+    <nav class="absolute left-1/2 hidden -translate-x-1/2 md:flex">
+      <ul class="flex items-center gap-1">
+        {#each navItems as item}
+          <li>
+            <a
+              href={item.href}
+              onclick={(e) => handleNavClick(e, item.href)}
+              class="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              {item.label}
+            </a>
+          </li>
+        {/each}
+      </ul>
+    </nav>
+
     <div class="flex gap-2">
-      <Magnetic>
-        <Button variant="outline" href="/auth?act=login">Login</Button>
-      </Magnetic>
-      <Magnetic>
-        <Button href="/auth?act=register">Sign Up</Button>
-      </Magnetic>
+      <Button variant="outline" href="/auth?act=login">Login</Button>
+      <Button href="/auth?act=register">Sign Up</Button>
     </div>
   </div>
 </header>
