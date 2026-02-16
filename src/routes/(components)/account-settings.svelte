@@ -82,7 +82,7 @@
   });
 
   // Form validation
-  let overviewValid = $derived.by(() => {
+  const overviewValid = $derived.by(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return (
       overviewForm.name.trim().length > 0 &&
@@ -91,7 +91,7 @@
     );
   });
 
-  let passwordValid = $derived.by(() => {
+  const passwordValid = $derived.by(() => {
     return (
       passwordForm.currentPassword.trim().length > 0 &&
       passwordForm.newPassword.trim().length >= 8 &&
@@ -100,7 +100,7 @@
     );
   });
 
-  let passwordErrors = $derived.by(() => {
+  const passwordErrors = $derived.by(() => {
     const errors: string[] = [];
     if (passwordForm.newPassword.length > 0 && passwordForm.newPassword.length < 8) {
       errors.push("Password must be at least 8 characters");
