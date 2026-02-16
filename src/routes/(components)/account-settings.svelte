@@ -70,12 +70,16 @@
         {@render trigger?.()}
       </Dialog.Trigger>
     {/if}
-    <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-300">
+    <Dialog.Content
+      class="flex h-[80vh] flex-col overflow-hidden md:h-[75vh] md:max-w-175 lg:max-w-350"
+    >
       <Dialog.Header>
         <Dialog.Title>Account Settings</Dialog.Title>
         <Dialog.Description>Manage your account settings and preferences.</Dialog.Description>
       </Dialog.Header>
-      {@render content()}
+      <div class="min-h-0 flex-1 overflow-hidden">
+        {@render content()}
+      </div>
     </Dialog.Content>
   </Dialog.Root>
 {:else}
@@ -98,12 +102,14 @@
         {@render trigger?.()}
       </Drawer.Trigger>
     {/if}
-    <Drawer.Content>
+    <Drawer.Content class="flex max-h-[85vh] flex-col">
       <Drawer.Header class="text-start">
         <Drawer.Title>Account Settings</Drawer.Title>
         <Drawer.Description>Manage your account settings and preferences.</Drawer.Description>
       </Drawer.Header>
-      {@render content()}
+      <div class="min-h-0 flex-1 overflow-hidden">
+        {@render content()}
+      </div>
       <Drawer.Footer class="pt-2">
         <Drawer.Close class={buttonVariants({ variant: "outline" })}>Close</Drawer.Close>
       </Drawer.Footer>
@@ -112,15 +118,15 @@
 {/if}
 
 {#snippet content()}
-  <UnderlineTabs.Root bind:value={activeTab}>
+  <UnderlineTabs.Root bind:value={activeTab} class="flex h-full flex-col">
     <UnderlineTabs.List>
       <UnderlineTabs.Trigger value="overview">Overview</UnderlineTabs.Trigger>
       <UnderlineTabs.Trigger value="change-password">Change Password</UnderlineTabs.Trigger>
       <UnderlineTabs.Trigger value="delete-account">Delete Account</UnderlineTabs.Trigger>
     </UnderlineTabs.List>
 
-    <UnderlineTabs.Content value="overview">
-      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[80vh]">
+    <UnderlineTabs.Content value="overview" class="min-h-0 flex-1">
+      <ScrollArea orientation="vertical" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...updateUser.enhance(async ({ submit }) => {
@@ -280,8 +286,8 @@
       </ScrollArea>
     </UnderlineTabs.Content>
 
-    <UnderlineTabs.Content value="change-password">
-      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
+    <UnderlineTabs.Content value="change-password" class="min-h-0 flex-1">
+      <ScrollArea orientation="vertical" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...changePassword.enhance(async ({ submit, form }) => {
@@ -413,8 +419,8 @@
       </ScrollArea>
     </UnderlineTabs.Content>
 
-    <UnderlineTabs.Content value="delete-account">
-      <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
+    <UnderlineTabs.Content value="delete-account" class="min-h-0 flex-1">
+      <ScrollArea orientation="vertical" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...deleteUser.enhance(async ({ submit }) => {
