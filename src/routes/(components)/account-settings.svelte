@@ -6,6 +6,13 @@
     trigger?: Snippet;
     openAccountSettings?: boolean;
   };
+
+  type AccountSettingsState = {
+    activeTab: "overview" | "change-password" | "delete-account";
+    overviewAsyncState: AsyncState;
+    passwordAsyncState: AsyncState;
+    deleteAsyncState: AsyncState;
+  };
 </script>
 
 <script lang="ts">
@@ -27,7 +34,6 @@
   import { showLoading, showSuccess, showWarning } from "$/components/toast";
   import { updateUser, deleteUser } from "$/api/user.remote";
   import { changePassword } from "$/api/auth.remote";
-  import { onDestroy } from "svelte";
   import { isHttpError } from "@sveltejs/kit";
   import * as Password from "$/components/password";
 
@@ -35,19 +41,13 @@
 
   const isDesktop = new MediaQuery("(min-width: 768px)");
 
-  // Tab state
-  let activeTab = $state<"overview" | "change-password" | "delete-account">("overview");
-
-  // Async states
-  let overviewAsyncState = $state<AsyncState>("idle");
-  let passwordAsyncState = $state<AsyncState>("idle");
-  let deleteAsyncState = $state<AsyncState>("idle");
-
-  onDestroy(() => {
-    overviewAsyncState = "idle";
-    passwordAsyncState = "idle";
-    deleteAsyncState = "idle";
-  });
+  let { activeTab, overviewAsyncState, passwordAsyncState, deleteAsyncState } =
+    $state<AccountSettingsState>({
+      activeTab: "overview",
+      overviewAsyncState: "idle",
+      passwordAsyncState: "idle",
+      deleteAsyncState: "idle",
+    });
 </script>
 
 {#if isDesktop.current}
