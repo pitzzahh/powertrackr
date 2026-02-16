@@ -173,13 +173,6 @@
     }
   }
 
-  function isInViewport(element: HTMLElement): boolean {
-    const rect = element.getBoundingClientRect();
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    // Check if element is at least partially visible
-    return rect.top < windowHeight && rect.bottom > 0;
-  }
-
   function initScrollReveal(node: HTMLElement) {
     gsap.registerPlugin(ScrollTrigger, CustomEase);
     CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
@@ -187,79 +180,69 @@
     const initialState = getInitialState(preset);
     const finalState = getFinalState(preset);
 
-    // Check if element is already in viewport on mount
-    const alreadyInView = isInViewport(node);
+    // Create a timeline for proper control
+    const tl = gsap.timeline({
+      paused: true,
+      defaults: {
+        ease: ease,
+      },
+    });
 
-    if (alreadyInView) {
-      // Element is already visible - animate immediately with a smooth start
-      gsap.fromTo(node, initialState, {
+    // Add the animation to timeline
+    tl.fromTo(
+      node,
+      { ...initialState, immediateRender: false },
+      {
         ...finalState,
         duration: duration,
         delay: delay,
-        ease: ease,
-      });
-
-      // Still set up ScrollTrigger for reverse animations when scrolling away and back
-      if (!once) {
-        // Create a timeline for the scroll-triggered reverse behavior
-        const tl = gsap.timeline({
-          paused: true,
-        });
-
-        tl.fromTo(node, initialState, {
-          ...finalState,
-          duration: duration,
-          ease: ease,
-        });
-
-        // Seek to end since we already animated in
-        tl.progress(1);
-
-        ScrollTrigger.create({
-          trigger: node,
-          start: start,
-          end: end,
-          toggleActions: toggleActions,
-          markers: markers,
-          onLeave: () => tl.reverse(),
-          onEnterBack: () => tl.play(),
-          onLeaveBack: () => tl.reverse(),
-        });
-
-        return () => {
-          tl.kill();
-          ScrollTrigger.getAll()
-            .filter((st) => st.trigger === node)
-            .forEach((st) => st.kill());
-        };
       }
+    );
 
-      return () => {};
-    } else {
-      // Element not in view - set initial state and wait for scroll
-      gsap.set(node, initialState);
+    // Create ScrollTrigger
+    const trigger = ScrollTrigger.create({
+      trigger: node,
+      start: start,
+      end: end || (scrub ? "bottom top" : undefined),
+      scrub: scrub,
+      pin: pin,
+      markers: markers,
+      toggleActions: once ? "play none none none" : toggleActions,
+      onEnter: () => {
+        if (!scrub) tl.play();
+      },
+      onLeave: () => {
+        if (!scrub && !once) tl.reverse();
+      },
+      onEnterBack: () => {
+        if (!scrub && !once) tl.play();
+      },
+      onLeaveBack: () => {
+        if (!scrub && !once) tl.reverse();
+      },
+      onUpdate: (self) => {
+        // For scrub mode, sync timeline progress with scroll
+        if (scrub) {
+          tl.progress(self.progress);
+        }
+      },
+      onRefresh: (self) => {
+        // If element is already past the start point on page load, play immediately
+        if (self.progress > 0) {
+          tl.progress(scrub ? self.progress : 1);
+        }
+      },
+    });
 
-      const tween = gsap.to(node, {
-        ...finalState,
-        duration: scrub ? undefined : duration,
-        delay: scrub ? undefined : delay,
-        ease: ease,
-        scrollTrigger: {
-          trigger: node,
-          start: start,
-          end: end,
-          scrub: scrub,
-          pin: pin,
-          toggleActions: once ? "play none none none" : toggleActions,
-          markers: markers,
-        },
-      });
+    // Refresh ScrollTrigger after a short delay to account for layout shifts
+    requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
 
-      return () => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      };
-    }
+    return () => {
+      trigger.kill();
+      tl.kill();
+    };
   }
 </script>
 
