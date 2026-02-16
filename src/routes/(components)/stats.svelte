@@ -63,7 +63,7 @@
       {#each stats as stat, i}
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
-            <NumberTicker value={stat.value} format={stat.format} delay={0.6 + i * 0.1} />
+            <NumberTicker value={stat.value} format={stat.format} delay={0.3 + i * 0.1} />
           </div>
           <div class="text-muted-foreground">
             {stat.label}
