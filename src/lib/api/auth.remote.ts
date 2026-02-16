@@ -5,6 +5,7 @@ import {
   setup2FASchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
 } from "$/validators/auth";
 import {
   createSession,
@@ -321,4 +322,49 @@ export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
   }
 
   return redirect(302, "/auth?act=login");
+});
+
+export const changePassword = form(changePasswordSchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { currentPassword, newPassword, confirmPassword } = data;
+
+  if (newPassword !== confirmPassword) {
+    invalid(issues.confirmPassword("Passwords do not match"));
+  }
+
+  // Get current user
+  const {
+    valid,
+    value: [userResult],
+  } = await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { limit: 1 },
+  });
+
+  if (!valid || !userResult || !userResult.passwordHash) {
+    error(400, "User not found or password not set");
+  }
+
+  // Verify current password
+  const validPassword = await verifyPasswordHash(userResult.passwordHash, currentPassword);
+  if (!validPassword) {
+    invalid(issues.currentPassword("Current password is incorrect"));
+  }
+
+  // Hash new password and update
+  const passwordHash = await hashPassword(newPassword);
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    { passwordHash }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to update password");
+  }
+
+  return true;
 });

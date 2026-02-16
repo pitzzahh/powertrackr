@@ -3,29 +3,8 @@
 
   export type AccountSettingsProps = {
     user: App.Locals["user"];
-    trigger?: Snippet<[]>;
-    openAccountSettings: boolean;
-  };
-
-  type OverviewFormState = {
-    name: string;
-    email: string;
-    image: string;
-    emailVerified: boolean;
-    registeredTwoFactor: boolean;
-    asyncState: AsyncState;
-  };
-
-  type PasswordFormState = {
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-    asyncState: AsyncState;
-  };
-
-  type DeleteAccountFormState = {
-    confirmEmail: string;
-    asyncState: AsyncState;
+    trigger?: Snippet;
+    openAccountSettings?: boolean;
   };
 </script>
 
@@ -40,22 +19,17 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Separator } from "$/components/ui/separator/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { Loader, Check, CircleAlert, Lock, User, Trash2 } from "$lib/assets/icons.js";
+  import { Loader, Lock, User, Trash2 } from "$lib/assets/icons.js";
   import { Badge } from "$/components/ui/badge";
   import { toast } from "svelte-sonner";
-  import { scale } from "svelte/transition";
-  import { sineInOut } from "svelte/easing";
   import type { AsyncState } from "$/types/state";
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
-  import {
-    showError,
-    showInspectorWarning,
-    showLoading,
-    showSuccess,
-    showWarning,
-  } from "$/components/toast";
-  import { deleteUser } from "$/api/user.remote";
-  import { goto, invalidateAll } from "$app/navigation";
+  import { showLoading, showSuccess, showWarning } from "$/components/toast";
+  import { updateUser, deleteUser } from "$/api/user.remote";
+  import { changePassword } from "$/api/auth.remote";
+  import { onDestroy } from "svelte";
+  import { isHttpError } from "@sveltejs/kit";
+  import * as Password from "$/components/password";
 
   let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -64,181 +38,16 @@
   // Tab state
   let activeTab = $state<"overview" | "change-password" | "delete-account">("overview");
 
-  // Overview form state
-  let overviewForm = $derived<OverviewFormState>({
-    name: user?.name ?? "",
-    email: user?.email ?? "",
-    image: user?.image ?? "",
-    emailVerified: user?.emailVerified ?? false,
-    registeredTwoFactor: user?.registeredTwoFactor ?? false,
-    asyncState: "idle",
+  // Async states
+  let overviewAsyncState = $state<AsyncState>("idle");
+  let passwordAsyncState = $state<AsyncState>("idle");
+  let deleteAsyncState = $state<AsyncState>("idle");
+
+  onDestroy(() => {
+    overviewAsyncState = "idle";
+    passwordAsyncState = "idle";
+    deleteAsyncState = "idle";
   });
-
-  // Password form state
-  let passwordForm = $state<PasswordFormState>({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-    asyncState: "idle",
-  });
-
-  // Delete account form state
-  let deleteAccountForm = $state<DeleteAccountFormState>({
-    confirmEmail: "",
-    asyncState: "idle",
-  });
-
-  // Form validation
-  const overviewValid = $derived.by(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return (
-      overviewForm.name.trim().length > 0 &&
-      overviewForm.email.trim().length > 0 &&
-      emailRegex.test(overviewForm.email.trim())
-    );
-  });
-
-  const passwordValid = $derived.by(() => {
-    return (
-      passwordForm.currentPassword.trim().length > 0 &&
-      passwordForm.newPassword.trim().length >= 8 &&
-      passwordForm.newPassword === passwordForm.confirmPassword &&
-      passwordForm.currentPassword !== passwordForm.newPassword
-    );
-  });
-
-  const passwordErrors = $derived.by(() => {
-    const errors: string[] = [];
-    if (passwordForm.newPassword.length > 0 && passwordForm.newPassword.length < 8) {
-      errors.push("Password must be at least 8 characters");
-    }
-    if (
-      passwordForm.newPassword.length > 0 &&
-      passwordForm.confirmPassword.length > 0 &&
-      passwordForm.newPassword !== passwordForm.confirmPassword
-    ) {
-      errors.push("Passwords do not match");
-    }
-    if (
-      passwordForm.currentPassword.length > 0 &&
-      passwordForm.newPassword.length > 0 &&
-      passwordForm.currentPassword === passwordForm.newPassword
-    ) {
-      errors.push("New password must be different from current password");
-    }
-    return errors;
-  });
-
-  // Handle overview form submission
-  async function handleOverviewSubmit(e: Event) {
-    e.preventDefault();
-    if (!overviewValid) return;
-
-    overviewForm.asyncState = "processing";
-    const toastId = toast.loading("Updating profile...");
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // In real app, make API call here
-      // const response = await fetch('/api/profile', {
-      //   method: 'PATCH',
-      //   body: JSON.stringify({ name: overviewForm.name, email: overviewForm.email, image: overviewForm.image })
-      // });
-
-      overviewForm.asyncState = "success";
-      toast.success("Profile updated successfully", { id: toastId });
-
-      setTimeout(() => {
-        overviewForm.asyncState = "idle";
-      }, 2000);
-    } catch (error) {
-      overviewForm.asyncState = "error";
-      toast.error("Failed to update profile. Please try again.", { id: toastId });
-
-      setTimeout(() => {
-        overviewForm.asyncState = "idle";
-      }, 2000);
-    }
-  }
-
-  // Handle password form submission
-  async function handlePasswordSubmit(e: Event) {
-    e.preventDefault();
-    if (!passwordValid) return;
-
-    passwordForm.asyncState = "processing";
-    const toastId = toast.loading("Changing password...");
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // In real app, make API call here
-      // const response = await fetch('/api/profile/password', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword })
-      // });
-
-      passwordForm.asyncState = "success";
-      toast.success("Password changed successfully", { id: toastId });
-
-      // Clear password fields
-      passwordForm.currentPassword = "";
-      passwordForm.newPassword = "";
-      passwordForm.confirmPassword = "";
-
-      setTimeout(() => {
-        passwordForm.asyncState = "idle";
-      }, 2000);
-    } catch (error) {
-      passwordForm.asyncState = "error";
-      toast.error("Failed to change password. Please try again.", { id: toastId });
-
-      setTimeout(() => {
-        passwordForm.asyncState = "idle";
-      }, 2000);
-    }
-  }
-
-  function clearPasswordForm() {
-    passwordForm.currentPassword = "";
-    passwordForm.newPassword = "";
-    passwordForm.confirmPassword = "";
-  }
-
-  // Handle account deletion
-  async function handleDeleteAccount() {
-    if (deleteAccountForm.confirmEmail !== overviewForm.email) {
-      return showInspectorWarning();
-    }
-
-    deleteAccountForm.asyncState = "processing";
-    const toastId = showLoading("Deleting account...");
-
-    try {
-      await deleteUser({ id: user?.id ?? "" });
-
-      deleteAccountForm.asyncState = "success";
-      showSuccess("Account deleted successfully", "Redirecting to login...", undefined, {
-        id: toastId,
-      });
-
-      openAccountSettings = false;
-      deleteAccountForm.asyncState = "idle";
-      await invalidateAll();
-      goto("/auth?act=login", { replaceState: true });
-    } catch (err) {
-      deleteAccountForm.asyncState = "idle";
-      showError(
-        "Failed to delete account",
-        err instanceof Error ? err.message : "An unexpected error occurred.",
-        undefined,
-        { id: toastId }
-      );
-    }
-  }
 </script>
 
 {#if isDesktop.current}
@@ -247,9 +56,9 @@
     onOpenChange={(open) => {
       if (
         !open &&
-        (overviewForm.asyncState === "processing" ||
-          passwordForm.asyncState === "processing" ||
-          deleteAccountForm.asyncState === "processing")
+        (overviewAsyncState === "processing" ||
+          passwordAsyncState === "processing" ||
+          deleteAsyncState === "processing")
       ) {
         showWarning("Process Interrupted", "The operation is still processing. Please wait...");
         openAccountSettings = true;
@@ -264,9 +73,7 @@
     <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-300">
       <Dialog.Header>
         <Dialog.Title>Account Settings</Dialog.Title>
-        <Dialog.Description>
-          Manage your account settings and preferences. Changes are saved automatically.
-        </Dialog.Description>
+        <Dialog.Description>Manage your account settings and preferences.</Dialog.Description>
       </Dialog.Header>
       {@render content()}
     </Dialog.Content>
@@ -277,9 +84,9 @@
     onOpenChange={(open) => {
       if (
         !open &&
-        (overviewForm.asyncState === "processing" ||
-          passwordForm.asyncState === "processing" ||
-          deleteAccountForm.asyncState === "processing")
+        (overviewAsyncState === "processing" ||
+          passwordAsyncState === "processing" ||
+          deleteAsyncState === "processing")
       ) {
         showWarning("Process Interrupted", "The operation is still processing. Please wait...");
         openAccountSettings = true;
@@ -294,9 +101,7 @@
     <Drawer.Content>
       <Drawer.Header class="text-start">
         <Drawer.Title>Account Settings</Drawer.Title>
-        <Drawer.Description>
-          Manage your account settings and preferences. Changes are saved automatically.
-        </Drawer.Description>
+        <Drawer.Description>Manage your account settings and preferences.</Drawer.Description>
       </Drawer.Header>
       {@render content()}
       <Drawer.Footer class="pt-2">
@@ -317,39 +122,74 @@
     <UnderlineTabs.Content value="overview">
       <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[80vh]">
         <div class="p-1 pr-3">
-          <form onsubmit={handleOverviewSubmit} class="space-y-6">
+          <form
+            {...updateUser.enhance(async ({ submit }) => {
+              if (overviewAsyncState === "processing") return;
+              overviewAsyncState = "processing";
+              const toastId = showLoading("Updating profile...");
+              try {
+                await submit();
+                const issues = updateUser.fields.allIssues?.() || [];
+                if (issues.length > 0) {
+                  showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
+                    id: toastId,
+                  });
+                } else {
+                  showSuccess("Profile updated successfully", undefined, undefined, {
+                    id: toastId,
+                  });
+                }
+              } catch (e) {
+                const message = isHttpError(e) ? e.body.message : String(e);
+                showWarning(
+                  message || "Failed to update profile. Please try again.",
+                  undefined,
+                  undefined,
+                  {
+                    id: toastId,
+                  }
+                );
+              } finally {
+                toast.dismiss(toastId);
+                overviewAsyncState = "idle";
+              }
+            })}
+            class="space-y-6"
+          >
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
                 Profile Information
               </h4>
 
               <Field.Group>
+                <input type="hidden" {...updateUser.fields.id.as("text")} value={user?.id ?? ""} />
+
                 <Field.Field>
-                  <Field.Label for="account-name" class="px-1">Full Name</Field.Label>
+                  <Field.Label for="account-name" class="px-1">Name</Field.Label>
                   <Input
                     id="account-name"
-                    type="text"
-                    bind:value={overviewForm.name}
-                    placeholder="Enter your full name"
-                    disabled={overviewForm.asyncState === "processing"}
-                    class="w-full"
+                    placeholder="Your name"
+                    disabled={overviewAsyncState === "processing"}
+                    {...updateUser.fields.name.as("text")}
+                    value={user?.name ?? ""}
                   />
-                  <Field.Description>This is your public display name.</Field.Description>
+                  <Field.Description>Your display name</Field.Description>
+                  <Field.Error errors={updateUser.fields.name.issues()} />
                 </Field.Field>
 
                 <Field.Field>
-                  <Field.Label for="account-email" class="px-1">Email Address</Field.Label>
+                  <Field.Label for="account-email" class="px-1">Email</Field.Label>
                   <Input
                     id="account-email"
-                    type="email"
-                    bind:value={overviewForm.email}
-                    placeholder="Enter your email"
-                    disabled={overviewForm.asyncState === "processing"}
-                    class="w-full"
+                    placeholder="your@email.com"
+                    disabled={overviewAsyncState === "processing"}
+                    {...updateUser.fields.email.as("email")}
+                    value={user?.email ?? ""}
                   />
                   <Field.Description>
-                    Your email address is used for notifications and account recovery.
+                    Your email address. Used for login and notifications.
                   </Field.Description>
+                  <Field.Error errors={updateUser.fields.email.issues()} />
                 </Field.Field>
 
                 <Field.Field>
@@ -359,14 +199,15 @@
                   <Input
                     id="account-image"
                     type="url"
-                    bind:value={overviewForm.image}
                     placeholder="https://example.com/avatar.jpg"
-                    disabled={overviewForm.asyncState === "processing"}
-                    class="w-full"
+                    disabled={overviewAsyncState === "processing"}
+                    {...updateUser.fields.image.as("text")}
+                    value={user?.image ?? ""}
                   />
                   <Field.Description>
-                    Enter a URL to your profile image or avatar.
+                    URL to your profile image. Leave empty for default avatar.
                   </Field.Description>
+                  <Field.Error errors={updateUser.fields.image.issues()} />
                 </Field.Field>
               </Field.Group>
             </div>
@@ -375,7 +216,7 @@
 
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
-                Account Status
+                Security Status
               </h4>
 
               <div class="grid gap-4 md:grid-cols-2">
@@ -383,19 +224,15 @@
                   <div class="space-y-0.5">
                     <div class="text-sm font-medium">Email Verification</div>
                     <div class="text-xs text-muted-foreground">
-                      {overviewForm.emailVerified ? "Your email is verified" : "Email not verified"}
+                      {user?.emailVerified ? "Your email is verified" : "Email not verified"}
                     </div>
                   </div>
                   <Badge
-                    class={[
-                      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-                      {
-                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
-                          overviewForm.emailVerified,
-                      },
-                    ]}
+                    class={user?.emailVerified
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}
                   >
-                    {overviewForm.emailVerified ? "Verified" : "Pending"}
+                    {user?.emailVerified ? "Verified" : "Pending"}
                   </Badge>
                 </div>
 
@@ -403,19 +240,15 @@
                   <div class="space-y-0.5">
                     <div class="text-sm font-medium">Two-Factor Authentication</div>
                     <div class="text-xs text-muted-foreground">
-                      {overviewForm.registeredTwoFactor ? "2FA is enabled" : "2FA not enabled"}
+                      {user?.registeredTwoFactor ? "2FA is enabled" : "2FA not enabled"}
                     </div>
                   </div>
                   <Badge
-                    class={[
-                      "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
-                      {
-                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
-                          overviewForm.registeredTwoFactor,
-                      },
-                    ]}
+                    class={user?.registeredTwoFactor
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                      : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"}
                   >
-                    {overviewForm.registeredTwoFactor ? "Enabled" : "Disabled"}
+                    {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
                   </Badge>
                 </div>
               </div>
@@ -428,21 +261,14 @@
                 type="button"
                 variant="outline"
                 onclick={() => (openAccountSettings = false)}
-                disabled={overviewForm.asyncState === "processing"}
+                disabled={overviewAsyncState === "processing"}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={!overviewValid || overviewForm.asyncState === "processing"}
-                class="min-w-32"
-              >
-                {#if overviewForm.asyncState === "processing"}
+              <Button type="submit" disabled={overviewAsyncState === "processing"} class="min-w-32">
+                {#if overviewAsyncState === "processing"}
                   <Loader class="size-4 animate-spin" />
                   Saving...
-                {:else if overviewForm.asyncState === "success"}
-                  <Check class="size-4" />
-                  Saved!
                 {:else}
                   <User class="size-4" />
                   Save Changes
@@ -457,7 +283,41 @@
     <UnderlineTabs.Content value="change-password">
       <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
         <div class="p-1 pr-3">
-          <form onsubmit={handlePasswordSubmit} class="space-y-6">
+          <form
+            {...changePassword.enhance(async ({ submit, form }) => {
+              if (passwordAsyncState === "processing") return;
+              passwordAsyncState = "processing";
+              const toastId = showLoading("Changing password...");
+              try {
+                await submit();
+                const issues = changePassword.fields.allIssues?.() || [];
+                if (issues.length > 0) {
+                  showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
+                    id: toastId,
+                  });
+                } else {
+                  form.reset();
+                  showSuccess("Password changed successfully", undefined, undefined, {
+                    id: toastId,
+                  });
+                }
+              } catch (e) {
+                const message = isHttpError(e) ? e.body.message : String(e);
+                showWarning(
+                  message || "Failed to change password. Please try again.",
+                  undefined,
+                  undefined,
+                  {
+                    id: toastId,
+                  }
+                );
+              } finally {
+                toast.dismiss(toastId);
+                passwordAsyncState = "idle";
+              }
+            })}
+            class="space-y-6"
+          >
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
                 Change Password
@@ -466,71 +326,62 @@
               <Field.Group>
                 <Field.Field>
                   <Field.Label for="current-password" class="px-1">Current Password</Field.Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    bind:value={passwordForm.currentPassword}
-                    placeholder="Enter current password"
-                    disabled={passwordForm.asyncState === "processing"}
-                    class="w-full"
-                    autocomplete="current-password"
-                  />
+                  <Password.Root>
+                    <Password.Input
+                      id="current-password"
+                      placeholder="Enter current password"
+                      disabled={passwordAsyncState === "processing"}
+                      autocomplete="current-password"
+                      {...changePassword.fields.currentPassword.as("password")}
+                    >
+                      <Password.ToggleVisibility />
+                    </Password.Input>
+                  </Password.Root>
                   <Field.Description>
                     Enter your current password to verify your identity.
                   </Field.Description>
+                  <Field.Error errors={changePassword.fields.currentPassword.issues()} />
                 </Field.Field>
 
                 <Field.Field>
                   <Field.Label for="new-password" class="px-1">New Password</Field.Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    bind:value={passwordForm.newPassword}
-                    placeholder="Enter new password"
-                    disabled={passwordForm.asyncState === "processing"}
-                    class="w-full"
-                    autocomplete="new-password"
-                  />
-                  <Field.Description>Password must be at least 8 characters long.</Field.Description
-                  >
+                  <Password.Root enableStrengthCheck>
+                    <Password.Input
+                      id="new-password"
+                      placeholder="Enter new password"
+                      disabled={passwordAsyncState === "processing"}
+                      autocomplete="new-password"
+                      {...changePassword.fields.newPassword.as("password")}
+                    >
+                      <Password.ToggleVisibility />
+                    </Password.Input>
+                    <Password.Strength />
+                  </Password.Root>
+                  <Field.Description>
+                    Password must be at least 8 characters long.
+                  </Field.Description>
+                  <Field.Error errors={changePassword.fields.newPassword.issues()} />
                 </Field.Field>
 
                 <Field.Field>
                   <Field.Label for="confirm-password" class="px-1">Confirm New Password</Field.Label
                   >
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    bind:value={passwordForm.confirmPassword}
-                    placeholder="Confirm new password"
-                    disabled={passwordForm.asyncState === "processing"}
-                    class="w-full"
-                    autocomplete="new-password"
-                  />
+                  <Password.Root>
+                    <Password.Input
+                      id="confirm-password"
+                      placeholder="Confirm new password"
+                      disabled={passwordAsyncState === "processing"}
+                      autocomplete="new-password"
+                      {...changePassword.fields.confirmPassword.as("password")}
+                    >
+                      <Password.ToggleVisibility />
+                    </Password.Input>
+                    <Password.Strength />
+                  </Password.Root>
                   <Field.Description>Re-enter your new password to confirm.</Field.Description>
+                  <Field.Error errors={changePassword.fields.confirmPassword.issues()} />
                 </Field.Field>
               </Field.Group>
-
-              {#if passwordErrors.length > 0}
-                <div
-                  class="rounded-lg border border-destructive/50 bg-destructive/10 p-4"
-                  in:scale={{ duration: 200, easing: sineInOut }}
-                >
-                  <div class="flex items-start gap-3">
-                    <CircleAlert class="size-5 text-destructive" />
-                    <div class="flex-1 space-y-1">
-                      <p class="text-sm font-medium text-destructive">
-                        Please fix the following errors:
-                      </p>
-                      <ul class="list-inside list-disc space-y-1 text-sm text-destructive/90">
-                        {#each passwordErrors as error (error)}
-                          <li>{error}</li>
-                        {/each}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              {/if}
             </div>
 
             <Separator />
@@ -539,22 +390,18 @@
               <Button
                 type="button"
                 variant="outline"
-                onclick={clearPasswordForm}
-                disabled={passwordForm.asyncState === "processing"}
+                onclick={(e) => {
+                  const form = e.currentTarget.closest("form");
+                  form?.reset();
+                }}
+                disabled={passwordAsyncState === "processing"}
               >
                 Clear
               </Button>
-              <Button
-                type="submit"
-                disabled={!passwordValid || passwordForm.asyncState === "processing"}
-                class="min-w-32"
-              >
-                {#if passwordForm.asyncState === "processing"}
+              <Button type="submit" disabled={passwordAsyncState === "processing"} class="min-w-32">
+                {#if passwordAsyncState === "processing"}
                   <Loader class="size-4 animate-spin" />
                   Changing...
-                {:else if passwordForm.asyncState === "success"}
-                  <Check class="size-4" />
-                  Changed!
                 {:else}
                   <Lock class="size-4" />
                   Change Password
@@ -569,7 +416,46 @@
     <UnderlineTabs.Content value="delete-account">
       <ScrollArea orientation="vertical" class="h-80 rounded-md md:max-h-[60vh]">
         <div class="p-1 pr-3">
-          <div class="space-y-6">
+          <form
+            {...deleteUser.enhance(async ({ submit }) => {
+              if (deleteAsyncState === "processing") return;
+              deleteAsyncState = "processing";
+              const toastId = showLoading("Deleting account...");
+              try {
+                await submit();
+                const issues = deleteUser.fields.allIssues?.() || [];
+                if (issues.length > 0) {
+                  showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
+                    id: toastId,
+                  });
+                } else {
+                  showSuccess(
+                    "Account deleted successfully",
+                    "Redirecting to login...",
+                    undefined,
+                    {
+                      id: toastId,
+                    }
+                  );
+                  openAccountSettings = false;
+                }
+              } catch (e) {
+                const message = isHttpError(e) ? e.body.message : String(e);
+                showWarning(
+                  message || "Failed to delete account. Please try again.",
+                  undefined,
+                  undefined,
+                  {
+                    id: toastId,
+                  }
+                );
+              } finally {
+                toast.dismiss(toastId);
+                deleteAsyncState = "idle";
+              }
+            })}
+            class="space-y-6"
+          >
             <div class="space-y-4">
               <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
                 Danger Zone
@@ -595,24 +481,28 @@
                 </div>
               </div>
 
-              <div class="space-y-2">
-                <Field.Label for="delete-confirm-email" class="px-1">
-                  Type your email to confirm:
-                  <span class="font-mono text-primary">{overviewForm.email}</span>
-                </Field.Label>
-                <Input
-                  id="delete-confirm-email"
-                  type="email"
-                  bind:value={deleteAccountForm.confirmEmail}
-                  placeholder={overviewForm.email}
-                  disabled={deleteAccountForm.asyncState === "processing"}
-                  class="w-full text-center"
-                  autocomplete="off"
-                />
-                <Field.Description>
-                  Enter your email address exactly as shown above to confirm deletion.
-                </Field.Description>
-              </div>
+              <Field.Group>
+                <input type="hidden" {...deleteUser.fields.id.as("text")} value={user?.id ?? ""} />
+
+                <Field.Field>
+                  <Field.Label for="delete-confirm-email" class="px-1">
+                    Type your email to confirm:
+                    <span class="font-mono text-primary">{user?.email}</span>
+                  </Field.Label>
+                  <Input
+                    id="delete-confirm-email"
+                    placeholder={user?.email}
+                    disabled={deleteAsyncState === "processing"}
+                    class="text-center"
+                    autocomplete="off"
+                    {...deleteUser.fields.confirmEmail.as("email")}
+                  />
+                  <Field.Description>
+                    Enter your email address exactly as shown above to confirm deletion.
+                  </Field.Description>
+                  <Field.Error errors={deleteUser.fields.confirmEmail.issues()} />
+                </Field.Field>
+              </Field.Group>
             </div>
 
             <Separator />
@@ -621,35 +511,31 @@
               <Button
                 type="button"
                 variant="outline"
-                onclick={() => {
-                  deleteAccountForm.confirmEmail = "";
+                onclick={(e) => {
+                  const form = e.currentTarget.closest("form");
+                  form?.reset();
                 }}
-                disabled={deleteAccountForm.asyncState === "processing"}
+                disabled={deleteAsyncState === "processing"}
               >
                 Clear
               </Button>
               <Button
-                type="button"
+                type="submit"
                 variant="destructive"
-                onclick={handleDeleteAccount}
-                disabled={deleteAccountForm.confirmEmail !== overviewForm.email ||
-                  deleteAccountForm.asyncState === "processing"}
+                disabled={deleteAsyncState === "processing"}
                 class="min-w-32"
               >
-                {#if deleteAccountForm.asyncState === "processing"}
+                {#if deleteAsyncState === "processing"}
                   <Loader class="size-4 animate-spin" />
                   Deleting
                   {@render LoadingDots()}
-                {:else if deleteAccountForm.asyncState === "success"}
-                  <Check class="size-4" />
-                  Deleted!
                 {:else}
                   <Trash2 class="size-4" />
                   Delete Account
                 {/if}
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </ScrollArea>
     </UnderlineTabs.Content>
