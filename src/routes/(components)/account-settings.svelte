@@ -131,7 +131,7 @@
         <Drawer.Title>Account Settings</Drawer.Title>
         <Drawer.Description>Manage your account settings and preferences.</Drawer.Description>
       </Drawer.Header>
-      <div class="min-h-0 flex-1 overflow-hidden">
+      <div class="min-h-0 flex-1 overflow-hidden px-2">
         {@render content()}
       </div>
       <Drawer.Footer class="pt-2">
