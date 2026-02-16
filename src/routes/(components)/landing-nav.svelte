@@ -54,8 +54,8 @@
     </nav>
 
     <div class="flex gap-2">
-      <Button variant="outline" href="/auth?act=login">Login</Button>
-      <Button href="/auth?act=register">Sign Up</Button>
+      <Button variant="outline" href="/auth?act=login" class="hidden sm:inline-flex">Login</Button>
+      <Button href="/auth?act=register" class="hidden sm:inline-flex">Get Started</Button>
     </div>
   </div>
 </header>
