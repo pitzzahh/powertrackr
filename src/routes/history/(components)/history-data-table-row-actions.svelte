@@ -208,7 +208,7 @@
   {/if}
 
   {#if active_dialog_content === "remove"}
-    {@const currentDate = row.original.date}
+    {@const currentDate = formatDate(parseCalendarDate(row.original.date))}
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>
