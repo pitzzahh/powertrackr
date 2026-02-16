@@ -102,9 +102,6 @@ importers:
       '@types/d3-shape':
         specifier: ^3.1.8
         version: 3.1.8
-      '@types/gsap':
-        specifier: ^3.0.0
-        version: 3.0.0
       '@types/pg':
         specifier: ^8.16.0
         version: 8.16.0
@@ -1489,10 +1486,6 @@ packages:
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
-
-  '@types/gsap@3.0.0':
-    resolution: {integrity: sha512-BbWLi4WRHGze4C8NV7U7yRevuBFiPkPZZyGa0rryanvh/9HPUFXTNBXsGQxJZJq7Ix7j4RXMYodP3s+OsqCErg==}
-    deprecated: This is a stub types definition. gsap provides its own type definitions, so you do not need this installed.
 
   '@types/mssql@9.1.9':
     resolution: {integrity: sha512-P0nCgw6vzY23UxZMnbI4N7fnLGANt4LI4yvxze1paPj+LuN28cFv5EI+QidP8udnId/BKhkcRhm/BleNsjK65A==}
@@ -3917,10 +3910,6 @@ snapshots:
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.8': {}
-
-  '@types/gsap@3.0.0':
-    dependencies:
-      gsap: 3.14.2
 
   '@types/mssql@9.1.9':
     dependencies:
