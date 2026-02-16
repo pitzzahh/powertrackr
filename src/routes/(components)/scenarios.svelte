@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
   import { Users, Banknote, ChartLine } from "$lib/assets/icons";
-  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger, Magnetic } from "$lib/motion-core";
 </script>
 
 <section class="relative z-10 py-24">
@@ -24,56 +24,62 @@
       distance={40}
       class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-3"
     >
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <CardHeader>
-          <div
-            class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <Users class="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Multi-Tenant Buildings</CardTitle>
-          <CardDescription>
-            Manage per-unit sub-meter readings and allocate payments derived from a single utility
-            account.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Users class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Multi-Tenant Buildings</CardTitle>
+            <CardDescription>
+              Manage per-unit sub-meter readings and allocate payments derived from a single utility
+              account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
 
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <CardHeader>
-          <div
-            class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <Banknote class="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Homeowners with Rentals</CardTitle>
-          <CardDescription>
-            Track the rental unit's consumption, expenses, and payments when sub-metered on your
-            main account.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Banknote class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Homeowners with Rentals</CardTitle>
+            <CardDescription>
+              Track the rental unit's consumption, expenses, and payments when sub-metered on your
+              main account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
 
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <CardHeader>
-          <div
-            class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <ChartLine class="h-6 w-6 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Property Managers</CardTitle>
-          <CardDescription>
-            Concise per-period accounting for multiple units without complex energy-generation
-            features.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <ChartLine class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Property Managers</CardTitle>
+            <CardDescription>
+              Concise per-period accounting for multiple units without complex energy-generation
+              features.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
     </ScrollStagger>
   </div>
 </section>

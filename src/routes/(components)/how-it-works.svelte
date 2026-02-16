@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger, Magnetic } from "$lib/motion-core";
 
   const steps = [
     {
@@ -45,25 +45,27 @@
     >
       {#each steps as step, i}
         <div class="group relative">
-          <div
-            class="relative rounded-2xl border border-border/50 bg-background/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-          >
+          <Magnetic>
             <div
-              class="mb-4 text-6xl font-bold text-primary/20 transition-colors group-hover:text-primary/40"
+              class="relative rounded-2xl border border-border/50 bg-background/50 p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
             >
-              {step.number}
+              <div
+                class="mb-4 text-6xl font-bold text-primary/20 transition-colors group-hover:text-primary/40"
+              >
+                {step.number}
+              </div>
+              <h3 class="mb-2 text-xl font-semibold">
+                <SplitReveal mode="chars" triggerOnScroll delay={0.1 * i}>
+                  {step.title}
+                </SplitReveal>
+              </h3>
+              <p class="text-muted-foreground">
+                <SplitReveal mode="lines" triggerOnScroll delay={0.2 + 0.1 * i}>
+                  {step.description}
+                </SplitReveal>
+              </p>
             </div>
-            <h3 class="mb-2 text-xl font-semibold">
-              <SplitReveal mode="chars" triggerOnScroll delay={0.1 * i}>
-                {step.title}
-              </SplitReveal>
-            </h3>
-            <p class="text-muted-foreground">
-              <SplitReveal mode="lines" triggerOnScroll delay={0.2 + 0.1 * i}>
-                {step.description}
-              </SplitReveal>
-            </p>
-          </div>
+          </Magnetic>
           {#if i < steps.length - 1}
             <div
               class="absolute top-1/2 -right-4 hidden h-0.5 w-8 bg-linear-to-r from-primary/50 to-transparent md:block"

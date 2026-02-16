@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button } from "$/components/ui/button";
-  import { Magnetic, SplitReveal, ScrollReveal } from "$lib/motion-core";
+  import { SplitReveal, ScrollReveal } from "$lib/motion-core";
 </script>
 
 <section class="relative z-10 py-24">
@@ -34,18 +34,14 @@
 
           <ScrollReveal preset="slide-up" duration={0.6} delay={0.4} distance={30}>
             <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <Magnetic>
-                <Button
-                  size="lg"
-                  class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-                  href="/auth?act=register"
-                >
-                  Get Started Free
-                </Button>
-              </Magnetic>
-              <Magnetic>
-                <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
-              </Magnetic>
+              <Button
+                size="lg"
+                class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+                href="/auth?act=register"
+              >
+                Get Started Free
+              </Button>
+              <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
             </div>
           </ScrollReveal>
         </div>

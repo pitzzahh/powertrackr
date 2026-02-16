@@ -50,21 +50,17 @@
       </p>
     </ScrollReveal>
 
-    <!-- Buttons - above fold, play once -->
+    <!-- Buttons - above fold, play once, no Magnetic -->
     <ScrollReveal preset="slide-up" duration={0.6} delay={0.5} once>
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
-        <Magnetic>
-          <Button
-            size="lg"
-            class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-            href="/auth?act=register"
-          >
-            Get Started Free
-          </Button>
-        </Magnetic>
-        <Magnetic>
-          <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
-        </Magnetic>
+        <Button
+          size="lg"
+          class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+          href="/auth?act=register"
+        >
+          Get Started Free
+        </Button>
+        <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
       </div>
     </ScrollReveal>
 
@@ -77,62 +73,68 @@
       distance={30}
       class="mt-16 grid gap-6 md:grid-cols-3"
     >
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <div
-          class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-        ></div>
-        <CardHeader class="relative">
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
           <div
-            class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <Zap class="h-7 w-7 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Billing Records</CardTitle>
-          <CardDescription>
-            Record periodic billing entries with total kWh and balances per billing cycle.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+          ></div>
+          <CardHeader class="relative">
+            <div
+              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Zap class="h-7 w-7 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Billing Records</CardTitle>
+            <CardDescription>
+              Record periodic billing entries with total kWh and balances per billing cycle.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
 
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <div
-          class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-        ></div>
-        <CardHeader class="relative">
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
           <div
-            class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <PhilippinePeso class="h-7 w-7 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Sub-Meter Tracking</CardTitle>
-          <CardDescription>
-            Support multiple sub-meters per billing period to track each unit's usage separately.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+          ></div>
+          <CardHeader class="relative">
+            <div
+              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <PhilippinePeso class="h-7 w-7 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Sub-Meter Tracking</CardTitle>
+            <CardDescription>
+              Support multiple sub-meters per billing period to track each unit's usage separately.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
 
-      <Card
-        class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-      >
-        <div
-          class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-        ></div>
-        <CardHeader class="relative">
+      <Magnetic>
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
           <div
-            class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
-          >
-            <Banknote class="h-7 w-7 text-primary" />
-          </div>
-          <CardTitle class="text-lg">Payment Reconciliation</CardTitle>
-          <CardDescription>
-            Associate payments with billing and sub-meter records for clear reconciliation.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+          ></div>
+          <CardHeader class="relative">
+            <div
+              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Banknote class="h-7 w-7 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Payment Reconciliation</CardTitle>
+            <CardDescription>
+              Associate payments with billing and sub-meter records for clear reconciliation.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </Magnetic>
     </ScrollStagger>
   </div>
 </section>
