@@ -11,11 +11,17 @@
   <div class="container mx-auto w-full max-w-4xl">
     <!-- Badge - above fold, play once -->
     <ScrollReveal preset="slide-down" duration={0.6} delay={0.1} once>
-      <div
-        class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
-      >
-        <Zap class="h-4 w-4" />
-        <span>Electricity Billing Made Simple</span>
+      <div class="group relative mx-auto mb-6 inline-flex">
+        <!-- Animated glow border -->
+        <div
+          class="absolute -inset-0.5 animate-pulse rounded-full bg-linear-to-r from-primary/50 via-primary to-primary/50 opacity-50 blur-sm transition-opacity group-hover:opacity-75"
+        ></div>
+        <div
+          class="relative inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background px-4 py-1.5 text-sm font-medium text-primary"
+        >
+          <Zap class="h-4 w-4 animate-pulse" />
+          <span>Electricity Billing Made Simple</span>
+        </div>
       </div>
     </ScrollReveal>
 

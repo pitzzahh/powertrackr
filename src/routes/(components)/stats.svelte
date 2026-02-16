@@ -1,11 +1,53 @@
 <script lang="ts">
-  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
+  import { getTotalEnergyUsage, getTotalBillingInfoCount } from "$/api/billing-info.remote";
+  import { getTotalUserCount } from "$/api/user.remote";
+  import { getTotalPaymentsAmount } from "$/api/payment.remote";
+  import { ScrollStagger } from "$lib/motion-core";
+  import { NumberTicker } from "$lib/components/ui/number-ticker";
+  import { formatNumber, formatEnergy } from "$/utils/format";
+
+  const [energyUsed, userCount, billingCount, paymentsAmount] = await Promise.all([
+    getTotalEnergyUsage(),
+    getTotalUserCount(),
+    getTotalBillingInfoCount(),
+    getTotalPaymentsAmount(),
+  ]);
+
+  const formatUserCount = (count: number) => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K+`;
+    }
+    return `${count}+`;
+  };
+
+  const formatBillingCount = (count: number) => {
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K+`;
+    }
+    return `${count}+`;
+  };
 
   const stats = [
-    { value: "10K+", label: "Active Users" },
-    { value: "50M+", label: "kWh Tracked" },
-    { value: "99.9%", label: "Uptime" },
-    { value: "4.9★", label: "User Rating" },
+    {
+      value: userCount,
+      format: formatUserCount,
+      label: `Active ${userCount === 1 ? "User" : "Users"}`,
+    },
+    {
+      value: energyUsed.total,
+      format: (val: number) => formatEnergy(val),
+      label: `${energyUsed.energyUnit} Tracked`,
+    },
+    {
+      value: billingCount,
+      format: formatBillingCount,
+      label: "Bills Tracked",
+    },
+    {
+      value: paymentsAmount.total,
+      format: (val: number) => formatNumber(val),
+      label: "Payments Managed",
+    },
   ];
 </script>
 
@@ -21,14 +63,10 @@
       {#each stats as stat, i}
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
-            <SplitReveal mode="chars" triggerOnScroll delay={0.1 * i}>
-              {stat.value}
-            </SplitReveal>
+            <NumberTicker value={stat.value} format={stat.format} delay={0.3 + i * 0.1} />
           </div>
           <div class="text-muted-foreground">
-            <SplitReveal mode="words" triggerOnScroll delay={0.2 + 0.1 * i}>
-              {stat.label}
-            </SplitReveal>
+            {stat.label}
           </div>
         </div>
       {/each}
