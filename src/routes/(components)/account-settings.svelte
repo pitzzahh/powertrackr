@@ -48,7 +48,15 @@
   import { sineInOut } from "svelte/easing";
   import type { AsyncState } from "$/types/state";
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
-  import { showError, showInspectorWarning, showLoading, showSuccess } from "$/components/toast";
+  import {
+    showError,
+    showInspectorWarning,
+    showLoading,
+    showSuccess,
+    showWarning,
+  } from "$/components/toast";
+  import { deleteUser } from "$/api/user.remote";
+  import { goto, invalidateAll } from "$app/navigation";
 
   let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -211,38 +219,44 @@
     const toastId = showLoading("Deleting account...");
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // In real app, make API call here
-      // const response = await fetch('/api/account', {
-      //   method: 'DELETE'
-      // });
+      await deleteUser({ id: user?.id ?? "" });
 
       deleteAccountForm.asyncState = "success";
-      showSuccess("Account deleted successfully", undefined, undefined, {
+      showSuccess("Account deleted successfully", "Redirecting to login...", undefined, {
         id: toastId,
       });
-      // Close dialog and redirect or logout
-      setTimeout(() => {
-        openAccountSettings = false;
-        deleteAccountForm.asyncState = "idle";
-        // In real app: redirect to login or logout
-      }, 1000);
-    } catch (error) {
-      deleteAccountForm.asyncState = "error";
-      showError("Failed to delete account. Please try again.", undefined, undefined, {
-        id: toastId,
-      });
-      setTimeout(() => {
-        deleteAccountForm.asyncState = "idle";
-      }, 2000);
+
+      openAccountSettings = false;
+      deleteAccountForm.asyncState = "idle";
+      await invalidateAll();
+      goto("/auth?act=login", { replaceState: true });
+    } catch (err) {
+      deleteAccountForm.asyncState = "idle";
+      showError(
+        "Failed to delete account",
+        err instanceof Error ? err.message : "An unexpected error occurred.",
+        undefined,
+        { id: toastId }
+      );
     }
   }
 </script>
 
 {#if isDesktop.current}
-  <Dialog.Root bind:open={openAccountSettings}>
+  <Dialog.Root
+    bind:open={openAccountSettings}
+    onOpenChange={(open) => {
+      if (
+        !open &&
+        (overviewForm.asyncState === "processing" ||
+          passwordForm.asyncState === "processing" ||
+          deleteAccountForm.asyncState === "processing")
+      ) {
+        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+        openAccountSettings = true;
+      }
+    }}
+  >
     {#if trigger}
       <Dialog.Trigger>
         {@render trigger?.()}
@@ -261,7 +275,20 @@
     </Portal>
   </Dialog.Root>
 {:else}
-  <Drawer.Root bind:open={openAccountSettings}>
+  <Drawer.Root
+    bind:open={openAccountSettings}
+    onOpenChange={(open) => {
+      if (
+        !open &&
+        (overviewForm.asyncState === "processing" ||
+          passwordForm.asyncState === "processing" ||
+          deleteAccountForm.asyncState === "processing")
+      ) {
+        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+        openAccountSettings = true;
+      }
+    }}
+  >
     {#if trigger}
       <Drawer.Trigger>
         {@render trigger?.()}
