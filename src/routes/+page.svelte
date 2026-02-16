@@ -15,31 +15,34 @@
   import { TextLoop, Magnetic, SplitReveal, Marquee } from "$lib/motion-core";
 
   const benefits = [
-    "Real-time Tracking",
-    "Automated Calculations",
-    "Multi-tenant Support",
+    "Billing Records",
+    "Payment Tracking",
+    "Sub-Meter Support",
     "Payment History",
-    "Usage Analytics",
-    "Secure Data",
+    "Usage Calculations",
+    "Secure Accounts",
     "Easy Reconciliation",
-    "Export Reports",
+    "Per-Unit Charges",
   ];
 
   const steps = [
     {
       number: "01",
-      title: "Add Your Meters",
-      description: "Set up your main meter and sub-meters for each unit or tenant in minutes.",
+      title: "Record Billing Entries",
+      description:
+        "Enter your periodic billing entries with total kWh and balances per billing cycle.",
     },
     {
       number: "02",
-      title: "Record Readings",
-      description: "Enter periodic meter readings and let PowerTrackr calculate usage and costs.",
+      title: "Track Sub-Meters",
+      description:
+        "Add multiple sub-meters per billing period to track each unit's usage separately.",
     },
     {
       number: "03",
-      title: "Track Payments",
-      description: "Record payments and automatically reconcile balances across all accounts.",
+      title: "Reconcile Payments",
+      description:
+        "Associate payments with billing and sub-meter records for clear reconciliation.",
     },
   ];
 
@@ -100,30 +103,31 @@
         class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
       >
         <Zap class="h-4 w-4" />
-        <span>Smart Electricity Management</span>
+        <span>Electricity Billing Made Simple</span>
       </div>
 
       <!-- Hero Title -->
       <div class="hero-title-container mb-4">
         <h1 class="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-          Manage{" "}
+          Track{" "}
           <span class="textloop-wrapper">
             <TextLoop
               class="text-primary"
-              texts={["Electricity", "Energy", "Power", "Utility"]}
+              texts={["Billing", "Payments", "Usage", "Expenses"]}
               interval={2500}
             />
           </span>{" "}
-          Billing
+          Easily
         </h1>
         <p class="mt-2 text-3xl font-normal text-muted-foreground md:text-4xl lg:text-5xl">
-          with ease and precision
+          for multi-tenant properties
         </p>
       </div>
 
       <p class="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground md:text-xl">
         Record, organize, and reconcile electricity usage and payments across your account and
-        sub-meters. Perfect for landlords, property managers, and multi-unit properties.
+        sub-meters. Built for landlords, property managers, and multi-unit properties who need
+        practical billing and expense allocation.
       </p>
 
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
@@ -292,6 +296,75 @@
     </div>
   </section>
 
+  <!-- Typical Scenarios Section -->
+  <section class="relative z-10 py-24">
+    <div class="container mx-auto px-4">
+      <div class="mb-16 text-center">
+        <SplitReveal mode="words" triggerOnScroll>
+          <h2 class="text-3xl font-bold tracking-tight md:text-5xl">Built For You</h2>
+        </SplitReveal>
+        <SplitReveal mode="lines" triggerOnScroll delay={0.2}>
+          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            Practical billing and expense allocation for common scenarios
+          </p>
+        </SplitReveal>
+      </div>
+
+      <div class="mx-auto grid max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Users class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Multi-Tenant Buildings</CardTitle>
+            <CardDescription>
+              Manage per-unit sub-meter readings and allocate payments derived from a single utility
+              account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <Banknote class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Homeowners with Rentals</CardTitle>
+            <CardDescription>
+              Track the rental unit's consumption, expenses, and payments when sub-metered on your
+              main account.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card
+          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
+        >
+          <CardHeader>
+            <div
+              class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
+            >
+              <ChartLine class="h-6 w-6 text-primary" />
+            </div>
+            <CardTitle class="text-lg">Property Managers</CardTitle>
+            <CardDescription>
+              Concise per-period accounting for multiple units without complex energy-generation
+              features.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    </div>
+  </section>
+
   <!-- Why Choose Us Section -->
   <section class="relative z-10 py-24">
     <div class="container mx-auto px-4">
@@ -301,7 +374,7 @@
         </SplitReveal>
         <SplitReveal mode="lines" triggerOnScroll delay={0.2}>
           <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            Built for property managers who need reliable electricity billing
+            Software-focused tracking and billing for practical expense allocation
           </p>
         </SplitReveal>
       </div>
@@ -316,9 +389,9 @@
             >
               <ChartLine class="h-6 w-6 text-primary" />
             </div>
-            <CardTitle class="text-lg">Analytics</CardTitle>
+            <CardTitle class="text-lg">Billing Summaries</CardTitle>
             <CardDescription>
-              Track usage trends and costs with detailed charts and reports.
+              Straightforward billing summaries and per-unit charge calculations for tenant billing.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -332,9 +405,9 @@
             >
               <Users class="h-6 w-6 text-primary" />
             </div>
-            <CardTitle class="text-lg">Multi-Tenant</CardTitle>
+            <CardTitle class="text-lg">User Accounts</CardTitle>
             <CardDescription>
-              Manage unlimited sub-meters and tenants from one dashboard.
+              User account flows including verification and optional two-factor authentication.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -348,9 +421,9 @@
             >
               <Shield class="h-6 w-6 text-primary" />
             </div>
-            <CardTitle class="text-lg">Secure</CardTitle>
+            <CardTitle class="text-lg">Input Validation</CardTitle>
             <CardDescription>
-              Your data is encrypted and backed up with enterprise-grade security.
+              Input validation and tests to help ensure consistency and correctness in your records.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -364,9 +437,10 @@
             >
               <Clock class="h-6 w-6 text-primary" />
             </div>
-            <CardTitle class="text-lg">Save Time</CardTitle>
+            <CardTitle class="text-lg">Simple Per-kWh</CardTitle>
             <CardDescription>
-              Automate calculations and reduce billing time by up to 90%.
+              Simple per-kWh allocation model focused on billing and expense allocation, not
+              generation.
             </CardDescription>
           </CardHeader>
         </Card>
@@ -393,8 +467,8 @@
           </SplitReveal>
           <SplitReveal mode="lines" triggerOnScroll delay={0.2}>
             <p class="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-              Join thousands of property managers who trust PowerTrackr for their electricity
-              billing needs. Start your free trial today.
+              Join property managers and landlords who trust PowerTrackr for their electricity
+              billing and payment tracking needs.
             </p>
           </SplitReveal>
 
@@ -405,11 +479,11 @@
                 class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
                 href="/auth?act=register"
               >
-                Start Free Trial
+                Get Started Free
               </Button>
             </Magnetic>
             <Magnetic>
-              <Button size="lg" variant="outline" href="/auth?act=login">Contact Sales</Button>
+              <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
             </Magnetic>
           </div>
         </div>
