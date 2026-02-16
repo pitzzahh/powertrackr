@@ -34,7 +34,6 @@
   import { buttonVariants } from "$/components/ui/button/index.js";
   import { MediaQuery } from "svelte/reactivity";
   import * as Dialog from "$/components/ui/dialog";
-  import { Portal } from "bits-ui";
   import * as UnderlineTabs from "$/components/underline-tabs";
   import * as Field from "$/components/ui/field/index.js";
   import { Input } from "$/components/ui/input/index.js";
