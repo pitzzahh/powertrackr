@@ -188,19 +188,25 @@
               <InputOTP.Root
                 maxlength={6}
                 name="code"
-                aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
                 onValueChange={(value) => verify2FA.fields.code.set(value)}
               >
                 {#snippet children({ cells })}
                   <InputOTP.Group>
                     {#each cells.slice(0, 3) as cell, i (cell)}
-                      <InputOTP.Slot autofocus={i === 0} {cell} />
+                      <InputOTP.Slot
+                        autofocus={i === 0}
+                        {cell}
+                        aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
+                      />
                     {/each}
                   </InputOTP.Group>
                   <InputOTP.Separator />
                   <InputOTP.Group>
                     {#each cells.slice(3, 6) as cell (cell)}
-                      <InputOTP.Slot {cell} />
+                      <InputOTP.Slot
+                        {cell}
+                        aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
+                      />
                     {/each}
                   </InputOTP.Group>
                 {/snippet}
