@@ -13,5 +13,13 @@ export default defineConfig({
     url: process.env.DATABASE_URL,
   },
   schemaFilter: ["public"],
-  tablesFilter: ["!pg_stat_statements"],
+  tablesFilter: [
+    "user",
+    "payment",
+    "billing_info",
+    "sub_meter",
+    "session",
+    "email_verification_request",
+    "password_reset_session",
+  ],
 });
