@@ -49,12 +49,6 @@
     setTimeout(() => (copiedRecovery = false), 2000);
   }
 
-  async function handleComplete() {
-    // Redirect back to root with success toast
-    showSuccess("Two-factor authentication enabled successfully!");
-    await goto("/");
-  }
-
   onDestroy(() => (status = "idle"));
 </script>
 
@@ -256,7 +250,7 @@
             {/if}
           </Button>
         </div>
-        <Button class="mt-4 w-full" onclick={handleComplete}>
+        <Button class="mt-4 w-full" href="/dashboard">
           <ShieldCheck class="size-4" />
           Done
         </Button>
