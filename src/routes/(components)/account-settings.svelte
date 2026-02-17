@@ -8,9 +8,10 @@
   };
 
   type AccountSettingsState = {
-    activeTab: "overview" | "change-password" | "delete-account";
+    activeTab: "overview" | "change-password" | "security" | "delete-account";
     overviewAsyncState: AsyncState;
     passwordAsyncState: AsyncState;
+    securityAsyncState: AsyncState;
     deleteAsyncState: AsyncState;
   };
 </script>
@@ -25,14 +26,15 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Separator } from "$/components/ui/separator/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import { Loader, Lock, User, Trash2 } from "$lib/assets/icons.js";
+  import { Loader, Lock, User, Trash2, Shield, ShieldCheck, ShieldOff } from "$lib/assets/icons.js";
   import { Badge } from "$/components/ui/badge";
   import { toast } from "svelte-sonner";
   import type { AsyncState } from "$/types/state";
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
   import { showLoading, showSuccess, showWarning } from "$/components/toast";
   import { updateUser, deleteUser } from "$/api/user.remote";
-  import { changePassword } from "$/api/auth.remote";
+  import { changePassword, disable2FA } from "$/api/auth.remote";
+  import * as InputOTP from "$/components/ui/input-otp";
   import { isHttpError } from "@sveltejs/kit";
   import * as Password from "$/components/password";
   import { Checkbox } from "$/components/ui/checkbox/index.js";
@@ -44,13 +46,16 @@
 
   const isDesktop = new MediaQuery("(min-width: 768px)");
 
-  let { activeTab, overviewAsyncState, passwordAsyncState, deleteAsyncState } =
+  let { activeTab, overviewAsyncState, passwordAsyncState, securityAsyncState, deleteAsyncState } =
     $state<AccountSettingsState>({
       activeTab: "overview",
       overviewAsyncState: "idle",
       passwordAsyncState: "idle",
+      securityAsyncState: "idle",
       deleteAsyncState: "idle",
     });
+
+  let disableCode = $state("");
 
   let { deleteCheckbox1 } = $derived({ deleteCheckbox1: false });
   let { deleteCheckbox2 } = $derived({ deleteCheckbox2: !deleteCheckbox1 });
@@ -142,6 +147,9 @@
       >
       <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="change-password"
         >Change Password</UnderlineTabs.Trigger
+      >
+      <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="security"
+        >Security</UnderlineTabs.Trigger
       >
       <UnderlineTabs.Trigger class="flex-1 md:flex-none" value="delete-account"
         >Delete Account</UnderlineTabs.Trigger
@@ -438,6 +446,132 @@
               </Button>
             </div>
           </form>
+        </div>
+      </ScrollArea>
+    </UnderlineTabs.Content>
+
+    <UnderlineTabs.Content value="security" class="min-h-0 flex-1">
+      <ScrollArea orientation="vertical" class="h-full">
+        <div class="space-y-6 p-1 pr-3">
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+              Two-Factor Authentication
+            </h4>
+
+            <div class="rounded-lg border p-4">
+              <div class="flex items-center justify-between">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    {#if user?.registeredTwoFactor}
+                      <ShieldCheck class="size-5 text-green-500" />
+                      <span class="font-medium">2FA is enabled</span>
+                    {:else}
+                      <ShieldOff class="size-5 text-muted-foreground" />
+                      <span class="font-medium">2FA is not enabled</span>
+                    {/if}
+                  </div>
+                  <p class="text-sm text-muted-foreground">
+                    {#if user?.registeredTwoFactor}
+                      Your account is protected with two-factor authentication.
+                    {:else}
+                      Add an extra layer of security to your account.
+                    {/if}
+                  </p>
+                </div>
+                <Badge
+                  class={user?.registeredTwoFactor
+                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"}
+                >
+                  {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
+                </Badge>
+              </div>
+            </div>
+
+            {#if !user?.registeredTwoFactor}
+              <div class="rounded-lg border border-dashed p-6 text-center">
+                <Shield class="mx-auto size-12 text-muted-foreground/50" />
+                <h5 class="mt-4 font-medium">Set up two-factor authentication</h5>
+                <p class="mt-2 text-sm text-muted-foreground">
+                  Use an authenticator app like Google Authenticator or Authy to generate
+                  verification codes.
+                </p>
+                <Button class="mt-4" href="/auth?act=2fa-setup">
+                  <Shield class="size-4" />
+                  Enable 2FA
+                </Button>
+              </div>
+            {:else}
+              <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+                <h5 class="font-medium text-destructive">Disable Two-Factor Authentication</h5>
+                <p class="mt-1 text-sm text-destructive/80">
+                  Enter your current 2FA code to disable two-factor authentication.
+                </p>
+                <form
+                  class="mt-4"
+                  {...disable2FA.enhance(async ({ submit }) => {
+                    if (securityAsyncState === "processing") return;
+                    securityAsyncState = "processing";
+                    const toastId = showLoading("Disabling 2FA...");
+                    try {
+                      await submit();
+                      const issues = disable2FA.fields.allIssues?.() || [];
+                      if (issues.length > 0) {
+                        showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
+                          id: toastId,
+                        });
+                      } else {
+                        showSuccess("2FA disabled successfully", undefined, undefined, {
+                          id: toastId,
+                        });
+                        disableCode = "";
+                      }
+                    } catch (e) {
+                      if (isHttpError(e)) {
+                        showWarning(e.body.message, undefined, undefined, { id: toastId });
+                      } else {
+                        showWarning("Failed to disable 2FA", undefined, undefined, { id: toastId });
+                      }
+                    } finally {
+                      securityAsyncState = "idle";
+                    }
+                  })}
+                >
+                  <div class="flex flex-col items-center gap-4">
+                    <InputOTP.Root maxlength={6} bind:value={disableCode}>
+                      {#snippet children({ cells })}
+                        <InputOTP.Group>
+                          {#each cells.slice(0, 3) as cell (cell)}
+                            <InputOTP.Slot {cell} />
+                          {/each}
+                        </InputOTP.Group>
+                        <InputOTP.Separator />
+                        <InputOTP.Group>
+                          {#each cells.slice(3, 6) as cell (cell)}
+                            <InputOTP.Slot {cell} />
+                          {/each}
+                        </InputOTP.Group>
+                      {/snippet}
+                    </InputOTP.Root>
+                    <input type="hidden" name="code" value={disableCode} />
+                    <Button
+                      type="submit"
+                      variant="destructive"
+                      disabled={disableCode.length !== 6 || securityAsyncState === "processing"}
+                    >
+                      {#if securityAsyncState === "processing"}
+                        <Loader class="size-4 animate-spin" />
+                        Disabling...
+                      {:else}
+                        <ShieldOff class="size-4" />
+                        Disable 2FA
+                      {/if}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            {/if}
+          </div>
         </div>
       </ScrollArea>
     </UnderlineTabs.Content>
