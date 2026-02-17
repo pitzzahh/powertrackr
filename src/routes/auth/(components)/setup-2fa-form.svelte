@@ -185,7 +185,12 @@
           >
             <input type="hidden" name="secret" value={twoFASetup.secret} />
             <div class="flex flex-col items-center gap-4">
-              <InputOTP.Root maxlength={6} {...verify2FA.fields.code.as("text")}>
+              <InputOTP.Root
+                maxlength={6}
+                name="code"
+                aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
+                onValueChange={(value) => verify2FA.fields.code.set(value)}
+              >
                 {#snippet children({ cells })}
                   <InputOTP.Group>
                     {#each cells.slice(0, 3) as cell, i (cell)}
