@@ -17,6 +17,7 @@ import {
   setSessionTokenCookie,
 } from "$/server/auth";
 import { addUser, getUserBy, updateUserBy } from "$/server/crud/user-crud";
+import { updateSessionBy } from "$/server/crud/session-crud";
 import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
@@ -257,6 +258,50 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   if (!updateResult.valid) {
     error(400, "Failed to set up 2FA");
   }
+  return redirect(302, "/dashboard");
+});
+
+export const checkpoint2FA = form(setup2FASchema, async (data, issues) => {
+  // This endpoint verifies a TOTP code and marks the current session as twoFactorVerified.
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { code } = data;
+
+  // Load the user's encrypted TOTP key
+  const {
+    valid,
+    value: [userResult],
+  } = (await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { limit: 1, fields: ["totpKey"] },
+  })) as HelperResult<NewUser[]>;
+
+  if (!valid || !userResult || !userResult.totpKey) {
+    invalid(issues.code("Two-factor authentication is not configured for this account"));
+  }
+
+  // Decrypt the TOTP key and verify the code
+  const secretBytes = decrypt(userResult.totpKey);
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    invalid(issues.code("Invalid verification code"));
+  }
+
+  // Mark the current session as twoFactorVerified
+  const sessionUpdate = await updateSessionBy(
+    { query: { id: event.locals.session.id }, options: { with_session: false } },
+    { twoFactorVerified: true }
+  );
+
+  if (!sessionUpdate.valid) {
+    error(400, "Failed to verify session for two-factor authentication");
+  }
+
+  // After successful checkpoint, send the user to dashboard
   return redirect(302, "/dashboard");
 });
 
