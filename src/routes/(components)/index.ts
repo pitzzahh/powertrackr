@@ -83,3 +83,16 @@ export { default as ChartArea } from "./chart-area.svelte";
 export { default as ChartBar } from "./chart-bar.svelte";
 export { default as ChartConsumption } from "./chart-consumption.svelte";
 export { default as ErrorBackground } from "./error-background.svelte";
+export { default as AccountSettings } from "./account-settings.svelte";
+
+// Landing page components
+export { default as AnimatedBackground } from "./animated-background.svelte";
+export { default as BenefitsMarquee } from "./benefits-marquee.svelte";
+export { default as Cta } from "./cta.svelte";
+export { default as Features } from "./features.svelte";
+export { default as Hero } from "./hero.svelte";
+export { default as HowItWorks } from "./how-it-works.svelte";
+export { default as LandingFooter } from "./landing-footer.svelte";
+export { default as LandingNav } from "./landing-nav.svelte";
+export { default as Scenarios } from "./scenarios.svelte";
+export { default as Stats } from "./stats.svelte";

@@ -1,6 +1,6 @@
 import { db } from "$/server/db";
 import type { Transaction } from "$/server/db";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
+import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
 import { billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
@@ -13,10 +13,26 @@ import type {
   BillingCreateForm,
 } from "$/types/billing-info";
 import { calculatePayPerKwh } from "$lib";
+import { formatEnergy, type EnergyUnit } from "$/utils/format";
 import { addPayment } from "$/server/crud/payment-crud";
 import { addSubMeter } from "$/server/crud/sub-meter-crud";
 import type { NewSubMeter } from "$/types/sub-meter";
 import { error } from "@sveltejs/kit";
+
+export type TotalEnergyUsageResult = {
+  total: number;
+  formatted: string;
+  energyUnit: EnergyUnit;
+};
+
+export async function getTotalEnergyUsage(tx?: Transaction): Promise<TotalEnergyUsageResult> {
+  const result = await (tx || db()).select({ total: sum(billingInfo.totalkWh) }).from(billingInfo);
+
+  const total = Number(result[0]?.total ?? 0);
+  const formatted = formatEnergy(total);
+
+  return { total, formatted, energyUnit: formatted.split(" ").pop() as EnergyUnit };
+}
 
 type BillingInfoQueryOptions = {
   where?: Record<string, unknown>;

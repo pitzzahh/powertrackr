@@ -29,14 +29,14 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     }
   }
 
-  // Skip auth checks for auth-related paths
-  if (event.url.pathname.startsWith("/auth") || event.url.pathname.startsWith("/.well-known")) {
+  // Skip auth checks for auth-related paths and root landing page
+  if (event.url.pathname.startsWith("/auth") || event.url.pathname === "/") {
     return resolve(event);
   }
 
   // Require authentication for other paths
   if (!event.locals.user || !event.locals.session) {
-    redirect(307, "/auth?act=login");
+    redirect(307, "/");
   }
 
   // Check additional auth requirements
@@ -65,10 +65,8 @@ export const log: Handle = async ({ event, resolve }) => {
     locals: { user, session },
   } = event;
 
-  const isAuthenticated = user && session ? "Authenticated" : "Unauthenticated";
-
   console.info(
-    `[${isAuthenticated}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
+    `[${user && session ? "Authenticated" : "Unauthenticated"}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
   );
 
   return resolve(event);

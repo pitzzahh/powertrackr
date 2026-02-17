@@ -11,6 +11,7 @@
   type SidebarContentState = {
     status: AsyncState;
     logoutAttempt: boolean;
+    openAccountSettings: boolean;
   };
 </script>
 
@@ -22,15 +23,7 @@
   import { Separator } from "$/components/ui/separator";
   import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
-  import {
-    Loader,
-    PanelLeftClose,
-    LogOut,
-    BadgeCheck,
-    Bell,
-    ChevronsUpDown,
-    CreditCard,
-  } from "$/assets/icons";
+  import { Loader, PanelLeftClose, LogOut, BadgeCheck, Bell, ChevronsUpDown } from "$/assets/icons";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
   import * as Avatar from "$/components/ui/avatar/index.js";
@@ -39,14 +32,16 @@
   import { toShortName } from "$/utils/text";
   import { showLoading, showSuccess, toast } from "$/components/toast";
   import { goto } from "$app/navigation";
+  import { AccountSettings } from ".";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
   const sidebar = useSidebarStore();
 
-  let { status, logoutAttempt }: SidebarContentState = $state({
+  let { status, logoutAttempt, openAccountSettings }: SidebarContentState = $state({
     status: "idle",
     logoutAttempt: false,
+    openAccountSettings: false,
   });
 
   const pendingFetches = pendingFetchContext.get();
@@ -60,44 +55,6 @@
     }));
   });
 </script>
-
-<!-- Collapse toggle button - only show on desktop -->
-{#if !isMobileSheet}
-  <div
-    class={[
-      "transition-all duration-150 ease-in-out",
-      {
-        flex: collapsed,
-        "justify-center": collapsed,
-        "mb-2": collapsed,
-        absolute: !collapsed,
-        "-right-4": !collapsed,
-        "top-2": !collapsed,
-        "z-50": !collapsed,
-      },
-    ]}
-  >
-    <Button
-      onclick={() => sidebar.toggleCollapse()}
-      variant="outline"
-      size="icon"
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-      title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-    >
-      <span
-        class={[
-          "transition-transform duration-150 ease-in-out",
-          {
-            "rotate-180": collapsed,
-            "rotate-0": !collapsed,
-          },
-        ]}
-      >
-        <PanelLeftClose class="size-4" />
-      </span>
-    </Button>
-  </div>
-{/if}
 
 <nav
   class={[
@@ -148,15 +105,13 @@
   <DropdownMenu.Root>
     <DropdownMenu.Trigger
       class={[
-        buttonVariants({ variant: "secondary" }),
-        "flex w-full items-center rounded-lg transition-all duration-150 ease-in-out",
+        buttonVariants({ variant: "ghost" }),
+        "flex w-full items-center rounded-lg p-0 transition-all duration-150 ease-in-out",
         {
           "justify-center": collapsed,
           "p-1": collapsed,
-          "hover:bg-sidebar-accent": true,
-          "gap-2": !collapsed,
+          "gap-2 px-2!": !collapsed,
           "hover:text-sidebar-accent-foreground": !collapsed,
-          "data-[state=open]:bg-sidebar-accent": !collapsed,
           "data-[state=open]:text-sidebar-accent-foreground": !collapsed,
         },
       ]}
@@ -198,13 +153,9 @@
       </DropdownMenu.Label>
       <DropdownMenu.Separator />
       <DropdownMenu.Group>
-        <DropdownMenu.Item>
+        <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
           <BadgeCheck />
           Account
-        </DropdownMenu.Item>
-        <DropdownMenu.Item>
-          <CreditCard />
-          Billing
         </DropdownMenu.Item>
         <DropdownMenu.Item>
           <Bell />
@@ -218,6 +169,35 @@
       </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
+</div>
+
+<div class="flex justify-center">
+  <Button
+    variant="outline"
+    onclick={() => sidebar.toggleCollapse()}
+    size={collapsed ? "icon" : "default"}
+    aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+    class={[
+      "mt-4",
+      {
+        "w-full": !collapsed,
+      },
+    ]}
+  >
+    <PanelLeftClose
+      class={[
+        "size-4 transition-transform duration-150 ease-in-out",
+        {
+          "rotate-180": collapsed,
+          "rotate-0": !collapsed,
+        },
+      ]}
+    />
+    {#if !collapsed}
+      Collapse
+    {/if}
+  </Button>
 </div>
 
 <AlertDialog.Root bind:open={logoutAttempt}>
@@ -253,3 +233,5 @@
     </AlertDialog.Footer>
   </AlertDialog.Content>
 </AlertDialog.Root>
+
+<AccountSettings {user} bind:openAccountSettings />

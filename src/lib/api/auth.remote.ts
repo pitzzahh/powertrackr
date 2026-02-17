@@ -5,6 +5,7 @@ import {
   setup2FASchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
 } from "$/validators/auth";
 import {
   createSession,
@@ -41,11 +42,11 @@ export const requireAuth = query(() => requireAuthServer());
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return redirect(303, "/auth?act=login");
+    return redirect(303, "/");
   }
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
-  redirect(303, "/auth?act=login");
+  redirect(303, "/");
 });
 
 export const login = form(loginSchema, async (user, issues) => {
@@ -96,7 +97,7 @@ export const login = form(loginSchema, async (user, issues) => {
   if (userResult.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const register = form(registerSchema, async (newUser, issues) => {
@@ -230,7 +231,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
   if (updatedUser.registeredTwoFactor) {
     return redirect(302, "/auth?act=2fa-setup");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const setup2FA = form(setup2FASchema, async (data, _issues) => {
@@ -248,7 +249,7 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   if (!updateResult.valid) {
     error(400, "Failed to set up 2FA");
   }
-  return redirect(302, "/");
+  return redirect(302, "/dashboard");
 });
 
 export const forgotPassword = form(forgotPasswordSchema, async (user) => {
@@ -321,4 +322,49 @@ export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
   }
 
   return redirect(302, "/auth?act=login");
+});
+
+export const changePassword = form(changePasswordSchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { currentPassword, newPassword, confirmPassword } = data;
+
+  if (newPassword !== confirmPassword) {
+    invalid(issues.confirmPassword("Passwords do not match"));
+  }
+
+  // Get current user
+  const {
+    valid,
+    value: [userResult],
+  } = await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { limit: 1 },
+  });
+
+  if (!valid || !userResult || !userResult.passwordHash) {
+    error(400, "User not found or password not set");
+  }
+
+  // Verify current password
+  const validPassword = await verifyPasswordHash(userResult.passwordHash, currentPassword);
+  if (!validPassword) {
+    invalid(issues.currentPassword("Current password is incorrect"));
+  }
+
+  // Hash new password and update
+  const passwordHash = await hashPassword(newPassword);
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    { passwordHash }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to update password");
+  }
+
+  return true;
 });

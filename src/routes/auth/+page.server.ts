@@ -10,7 +10,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     (user.isOauthUser || user.emailVerified) &&
     (!user.registeredTwoFactor || session.twoFactorVerified)
   ) {
-    redirect(302, "/");
+    redirect(302, "/dashboard");
   }
   const actions: AuthFormProps["action"][] = [
     "login",

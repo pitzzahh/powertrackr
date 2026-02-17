@@ -1,14 +1,11 @@
 <script module lang="ts">
   import { TriangleAlert } from "$lib/assets/icons";
-  import type { BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-  import { BillingInfoForm as OriginalBillingInfoForm } from "$routes/history/(components)";
 
   export type WarningBannerProps = {
     message: string;
   };
 
-  export { WarningBanner, LoadingDots, BillingInfoForm };
+  export { WarningBanner, LoadingDots };
 </script>
 
 {#snippet WarningBanner({ message }: WarningBannerProps)}
@@ -29,14 +26,4 @@
     <span class="animation-delay-500 animate-pulse">.</span>
     <span class="animation-delay-1000 animate-pulse">.</span>
   </span>
-{/snippet}
-
-{#snippet BillingInfoForm(
-  callback: BillingInfoWithSubMetersFormProps["callback"],
-  action: BillingInfoWithSubMetersFormProps["action"],
-  billingInfo?: BillingInfoDTOWithSubMeters
-)}
-  <div class="space-y-4 p-4 pb-8">
-    <OriginalBillingInfoForm {action} {callback} {billingInfo} />
-  </div>
 {/snippet}

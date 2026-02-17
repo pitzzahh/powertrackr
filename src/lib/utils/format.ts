@@ -20,6 +20,14 @@ export enum DateFormat {
   YearOnly = "yearOnly",
 }
 
+/**
+ * Parse a calendar date string (YYYY-MM-DD) as UTC to avoid timezone issues
+ */
+export const parseCalendarDate = (dateStr: string): Date => {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day));
+};
+
 export const formatDate = (
   date: Date,
   options: { format?: DateFormat; locale?: string } = {}
@@ -36,26 +44,27 @@ export const formatDate = (
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
+        timeZone: "UTC",
       };
       break;
 
     case DateFormat.MonthOnly:
-      intlOptions = { month: "long" };
+      intlOptions = { month: "long", timeZone: "UTC" };
       break;
 
     case DateFormat.MonthYear:
-      intlOptions = { month: "long", year: "numeric" };
+      intlOptions = { month: "long", year: "numeric", timeZone: "UTC" };
       break;
 
     case DateFormat.YearOnly:
-      intlOptions = { year: "numeric" };
+      intlOptions = { year: "numeric", timeZone: "UTC" };
       break;
     case DateFormat.DayOnly:
-      intlOptions = { weekday: "long" };
+      intlOptions = { weekday: "long", timeZone: "UTC" };
       break;
     case DateFormat.DateOnly:
     default:
-      intlOptions = { year: "numeric", month: "long", day: "numeric" };
+      intlOptions = { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" };
   }
 
   return new Intl.DateTimeFormat(locale, intlOptions).format(date);

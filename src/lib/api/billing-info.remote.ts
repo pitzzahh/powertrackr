@@ -1,4 +1,4 @@
-import { query, form, command } from "$app/server";
+import { query, form, command, getRequestEvent } from "$app/server";
 import { db } from "$lib/server/db/index";
 import { calculatePayPerKwh } from "$lib";
 import {
@@ -20,8 +20,10 @@ import { requireAuth } from "$/server/auth";
 import {
   updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
+  getBillingInfoCountBy,
   deleteBillingInfoBy,
   createBillingInfoLogic,
+  getTotalEnergyUsage as getTotalEnergyUsageCrud,
 } from "$/server/crud/billing-info-crud";
 import { getChangedData, omit } from "$/utils/mapper";
 import { addPayment } from "$/server/crud/payment-crud";
@@ -41,6 +43,44 @@ const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "payPerkWh",
   "paymentId",
 ] as const;
+
+// Query to get total energy usage (summed totalKwh) for a user, formatted
+// Public endpoint with origin check - only allows requests from same origin
+export const getTotalEnergyUsage = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  return await getTotalEnergyUsageCrud();
+});
+
+// Query to get total billing info count
+// Public endpoint with origin check - only allows requests from same origin
+export const getTotalBillingInfoCount = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  const result = await getBillingInfoCountBy({ query: {} });
+  return result.value ?? 0;
+});
+
 // Query to get all billing infos for a user
 export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) => {
   return await getBillingInfoByCrud({
@@ -176,6 +216,9 @@ export const createBillingInfo = form(
       getExtendedBillingInfos({
         userId,
       }).refresh();
+      getLatestBillingInfo({
+        userId,
+      }).refresh();
       return result;
     } catch (err) {
       if (err instanceof Error && err.message.includes("Invalid meter readings")) {
@@ -289,17 +332,6 @@ export const updateBillingInfo = form(
       },
     });
 
-    console.log(
-      JSON.stringify(
-        {
-          validBillingInfo,
-          billingInfoWithSubMetersToUpdate,
-        },
-        null,
-        2
-      )
-    );
-
     if (!validBillingInfo) {
       throw error(400, "Failed to update billing info");
     }
@@ -312,16 +344,15 @@ export const updateBillingInfo = form(
       }),
     };
 
+    // Use the current billing info as-is for comparison.
+    // Overriding `balance` with the payment amount can cause false-positive
+    // change detection when the payment amount differs from the stored balance.
     const changed_data = getChangedData(
-      omit(
-        {
-          ...billingInfoWithSubMetersToUpdate,
-          balance: billingInfoWithSubMetersToUpdate.payment?.amount,
-        },
-        ["id", "createdAt", "updatedAt", "paymentId", "createdAt", "updatedAt"]
-      ),
+      omit(billingInfoWithSubMetersToUpdate, ["id", "createdAt", "updatedAt", "paymentId"]),
       updatedData
     );
+
+    console.log({ billingInfoWithSubMetersToUpdate, changed_data });
 
     // Determine whether provided subMeters actually differ from existing ones
     // (cheap checks) so we can skip heavy work when they don't.

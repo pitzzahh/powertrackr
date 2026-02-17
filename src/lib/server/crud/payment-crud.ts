@@ -1,10 +1,11 @@
 import { db } from "$/server/db";
 import type { Transaction } from "$/server/db";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { payment } from "$/server/db/schema";
+import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
+import { payment, billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
+import { formatNumber } from "$/utils/format";
 import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
 
 type PaymentQueryOptions = {
@@ -45,6 +46,24 @@ export async function addPayment(
     message: `${insert_result.length} payment(s) ${is_valid ? "added" : "not added"}`,
     value: insert_result,
   };
+}
+
+export type TotalPaymentsAmountResult = {
+  total: number;
+  formatted: string;
+};
+
+export async function getTotalPaymentsAmount(tx?: Transaction): Promise<TotalPaymentsAmountResult> {
+  // Only sum payments that are linked to billing info (main payments, not sub-meter payments)
+  const result = await (tx || db())
+    .select({ total: sum(payment.amount) })
+    .from(payment)
+    .innerJoin(billingInfo, eq(billingInfo.paymentId, payment.id));
+
+  const total = Number(result[0]?.total ?? 0);
+  const formatted = formatNumber(total);
+
+  return { total, formatted };
 }
 
 export async function updatePaymentBy(

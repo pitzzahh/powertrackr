@@ -14,8 +14,8 @@
 <script lang="ts">
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
-  import { SubPaymentsButton } from ".";
-  import { formatDate, formatNumber } from "$/utils/format";
+  import { BillingInfoForm, SubPaymentsButton } from ".";
+  import { formatDate, formatNumber, parseCalendarDate } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
@@ -28,7 +28,6 @@
   import { deleteBillingInfo } from "$/api/billing-info.remote";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { BillingInfoForm as UpdateBillingInfoForm } from "$/components/snippets.svelte";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
@@ -58,7 +57,7 @@
     },
     {
       label: "Date",
-      value: formatDate(new Date(row.original.date)),
+      value: formatDate(parseCalendarDate(row.original.date)),
       class: "font-mono",
     },
     {
@@ -168,7 +167,9 @@
         </Dialog.Title>
         <Dialog.Description class="mt-2 text-lg text-muted-foreground">
           Comprehensive billing information for
-          <span class="font-mono text-primary">{formatDate(new Date(row.original.date))}</span>
+          <span class="font-mono text-primary"
+            >{formatDate(parseCalendarDate(row.original.date))}</span
+          >
         </Dialog.Description>
       </Dialog.Header>
       <ScrollArea class="max-h-[60vh] pr-2.5">
@@ -207,7 +208,7 @@
   {/if}
 
   {#if active_dialog_content === "remove"}
-    {@const currentDate = row.original.date}
+    {@const currentDate = formatDate(parseCalendarDate(row.original.date))}
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>
@@ -258,7 +259,9 @@
   <Sheet.Portal>
     <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
       <Sheet.Header class="border-b">
-        <Sheet.Title>Edit billing info of {formatDate(new Date(row.original.date))}</Sheet.Title>
+        <Sheet.Title
+          >Edit billing info of {formatDate(parseCalendarDate(row.original.date))}</Sheet.Title
+        >
         <Sheet.Description>
           Update the billing info details for billing info with id
           <span class="font-mono text-primary">
@@ -267,20 +270,22 @@
         </Sheet.Description>
       </Sheet.Header>
       <ScrollArea class="min-h-0 flex-1">
-        {@render UpdateBillingInfoForm(
-          (valid, _, metaData) => {
-            open_edit = false;
-            if (valid) {
-              billingStore.refresh();
-              consumptionStore.refresh();
-              showSuccess("Billing info updated successfully!");
-            } else {
-              showWarning("Failed to update billing info", metaData?.error);
-            }
-          },
-          "update",
-          billingInfoToDto(row.original)
-        )}
+        <div class="space-y-4 p-4 pb-8">
+          <BillingInfoForm
+            action="update"
+            callback={(valid, _, metaData) => {
+              open_edit = false;
+              if (valid) {
+                billingStore.refresh();
+                consumptionStore.refresh();
+                showSuccess("Billing info updated successfully!");
+              } else {
+                showWarning("Failed to update billing info", metaData?.error);
+              }
+            }}
+            billingInfo={billingInfoToDto(row.original)}
+          />
+        </div>
       </ScrollArea>
     </Sheet.Content>
   </Sheet.Portal>

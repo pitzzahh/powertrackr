@@ -75,7 +75,7 @@
       if (issues.length > 0) {
         showWarning(issues.map((i) => i.message).join(", "));
       } else {
-        if (action === "login") form.reset();
+        form.reset();
         showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
       }
     } catch (e) {

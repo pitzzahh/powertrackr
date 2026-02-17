@@ -51,6 +51,7 @@ describe("formatDate", () => {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "UTC",
     }).format(date);
     expect(formatDate(date, { format: DateFormat.DateOnly, locale: "en-PH" })).toBe(expected);
   });
@@ -62,24 +63,31 @@ describe("formatDate", () => {
       day: "numeric",
       hour: "numeric",
       minute: "2-digit",
+      timeZone: "UTC",
     }).format(date);
     expect(formatDate(date, { format: DateFormat.DateTime, locale: "en-PH" })).toBe(expected);
   });
 
   it("formats MonthOnly correctly", () => {
-    const expected = new Intl.DateTimeFormat("en-PH", { month: "long" }).format(date);
+    const expected = new Intl.DateTimeFormat("en-PH", { month: "long", timeZone: "UTC" }).format(
+      date
+    );
     expect(formatDate(date, { format: DateFormat.MonthOnly, locale: "en-PH" })).toBe(expected);
   });
 
   it("formats MonthYear correctly", () => {
-    const expected = new Intl.DateTimeFormat("en-PH", { month: "long", year: "numeric" }).format(
-      date
-    );
+    const expected = new Intl.DateTimeFormat("en-PH", {
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(date);
     expect(formatDate(date, { format: DateFormat.MonthYear, locale: "en-PH" })).toBe(expected);
   });
 
   it("formats YearOnly correctly", () => {
-    const expected = new Intl.DateTimeFormat("en-PH", { year: "numeric" }).format(date);
+    const expected = new Intl.DateTimeFormat("en-PH", { year: "numeric", timeZone: "UTC" }).format(
+      date
+    );
     expect(formatDate(date, { format: DateFormat.YearOnly, locale: "en-PH" })).toBe(expected);
   });
 });

@@ -60,7 +60,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
     return new Response(null, {
       status: 302,
       headers: {
-        Location: "/?oauth=github",
+        Location: "/dashboard?oauth=github",
       },
     });
   }
@@ -109,7 +109,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   return new Response(null, {
     status: 302,
     headers: {
-      Location: "/?oauth=github",
+      Location: "/dashboard?oauth=github",
     },
   });
 }

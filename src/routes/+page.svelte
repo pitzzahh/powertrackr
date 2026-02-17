@@ -1,240 +1,123 @@
-<script lang="ts" module>
-  function signedCurrency(value?: number | null): string {
-    const v = value ?? 0;
-    const absFormatted = formatNumber(Math.abs(v));
-    if (v > 0) return `+${absFormatted}`;
-    if (v < 0) return `-${absFormatted}`;
-    return absFormatted;
-  }
-
-  function signedPercent(value?: number | null): string {
-    const v = value ?? 0;
-    // `formatNumber` with style 'percent' expects a decimal fraction (e.g. 0.12 => 12%)
-    const formatted = formatNumber(Math.abs(v) / 100, { style: "percent" });
-    if (v > 0) return `+${formatted}`;
-    if (v < 0) return `-${formatted}`;
-    return formatted;
-  }
-
-  function signClass(
-    value?: number | null,
-    positiveClass = "text-green-600",
-    negativeClass = "text-destructive"
-  ): string {
-    const v = value ?? 0;
-    if (v > 0) return positiveClass;
-    if (v < 0) return negativeClass;
-    // zero -> no color class
-    return "";
-  }
-</script>
-
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { page } from "$app/state";
-  import { showSuccess, showWarning } from "$/components/toast";
-  import { formatNumber } from "$/utils/format";
-  import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
-  import { useBillingStore } from "$/stores/billing.svelte.js";
-  import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import { BillingInfoForm } from "$/components/snippets.svelte";
-  import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
-  import { goto } from "$app/navigation";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info.js";
-  import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
+  import {
+    AnimatedBackground,
+    BenefitsMarquee,
+    Cta,
+    Features,
+    Hero,
+    HowItWorks,
+    LandingFooter,
+    LandingNav,
+    Scenarios,
+    Stats,
+  } from "./(components)";
+  import { ScrollParallax } from "$lib/motion-core";
 
   let { data } = $props();
-
-  const billingStore = useBillingStore();
-  const consumptionStore = useConsumptionStore();
-
-  let openNewBill = $state(false);
-
-  onMount(() => {
-    if (!data.user) return;
-    billingStore.setUserId(data.user.id);
-    billingStore.setStatus("loading_data");
-    billingStore.fetchData();
-    if (page.url.searchParams.get("oauth") === "github" && data.user) {
-      showSuccess("Logged in successfully");
-      goto(page.url.pathname, { replaceState: true });
-    }
-  });
 </script>
 
-<div class="space-y-6 pb-4">
-  <div class="flex items-center justify-between">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-muted-foreground">Overview of your energy billing and savings</p>
+<div class="relative min-h-screen overflow-hidden bg-background">
+  <AnimatedBackground />
+  <LandingNav user={data.user} />
+
+  <!-- Hero Section with scroll indicator -->
+  <div class="relative">
+    <Hero user={data.user} />
+  </div>
+
+  <!-- Benefits Marquee - Visual break with movement -->
+  <BenefitsMarquee />
+
+  <!-- How It Works Section -->
+  <div class="relative">
+    <div class="absolute inset-0 bg-linear-to-b from-transparent via-muted/20 to-transparent"></div>
+    <!-- Animated accent line -->
+    <div class="absolute inset-x-0 top-0 flex justify-center">
+      <div class="h-px w-1/2 bg-linear-to-r from-transparent via-primary/40 to-transparent"></div>
     </div>
+    <HowItWorks />
   </div>
 
-  <!-- Mobile-only compact New Bill card (inline with content, not fixed) -->
-  <div class="md:hidden">
-    <section class="mb-4">
-      <div
-        class="flex items-center justify-between gap-2 rounded-md border bg-card p-3 text-muted-foreground shadow-sm"
-      >
-        <div class="flex items-center gap-3">
-          <PhilippinePeso class="size-5" />
-          <div class="text-sm font-medium">Add new bill</div>
-        </div>
-        <Sheet.Root bind:open={openNewBill}>
-          <Sheet.Trigger
-            class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
-          >
-            New
-            <span class="sr-only">Open new bill</span>
-          </Sheet.Trigger>
-          <Sheet.Portal>
-            <Sheet.Content side="bottom" class="h-[90vh] w-full p-0">
-              <Sheet.Header class="border-b">
-                <Sheet.Title>Add new Bill</Sheet.Title>
-                <Sheet.Description>Enter billing info</Sheet.Description>
-              </Sheet.Header>
-              <ScrollArea class="min-h-0 flex-1">
-                {@const billingInfo = getLatestBillingInfo({ userId: data.user?.id || "" })}
-                {#key billingInfo.current}
-                  {@const latestBillingInfo =
-                    (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ??
-                    undefined}
-                  {@render BillingInfoForm(
-                    (valid, _, metaData) => {
-                      openNewBill = false;
-                      if (valid) {
-                        billingStore.refresh();
-                        consumptionStore.refresh();
-                        showSuccess("Billing info created successfully!");
-                      } else {
-                        showWarning("Failed to create billing info", metaData?.error);
-                      }
-                    },
-                    "add",
-                    latestBillingInfo
-                  )}
-                {/key}
-              </ScrollArea>
-            </Sheet.Content>
-          </Sheet.Portal>
-        </Sheet.Root>
-      </div>
-    </section>
+  <!-- Stats Section with parallax offset -->
+  <ScrollParallax speed={0.1}>
+    <Stats />
+  </ScrollParallax>
+
+  <!-- Scenarios Section - With enhanced decorations -->
+  <div class="relative">
+    <!-- Top wave/curve separator -->
+    <div
+      class="absolute inset-x-0 -top-px h-px bg-linear-to-r from-transparent via-border to-transparent"
+    ></div>
+    <!-- Subtle background gradient -->
+    <div class="absolute inset-0 bg-linear-to-b from-muted/10 via-transparent to-muted/10"></div>
+    <!-- Decorative orbs with animation -->
+    <div
+      class="absolute top-20 left-1/4 h-64 w-64 animate-pulse rounded-full bg-primary/5 blur-3xl"
+    ></div>
+    <div
+      class="absolute right-1/4 bottom-20 h-64 w-64 animate-pulse rounded-full bg-primary/5 blur-3xl"
+      style="animation-delay: 1s;"
+    ></div>
+    <!-- Floating accent elements -->
+    <div
+      class="absolute top-1/2 left-10 hidden h-20 w-20 rotate-45 rounded-lg border border-primary/10 lg:block"
+    ></div>
+    <div
+      class="absolute top-1/3 right-10 hidden h-16 w-16 rotate-12 rounded-full border border-primary/10 lg:block"
+    ></div>
+    <Scenarios />
+    <div
+      class="absolute inset-x-0 -bottom-px h-px bg-linear-to-r from-transparent via-border to-transparent"
+    ></div>
   </div>
 
-  {@render Metrics()}
+  <!-- Features Section - Alternate background with enhanced texture -->
+  <div class="relative bg-muted/20">
+    <!-- Grid pattern overlay for texture -->
+    <div
+      class="absolute inset-0 opacity-[0.02]"
+      style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cpath d=&quot;M54 48H6v-6h48v6zm0-18H6v-6h48v6zm0-18H6V6h48v6z&quot; fill=&quot;%23fff&quot; fill-opacity=&quot;1&quot; fill-rule=&quot;evenodd&quot;/%3E%3C/svg%3E');"
+    ></div>
+    <!-- Corner accents -->
+    <div
+      class="absolute top-0 left-0 h-32 w-32 bg-linear-to-br from-primary/5 to-transparent"
+    ></div>
+    <div
+      class="absolute right-0 bottom-0 h-32 w-32 bg-linear-to-tl from-primary/5 to-transparent"
+    ></div>
+    <Features />
+  </div>
 
-  <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-    <ChartArea
-      status={billingStore.status}
-      refetch={(cb) => billingStore.fetchData().finally(cb)}
-      chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
-    />
-  </section>
+  <!-- CTA Section - With dramatic separators and parallax -->
+  <div class="relative">
+    <!-- Top gradient separator -->
+    <div class="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-muted/20 to-transparent"></div>
+    <!-- Decorative elements with subtle animation -->
+    <div
+      class="absolute top-1/3 left-10 h-32 w-32 animate-pulse rounded-full bg-primary/10 blur-2xl"
+    ></div>
+    <div
+      class="absolute right-10 bottom-1/3 h-32 w-32 animate-pulse rounded-full bg-primary/10 blur-2xl"
+      style="animation-delay: 0.5s;"
+    ></div>
+    <!-- Diagonal accent lines -->
+    <div
+      class="absolute top-1/4 left-1/4 hidden h-px w-40 rotate-45 bg-linear-to-r from-transparent via-primary/20 to-transparent lg:block"
+    ></div>
+    <div
+      class="absolute right-1/4 bottom-1/4 hidden h-px w-40 -rotate-45 bg-linear-to-r from-transparent via-primary/20 to-transparent lg:block"
+    ></div>
+    <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
+      <Cta user={data.user} />
+    </ScrollParallax>
+  </div>
 
-  <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
-    <ChartBar
-      status={billingStore.status}
-      refetch={(cb) => billingStore.fetchData().finally(cb)}
-      chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
-    />
-  </section>
+  <!-- Footer -->
+  <div class="relative">
+    <div
+      class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
+    ></div>
+    <LandingFooter />
+  </div>
 </div>
-
-{#snippet Metrics()}
-  <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
-  >
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <Banknote class="h-5 w-5" />
-        <span class="text-lg">Current</span>
-      </div>
-      {#if billingStore.status === "fetching"}
-        <Loader class="h-5 w-5 animate-spin" />
-      {:else if billingStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
-      {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          {formatNumber(billingStore.summary?.current || 0)}
-        </div>
-      {/if}
-    </div>
-
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Cost</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(billingStore.summary?.invested || 0)}</span
-          >
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Savings</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
-        {:else}
-          <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-              billingStore.summary?.totalReturns
-            )}"
-          >
-            {signedCurrency(billingStore.summary?.totalReturns)}
-          </span>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Net Savings</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0%</span>
-        {:else}
-          <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-              billingStore.summary?.netReturns
-            )}"
-          >
-            {signedPercent(billingStore.summary?.netReturns)}
-          </span>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Period Change</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
-            <span class="text-xs text-muted-foreground">0%</span>
-          </div>
-        {:else}
-          <div class="flex items-baseline gap-2">
-            <span
-              class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-                billingStore.summary?.periodPaymentChange
-              )}"
-            >
-              {signedCurrency(billingStore.summary?.periodPaymentChange)}
-            </span>
-            <span class="text-xs text-muted-foreground">
-              {signedPercent(billingStore.summary?.periodPaymentChangePct)}
-            </span>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </section>
-{/snippet}
