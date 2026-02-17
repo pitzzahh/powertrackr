@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
-  import { ChartLine, Users, Shield, Clock } from "$lib/assets/icons";
+  import { ChartLine, Users, Shield, Download } from "$lib/assets/icons";
   import { SplitReveal, ScrollStagger, Magnetic } from "$lib/motion-core";
 </script>
 
@@ -86,12 +86,12 @@
             <div
               class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20"
             >
-              <Clock class="h-6 w-6 text-primary" />
+              <Download class="h-6 w-6 text-primary" />
             </div>
-            <CardTitle class="text-lg">Simple Per-kWh</CardTitle>
+            <CardTitle class="text-lg">Import & Export</CardTitle>
             <CardDescription>
-              Simple per-kWh allocation model focused on billing and expense allocation, not
-              generation.
+              Export your data for local backups and easily re-import when needed. Your data, your
+              control.
             </CardDescription>
           </CardHeader>
         </Card>

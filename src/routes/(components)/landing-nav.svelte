@@ -1,6 +1,14 @@
+<script module lang="ts">
+  interface LandingNavProps {
+    user: App.Locals["user"];
+  }
+</script>
+
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
+
+  let { user }: LandingNavProps = $props();
 
   const navItems = [
     { label: "How It Works", href: "#how-it-works" },
@@ -75,10 +83,14 @@
       </nav>
 
       <div class="flex gap-2">
-        <Button variant="outline" href="/auth?act=login" class="hidden sm:inline-flex"
-          >Sign In</Button
-        >
-        <Button href="/auth?act=register" class="hidden sm:inline-flex">Get Started</Button>
+        {#if user}
+          <Button href="/dashboard" class="hidden sm:inline-flex">Go to Dashboard</Button>
+        {:else}
+          <Button variant="outline" href="/auth?act=login" class="hidden sm:inline-flex"
+            >Sign In</Button
+          >
+          <Button href="/auth?act=register" class="hidden sm:inline-flex">Get Started</Button>
+        {/if}
       </div>
     </div>
   </header>

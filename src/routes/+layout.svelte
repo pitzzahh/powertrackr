@@ -22,6 +22,7 @@
   import { setConsumptionStore } from "$/stores/consumption.svelte.js";
   import { RenderScan } from "svelte-render-scan";
   import { dev } from "$app/environment";
+  import { page } from "$app/state";
 
   const { children, data } = $props();
 
@@ -88,7 +89,7 @@
 </svelte:head>
 
 <main>
-  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified)}
+  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/"}
     <div class="relative h-screen w-full overflow-hidden">
       <Header user={data.user} />
 

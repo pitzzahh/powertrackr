@@ -132,5 +132,5 @@ export const deleteUser = form(deleteUserSchema, async ({ id, confirmEmail }, is
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
 
-  return redirect(303, "/auth?act=login");
+  return redirect(303, "/");
 });

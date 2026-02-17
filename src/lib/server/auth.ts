@@ -13,7 +13,7 @@ export function requireAuth() {
   const { locals } = getRequestEvent();
 
   if (locals.user === null || locals.session === null) {
-    return redirect(307, "/auth?act=login");
+    return redirect(307, "/");
   }
 
   if (!locals.user.isOauthUser && !locals.user.emailVerified) {

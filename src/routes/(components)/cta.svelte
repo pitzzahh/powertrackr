@@ -1,6 +1,14 @@
+<script module lang="ts">
+  interface CtaProps {
+    user?: App.Locals["user"];
+  }
+</script>
+
 <script lang="ts">
   import { Button } from "$/components/ui/button";
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
+
+  let { user = null }: CtaProps = $props();
 </script>
 
 <section class="relative z-10 py-32">
@@ -34,14 +42,24 @@
 
           <ScrollReveal preset="slide-up" duration={0.6} delay={0.4} distance={30}>
             <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-              <Button
-                size="lg"
-                class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-                href="/auth?act=register"
-              >
-                Get Started Free
-              </Button>
-              <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
+              {#if user}
+                <Button
+                  size="lg"
+                  class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+                  href="/dashboard"
+                >
+                  Go to Dashboard
+                </Button>
+              {:else}
+                <Button
+                  size="lg"
+                  class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+                  href="/auth?act=register"
+                >
+                  Get Started Free
+                </Button>
+                <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
+              {/if}
             </div>
           </ScrollReveal>
         </div>
