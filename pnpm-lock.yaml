@@ -75,6 +75,9 @@ importers:
       '@prettier/plugin-oxc':
         specifier: ^0.1.3
         version: 0.1.3
+      '@svelte-put/qr':
+        specifier: ^2.1.1
+        version: 2.1.1(svelte@5.51.2)
       '@sveltejs/adapter-node':
         specifier: ^5.5.3
         version: 5.5.3(@sveltejs/kit@2.52.0(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.51.2)(vite@7.3.1(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)))(svelte@5.51.2)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)))
@@ -1303,6 +1306,11 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
+  '@svelte-put/qr@2.1.1':
+    resolution: {integrity: sha512-upkHuCn1X83oaqU63zdwY6t6thjtSydtxE2y74GNlrKre5LogGVmZ4/qaPouWmkP5JcH2frbKZsX0YCr3xUFHw==}
+    peerDependencies:
+      svelte: ^5.1.0
+
   '@sveltejs/acorn-typescript@1.0.8':
     resolution: {integrity: sha512-esgN+54+q0NjB0Y/4BomT9samII7jGwNy/2a3wNZbT2A2RpmXsXwUt24LvLhx6jUq2gVk4cWEvcRO6MFQbOfNA==}
     peerDependencies:
@@ -2025,6 +2033,9 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  headless-qr@1.0.3:
+    resolution: {integrity: sha512-HHVwf1i++Ho2vFstHxAdfP0OjB7Di44nGXbh3VXciuzwkuFb1oeFDCrfOLjFgHip/Kbc/wq2GOaSTiKQ81K/Yg==}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
@@ -3739,6 +3750,11 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
+  '@svelte-put/qr@2.1.1(svelte@5.51.2)':
+    dependencies:
+      headless-qr: 1.0.3
+      svelte: 5.51.2
+
   '@sveltejs/acorn-typescript@1.0.8(acorn@8.15.0)':
     dependencies:
       acorn: 8.15.0
@@ -4393,6 +4409,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  headless-qr@1.0.3: {}
 
   html-escaper@2.0.2: {}
 
