@@ -8,6 +8,7 @@
       | "register"
       | "verify-email"
       | "2fa-setup"
+      | "2fa-checkpoint"
       | "reset-password"
       | "forgot-password";
   };
