@@ -1,7 +1,7 @@
 import { redirect } from "@sveltejs/kit";
-import type { AuthFormProps } from "$routes/auth/(components)/auth-form.svelte";
 import { createAndSendEmailVerification } from "$/server/email";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
+import type { AuthAction } from "$routes/auth/(components)/index.js";
 
 export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
   const act = searchParams.get("act");
@@ -26,7 +26,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     redirect(302, "/dashboard");
   }
 
-  const actions: AuthFormProps["action"][] = [
+  const actions: AuthAction[] = [
     "login",
     "register",
     "verify-email",
@@ -51,12 +51,12 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     }
   }
   if (
-    (!act || !actions.includes(act as AuthFormProps["action"])) &&
-    !(pathname === "/auth" && actions.includes(act as AuthFormProps["action"]))
+    (!act || !actions.includes(act as AuthAction)) &&
+    !(pathname === "/auth" && actions.includes(act as AuthAction))
   ) {
     redirect(307, `/auth?act=${act || "login"}`);
   }
   return {
-    action: act as AuthFormProps["action"],
+    action: act as AuthAction,
   };
 }
