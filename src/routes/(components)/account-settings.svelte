@@ -55,8 +55,6 @@
       deleteAsyncState: "idle",
     });
 
-  let disableCode = $state("");
-
   let { deleteCheckbox1 } = $derived({ deleteCheckbox1: false });
   let { deleteCheckbox2 } = $derived({ deleteCheckbox2: !deleteCheckbox1 });
   let { deleteCheckbox3 } = $derived({ deleteCheckbox3: !deleteCheckbox2 });
@@ -265,9 +263,13 @@
                     </div>
                   </div>
                   <Badge
-                    class={user?.emailVerified
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"}
+                    class={[
+                      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+                      {
+                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
+                          user?.emailVerified,
+                      },
+                    ]}
                   >
                     {user?.emailVerified ? "Verified" : "Pending"}
                   </Badge>
@@ -281,9 +283,13 @@
                     </div>
                   </div>
                   <Badge
-                    class={user?.registeredTwoFactor
-                      ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                      : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"}
+                    class={[
+                      "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                      {
+                        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
+                          user?.registeredTwoFactor,
+                      },
+                    ]}
                   >
                     {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
                   </Badge>
@@ -479,9 +485,13 @@
                   </p>
                 </div>
                 <Badge
-                  class={user?.registeredTwoFactor
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"}
+                  class={[
+                    "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+                    {
+                      "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
+                        user?.registeredTwoFactor,
+                    },
+                  ]}
                 >
                   {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
                 </Badge>
@@ -502,14 +512,14 @@
                 </Button>
               </div>
             {:else}
-              <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+              <div class="rounded-lg border border-destructive/50 bg-destructive/0.5 p-4">
                 <h5 class="font-medium text-destructive">Disable Two-Factor Authentication</h5>
                 <p class="mt-1 text-sm text-destructive/80">
                   Enter your current 2FA code to disable two-factor authentication.
                 </p>
                 <form
                   class="mt-4"
-                  {...disable2FA.enhance(async ({ submit }) => {
+                  {...disable2FA.enhance(async ({ submit, form }) => {
                     if (securityAsyncState === "processing") return;
                     securityAsyncState = "processing";
                     const toastId = showLoading("Disabling 2FA...");
@@ -521,10 +531,10 @@
                           id: toastId,
                         });
                       } else {
+                        form.reset();
                         showSuccess("2FA disabled successfully", undefined, undefined, {
                           id: toastId,
                         });
-                        disableCode = "";
                       }
                     } catch (e) {
                       if (isHttpError(e)) {
@@ -538,26 +548,37 @@
                   })}
                 >
                   <div class="flex flex-col items-center gap-4">
-                    <InputOTP.Root maxlength={6} bind:value={disableCode}>
+                    <InputOTP.Root
+                      maxlength={6}
+                      name="code"
+                      onValueChange={(value) => disable2FA.fields.code.set(value)}
+                    >
                       {#snippet children({ cells })}
                         <InputOTP.Group>
                           {#each cells.slice(0, 3) as cell (cell)}
-                            <InputOTP.Slot {cell} />
+                            <InputOTP.Slot
+                              {cell}
+                              aria-invalid={disable2FA.fields.code.issues() ? "true" : "false"}
+                            />
                           {/each}
                         </InputOTP.Group>
                         <InputOTP.Separator />
                         <InputOTP.Group>
                           {#each cells.slice(3, 6) as cell (cell)}
-                            <InputOTP.Slot {cell} />
+                            <InputOTP.Slot
+                              {cell}
+                              aria-invalid={disable2FA.fields.code.issues() ? "true" : "false"}
+                            />
                           {/each}
                         </InputOTP.Group>
                       {/snippet}
                     </InputOTP.Root>
-                    <input type="hidden" name="code" value={disableCode} />
                     <Button
                       type="submit"
                       variant="destructive"
-                      disabled={disableCode.length !== 6 || securityAsyncState === "processing"}
+                      disabled={(disable2FA.fields.code.value() &&
+                        disable2FA.fields.code.value().length !== 6) ||
+                        securityAsyncState === "processing"}
                     >
                       {#if securityAsyncState === "processing"}
                         <Loader class="size-4 animate-spin" />
@@ -629,7 +650,7 @@
                   "This action cannot be undone. This will permanently delete your account and remove all your data from our servers.",
               })}
 
-              <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-4">
+              <div class="rounded-lg border border-destructive/50 bg-destructive/0.5 p-4">
                 <div class="space-y-3">
                   <div>
                     <h5 class="text-sm font-semibold text-destructive">What will be deleted:</h5>
