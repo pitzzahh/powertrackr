@@ -13,5 +13,5 @@ export default defineConfig({
     url: process.env.DATABASE_URL,
   },
   schemaFilter: ["public"],
-  extensionsFilters: ["postgis"],
+  tablesFilter: ["!pg_stat_statements"],
 });
