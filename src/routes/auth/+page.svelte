@@ -3,6 +3,7 @@
     AuthForm,
     VerifyEmailForm,
     Setup2FAForm,
+    Checkpoint2FAForm,
     ForgotPasswordForm,
     ResetPasswordForm,
     AuthBackground,
@@ -37,6 +38,8 @@
           <VerifyEmailForm />
         {:else if data.action === "2fa-setup"}
           <Setup2FAForm />
+        {:else if data.action === "2fa-checkpoint"}
+          <Checkpoint2FAForm />
         {:else if data.action === "forgot-password"}
           <ForgotPasswordForm />
         {:else if data.action === "reset-password"}
