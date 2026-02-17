@@ -6,10 +6,12 @@
   export type Setup2FAFormProps = WithElementRef<HTMLAttributes<HTMLDivElement>>;
 
   type TwoFASetupState = {
+    asyncState: AsyncState;
     step: "idle" | "setup" | "complete";
     secret: string;
     otpauthUrl: string;
     recoveryCode: string;
+    copiedRecovery: boolean;
   };
 </script>
 
@@ -18,7 +20,6 @@
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
   import { Loader, Shield, ShieldCheck, Copy, Check } from "$/assets/icons";
-  import { onDestroy } from "svelte";
   import { generate2FASecret, verify2FA, signout } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
@@ -27,29 +28,25 @@
   import * as InputOTP from "$/components/ui/input-otp";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
-  import { goto } from "$app/navigation";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
-  let status: AsyncState = $state("idle");
-
-  let twoFASetup = $state<TwoFASetupState>({
-    step: "idle",
-    secret: "",
-    otpauthUrl: "",
-    recoveryCode: "",
-  });
-
-  let copiedRecovery = $state(false);
+  let { asyncState, step, secret, otpauthUrl, recoveryCode, copiedRecovery } =
+    $state<TwoFASetupState>({
+      asyncState: "idle",
+      step: "idle",
+      secret: "",
+      otpauthUrl: "",
+      recoveryCode: "",
+      copiedRecovery: false,
+    });
 
   function copyRecoveryCode() {
-    navigator.clipboard.writeText(twoFASetup.recoveryCode);
+    navigator.clipboard.writeText(recoveryCode);
     copiedRecovery = true;
     setTimeout(() => (copiedRecovery = false), 2000);
   }
-
-  onDestroy(() => (status = "idle"));
 </script>
 
 <div class={cn("flex flex-col gap-6", className)} bind:this={ref} {...restProps}>
@@ -57,9 +54,9 @@
     <div class="flex flex-col items-center gap-1 text-center">
       <h1 class="text-2xl font-bold">Set up two-factor authentication</h1>
       <p class="text-sm text-balance text-muted-foreground">
-        {#if twoFASetup.step === "idle"}
+        {#if step === "idle"}
           Add an extra layer of security to your account using an authenticator app.
-        {:else if twoFASetup.step === "setup"}
+        {:else if step === "setup"}
           Scan the QR code with your authenticator app and enter the verification code.
         {:else}
           Save your recovery code in a safe place.
@@ -67,7 +64,7 @@
       </p>
     </div>
 
-    {#if twoFASetup.step === "idle"}
+    {#if step === "idle"}
       <div class="rounded-lg border border-dashed p-6 text-center">
         <Shield class="mx-auto size-12 text-muted-foreground/50" />
         <h5 class="mt-4 font-medium">Enable two-factor authentication</h5>
@@ -78,18 +75,15 @@
         <form
           class="mt-4 inline-block"
           {...generate2FASecret.enhance(async ({ submit }) => {
-            if (status === "processing") return;
-            status = "processing";
+            if (asyncState === "processing") return;
+            asyncState = "processing";
             const toastId = showLoading("Generating 2FA secret...");
             try {
               await submit();
               if (generate2FASecret.result?.secret && generate2FASecret.result?.otpauthUrl) {
-                twoFASetup = {
-                  step: "setup",
-                  secret: generate2FASecret.result.secret,
-                  otpauthUrl: generate2FASecret.result.otpauthUrl,
-                  recoveryCode: "",
-                };
+                step = "setup";
+                secret = generate2FASecret.result.secret;
+                otpauthUrl = generate2FASecret.result.otpauthUrl;
                 toast.dismiss(toastId);
               } else {
                 showWarning("Failed to generate 2FA secret", undefined, undefined, {
@@ -105,12 +99,12 @@
                 });
               }
             } finally {
-              status = "idle";
+              asyncState = "idle";
             }
           })}
         >
-          <Button type="submit" disabled={status === "processing"}>
-            {#if status === "processing"}
+          <Button type="submit" disabled={asyncState === "processing"}>
+            {#if asyncState === "processing"}
               <Loader class="size-4 animate-spin" />
               Generating...
             {:else}
@@ -120,7 +114,7 @@
           </Button>
         </form>
       </div>
-    {:else if twoFASetup.step === "setup"}
+    {:else if step === "setup"}
       <div class="space-y-4" transition:fly={{ y: 10, duration: 300, easing: cubicOut }}>
         <div class="rounded-lg border p-4">
           <h5 class="font-medium">Step 1: Scan QR Code</h5>
@@ -129,13 +123,13 @@
           </p>
           <div class="mt-4 flex justify-center">
             <div class="rounded-lg bg-white p-3">
-              <QRCode.Root value={twoFASetup.otpauthUrl} size={180} />
+              <QRCode.Root value={otpauthUrl} size={180} />
             </div>
           </div>
           <div class="mt-4">
             <p class="text-center text-xs text-muted-foreground">Or enter this code manually:</p>
             <code class="mt-2 block rounded bg-muted p-2 text-center font-mono text-sm break-all">
-              {twoFASetup.secret}
+              {secret}
             </code>
           </div>
         </div>
@@ -148,8 +142,8 @@
           <form
             class="mt-4"
             {...verify2FA.enhance(async ({ submit }) => {
-              if (status === "processing") return;
-              status = "processing";
+              if (asyncState === "processing") return;
+              asyncState = "processing";
               const toastId = showLoading("Verifying code...");
               try {
                 await submit();
@@ -159,8 +153,8 @@
                     id: toastId,
                   });
                 } else if (verify2FA.result?.recoveryCode) {
-                  twoFASetup.recoveryCode = verify2FA.result.recoveryCode;
-                  twoFASetup.step = "complete";
+                  recoveryCode = verify2FA.result.recoveryCode;
+                  step = "complete";
                   showSuccess("2FA enabled successfully!", undefined, undefined, {
                     id: toastId,
                   });
@@ -174,11 +168,11 @@
                   });
                 }
               } finally {
-                status = "idle";
+                asyncState = "idle";
               }
             })}
           >
-            <input type="hidden" name="secret" value={twoFASetup.secret} />
+            <input type="hidden" name="secret" value={secret} />
             <div class="flex flex-col items-center gap-4">
               <InputOTP.Root
                 maxlength={6}
@@ -212,9 +206,9 @@
                 class="w-full"
                 disabled={(verify2FA.fields.code.value() &&
                   verify2FA.fields.code.value().length !== 6) ||
-                  status === "processing"}
+                  asyncState === "processing"}
               >
-                {#if status === "processing"}
+                {#if asyncState === "processing"}
                   <Loader class="size-4 animate-spin" />
                   Verifying...
                 {:else}
@@ -225,7 +219,7 @@
           </form>
         </div>
       </div>
-    {:else if twoFASetup.step === "complete"}
+    {:else if step === "complete"}
       <div
         class="rounded-lg border border-green-500/50 bg-green-50 p-4 dark:bg-green-900/20"
         transition:fly={{ y: 10, duration: 300, easing: cubicOut }}
@@ -240,7 +234,7 @@
         </p>
         <div class="mt-4 flex items-center gap-2">
           <code class="flex-1 rounded bg-white p-3 text-center font-mono text-lg dark:bg-gray-800">
-            {twoFASetup.recoveryCode}
+            {recoveryCode}
           </code>
           <Button variant="outline" size="icon" onclick={copyRecoveryCode}>
             {#if copiedRecovery}
@@ -277,7 +271,7 @@
     <Button
       type="submit"
       variant="outline"
-      disabled={status === "processing"}
+      disabled={asyncState === "processing"}
       aria-label="Login with another account"
     >
       Login with another account
