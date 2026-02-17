@@ -3,6 +3,9 @@ import {
   registerSchema,
   verifyEmailSchema,
   setup2FASchema,
+  generate2FASecretSchema,
+  verify2FASchema,
+  disable2FASchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
@@ -25,12 +28,17 @@ import {
 import { createAndSendPasswordReset } from "$/server/email";
 
 import {
+  encrypt,
+  decrypt,
   encryptString,
   generateRandomRecoveryCode,
   generateSessionToken,
   hashPassword,
   verifyPasswordHash,
 } from "$/server/encryption";
+import { verifyTOTP } from "@oslojs/otp";
+import { encodeBase32UpperCaseNoPadding } from "@oslojs/encoding";
+import crypto from "node:crypto";
 import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent, query } from "$app/server";
@@ -367,4 +375,126 @@ export const changePassword = form(changePasswordSchema, async (data, issues) =>
   }
 
   return true;
+});
+
+export const generate2FASecret = form(generate2FASecretSchema, async () => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  // Generate a random 20-byte secret for TOTP
+  const secretBytes = crypto.randomBytes(20);
+  const secret = encodeBase32UpperCaseNoPadding(secretBytes);
+
+  // Create the otpauth URL for QR code
+  const issuer = "PowerTrackr";
+  const accountName = encodeURIComponent(event.locals.user.email);
+  const otpauthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+
+  return { secret, otpauthUrl };
+});
+
+export const verify2FA = form(verify2FASchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { code, secret } = data;
+
+  // Decode the secret from base32
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const secretBytes = new Uint8Array(
+    secret
+      .split("")
+      .map((c) => alphabet.indexOf(c))
+      .reduce((acc: number[], val, i, arr) => {
+        if (i % 8 === 0) {
+          const chunk = arr.slice(i, i + 8);
+          const bits = chunk.map((v) => v.toString(2).padStart(5, "0")).join("");
+          for (let j = 0; j < bits.length; j += 8) {
+            if (j + 8 <= bits.length) {
+              acc.push(parseInt(bits.slice(j, j + 8), 2));
+            }
+          }
+        }
+        return acc;
+      }, [])
+  );
+
+  // Verify the TOTP code (30 second window, 6 digits)
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    invalid(issues.code("Invalid verification code"));
+  }
+
+  // Encrypt and store the secret
+  const encryptedSecret = Buffer.from(encrypt(secretBytes));
+  const recoveryCode = generateRandomRecoveryCode();
+  const encryptedRecoveryCode = Buffer.from(encryptString(recoveryCode));
+
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      totpKey: encryptedSecret,
+      recoveryCode: encryptedRecoveryCode,
+      registeredTwoFactor: true,
+    }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to enable 2FA");
+  }
+
+  return { success: true, recoveryCode };
+});
+
+export const disable2FA = form(disable2FASchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { code } = data;
+
+  // Get user's TOTP key
+  const {
+    valid,
+    value: [userResult],
+  } = await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { with_session: false, fields: ["totpKey"] },
+  });
+
+  if (!valid || !userResult || !userResult.totpKey) {
+    error(400, "2FA is not enabled");
+  }
+
+  // Decrypt the TOTP key
+  const secretBytes = decrypt(userResult.totpKey);
+
+  // Verify the TOTP code
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    invalid(issues.code("Invalid verification code"));
+  }
+
+  // Disable 2FA
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      totpKey: null,
+      recoveryCode: null,
+      registeredTwoFactor: false,
+    }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to disable 2FA");
+  }
+
+  return { success: true };
 });
