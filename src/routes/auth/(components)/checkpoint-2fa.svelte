@@ -11,6 +11,7 @@
   import { showLoading, showSuccess, showWarning } from "$/components/toast";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
+  import { REGEXP_ONLY_DIGITS_AND_CHARS } from "bits-ui";
 
   let status: AsyncState = $state("idle");
 </script>
@@ -56,6 +57,7 @@
           maxlength={6}
           name="code"
           onValueChange={(value) => checkpoint2FA.fields.code.set(value)}
+          pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
         >
           {#snippet children({ cells })}
             <InputOTP.Group>

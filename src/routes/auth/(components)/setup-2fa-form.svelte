@@ -28,6 +28,7 @@
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { goto } from "$app/navigation";
+  import { REGEXP_ONLY_DIGITS_AND_CHARS } from "bits-ui";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
@@ -189,6 +190,7 @@
                 maxlength={6}
                 name="code"
                 onValueChange={(value) => verify2FA.fields.code.set(value)}
+                pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
               >
                 {#snippet children({ cells })}
                   <InputOTP.Group>
