@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-  import { FieldGroup, Field, FieldDescription } from "$/components/ui/field/index.js";
+  import { FieldGroup } from "$/components/ui/field/index.js";
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
   import { Loader, Shield, ShieldCheck, Copy, Check } from "$/assets/icons";
