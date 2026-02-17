@@ -270,6 +270,10 @@ export const checkpoint2FA = form(setup2FASchema, async (data, issues) => {
 
   const { code } = data;
 
+  if (!code || code.length !== 6) {
+    invalid(issues.code("Please enter the 6-digit authentication code."));
+  }
+
   // Load the user's encrypted TOTP key
   const {
     valid,

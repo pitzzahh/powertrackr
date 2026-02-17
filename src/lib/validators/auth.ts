@@ -17,18 +17,18 @@ export const verifyEmailSchema = v.object({
 });
 
 export const setup2FASchema = v.object({
-  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+  code: v.pipe(v.string(), v.maxLength(6)),
 });
 
 export const generate2FASecretSchema = v.object({});
 
 export const verify2FASchema = v.object({
-  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+  code: v.pipe(v.string(), v.maxLength(6)),
   secret: v.pipe(v.string(), v.minLength(1)),
 });
 
 export const disable2FASchema = v.object({
-  code: v.pipe(v.string(), v.minLength(6), v.maxLength(6)),
+  code: v.pipe(v.string(), v.maxLength(6)),
 });
 
 export const forgotPasswordSchema = v.object({
