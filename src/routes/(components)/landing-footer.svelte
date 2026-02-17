@@ -1,8 +1,16 @@
+<script module lang="ts">
+  interface LandingFooterProps {
+    user: App.Locals["user"];
+  }
+</script>
+
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
   import { ChartLine, Users, Shield, Download } from "$lib/assets/icons";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+
+  let { user }: LandingFooterProps = $props();
 </script>
 
 <footer class="relative z-10 border-t border-border/50 bg-muted/30 py-16">
@@ -81,18 +89,27 @@
         {site.name}. All rights reserved.
       </p>
       <div class="flex items-center gap-6">
-        <a
-          href="/auth?act=login"
-          class="text-sm text-muted-foreground transition-colors hover:text-primary"
-        >
-          Sign In
-        </a>
-        <a
-          href="/auth?act=register"
-          class="text-sm text-muted-foreground transition-colors hover:text-primary"
-        >
-          Get Started
-        </a>
+        {#if user}
+          <a
+            href="/dashboard"
+            class="text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            Go to Dashboard
+          </a>
+        {:else}
+          <a
+            href="/auth?act=login"
+            class="text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            Sign In
+          </a>
+          <a
+            href="/auth?act=register"
+            class="text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            Get Started
+          </a>
+        {/if}
       </div>
     </div>
   </div>
