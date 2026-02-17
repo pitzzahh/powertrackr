@@ -1,15 +1,10 @@
 <script lang="ts" module>
+  import type { AuthAction } from ".";
   import type { AsyncState } from "$/types/state";
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
-    action:
-      | "login"
-      | "register"
-      | "verify-email"
-      | "2fa-setup"
-      | "reset-password"
-      | "forgot-password";
+    action: AuthAction;
   };
 
   type AuthFormState = {

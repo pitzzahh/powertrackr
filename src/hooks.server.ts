@@ -44,7 +44,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     redirect(302, "/auth?act=verify-email");
   }
   if (event.locals.user.registeredTwoFactor && !event.locals.session.twoFactorVerified) {
-    redirect(302, "/auth/2fa");
+    redirect(302, "/auth?act=2fa-checkpoint");
   }
 
   return resolve(event);
