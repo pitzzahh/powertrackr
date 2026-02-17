@@ -7,7 +7,6 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Loader } from "$lib/assets/icons.js";
   import * as InputOTP from "$/components/ui/input-otp";
-  import { cn } from "$/utils/style.js";
   import { checkpoint2FA } from "$/api/auth.remote";
   import { showLoading, showSuccess, showWarning } from "$/components/toast";
   import { toast } from "svelte-sonner";
@@ -17,7 +16,7 @@
 </script>
 
 <form
-  class={cn("flex w-full flex-col gap-6", "")}
+  class="flex w-full flex-col gap-6"
   {...checkpoint2FA.enhance(async ({ submit, form }) => {
     if (status === "processing") return;
     status = "processing";
@@ -49,7 +48,7 @@
       </p>
     </div>
 
-    <Field>
+    <Field class="my-6">
       <FieldLabel for="checkpoint-otp">Authentication code</FieldLabel>
 
       <div class="flex justify-center">

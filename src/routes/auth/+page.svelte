@@ -31,7 +31,7 @@
       </Button>
     </div>
     <div class="flex flex-1 items-center justify-center">
-      <div class="w-full max-w-xs">
+      <div class="w-full max-w-md">
         {#if ["login", "register"].includes(data.action)}
           <AuthForm action={data.action} />
         {:else if data.action === "verify-email"}
