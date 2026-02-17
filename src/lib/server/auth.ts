@@ -23,7 +23,7 @@ export function requireAuth() {
     return redirect(302, "/auth?act=2fa-setup");
   }
   if (locals.user.registeredTwoFactor && !locals.session.twoFactorVerified) {
-    return redirect(302, "/auth/2fa");
+    return redirect(302, "/auth?act=2fa-setup");
   }
 
   return {
