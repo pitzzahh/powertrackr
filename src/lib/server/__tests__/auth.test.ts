@@ -61,7 +61,7 @@ describe("auth module", () => {
       },
     }));
     const res = requireAuth();
-    expect(res).toEqual({ status: 302, location: "/auth?act=2fa-setup" });
+    expect(res).toEqual({ status: 302, location: "/auth?act=2fa-checkpoint" });
   });
 
   it("requireAuth returns user and session on success", () => {

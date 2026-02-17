@@ -103,7 +103,7 @@ export const login = form(loginSchema, async (user, issues) => {
     return redirect(302, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-setup");
+    return redirect(302, "/auth?act=2fa-checkpoint");
   }
   return redirect(302, "/dashboard");
 });
@@ -237,7 +237,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
     options: { with_session: false, fields: ["registeredTwoFactor"] },
   })) as HelperResult<NewUser[]>;
   if (updatedUser.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-setup");
+    return redirect(302, "/auth?act=2fa-checkpoint");
   }
   return redirect(302, "/dashboard");
 });
