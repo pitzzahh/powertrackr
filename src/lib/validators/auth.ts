@@ -16,7 +16,7 @@ export const verifyEmailSchema = v.object({
   code: v.pipe(v.string(), v.minLength(1)),
 });
 
-export const setup2FASchema = v.object({
+export const twoFactorSchema = v.object({
   code: v.pipe(v.string(), v.maxLength(6)),
 });
 

@@ -2,7 +2,7 @@ import {
   loginSchema,
   registerSchema,
   verifyEmailSchema,
-  setup2FASchema,
+  twoFactorSchema as twoFactorCodeSchema,
   generate2FASecretSchema,
   verify2FASchema,
   disable2FASchema,
@@ -243,7 +243,7 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
   return redirect(302, "/dashboard");
 });
 
-export const setup2FA = form(setup2FASchema, async (data, _issues) => {
+export const setup2FA = form(disable2FASchema, async (data, _issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     error(401, "Not authenticated");
@@ -261,17 +261,28 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   return redirect(302, "/dashboard");
 });
 
-export const checkpoint2FA = form(setup2FASchema, async (data, issues) => {
+export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   // This endpoint verifies a TOTP code and marks the current session as twoFactorVerified.
   const event = getRequestEvent();
   if (event.locals.session === null || event.locals.user === null) {
     error(401, "Not authenticated");
   }
 
+  // If the session is already flagged as twoFactorVerified, no need to re-run checkpoint.
+  if (event.locals.session.twoFactorVerified) {
+    // Already verified on this session — send to dashboard.
+    return redirect(302, "/dashboard");
+  }
+
   const { code } = data;
 
-  if (!code || code.length !== 6) {
-    invalid(issues.code("Please enter the 6-digit authentication code."));
+  // Validate input here and return friendly issue messages
+  if (!code || typeof code !== "string" || code.trim().length === 0) {
+    // Provide a clear, user-friendly issue for an empty value
+    return invalid(issues.code("Please enter the 6-digit authentication code."));
+  }
+  if (code.length !== 6) {
+    return invalid(issues.code("The code must be 6 digits long."));
   }
 
   // Load the user's encrypted TOTP key
@@ -284,15 +295,22 @@ export const checkpoint2FA = form(setup2FASchema, async (data, issues) => {
   })) as HelperResult<NewUser[]>;
 
   if (!valid || !userResult || !userResult.totpKey) {
-    invalid(issues.code("Two-factor authentication is not configured for this account"));
+    return invalid(issues.code("Two-factor authentication is not configured for this account"));
   }
 
   // Decrypt the TOTP key and verify the code
-  const secretBytes = decrypt(userResult.totpKey);
+  let secretBytes: Uint8Array;
+  try {
+    secretBytes = decrypt(userResult.totpKey);
+  } catch (e) {
+    console.error("Failed to decrypt TOTP key for user", event.locals.session.userId, e);
+    return invalid(issues.code("Unable to verify code at this time. Please try again later."));
+  }
+
   const isValid = verifyTOTP(secretBytes, 30, 6, code);
 
   if (!isValid) {
-    invalid(issues.code("Invalid verification code"));
+    return invalid(issues.code("Invalid verification code"));
   }
 
   // Mark the current session as twoFactorVerified
