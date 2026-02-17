@@ -3,6 +3,30 @@ import type { ChartData } from "./chart-area.svelte";
 import type { BarChartData } from "./chart-bar.svelte";
 import type { TimeRangeOption } from "./types";
 
+// Landing page navigation
+export const LANDING_NAV_ITEMS = [
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "Features", href: "#features" },
+  { label: "Use Cases", href: "#use-cases" },
+] as const;
+
+export function handleLandingNavClick(event: MouseEvent, href: string) {
+  event.preventDefault();
+  const targetId = href.replace("#", "");
+  const targetElement = document.getElementById(targetId);
+
+  if (targetElement) {
+    const headerOffset = 10;
+    const elementPosition = targetElement.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.scrollY - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
+}
+
 export const TIME_RANGE_OPTIONS: TimeRangeOption[] = [
   { value: "7d", label: "Last 7 days" },
   { value: "30d", label: "Last 30 days" },

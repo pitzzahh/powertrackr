@@ -7,34 +7,12 @@
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
+  import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
 
   let { user }: LandingNavProps = $props();
 
-  const navItems = [
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Features", href: "#features" },
-    { label: "Use Cases", href: "#use-cases" },
-  ];
-
   let scrollY = $state(0);
   const isFloating = $derived(scrollY > 50);
-
-  function handleNavClick(event: MouseEvent, href: string) {
-    event.preventDefault();
-    const targetId = href.replace("#", "");
-    const targetElement = document.getElementById(targetId);
-
-    if (targetElement) {
-      const headerOffset = 80;
-      const elementPosition = targetElement.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - headerOffset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  }
 </script>
 
 <svelte:window bind:scrollY />
@@ -68,11 +46,11 @@
       <!-- Centered nav items - hidden on mobile, visible on md+ -->
       <nav class="absolute left-1/2 hidden -translate-x-1/2 md:flex">
         <ul class="flex items-center gap-1">
-          {#each navItems as item}
+          {#each LANDING_NAV_ITEMS as item}
             <li>
               <a
                 href={item.href}
-                onclick={(e) => handleNavClick(e, item.href)}
+                onclick={(e) => handleLandingNavClick(e, item.href)}
                 class="rounded-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
               >
                 {item.label}
