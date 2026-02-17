@@ -515,6 +515,30 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
     error(400, "Failed to enable 2FA");
   }
 
+  // Also mark the current session as twoFactorVerified so the user is not
+  // immediately prompted to re-verify 2FA after just setting it up.
+  try {
+    if (event.locals.session) {
+      const sessionUpdate = await updateSessionBy(
+        { query: { id: event.locals.session.id }, options: { with_session: false } },
+        { twoFactorVerified: true }
+      );
+
+      if (sessionUpdate.valid) {
+        // Update in-memory session so subsequent logic in this request sees it.
+        event.locals.session.twoFactorVerified = true;
+      } else {
+        // Best-effort: don't block enabling 2FA if session update fails, but log it.
+        console.warn("Failed to mark session as two-factor verified after enabling 2FA", {
+          userId: event.locals.session.userId,
+          sessionId: event.locals.session.id,
+        });
+      }
+    }
+  } catch (e) {
+    console.warn("Error updating session twoFactorVerified flag", e);
+  }
+
   return { success: true, recoveryCode };
 });
 
