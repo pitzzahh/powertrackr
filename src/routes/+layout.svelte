@@ -89,7 +89,7 @@
 </svelte:head>
 
 <main>
-  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/"}
+  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/" && page.url.searchParams.get("act") !== "2fa-setup"}
     <div class="relative h-screen w-full overflow-hidden">
       <Header user={data.user} />
 
