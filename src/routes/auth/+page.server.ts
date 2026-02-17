@@ -4,7 +4,19 @@ import { createAndSendEmailVerification } from "$/server/email";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
 
 export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
+  const act = searchParams.get("act");
+
+  // If trying to access 2FA setup, require authentication — otherwise send to login
+  if (act === "2fa-setup" && (session === null || user === null)) {
+    // user not authenticated, redirect to login
+    redirect(307, "/auth?act=login");
+  }
+
+  // Allow access to the 2FA setup page even if the user hasn't registered 2FA yet.
+  // Previously the guard redirected authenticated users who hadn't registered 2FA
+  // away from the /auth page entirely, preventing them from visiting /auth?act=2fa-setup.
   if (
+    act !== "2fa-setup" &&
     session &&
     user &&
     (user.isOauthUser || user.emailVerified) &&
@@ -12,6 +24,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
   ) {
     redirect(302, "/dashboard");
   }
+
   const actions: AuthFormProps["action"][] = [
     "login",
     "register",
@@ -20,7 +33,6 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     "reset-password",
     "forgot-password",
   ];
-  const act = searchParams.get("act");
 
   // Send email verification on first visit to verify-email page
   if (act === "verify-email" && user && !user.emailVerified) {
