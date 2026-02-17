@@ -6,17 +6,18 @@ import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-
 export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
   const act = searchParams.get("act");
 
-  // If trying to access 2FA setup, require authentication — otherwise send to login
-  if (act === "2fa-setup" && (session === null || user === null)) {
+  // If trying to access 2FA setup or checkpoint, require authentication — otherwise send to login
+  if ((act === "2fa-setup" || act === "2fa-checkpoint") && (session === null || user === null)) {
     // user not authenticated, redirect to login
     redirect(307, "/auth?act=login");
   }
 
-  // Allow access to the 2FA setup page even if the user hasn't registered 2FA yet.
+  // Allow access to the 2FA setup/checkpoint pages for authenticated users who still need to set up or verify 2FA.
   // Previously the guard redirected authenticated users who hadn't registered 2FA
   // away from the /auth page entirely, preventing them from visiting /auth?act=2fa-setup.
   if (
     act !== "2fa-setup" &&
+    act !== "2fa-checkpoint" &&
     session &&
     user &&
     (user.isOauthUser || user.emailVerified) &&
@@ -30,6 +31,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     "register",
     "verify-email",
     "2fa-setup",
+    "2fa-checkpoint",
     "reset-password",
     "forgot-password",
   ];
