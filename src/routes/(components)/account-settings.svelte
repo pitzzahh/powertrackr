@@ -41,7 +41,7 @@
   import { Label } from "$/components/ui/label/index.js";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
-  import { REGEXP_ONLY_DIGITS_AND_CHARS } from "bits-ui";
+  import { REGEXP_ONLY_DIGITS } from "bits-ui";
 
   let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
@@ -553,7 +553,7 @@
                       maxlength={6}
                       name="code"
                       onValueChange={(value) => disable2FA.fields.code.set(value)}
-                      pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                      pattern={REGEXP_ONLY_DIGITS}
                     >
                       {#snippet children({ cells })}
                         <InputOTP.Group>
