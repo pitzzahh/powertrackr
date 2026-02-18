@@ -53,15 +53,15 @@ describe("auth module", () => {
     expect(res).toEqual({ status: 302, location: "/auth?act=verify-email" });
   });
 
-  it("requireAuth redirects to 2fa setup when user has registered two factor", () => {
+  it("requireAuth redirects to 2fa checkpoint when user has registered two factor", () => {
     mockGetRequestEvent.mockImplementation(() => ({
       locals: {
         user: { isOauthUser: true, emailVerified: true, registeredTwoFactor: true },
-        session: { twoFactorVerified: true },
+        session: { twoFactorVerified: false },
       },
     }));
     const res = requireAuth();
-    expect(res).toEqual({ status: 302, location: "/auth?act=2fa-setup" });
+    expect(res).toEqual({ status: 302, location: "/auth?act=2fa-checkpoint" });
   });
 
   it("requireAuth returns user and session on success", () => {

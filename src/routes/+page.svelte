@@ -118,6 +118,6 @@
     <div
       class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
     ></div>
-    <LandingFooter />
+    <LandingFooter user={data.user} />
   </div>
 </div>

@@ -3,6 +3,7 @@
     AuthForm,
     VerifyEmailForm,
     Setup2FAForm,
+    Checkpoint2FAForm,
     ForgotPasswordForm,
     ResetPasswordForm,
     AuthBackground,
@@ -30,13 +31,15 @@
       </Button>
     </div>
     <div class="flex flex-1 items-center justify-center">
-      <div class="w-full max-w-xs">
+      <div class="w-full max-w-md">
         {#if ["login", "register"].includes(data.action)}
           <AuthForm action={data.action} />
         {:else if data.action === "verify-email"}
           <VerifyEmailForm />
         {:else if data.action === "2fa-setup"}
           <Setup2FAForm />
+        {:else if data.action === "2fa-checkpoint"}
+          <Checkpoint2FAForm />
         {:else if data.action === "forgot-password"}
           <ForgotPasswordForm />
         {:else if data.action === "reset-password"}

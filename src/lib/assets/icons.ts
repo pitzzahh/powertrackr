@@ -71,3 +71,6 @@ export { default as PlusIcon } from "phosphor-svelte/lib/PlusIcon";
 export { default as ChartLine } from "phosphor-svelte/lib/ChartLineIcon";
 export { default as Users } from "phosphor-svelte/lib/UsersIcon";
 export { default as Shield } from "phosphor-svelte/lib/ShieldIcon";
+export { default as ShieldCheck } from "phosphor-svelte/lib/ShieldCheckIcon";
+export { default as ShieldOff } from "phosphor-svelte/lib/ShieldSlashIcon";
+export { default as Copy } from "phosphor-svelte/lib/CopyIcon";

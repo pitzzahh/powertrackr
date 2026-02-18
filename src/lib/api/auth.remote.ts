@@ -2,7 +2,10 @@ import {
   loginSchema,
   registerSchema,
   verifyEmailSchema,
-  setup2FASchema,
+  twoFactorSchema as twoFactorCodeSchema,
+  generate2FASecretSchema,
+  verify2FASchema,
+  disable2FASchema,
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
@@ -14,6 +17,7 @@ import {
   setSessionTokenCookie,
 } from "$/server/auth";
 import { addUser, getUserBy, updateUserBy } from "$/server/crud/user-crud";
+import { updateSessionBy } from "$/server/crud/session-crud";
 import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
@@ -25,12 +29,17 @@ import {
 import { createAndSendPasswordReset } from "$/server/email";
 
 import {
+  encrypt,
+  decrypt,
   encryptString,
   generateRandomRecoveryCode,
   generateSessionToken,
   hashPassword,
   verifyPasswordHash,
 } from "$/server/encryption";
+import { verifyTOTP } from "@oslojs/otp";
+import { encodeBase32UpperCaseNoPadding } from "@oslojs/encoding";
+import crypto from "node:crypto";
 import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent, query } from "$app/server";
@@ -95,7 +104,7 @@ export const login = form(loginSchema, async (user, issues) => {
     return redirect(302, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-setup");
+    return redirect(302, "/auth?act=2fa-checkpoint");
   }
   return redirect(302, "/dashboard");
 });
@@ -229,12 +238,12 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
     options: { with_session: false, fields: ["registeredTwoFactor"] },
   })) as HelperResult<NewUser[]>;
   if (updatedUser.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-setup");
+    return redirect(302, "/auth?act=2fa-checkpoint");
   }
   return redirect(302, "/dashboard");
 });
 
-export const setup2FA = form(setup2FASchema, async (data, _issues) => {
+export const setup2FA = form(disable2FASchema, async (data, _issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     error(401, "Not authenticated");
@@ -249,6 +258,72 @@ export const setup2FA = form(setup2FASchema, async (data, _issues) => {
   if (!updateResult.valid) {
     error(400, "Failed to set up 2FA");
   }
+  return redirect(302, "/dashboard");
+});
+
+export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
+  // This endpoint verifies a TOTP code and marks the current session as twoFactorVerified.
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  // If the session is already flagged as twoFactorVerified, no need to re-run checkpoint.
+  if (event.locals.session.twoFactorVerified) {
+    // Already verified on this session — send to dashboard.
+    return redirect(302, "/dashboard");
+  }
+
+  const { code } = data;
+
+  // Validate input here and return friendly issue messages
+  if (!code || typeof code !== "string" || code.trim().length === 0) {
+    // Provide a clear, user-friendly issue for an empty value
+    return invalid(issues.code("Please enter the 6-digit authentication code."));
+  }
+  if (code.length !== 6) {
+    return invalid(issues.code("The code must be 6 digits long."));
+  }
+
+  // Load the user's encrypted TOTP key
+  const {
+    valid,
+    value: [userResult],
+  } = (await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { limit: 1, fields: ["totpKey"] },
+  })) as HelperResult<NewUser[]>;
+
+  if (!valid || !userResult || !userResult.totpKey) {
+    return invalid(issues.code("Two-factor authentication is not configured for this account"));
+  }
+
+  // Decrypt the TOTP key and verify the code
+  let secretBytes: Uint8Array;
+  try {
+    secretBytes = decrypt(userResult.totpKey);
+  } catch (e) {
+    console.error("Failed to decrypt TOTP key for user", event.locals.session.userId, e);
+    return invalid(issues.code("Unable to verify code at this time. Please try again later."));
+  }
+
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    return invalid(issues.code("Invalid verification code"));
+  }
+
+  // Mark the current session as twoFactorVerified
+  const sessionUpdate = await updateSessionBy(
+    { query: { id: event.locals.session.id }, options: { with_session: false } },
+    { twoFactorVerified: true }
+  );
+
+  if (!sessionUpdate.valid) {
+    error(400, "Failed to verify session for two-factor authentication");
+  }
+
+  // After successful checkpoint, send the user to dashboard
   return redirect(302, "/dashboard");
 });
 
@@ -367,4 +442,150 @@ export const changePassword = form(changePasswordSchema, async (data, issues) =>
   }
 
   return true;
+});
+
+export const generate2FASecret = form(generate2FASecretSchema, async () => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  // Generate a random 20-byte secret for TOTP
+  const secretBytes = crypto.randomBytes(20);
+  const secret = encodeBase32UpperCaseNoPadding(secretBytes);
+
+  // Create the otpauth URL for QR code
+  const issuer = "PowerTrackr";
+  const accountName = encodeURIComponent(event.locals.user.email);
+  const otpauthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+
+  return { secret, otpauthUrl };
+});
+
+export const verify2FA = form(verify2FASchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { code, secret } = data;
+
+  // Decode the secret from base32
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const secretBytes = new Uint8Array(
+    secret
+      .split("")
+      .map((c) => alphabet.indexOf(c))
+      .reduce((acc: number[], val, i, arr) => {
+        if (i % 8 === 0) {
+          const chunk = arr.slice(i, i + 8);
+          const bits = chunk.map((v) => v.toString(2).padStart(5, "0")).join("");
+          for (let j = 0; j < bits.length; j += 8) {
+            if (j + 8 <= bits.length) {
+              acc.push(parseInt(bits.slice(j, j + 8), 2));
+            }
+          }
+        }
+        return acc;
+      }, [])
+  );
+
+  // Verify the TOTP code (30 second window, 6 digits)
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    invalid(issues.code("Invalid verification code"));
+  }
+
+  // Encrypt and store the secret
+  const encryptedSecret = Buffer.from(encrypt(secretBytes));
+  const recoveryCode = generateRandomRecoveryCode();
+  const encryptedRecoveryCode = Buffer.from(encryptString(recoveryCode));
+
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      totpKey: encryptedSecret,
+      recoveryCode: encryptedRecoveryCode,
+      registeredTwoFactor: true,
+    }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to enable 2FA");
+  }
+
+  // Also mark the current session as twoFactorVerified so the user is not
+  // immediately prompted to re-verify 2FA after just setting it up.
+  try {
+    if (event.locals.session) {
+      const sessionUpdate = await updateSessionBy(
+        { query: { id: event.locals.session.id }, options: { with_session: false } },
+        { twoFactorVerified: true }
+      );
+
+      if (sessionUpdate.valid) {
+        // Update in-memory session so subsequent logic in this request sees it.
+        event.locals.session.twoFactorVerified = true;
+      } else {
+        // Best-effort: don't block enabling 2FA if session update fails, but log it.
+        console.warn("Failed to mark session as two-factor verified after enabling 2FA", {
+          userId: event.locals.session.userId,
+          sessionId: event.locals.session.id,
+        });
+      }
+    }
+  } catch (e) {
+    console.warn("Error updating session twoFactorVerified flag", e);
+  }
+
+  return { success: true, recoveryCode };
+});
+
+export const disable2FA = form(disable2FASchema, async (data, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+
+  const { code } = data;
+
+  // Get user's TOTP key
+  const {
+    valid,
+    value: [userResult],
+  } = await getUserBy({
+    query: { id: event.locals.session.userId },
+    options: { with_session: false, fields: ["totpKey"] },
+  });
+
+  if (!valid || !userResult || !userResult.totpKey) {
+    error(400, "2FA is not enabled");
+  }
+
+  // Decrypt the TOTP key
+  const secretBytes = decrypt(userResult.totpKey);
+
+  // Verify the TOTP code
+  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+
+  if (!isValid) {
+    invalid(issues.code("Invalid verification code"));
+  }
+
+  // Disable 2FA
+  const updateResult = await updateUserBy(
+    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      totpKey: null,
+      recoveryCode: null,
+      registeredTwoFactor: false,
+    }
+  );
+
+  if (!updateResult.valid) {
+    error(400, "Failed to disable 2FA");
+  }
+
+  return { success: true };
 });
