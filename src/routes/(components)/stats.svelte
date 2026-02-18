@@ -38,37 +38,37 @@
   });
 
   const { userCount, energyUsed, billingCount, paymentsAmount } = $derived({
-    userCount: userCountResult.current || 0,
-    energyUsed: energyUsedResult.current || {
+    userCount: userCountResult?.current || 0,
+    energyUsed: energyUsedResult?.current || {
       total: 0,
       energyUnit: "kWh",
       formatted: "0 kWh",
     },
-    billingCount: billingCountResult.current || 0,
-    paymentsAmount: paymentsAmountResult.current || { total: 0, formatted: formatNumber(0) },
+    billingCount: billingCountResult?.current || 0,
+    paymentsAmount: paymentsAmountResult?.current || { total: 0, formatted: formatNumber(0) },
   });
 
   const stats = $derived([
     {
-      ready: userCountResult.ready,
+      ready: userCountResult?.ready || false,
       value: userCount,
       format: formatUserCount,
       label: `Active ${userCount === 1 ? "User" : "Users"}`,
     },
     {
-      ready: energyUsedResult.ready,
+      ready: energyUsedResult?.ready || false,
       value: energyUsed.total,
       format: (val: number) => formatEnergy(val),
       label: `${energyUsed.energyUnit} Tracked`,
     },
     {
-      ready: billingCountResult.ready,
+      ready: billingCountResult?.ready || false,
       value: billingCount,
       format: formatBillingCount,
       label: "Bills Tracked",
     },
     {
-      ready: paymentsAmountResult.ready,
+      ready: paymentsAmountResult?.ready || false,
       value: paymentsAmount.total,
       format: (val: number) => formatNumber(val),
       label: "Payments Managed",
@@ -86,10 +86,10 @@
       console.warn("DB Fetch failed, retrying");
       try {
         timeout = setTimeout(() => {
-          userCountResult.refresh();
-          energyUsedResult.refresh();
-          billingCountResult.refresh();
-          paymentsAmountResult.refresh();
+          userCountResult?.refresh();
+          energyUsedResult?.refresh();
+          billingCountResult?.refresh();
+          paymentsAmountResult?.refresh();
         }, 5000);
       } catch {
         console.warn("Retry failed, using defaults");
