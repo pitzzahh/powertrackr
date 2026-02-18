@@ -1,6 +1,7 @@
 <script module lang="ts">
   interface HeroProps {
     user: App.Locals["user"];
+    session: App.Locals["session"];
   }
 </script>
 
@@ -10,7 +11,16 @@
   import { Zap, PhilippinePeso, Banknote } from "$lib/assets/icons";
   import { TextLoop, Magnetic, ScrollReveal, ScrollStagger } from "$lib/motion-core";
 
-  let { user }: HeroProps = $props();
+  let { user, session }: HeroProps = $props();
+
+  const { fullyAuthenticated, needs2FA } = $derived({
+    fullyAuthenticated:
+      user &&
+      session &&
+      (user.isOauthUser || user.emailVerified) &&
+      (!user.registeredTwoFactor || session.twoFactorVerified),
+    needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
+  });
 </script>
 
 <section
@@ -67,13 +77,21 @@
     <!-- Buttons - above fold, play once, no Magnetic -->
     <ScrollReveal preset="slide-up" duration={0.6} delay={0.5}>
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
-        {#if user}
+        {#if fullyAuthenticated}
           <Button
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
             href="/dashboard"
           >
             Go to Dashboard
+          </Button>
+        {:else if needs2FA}
+          <Button
+            size="lg"
+            class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+            href="/auth?act=2fa-checkpoint"
+          >
+            Verify Two-Factor Authentication
           </Button>
         {:else}
           <Button
