@@ -20,13 +20,22 @@
   import { ScrollStagger } from "$lib/motion-core";
   import { NumberTicker } from "$lib/components/ui/number-ticker";
   import { formatNumber, formatEnergy } from "$/utils/format";
+  import { onMount } from "svelte";
+  import type { RemoteQuery } from "@sveltejs/kit";
+  import type { TotalEnergyUsageResult } from "$/server/crud/billing-info-crud";
+  import type { TotalPaymentsAmountResult } from "$/server/crud/payment-crud";
 
-  const { userCountResult, energyUsedResult, billingCountResult, paymentsAmountResult } = {
-    userCountResult: getTotalUserCount(),
-    energyUsedResult: getTotalEnergyUsage(),
-    billingCountResult: getTotalBillingInfoCount(),
-    paymentsAmountResult: getTotalPaymentsAmount(),
-  };
+  let { userCountResult, energyUsedResult, billingCountResult, paymentsAmountResult } = $state<{
+    userCountResult: RemoteQuery<number>;
+    energyUsedResult: RemoteQuery<TotalEnergyUsageResult>;
+    billingCountResult: RemoteQuery<number>;
+    paymentsAmountResult: RemoteQuery<TotalPaymentsAmountResult>;
+  }>({
+    userCountResult: null!,
+    energyUsedResult: null!,
+    billingCountResult: null!,
+    paymentsAmountResult: null!,
+  });
 
   const { userCount, energyUsed, billingCount, paymentsAmount } = $derived({
     userCount: userCountResult.current || 0,
@@ -65,6 +74,13 @@
       label: "Payments Managed",
     },
   ]);
+
+  onMount(() => {
+    userCountResult = getTotalUserCount();
+    energyUsedResult = getTotalEnergyUsage();
+    billingCountResult = getTotalBillingInfoCount();
+    paymentsAmountResult = getTotalPaymentsAmount();
+  });
 </script>
 
 <section class="relative z-10 border-y border-border/50 bg-muted/30 py-20">
