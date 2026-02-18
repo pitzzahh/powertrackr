@@ -31,7 +31,7 @@
   import { toast } from "svelte-sonner";
   import type { AsyncState } from "$/types/state";
   import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
-  import { showLoading, showSuccess, showWarning } from "$/components/toast";
+  import { showInspectorWarning, showLoading, showSuccess, showWarning } from "$/components/toast";
   import { updateUser, deleteUser } from "$/api/user.remote";
   import { changePassword, disable2FA } from "$/api/auth.remote";
   import * as InputOTP from "$/components/ui/input-otp";
@@ -604,6 +604,10 @@
         <div class="p-1 pr-3">
           <form
             {...deleteUser.enhance(async ({ submit }) => {
+              if (!allConfirmed) {
+                showInspectorWarning();
+                return;
+              }
               if (deleteAsyncState === "processing") return;
               deleteAsyncState = "processing";
               const toastId = showLoading("Deleting account...");
