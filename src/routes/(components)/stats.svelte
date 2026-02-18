@@ -14,89 +14,48 @@
 </script>
 
 <script lang="ts">
-  import { getTotalEnergyUsage, getTotalBillingInfoCount } from "$/api/billing-info.remote";
-  import { getTotalUserCount } from "$/api/user.remote";
-  import { getTotalPaymentsAmount } from "$/api/payment.remote";
   import { ScrollStagger } from "$lib/motion-core";
   import { NumberTicker } from "$lib/components/ui/number-ticker";
   import { formatNumber, formatEnergy } from "$/utils/format";
-  import { onMount } from "svelte";
-  import type { RemoteQuery } from "@sveltejs/kit";
-  import type { TotalEnergyUsageResult } from "$/server/crud/billing-info-crud";
-  import type { TotalPaymentsAmountResult } from "$/server/crud/payment-crud";
+  import type { Stats } from "$/types/stats";
+  import { source } from "sveltekit-sse";
+  import { onDestroy } from "svelte";
 
-  let { userCountResult, energyUsedResult, billingCountResult, paymentsAmountResult } = $state<{
-    userCountResult: RemoteQuery<number>;
-    energyUsedResult: RemoteQuery<TotalEnergyUsageResult>;
-    billingCountResult: RemoteQuery<number>;
-    paymentsAmountResult: RemoteQuery<TotalPaymentsAmountResult>;
-  }>({
-    userCountResult: null!,
-    energyUsedResult: null!,
-    billingCountResult: null!,
-    paymentsAmountResult: null!,
-  });
+  const statsSource = source("/events/stats");
 
-  const { userCount, energyUsed, billingCount, paymentsAmount } = $derived({
-    userCount: userCountResult?.current || 0,
-    energyUsed: energyUsedResult?.current || {
-      total: 0,
-      energyUnit: "kWh",
-      formatted: "0 kWh",
-    },
-    billingCount: billingCountResult?.current || 0,
-    paymentsAmount: paymentsAmountResult?.current || { total: 0, formatted: formatNumber(0) },
-  });
+  let { stats } = $state<{ stats: Stats }>({ stats: null! });
 
-  const stats = $derived([
+  const statsList = $derived([
     {
-      ready: userCountResult?.ready || false,
-      value: userCount,
+      value: stats?.userCount,
       format: formatUserCount,
-      label: `Active ${userCount === 1 ? "User" : "Users"}`,
+      label: `Active ${stats?.userCount === 1 ? "User" : "Users"}`,
     },
     {
-      ready: energyUsedResult?.ready || false,
-      value: energyUsed.total,
+      value: stats?.energyUsed.total,
       format: (val: number) => formatEnergy(val),
-      label: `${energyUsed.energyUnit} Tracked`,
+      label: `${stats?.energyUsed.energyUnit} Tracked`,
     },
     {
-      ready: billingCountResult?.ready || false,
-      value: billingCount,
+      value: stats?.billingCount,
       format: formatBillingCount,
       label: "Bills Tracked",
     },
     {
-      ready: paymentsAmountResult?.ready || false,
-      value: paymentsAmount.total,
+      value: stats?.paymentsAmount.total,
       format: (val: number) => formatNumber(val),
       label: "Payments Managed",
     },
   ]);
 
-  onMount(() => {
-    let timeout: string | number | NodeJS.Timeout | undefined;
-    try {
-      userCountResult = getTotalUserCount();
-      energyUsedResult = getTotalEnergyUsage();
-      billingCountResult = getTotalBillingInfoCount();
-      paymentsAmountResult = getTotalPaymentsAmount();
-    } catch {
-      console.warn("DB Fetch failed, retrying");
-      try {
-        timeout = setTimeout(() => {
-          userCountResult?.refresh();
-          energyUsedResult?.refresh();
-          billingCountResult?.refresh();
-          paymentsAmountResult?.refresh();
-        }, 5000);
-      } catch {
-        console.warn("Retry failed, using defaults");
-      }
-      return clearTimeout(timeout);
-    }
-  });
+  statsSource
+    .select("stats")
+    .json<Stats>()
+    .subscribe((value) => {
+      if (value) stats = value;
+    });
+
+  onDestroy(() => statsSource.close());
 </script>
 
 <section class="relative z-10 border-y border-border/50 bg-muted/30 py-20">
@@ -108,10 +67,10 @@
       distance={30}
       class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
     >
-      {#each stats as stat, i (stat.label)}
+      {#each statsList as stat, i (stat.label)}
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
-            {#key stat.ready}
+            {#key stat.value}
               <NumberTicker value={stat.value} format={stat.format} delay={0.3 + i * 0.1} />
             {/key}
           </div>
