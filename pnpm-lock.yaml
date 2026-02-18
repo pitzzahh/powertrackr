@@ -121,10 +121,10 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       drizzle-kit:
-        specifier: ^1.0.0-beta.9-e89174b
+        specifier: ^1.0.0-beta.15-859cf75
         version: 1.0.0-beta.9-e89174b
       drizzle-orm:
-        specifier: ^1.0.0-beta.9-e89174b
+        specifier: ^1.0.0-beta.15-859cf75
         version: 1.0.0-beta.9-e89174b(@libsql/client@0.17.0)(@types/mssql@9.1.9)(@types/pg@8.16.0)(mssql@11.0.1)(pg@8.18.0)
       layerchart:
         specifier: 2.0.0-next.43
