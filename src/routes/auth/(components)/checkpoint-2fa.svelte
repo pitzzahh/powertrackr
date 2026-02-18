@@ -17,6 +17,9 @@
 </script>
 
 <form
+  {@attach () => {
+    showWarning("Two Factor Authentication Required");
+  }}
   class="flex w-full flex-col gap-6"
   {...checkpoint2FA.enhance(async ({ submit, form }) => {
     if (status === "processing") return;
@@ -61,9 +64,10 @@
         >
           {#snippet children({ cells })}
             <InputOTP.Group>
-              {#each cells.slice(0, 3) as cell (cell)}
+              {#each cells.slice(0, 3) as cell, i (cell)}
                 <InputOTP.Slot
                   {cell}
+                  autofocus={i === 0}
                   aria-invalid={checkpoint2FA.fields.code.issues() ? "true" : "false"}
                 />
               {/each}

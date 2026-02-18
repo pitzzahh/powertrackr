@@ -50,7 +50,7 @@ describe("auth module", () => {
       },
     }));
     const res = requireAuth();
-    expect(res).toEqual({ status: 302, location: "/auth?act=verify-email" });
+    expect(res).toEqual({ status: 303, location: "/auth?act=verify-email" });
   });
 
   it("requireAuth redirects to 2fa checkpoint when user has registered two factor", () => {
@@ -61,7 +61,7 @@ describe("auth module", () => {
       },
     }));
     const res = requireAuth();
-    expect(res).toEqual({ status: 302, location: "/auth?act=2fa-checkpoint" });
+    expect(res).toEqual({ status: 303, location: "/auth?act=2fa-checkpoint" });
   });
 
   it("requireAuth returns user and session on success", () => {
