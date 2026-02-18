@@ -1,7 +1,7 @@
 import type { Transaction } from "$/server/db";
 import type { TimeRangeOption } from "$routes/(components)/types";
 
-export type HelperResult<T = any> = {
+export type HelperResult<T = unknown> = {
   valid: boolean;
   message: string;
   value: T;
