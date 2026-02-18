@@ -30,7 +30,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   }
 
   // Skip auth checks for auth-related paths and root landing page
-  if (event.url.pathname.startsWith("/auth") || event.url.pathname === "/") {
+  if (
+    event.url.pathname.startsWith("/auth") ||
+    event.url.pathname === "/" ||
+    event.url.pathname.startsWith("/events")
+  ) {
     return resolve(event);
   }
 
