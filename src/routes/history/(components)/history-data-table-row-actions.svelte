@@ -88,10 +88,6 @@
   ]);
 
   async function handle_remove_billing_info() {
-    console.log({
-      delete_confirm_value,
-      date: row.original.date,
-    });
     if (delete_confirm_value !== formatDate(parseCalendarDate(row.original.date))) {
       return showInspectorWarning();
     }
