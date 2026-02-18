@@ -76,10 +76,26 @@
   ]);
 
   onMount(() => {
-    userCountResult = getTotalUserCount();
-    energyUsedResult = getTotalEnergyUsage();
-    billingCountResult = getTotalBillingInfoCount();
-    paymentsAmountResult = getTotalPaymentsAmount();
+    let timeout: string | number | NodeJS.Timeout | undefined;
+    try {
+      userCountResult = getTotalUserCount();
+      energyUsedResult = getTotalEnergyUsage();
+      billingCountResult = getTotalBillingInfoCount();
+      paymentsAmountResult = getTotalPaymentsAmount();
+    } catch {
+      console.warn("DB Fetch failed, retrying");
+      try {
+        timeout = setTimeout(() => {
+          userCountResult.refresh();
+          energyUsedResult.refresh();
+          billingCountResult.refresh();
+          paymentsAmountResult.refresh();
+        }, 5000);
+      } catch {
+        console.warn("Retry failed, using defaults");
+      }
+      return clearTimeout(timeout);
+    }
   });
 </script>
 
