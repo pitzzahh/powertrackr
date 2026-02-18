@@ -88,7 +88,11 @@
   ]);
 
   async function handle_remove_billing_info() {
-    if (delete_confirm_value != row.original.date) {
+    console.log({
+      delete_confirm_value,
+      date: row.original.date,
+    });
+    if (delete_confirm_value !== formatDate(parseCalendarDate(row.original.date))) {
       return showInspectorWarning();
     }
     app_state = "processing";
