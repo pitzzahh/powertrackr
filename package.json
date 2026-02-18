@@ -75,6 +75,7 @@
     "svelte-check": "^4.4.0",
     "svelte-render-scan": "^1.1.0",
     "svelte-sonner": "^1.0.7",
+    "sveltekit-sse": "^0.14.3",
     "tailwind-merge": "^3.4.1",
     "tailwind-variants": "^3.2.2",
     "tailwindcss": "^4.1.18",
