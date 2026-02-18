@@ -101,12 +101,12 @@ export const login = form(loginSchema, async (user, issues) => {
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
   if (!userResult.githubId && !userResult.emailVerified) {
-    return redirect(302, "/auth?act=verify-email");
+    return redirect(303, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-checkpoint");
+    return redirect(303, "/auth?act=2fa-checkpoint");
   }
-  return redirect(302, "/dashboard");
+  return redirect(301, "/dashboard");
 });
 
 export const register = form(registerSchema, async (newUser, issues) => {

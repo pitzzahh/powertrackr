@@ -1,6 +1,7 @@
 <script module lang="ts">
   interface LandingNavProps {
     user: App.Locals["user"];
+    session: App.Locals["session"];
   }
 </script>
 
@@ -9,10 +10,19 @@
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
 
-  let { user }: LandingNavProps = $props();
+  let { user, session }: LandingNavProps = $props();
 
   let scrollY = $state(0);
   const isFloating = $derived(scrollY > 50);
+
+  const { fullyAuthenticated, needs2FA } = $derived({
+    fullyAuthenticated:
+      user &&
+      session &&
+      (user.isOauthUser || user.emailVerified) &&
+      (!user.registeredTwoFactor || session.twoFactorVerified),
+    needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
+  });
 </script>
 
 <svelte:window bind:scrollY />
@@ -61,8 +71,12 @@
       </nav>
 
       <div class="flex gap-2">
-        {#if user}
+        {#if fullyAuthenticated}
           <Button href="/dashboard" class="hidden sm:inline-flex">Go to Dashboard</Button>
+        {:else if needs2FA}
+          <Button href="/auth?act=2fa-checkpoint" class="hidden sm:inline-flex">
+            Verify Two-Factor Authentication
+          </Button>
         {:else}
           <Button variant="outline" href="/auth?act=login" class="hidden sm:inline-flex"
             >Sign In</Button

@@ -17,10 +17,10 @@ export function requireAuth() {
   }
 
   if (!locals.user.isOauthUser && !locals.user.emailVerified) {
-    return redirect(302, "/auth?act=verify-email");
+    return redirect(303, "/auth?act=verify-email");
   }
   if (locals.user.registeredTwoFactor && !locals.session.twoFactorVerified) {
-    return redirect(302, "/auth?act=2fa-checkpoint");
+    return redirect(303, "/auth?act=2fa-checkpoint");
   }
 
   return {

@@ -18,11 +18,11 @@
 
 <div class="relative min-h-screen overflow-hidden bg-background">
   <AnimatedBackground />
-  <LandingNav user={data.user} />
+  <LandingNav user={data.user} session={data.session} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero user={data.user} />
+    <Hero user={data.user} session={data.session} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->

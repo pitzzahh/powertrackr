@@ -29,7 +29,6 @@
   import { cn } from "$/utils/style.js";
   import * as Password from "$/components/password";
   import { Github, Loader } from "$/assets/icons";
-  import { onDestroy } from "svelte";
   import { login, register } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
@@ -50,11 +49,6 @@
   });
 
   const id = $props.id();
-
-  onDestroy(() => {
-    statuses.email = "idle";
-    statuses.github = "idle";
-  });
 </script>
 
 <form
