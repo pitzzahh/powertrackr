@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@internationalized/date": "^3.11.0",
-    "@libsql/client": "^0.17.0",
     "@oslojs/binary": "^1.0.0",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
