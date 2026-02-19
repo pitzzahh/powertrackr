@@ -337,7 +337,7 @@
 <form
   id="{identity}-form"
   {...currentAction.enhance(async ({ form, submit }) => {
-    if (action === "update" && Object.keys(CHANGED_DATA).length === 0) {
+    if ((action === "update" && Object.keys(CHANGED_DATA).length === 0) || !FORM_VALID) {
       showInspectorWarning();
       return;
     }
