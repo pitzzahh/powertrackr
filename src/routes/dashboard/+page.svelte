@@ -92,7 +92,7 @@
             <span class="sr-only">Open new bill</span>
           </Sheet.Trigger>
           <Sheet.Portal>
-            <Sheet.Content side="bottom" class="h-[90vh] w-full p-0">
+            <Sheet.Content side="bottom" class="h-[90vh] w-full">
               <Sheet.Header class="border-b">
                 <Sheet.Title>Add new Bill</Sheet.Title>
                 <Sheet.Description>Enter billing info</Sheet.Description>
@@ -103,21 +103,23 @@
                   {@const latestBillingInfo =
                     (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ??
                     undefined}
-                  <BillingInfoForm
-                    action="add"
-                    callback={(valid, _, metaData) => {
-                      openNewBill = false;
-                      if (valid) {
-                        billingStore.refresh();
-                        consumptionStore.refresh();
-                        showSuccess("Billing info created successfully!");
-                      } else {
-                        showWarning("Failed to create billing info", metaData?.error);
-                      }
-                    }}
-                    billingInfo={latestBillingInfo}
-                    bind:open={openNewBill}
-                  />
+                  <div class="px-2 pb-2">
+                    <BillingInfoForm
+                      action="add"
+                      callback={(valid, _, metaData) => {
+                        openNewBill = false;
+                        if (valid) {
+                          billingStore.refresh();
+                          consumptionStore.refresh();
+                          showSuccess("Billing info created successfully!");
+                        } else {
+                          showWarning("Failed to create billing info", metaData?.error);
+                        }
+                      }}
+                      billingInfo={latestBillingInfo}
+                      bind:open={openNewBill}
+                    />
+                  </div>
                 {/key}
               </ScrollArea>
             </Sheet.Content>

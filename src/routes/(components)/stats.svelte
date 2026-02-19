@@ -19,8 +19,10 @@
   import { formatNumber, formatEnergy } from "$/utils/format";
   import type { Stats } from "$/types/stats";
   import { source } from "sveltekit-sse";
+  import type { Unsubscriber } from "svelte/store";
 
-  const statsSource = source("/events/stats");
+  const statsSource = source("/events/stats", { cache: false });
+  let unsubscribe: Unsubscriber;
 
   let { stats } = $state<{ stats: Stats }>({ stats: null! });
 
@@ -46,13 +48,28 @@
       label: "Payments Managed",
     },
   ]);
-  statsSource
-    .select("stats")
-    .json<Stats>()
-    .subscribe((value) => {
-      if (value) stats = value;
-    });
+
+  $effect(() => {
+    unsubscribe = statsSource
+      .select("stats")
+      .json<Stats>()
+      .subscribe((value) => {
+        if (value) stats = value;
+      });
+
+    return () => {
+      statsSource.close();
+      unsubscribe();
+    };
+  });
 </script>
+
+<svelte:window
+  onclose={() => {
+    statsSource.close();
+    unsubscribe();
+  }}
+/>
 
 <section class="relative z-10 border-y border-border/50 bg-muted/30 py-20">
   <div class="container mx-auto px-4">

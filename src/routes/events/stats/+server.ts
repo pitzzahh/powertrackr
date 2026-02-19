@@ -15,8 +15,8 @@ const fallback = {
   paymentsAmount: { total: 0, formatted: formatEnergy(0) },
 };
 
-export function POST() {
-  return produce(async function start({ emit }) {
+export function POST({ getClientAddress }) {
+  return produce(async function start({ emit, lock }) {
     while (true) {
       let userCount = fallback.userCount;
       let energyUsed = fallback.energyUsed;
@@ -48,17 +48,22 @@ export function POST() {
         console.warn(e);
       }
 
-      emit(
-        "stats",
-        JSON.stringify({
-          userCount,
-          energyUsed,
-          billingCount,
-          paymentsAmount,
-          _ts: Date.now(), // Add a timestamp to force change
-        })
-      );
+      const data = {
+        userCount,
+        energyUsed,
+        billingCount,
+        paymentsAmount,
+      };
+      console.log("Emitting data to [%s]:", getClientAddress(), data);
 
+      const { error } = emit("stats", JSON.stringify(data));
+
+      if (error) {
+        lock.set(false);
+        return function cancel() {
+          console.error(error.message);
+        };
+      }
       await sleep(1000);
     }
   });
