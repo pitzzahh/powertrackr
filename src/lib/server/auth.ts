@@ -4,7 +4,7 @@ import { encodeHexLowerCase } from "@oslojs/encoding";
 import { user, session } from "$lib/server/db/schema";
 import { db } from "$/server/db";
 import { getRequestEvent } from "$app/server";
-import { redirect, type RequestEvent } from "@sveltejs/kit";
+import { error, redirect, type RequestEvent } from "@sveltejs/kit";
 import type { Session, SessionFlags } from "$/types/session";
 import { omit } from "$/utils/mapper";
 import { addSession, deleteSessionBy, updateSessionBy } from "./crud/session-crud";
@@ -128,4 +128,18 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
     httpOnly: true,
     secure: !dev,
   });
+}
+
+export function originCheck() {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
 }

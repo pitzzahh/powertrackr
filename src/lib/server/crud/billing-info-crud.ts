@@ -20,6 +20,7 @@ import type { NewSubMeter } from "$/types/sub-meter";
 import { error } from "@sveltejs/kit";
 import { getRequestEvent } from "$app/server";
 import { getEnergyUnit, type EnergyUnit } from "$/utils/converter/energy";
+import { originCheck } from "$/server/auth";
 
 export type TotalEnergyUsageResult = {
   total: number;
@@ -547,17 +548,7 @@ export async function getTotalEnergyUsageLogic() {
 }
 
 export async function getTotalBillingInfoCountLogic() {
-  const event = getRequestEvent();
-  const origin = event.request.headers.get("origin");
-  const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
-  const isAllowedOrigin =
-    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
-
-  if (!isAllowedOrigin) {
-    throw error(403, "Forbidden");
-  }
+  originCheck();
 
   const result = await getBillingInfoCountBy({ query: {} });
   return result.value ?? 0;
