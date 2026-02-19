@@ -13,12 +13,13 @@ import type {
   BillingCreateForm,
 } from "$/types/billing-info";
 import { calculatePayPerKwh } from "$lib";
-import { formatEnergy, type EnergyUnit } from "$/utils/format";
+import { formatEnergy } from "$/utils/format";
 import { addPayment } from "$/server/crud/payment-crud";
 import { addSubMeter } from "$/server/crud/sub-meter-crud";
 import type { NewSubMeter } from "$/types/sub-meter";
 import { error } from "@sveltejs/kit";
 import { getRequestEvent } from "$app/server";
+import { getEnergyUnit, type EnergyUnit } from "$/utils/converter/energy";
 
 export type TotalEnergyUsageResult = {
   total: number;
@@ -32,7 +33,7 @@ export async function getTotalEnergyUsage(tx?: Transaction): Promise<TotalEnergy
   const total = Number(result[0]?.total ?? 0);
   const formatted = formatEnergy(total);
 
-  return { total, formatted, energyUnit: formatted.split(" ").pop() as EnergyUnit };
+  return { total, formatted, energyUnit: getEnergyUnit(total) };
 }
 
 type BillingInfoQueryOptions = {
