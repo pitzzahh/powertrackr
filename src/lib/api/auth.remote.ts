@@ -48,8 +48,7 @@ import { requireAuth as requireAuthServer } from "$/server/auth";
 
 export const getAuthUser = query(async () => {
   try {
-    const event = getRequestEvent();
-    return event.locals;
+    return getRequestEvent().locals;
   } catch {
     return {
       user: null,
