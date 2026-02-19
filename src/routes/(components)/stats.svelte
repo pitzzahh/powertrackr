@@ -50,6 +50,7 @@
       value: convertEnergy(stats?.energyUsed.total, stats?.energyUsed.energyUnit ?? "kWh"),
       format: {
         style: "decimal",
+        maximumFractionDigits: 2,
         trailingZeroDisplay: "stripIfInteger",
       },
       suffix: getEnergyUnit(stats?.energyUsed.total),

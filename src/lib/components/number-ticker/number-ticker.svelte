@@ -87,10 +87,6 @@
     {prefix}
     {format}
     plugins={[continuous]}
-    value={targetValue
-      ? decimalPlaces > 0
-        ? Number(targetValue.toFixed(decimalPlaces))
-        : Math.round(targetValue)
-      : 0}
+    value={targetValue}
   />
 </span>
