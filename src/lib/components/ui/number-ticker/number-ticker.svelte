@@ -1,6 +1,19 @@
+<script module lang="ts">
+  export type NumberTickerProps = {
+		value: number;
+		initial?: number;
+		format?:Format;
+		suffix?: string;
+		prefix?: string;
+		decimalPlaces?: number;
+		delay?: number;
+		class?: string;
+	}
+</script>
+
 <script lang="ts">
 	import { cn } from '$lib/utils/style';
-	import { Spring } from 'svelte/motion';
+	import NumberFlow, { continuous, type Format } from '@number-flow/svelte'
 
 	let {
 		value = 0,
@@ -11,26 +24,14 @@
 		decimalPlaces = 0,
 		delay = 0,
 		class: className
-	}: {
-		value: number;
-		initial?: number;
-		format?: (value: number) => string;
-		suffix?: string;
-		prefix?: string;
-		decimalPlaces?: number;
-		delay?: number;
-		class?: string;
-	} = $props();
+	}: NumberTickerProps = $props();
 
-	let isVisible = $state(false);
-	let hasStarted = $state(false);
-	let targetValue = $state(0);
+	let { isVisible, targetValue } = $derived({
+      isVisible: false,
+      targetValue: value
+	})
+
 	let delayTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	const count = Spring.of(() => targetValue, {
-		stiffness: 0.1,
-		damping: 0.4
-	});
 
 	function observe(node: HTMLElement) {
 		targetValue = initial;
@@ -47,13 +48,11 @@
 					const delayMs = delay * 1000;
 
 					delayTimeout = setTimeout(() => {
-						hasStarted = true;
 						targetValue = value;
 					}, delayMs);
 				} else if (!entry.isIntersecting && isVisible) {
 					// Element left viewport - reset for next scroll
 					isVisible = false;
-					hasStarted = false;
 
 					// Clear any pending timeout
 					if (delayTimeout) {
@@ -79,26 +78,12 @@
 			}
 		};
 	}
-
-	let displayValue = $derived.by(() => {
-		const currentValue =
-			decimalPlaces > 0
-				? Number(count.current.toFixed(decimalPlaces))
-				: Math.round(count.current);
-
-		if (format) {
-			return format(currentValue);
-		}
-
-		const formatted = currentValue.toLocaleString('en-US', {
-			minimumFractionDigits: decimalPlaces,
-			maximumFractionDigits: decimalPlaces
-		});
-
-		return `${prefix}${formatted}${suffix}`;
-	});
 </script>
 
 <span use:observe class={cn('tabular-nums tracking-tight text-foreground', className)}>
-	{displayValue}
+	<NumberFlow {format} {suffix} {prefix} plugins={[continuous]}
+		value={targetValue ? decimalPlaces > 0
+			? Number(targetValue.toFixed(decimalPlaces))
+			: Math.round(targetValue) : 0}
+/>
 </span>
