@@ -109,7 +109,10 @@
             case 0:
               return oldStats.userCount;
             case 1:
-              return oldStats.energyUsed.total;
+              return convertEnergy(
+                oldStats?.energyUsed.total,
+                oldStats?.energyUsed.energyUnit ?? "kWh"
+              );
             case 2:
               return oldStats.billingCount;
             case 3:
