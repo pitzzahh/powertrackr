@@ -12,17 +12,19 @@
     Stats,
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
+  import { getAuthUser } from "$/api/auth.remote";
 
-  let { data } = $props();
+  let { user, session } = await getAuthUser();
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
   <AnimatedBackground />
-  <LandingNav user={data.user} session={data.session} />
+
+  <LandingNav {user} {session} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero user={data.user} session={data.session} />
+    <Hero {user} {session} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -109,7 +111,7 @@
       class="absolute right-1/4 bottom-1/4 hidden h-px w-40 -rotate-45 bg-linear-to-r from-transparent via-primary/20 to-transparent lg:block"
     ></div>
     <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta user={data.user} />
+      <Cta {user} />
     </ScrollParallax>
   </div>
 
@@ -118,6 +120,6 @@
     <div
       class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
     ></div>
-    <LandingFooter user={data.user} />
+    <LandingFooter {user} />
   </div>
 </div>

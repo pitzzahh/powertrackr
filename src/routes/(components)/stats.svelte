@@ -1,50 +1,80 @@
 <script module lang="ts">
-  function formatUserCount(count: number) {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K+`;
-    }
-    return `${count}+`;
-  }
-  function formatBillingCount(count: number) {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}K+`;
-    }
-    return `${count}+`;
-  }
+  type StatsList = {
+    value: number;
+    format: Format;
+    suffix?: string;
+    prefix?: string;
+    label: string;
+  };
 </script>
 
 <script lang="ts">
   import { ScrollStagger } from "$lib/motion-core";
-  import { NumberTicker } from "$lib/components/ui/number-ticker";
-  import { formatNumber, formatEnergy } from "$/utils/format";
+  import { NumberTicker } from "$lib/components/number-ticker";
   import type { Stats } from "$/types/stats";
   import { source } from "sveltekit-sse";
   import type { Unsubscriber } from "svelte/store";
+  import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
+  import { type Format } from "@number-flow/svelte";
 
   const statsSource = source("/events/stats", { cache: false });
   let unsubscribe: Unsubscriber;
 
-  let { stats } = $state<{ stats: Stats }>({ stats: null! });
+  let { stats, oldStats } = $state<{ stats: Stats; oldStats: Stats }>({
+    stats: {
+      userCount: 0,
+      energyUsed: { total: 0, energyUnit: "kWh", formatted: "" },
+      billingCount: 0,
+      paymentsAmount: { total: 0, formatted: "" },
+    },
+    oldStats: {
+      userCount: 0,
+      energyUsed: { total: 0, energyUnit: "kWh", formatted: "" },
+      billingCount: 0,
+      paymentsAmount: { total: 0, formatted: "" },
+    },
+  });
 
-  const statsList = $derived([
+  const statsList = $derived<StatsList[]>([
     {
       value: stats?.userCount,
-      format: formatUserCount,
+      format: {
+        style: "decimal",
+        notation: "compact",
+        trailingZeroDisplay: "stripIfInteger",
+      },
+      suffix: "+",
       label: `Active ${stats?.userCount === 1 ? "User" : "Users"}`,
     },
     {
-      value: stats?.energyUsed.total,
-      format: (val: number) => formatEnergy(val),
+      value: convertEnergy(stats?.energyUsed.total, stats?.energyUsed.energyUnit ?? "kWh"),
+      format: {
+        style: "decimal",
+        maximumFractionDigits: 2,
+        trailingZeroDisplay: "stripIfInteger",
+      },
+      suffix: getEnergyUnit(stats?.energyUsed.total),
       label: `${stats?.energyUsed.energyUnit} Tracked`,
     },
     {
       value: stats?.billingCount,
-      format: formatBillingCount,
+      format: {
+        style: "decimal",
+        notation: "compact",
+        trailingZeroDisplay: "stripIfInteger",
+      },
+      suffix: "+",
       label: "Bills Tracked",
     },
     {
       value: stats?.paymentsAmount.total,
-      format: (val: number) => formatNumber(val),
+      format: {
+        style: "currency",
+        currency: "PHP",
+        notation: "compact",
+        trailingZeroDisplay: "stripIfInteger",
+      },
+      suffix: "+",
       label: "Payments Managed",
     },
   ]);
@@ -54,7 +84,10 @@
       .select("stats")
       .json<Stats>()
       .subscribe((value) => {
-        if (value) stats = value;
+        if (value) {
+          stats = value;
+          oldStats = stats;
+        }
       });
 
     return () => {
@@ -81,11 +114,35 @@
       class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
     >
       {#each statsList as stat, i (stat.label)}
+        {@const initial = (() => {
+          if (!oldStats) return 0;
+          switch (i) {
+            case 0:
+              return oldStats.userCount;
+            case 1:
+              return convertEnergy(
+                oldStats?.energyUsed.total,
+                oldStats?.energyUsed.energyUnit ?? "kWh"
+              );
+            case 2:
+              return oldStats.billingCount;
+            case 3:
+              return oldStats.paymentsAmount.total;
+            default:
+              return 0;
+          }
+        })()}
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
-            {#key stat.value}
-              <NumberTicker value={stat.value} format={stat.format} delay={0.3 + i * 0.1} />
-            {/key}
+            <NumberTicker
+              format={stat.format}
+              suffix={stat.suffix}
+              prefix={stat.prefix}
+              value={initial + (stat.value - initial)}
+              {...stat?.suffix != "+" && {
+                class: "[&::part(suffix)]:ml-2",
+              }}
+            />
           </div>
           <div class="text-muted-foreground">
             {stat.label}

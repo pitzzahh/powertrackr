@@ -1,3 +1,5 @@
+import { convertEnergy, getEnergyUnit, type EnergyUnit } from "./converter/energy";
+
 export const formatNumber = (
   num: number,
   options: { currency?: string; locale?: string; style?: Intl.NumberFormatOptions["style"] } = {}
@@ -71,11 +73,6 @@ export const formatDate = (
 };
 
 /**
- * Energy unit types representing common multiples of kWh.
- */
-export type EnergyUnit = "kWh" | "MWh" | "GWh" | "TWh";
-
-/**
  * Options for formatting energy amounts.
  * - `locale`: locale for number formatting (default: 'en-PH')
  * - `decimals`: number of decimal places. If omitted, defaults to 0 for kWh and 2 for larger units.
@@ -88,21 +85,9 @@ export const formatEnergy = (
 ): string => {
   const { locale = "en-PH", decimals, unit = "auto", long = false } = options;
 
-  const abs = Math.abs(kwh);
+  let chosenUnit: EnergyUnit = unit === "auto" ? getEnergyUnit(kwh) : unit;
 
-  let chosenUnit: EnergyUnit;
-  if (unit === "auto") {
-    if (abs >= 1e9) chosenUnit = "TWh";
-    else if (abs >= 1e6) chosenUnit = "GWh";
-    else if (abs >= 1e3) chosenUnit = "MWh";
-    else chosenUnit = "kWh";
-  } else {
-    chosenUnit = unit;
-  }
-
-  const factor =
-    chosenUnit === "kWh" ? 1 : chosenUnit === "MWh" ? 1e3 : chosenUnit === "GWh" ? 1e6 : 1e9;
-  const value = kwh / factor;
+  const value = convertEnergy(kwh, chosenUnit);
 
   const computedDecimals = typeof decimals === "number" ? decimals : chosenUnit === "kWh" ? 0 : 2;
 

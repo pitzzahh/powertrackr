@@ -25,13 +25,18 @@
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
   import { Loader, MessageCircle } from "$/assets/icons";
-  import { onDestroy, onMount } from "svelte";
   import { verifyEmail } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { signout } from "$/api/auth.remote";
   import { resendVerification } from "$/api/email.remote";
-  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
+  import {
+    showError,
+    showInspectorWarning,
+    showLoading,
+    showSuccess,
+    showWarning,
+  } from "$/components/toast";
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
@@ -76,6 +81,10 @@
 
 <form
   {...verifyEmail.enhance(async ({ submit }) => {
+    if (countdown > 0) {
+      showInspectorWarning();
+      return;
+    }
     status = "processing";
     const toastId = showLoading("Verifying your email...");
     try {

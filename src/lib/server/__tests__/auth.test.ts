@@ -216,13 +216,14 @@ describe("auth module", () => {
       path: "/",
       httpOnly: true,
       secure: false,
-      sameSite: "strict",
+      sameSite: "lax",
     });
     deleteSessionTokenCookie(fakeEvent as any);
     expect(deleteSpy).toHaveBeenCalledWith(sessionCookieName, {
       path: "/",
       httpOnly: true,
       secure: false,
+      sameSite: "lax",
     });
   });
 

@@ -201,11 +201,10 @@ export function showPromise<T>(
   return loadingId; // Still returns the ID, but now with optional callbacks
 }
 
-export function showInspectorWarning() {
-  return showWarning(
-    "Nice try, Inspector!",
-    "Bypassing restrictions won't work. Please ensure all requirements are met."
-  );
+export function showInspectorWarning(
+  description: string = "Bypassing restrictions won't work. Please ensure all requirements are met."
+) {
+  return showWarning("Nice try, Inspector!", description);
 }
 
 /**
