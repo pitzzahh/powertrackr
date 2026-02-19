@@ -25,30 +25,26 @@ export function POST() {
 
       try {
         userCount = await getUserCountLogic();
-        console.log({ userCount });
       } catch (e) {
         console.warn("Failed to fetch user count");
         console.warn(e);
       }
       try {
         energyUsed = await getTotalEnergyUsageLogic();
-        console.log({ energyUsed });
       } catch (e) {
         console.warn("Failed to fetch energy usage");
         console.warn(e);
       }
       try {
         billingCount = await getTotalBillingInfoCountLogic();
-        console.log({ billingCount });
       } catch (e) {
         console.warn("Failed to fetch billing info count");
         console.warn(e);
       }
       try {
         paymentsAmount = await getTotalPaymentsAmountLogic();
-        console.log({ paymentsAmount });
       } catch (e) {
-        console.warn("Failed to fetch payments amount");
+        console.warn("Failed to fetch paymentsfix: auth test assertion amount");
         console.warn(e);
       }
 
