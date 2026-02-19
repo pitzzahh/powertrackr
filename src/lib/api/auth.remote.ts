@@ -46,6 +46,18 @@ import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { requireAuth as requireAuthServer } from "$/server/auth";
 
+export const getAuthUser = query(async () => {
+  try {
+    const event = getRequestEvent();
+    return event.locals;
+  } catch {
+    return {
+      user: null,
+      session: null,
+    };
+  }
+});
+
 export const requireAuth = query(() => requireAuthServer());
 
 export const signout = form(async () => {
