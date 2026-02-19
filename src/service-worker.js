@@ -50,6 +50,12 @@ self.addEventListener("fetch", (event) => {
 
   async function respond() {
     const url = new URL(event.request.url);
+
+    // Exclude unsupported schemes (like chrome-extension, moz-extension)
+    if (url.protocol === "chrome-extension:" || url.protocol === "moz-extension:") {
+      return fetch(event.request);
+    }
+
     const cache = await caches.open(CACHE);
 
     // `build`/`files` can always be served from the cache
