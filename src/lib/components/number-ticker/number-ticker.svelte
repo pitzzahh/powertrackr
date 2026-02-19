@@ -79,6 +79,7 @@
   }
 </script>
 
+<!-- Waiting for https://github.com/barvian/number-flow/pull/162 to fix hydration mismatch -->
 <span use:observe class="tracking-tight text-foreground tabular-nums">
   <NumberFlow
     class={className}
