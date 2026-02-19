@@ -12,7 +12,6 @@
 </script>
 
 <script lang="ts">
-	import { cn } from '$lib/utils/style';
 	import NumberFlow, { continuous, type Format } from '@number-flow/svelte'
 
 	let {
@@ -80,8 +79,10 @@
 	}
 </script>
 
-<span use:observe class={cn('tabular-nums tracking-tight text-foreground', className)}>
-	<NumberFlow {format} {suffix} {prefix} plugins={[continuous]}
+<span use:observe class='tabular-nums tracking-tight text-foreground'>
+  <NumberFlow
+   class={className}
+    {format} {suffix} {prefix} plugins={[continuous]}
 		value={targetValue ? decimalPlaces > 0
 			? Number(targetValue.toFixed(decimalPlaces))
 			: Math.round(targetValue) : 0}

@@ -124,12 +124,13 @@
         <div class="text-center">
           <div class="mb-2 text-4xl font-bold text-primary md:text-5xl">
             <NumberTicker
-              {initial}
               format={stat.format}
               suffix={stat.suffix}
               prefix={stat.prefix}
               value={initial + (stat.value - initial)}
-              delay={0.1 + i * 0.1}
+              {...stat?.suffix != "+" && {
+                class: "[&::part(suffix)]:ml-2",
+              }}
             />
           </div>
           <div class="text-muted-foreground">
