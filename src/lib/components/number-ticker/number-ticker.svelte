@@ -5,7 +5,6 @@
     format?: Format;
     suffix?: string;
     prefix?: string;
-    decimalPlaces?: number;
     delay?: number;
     class?: string;
   };
@@ -20,7 +19,6 @@
     format,
     suffix = "",
     prefix = "",
-    decimalPlaces = 0,
     delay = 0,
     class: className,
   }: NumberTickerProps = $props();
