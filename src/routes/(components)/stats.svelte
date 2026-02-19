@@ -19,7 +19,6 @@
   import { formatNumber, formatEnergy } from "$/utils/format";
   import type { Stats } from "$/types/stats";
   import { source } from "sveltekit-sse";
-  import { onDestroy } from "svelte";
 
   const statsSource = source("/events/stats");
 
@@ -47,15 +46,12 @@
       label: "Payments Managed",
     },
   ]);
-
   statsSource
     .select("stats")
     .json<Stats>()
     .subscribe((value) => {
       if (value) stats = value;
     });
-
-  onDestroy(() => statsSource.close());
 </script>
 
 <section class="relative z-10 border-y border-border/50 bg-muted/30 py-20">
