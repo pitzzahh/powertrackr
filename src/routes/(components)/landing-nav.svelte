@@ -1,7 +1,10 @@
 <script module lang="ts">
+  import type { AsyncState } from "$/types/state";
+
   interface LandingNavProps {
     user: App.Locals["user"];
     session: App.Locals["session"];
+    asyncState: AsyncState;
   }
 </script>
 
@@ -9,8 +12,10 @@
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+  import { Loader } from "$/assets/icons";
+  import { Skeleton } from "$/components/ui/skeleton";
 
-  let { user, session }: LandingNavProps = $props();
+  let { user, session, asyncState }: LandingNavProps = $props();
 
   let scrollY = $state(0);
   const isFloating = $derived(scrollY > 50);
@@ -71,7 +76,13 @@
       </nav>
 
       <div class="flex gap-2">
-        {#if fullyAuthenticated}
+        {#if asyncState === "processing"}
+          <Skeleton class="h-8 w-28 rounded-md grayscale sm:hidden" />
+          <div class="hidden sm:flex sm:items-center sm:gap-2">
+            <Skeleton class="h-8 w-20 rounded-md grayscale" />
+            <Skeleton class="h-8 w-28 rounded-md grayscale" />
+          </div>
+        {:else if fullyAuthenticated}
           <Button href="/dashboard" class="hidden sm:inline-flex">Go to Dashboard</Button>
         {:else if needs2FA}
           <Button href="/auth?act=2fa-checkpoint" class="hidden sm:inline-flex">

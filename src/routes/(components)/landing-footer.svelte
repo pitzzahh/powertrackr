@@ -1,16 +1,21 @@
 <script module lang="ts">
+  import type { AsyncState } from "$/types/state";
+
   interface LandingFooterProps {
     user: App.Locals["user"];
+    asyncState: AsyncState;
   }
 </script>
 
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
-  import { ChartLine, Users, Shield, Download } from "$lib/assets/icons";
+  import { ChartLine, Users, Shield, Download, Loader } from "$lib/assets/icons";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+  import { Button } from "$/components/ui/button";
+  import { Skeleton } from "$/components/ui/skeleton";
 
-  let { user }: LandingFooterProps = $props();
+  let { user, asyncState }: LandingFooterProps = $props();
 </script>
 
 <footer class="relative z-10 border-t border-border/50 bg-muted/30 py-16">
@@ -89,7 +94,9 @@
         {site.name}. All rights reserved.
       </p>
       <div class="flex items-center gap-6">
-        {#if user}
+        {#if asyncState === "processing"}
+          <Skeleton class="h-6 w-28 rounded-md" />
+        {:else if user}
           <a
             href="/dashboard"
             class="text-sm text-muted-foreground transition-colors hover:text-primary"

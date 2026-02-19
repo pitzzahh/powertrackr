@@ -13,18 +13,37 @@
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
   import { getAuthUser } from "$/api/auth.remote";
+  import { onMount } from "svelte";
+  import type { AsyncState } from "$/types/state";
 
-  const { user, session } = await getAuthUser();
+  let { user, session, asyncState } = $state<
+    App.Locals & {
+      asyncState: AsyncState;
+    }
+  >({
+    user: null,
+    session: null,
+    asyncState: "idle",
+  });
+
+  onMount(() => {
+    asyncState = "processing";
+    getAuthUser().then((data) => {
+      user = data.user;
+      session = data.session;
+      asyncState = "idle";
+    });
+  });
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
   <AnimatedBackground />
 
-  <LandingNav {user} {session} />
+  <LandingNav {user} {session} {asyncState} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero {user} {session} />
+    <Hero {user} {session} {asyncState} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -120,6 +139,6 @@
     <div
       class="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border to-transparent"
     ></div>
-    <LandingFooter {user} />
+    <LandingFooter {user} {asyncState} />
   </div>
 </div>
