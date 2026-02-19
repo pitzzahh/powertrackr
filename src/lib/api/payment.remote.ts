@@ -1,4 +1,4 @@
-import { query, form, command } from "$app/server";
+import { query, form, command, getRequestEvent } from "$app/server";
 import {
   createPaymentSchema,
   updatePaymentSchema,
@@ -9,7 +9,7 @@ import {
   addPayment,
   deletePaymentBy,
   getPaymentBy,
-  getTotalPaymentsAmountLogic,
+  getTotalPaymentsAmount as getTotalPaymentsAmountCrud,
   updatePaymentBy,
 } from "$/server/crud/payment-crud";
 import { error } from "@sveltejs/kit";
@@ -18,7 +18,21 @@ import type { Payment } from "$/types/payment";
 
 // Query to get total payments amount
 // Public endpoint with origin check - only allows requests from same origin
-export const getTotalPaymentsAmount = query(getTotalPaymentsAmountLogic);
+export const getTotalPaymentsAmount = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  return await getTotalPaymentsAmountCrud();
+});
 
 // Query to get all payments
 export const getPayments = query(async () => {

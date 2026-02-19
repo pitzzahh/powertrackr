@@ -18,7 +18,6 @@ import { addPayment } from "$/server/crud/payment-crud";
 import { addSubMeter } from "$/server/crud/sub-meter-crud";
 import type { NewSubMeter } from "$/types/sub-meter";
 import { error } from "@sveltejs/kit";
-import { getRequestEvent } from "$app/server";
 
 export type TotalEnergyUsageResult = {
   total: number;
@@ -527,37 +526,4 @@ export async function createBillingInfoLogic(
   }
 
   return result;
-}
-
-export async function getTotalEnergyUsageLogic() {
-  const event = getRequestEvent();
-  const origin = event.request.headers.get("origin");
-  const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
-  const isAllowedOrigin =
-    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
-
-  if (!isAllowedOrigin) {
-    throw error(403, "Forbidden");
-  }
-
-  return await getTotalEnergyUsage();
-}
-
-export async function getTotalBillingInfoCountLogic() {
-  const event = getRequestEvent();
-  const origin = event.request.headers.get("origin");
-  const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
-  const isAllowedOrigin =
-    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
-
-  if (!isAllowedOrigin) {
-    throw error(403, "Forbidden");
-  }
-
-  const result = await getBillingInfoCountBy({ query: {} });
-  return result.value ?? 0;
 }

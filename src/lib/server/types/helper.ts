@@ -1,7 +1,6 @@
 import type { Transaction } from "$/server/db";
-import type { TimeRangeOption } from "$routes/(components)/types";
 
-export type HelperResult<T = unknown> = {
+export type HelperResult<T = any> = {
   valid: boolean;
   message: string;
   value: T;
@@ -24,7 +23,7 @@ export type HelperParamOptions<T> = {
   paginated: boolean;
   exclude_id: string;
   include_archived: boolean;
-  period: TimeRangeOption["value"]; // Added period option for chart data
+  period: "3months" | "30days" | "7days"; // Added period option for chart data
   with_user: boolean;
   connective: "and" | "or";
   fields: (keyof T)[];

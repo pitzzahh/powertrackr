@@ -8,7 +8,6 @@ import { redirect, type RequestEvent } from "@sveltejs/kit";
 import type { Session, SessionFlags } from "$/types/session";
 import { omit } from "$/utils/mapper";
 import { addSession, deleteSessionBy, updateSessionBy } from "./crud/session-crud";
-import { dev } from "$app/environment";
 
 export function requireAuth() {
   const { locals } = getRequestEvent();
@@ -117,15 +116,11 @@ export function setSessionTokenCookie(event: RequestEvent, token: string, expire
     expires: expiresAt,
     path: "/",
     sameSite: "strict",
-    httpOnly: true,
-    secure: !dev,
   });
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
   event.cookies.delete(sessionCookieName, {
     path: "/",
-    httpOnly: true,
-    secure: !dev,
   });
 }

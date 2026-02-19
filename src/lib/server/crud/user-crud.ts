@@ -6,8 +6,6 @@ import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "$/types/user";
-import { getRequestEvent } from "$app/server";
-import { error } from "@sveltejs/kit";
 
 type UserQueryOptions = {
   with?: { sessions: true };
@@ -233,21 +231,4 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
-}
-
-export async function getUserCountLogic() {
-  const event = getRequestEvent();
-  const origin = event.request.headers.get("origin");
-  const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
-  const isAllowedOrigin =
-    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
-
-  if (!isAllowedOrigin) {
-    throw error(403, "Forbidden");
-  }
-
-  const result = await getUserCountBy({ query: {} });
-  return result.value ?? 0;
 }

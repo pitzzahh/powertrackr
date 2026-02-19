@@ -10,13 +10,28 @@ import {
   addUser,
   deleteUserBy,
   getUserBy,
-  getUserCountLogic,
+  getUserCountBy,
   updateUserBy,
 } from "$/server/crud/user-crud";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { invalidateSession, deleteSessionTokenCookie } from "$/server/auth";
 
-export const getTotalUserCount = query(getUserCountLogic);
+export const getTotalUserCount = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  const result = await getUserCountBy({ query: {} });
+  return result.value ?? 0;
+});
 
 // Query to get all users
 export const getUsers = query(v.object({}), async () => {

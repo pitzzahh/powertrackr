@@ -1,4 +1,4 @@
-import { query, form, command } from "$app/server";
+import { query, form, command, getRequestEvent } from "$app/server";
 import { db } from "$lib/server/db/index";
 import { calculatePayPerKwh } from "$lib";
 import {
@@ -20,10 +20,10 @@ import { requireAuth } from "$/server/auth";
 import {
   updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
+  getBillingInfoCountBy,
   deleteBillingInfoBy,
   createBillingInfoLogic,
-  getTotalEnergyUsageLogic,
-  getTotalBillingInfoCountLogic,
+  getTotalEnergyUsage as getTotalEnergyUsageCrud,
 } from "$/server/crud/billing-info-crud";
 import { getChangedData, omit } from "$/utils/mapper";
 import { addPayment } from "$/server/crud/payment-crud";
@@ -32,8 +32,6 @@ import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/s
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
 import { dev } from "$app/environment";
-import { getTotalUserCount } from "./user.remote";
-import { getTotalPaymentsAmount } from "./payment.remote";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -48,12 +46,39 @@ const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
 
 // Query to get total energy usage (summed totalKwh) for a user, formatted
 // Public endpoint with origin check - only allows requests from same origin
-export const getTotalEnergyUsage = query(getTotalEnergyUsageLogic);
+export const getTotalEnergyUsage = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  return await getTotalEnergyUsageCrud();
+});
 
 // Query to get total billing info count
 // Public endpoint with origin check - only allows requests from same origin
-export const getTotalBillingInfoCount = query(() => {
-  return getTotalBillingInfoCountLogic();
+export const getTotalBillingInfoCount = query(async () => {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  const result = await getBillingInfoCountBy({ query: {} });
+  return result.value ?? 0;
 });
 
 // Query to get all billing infos for a user
@@ -194,10 +219,6 @@ export const createBillingInfo = form(
       getLatestBillingInfo({
         userId,
       }).refresh();
-      getTotalUserCount().refresh();
-      getTotalEnergyUsage().refresh();
-      getTotalBillingInfoCount().refresh();
-      getTotalPaymentsAmount().refresh();
       return result;
     } catch (err) {
       if (err instanceof Error && err.message.includes("Invalid meter readings")) {
