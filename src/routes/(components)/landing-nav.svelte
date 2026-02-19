@@ -39,7 +39,7 @@
         "mx-auto flex items-center justify-between border-border/50 bg-background/50 px-4 backdrop-blur-lg transition-all duration-300 ease-out",
         isFloating ? "border" : "border-b",
       ]}
-      style:max-width={isFloating ? "70%" : "100%"}
+      style:max-width={isFloating ? "95%" : "100%"}
       style:border-radius={isFloating ? "1rem" : "0"}
       style:padding-top={isFloating ? "0.75rem" : "1rem"}
       style:padding-bottom={isFloating ? "0.75rem" : "1rem"}
