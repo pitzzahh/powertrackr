@@ -18,7 +18,7 @@
   import { setBillingStore } from "$/stores/billing.svelte";
   import { Toaster } from "svelte-sonner";
   import { untrack } from "svelte";
-  import { onNavigate } from "$app/navigation";
+  import { invalidateAll, onNavigate } from "$app/navigation";
   import { setConsumptionStore } from "$/stores/consumption.svelte.js";
   import { RenderScan } from "svelte-render-scan";
   import { dev } from "$app/environment";
@@ -87,6 +87,8 @@
   <meta property="og:url" content={site.url} />
   <meta property="og:type" content="website" />
 </svelte:head>
+
+<svelte:window onclose={() => invalidateAll()} />
 
 <main>
   {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/" && page.url.searchParams.get("act") !== "2fa-setup"}
