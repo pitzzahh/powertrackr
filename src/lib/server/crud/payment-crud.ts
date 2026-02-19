@@ -7,6 +7,8 @@ import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import { formatNumber } from "$/utils/format";
 import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
+import { getRequestEvent } from "$app/server";
+import { error } from "@sveltejs/kit";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;
@@ -238,4 +240,20 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
+}
+
+export async function getTotalPaymentsAmountLogic() {
+  const event = getRequestEvent();
+  const origin = event.request.headers.get("origin");
+  const referer = event.request.headers.get("referer");
+  const siteOrigin = event.url.origin;
+
+  const isAllowedOrigin =
+    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
+
+  if (!isAllowedOrigin) {
+    throw error(403, "Forbidden");
+  }
+
+  return await getTotalPaymentsAmount();
 }
