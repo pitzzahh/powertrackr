@@ -10,7 +10,7 @@
 
 <script lang="ts">
   import { ScrollStagger } from "$lib/motion-core";
-  import { NumberTicker } from "$lib/components/ui/number-ticker";
+  import { NumberTicker } from "$lib/components/number-ticker";
   import type { Stats } from "$/types/stats";
   import { source } from "sveltekit-sse";
   import type { Unsubscriber } from "svelte/store";
@@ -21,8 +21,18 @@
   let unsubscribe: Unsubscriber;
 
   let { stats, oldStats } = $state<{ stats: Stats; oldStats: Stats }>({
-    stats: null!,
-    oldStats: null!,
+    stats: {
+      userCount: 0,
+      energyUsed: { total: 0, energyUnit: "kWh", formatted: "" },
+      billingCount: 0,
+      paymentsAmount: { total: 0, formatted: "" },
+    },
+    oldStats: {
+      userCount: 0,
+      energyUsed: { total: 0, energyUnit: "kWh", formatted: "" },
+      billingCount: 0,
+      paymentsAmount: { total: 0, formatted: "" },
+    },
   });
 
   const statsList = $derived<StatsList[]>([
