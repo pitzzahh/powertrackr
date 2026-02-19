@@ -214,11 +214,16 @@ describe("auth module", () => {
     expect(setSpy).toHaveBeenCalledWith(sessionCookieName, token, {
       expires: expiresAt,
       path: "/",
+      httpOnly: true,
+      secure: false,
       sameSite: "strict",
     });
-
     deleteSessionTokenCookie(fakeEvent as any);
-    expect(deleteSpy).toHaveBeenCalledWith(sessionCookieName, { path: "/" });
+    expect(deleteSpy).toHaveBeenCalledWith(sessionCookieName, {
+      path: "/",
+      httpOnly: true,
+      secure: false,
+    });
   });
 
   it("sessionCookieName constant is exported", () => {
