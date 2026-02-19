@@ -1,17 +1,21 @@
 <script module lang="ts">
+  import type { AsyncState } from "$/types/state";
+
   interface HeroProps {
     user: App.Locals["user"];
     session: App.Locals["session"];
+    asyncState: AsyncState;
   }
 </script>
 
 <script lang="ts">
   import { Button } from "$/components/ui/button";
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
-  import { Zap, PhilippinePeso, Banknote } from "$lib/assets/icons";
+  import { Zap, PhilippinePeso, Banknote, Loader } from "$lib/assets/icons";
   import { TextLoop, Magnetic, ScrollReveal, ScrollStagger } from "$lib/motion-core";
+  import { Skeleton } from "$/components/ui/skeleton";
 
-  let { user, session }: HeroProps = $props();
+  let { user, session, asyncState }: HeroProps = $props();
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -77,7 +81,13 @@
     <!-- Buttons - above fold, play once, no Magnetic -->
     <ScrollReveal preset="slide-up" duration={0.6} delay={0.5}>
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
-        {#if fullyAuthenticated}
+        {#if asyncState === "processing"}
+          <Skeleton class="h-8 w-28 rounded-md grayscale sm:hidden" />
+          <div class="hidden sm:flex sm:items-center sm:gap-2">
+            <Skeleton class="h-8 w-28 rounded-md grayscale" />
+            <Skeleton class="h-8 w-20 rounded-md grayscale" />
+          </div>
+        {:else if fullyAuthenticated}
           <Button
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
