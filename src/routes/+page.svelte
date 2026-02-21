@@ -41,7 +41,7 @@
   </div>
 
   <!-- Stats Section with parallax offset -->
-  <ScrollParallax speed={0.1}>
+  <ScrollParallax speed={0.01}>
     <Stats />
   </ScrollParallax>
 
