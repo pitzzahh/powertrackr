@@ -1,4 +1,4 @@
-name: Build and Test
+name: CI
 
 on:
   push:
@@ -37,6 +37,7 @@ jobs:
       - run: pnpm run check
 
   test:
+    name: "Test"
     needs: check
     runs-on: ubuntu-latest
     strategy:
@@ -57,6 +58,7 @@ jobs:
       - run: pnpm run test
 
   build:
+    name: "Build"
     needs: test
     runs-on: ubuntu-latest
     strategy:
