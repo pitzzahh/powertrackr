@@ -7,12 +7,12 @@ import {
   getUserCountBy,
   deleteUserBy,
   mapNewUser_to_DTO,
-  generateUserQueryConditions,
 } from "../user-crud";
 import { db } from "$/server/db";
 import { createUser, createUsers, resetSequence } from "./helpers/factories";
 import type { NewUser } from "$/types/user";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("User CRUD Operations", () => {
   beforeEach(() => {
@@ -523,14 +523,14 @@ describe("User CRUD Operations", () => {
     });
   });
 
-  describe("generateUserQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewUser> = {
         query: { email: "test@example.com" },
       };
 
-      const conditions = generateUserQueryConditions(param);
+      const conditions = generateQueryConditions<NewUser>(param);
 
       expect(conditions).toEqual({ email: "test@example.com" });
     });
@@ -545,7 +545,7 @@ describe("User CRUD Operations", () => {
         },
       };
 
-      const conditions = generateUserQueryConditions(param);
+      const conditions = generateQueryConditions<NewUser>(param);
 
       expect(conditions).toEqual({
         email: "test@example.com",
@@ -561,7 +561,7 @@ describe("User CRUD Operations", () => {
         options: { exclude_id: "exclude-this-id" },
       };
 
-      const conditions = generateUserQueryConditions(param);
+      const conditions = generateQueryConditions<NewUser>(param);
 
       expect(conditions).toEqual({
         name: "Test User",
@@ -578,7 +578,7 @@ describe("User CRUD Operations", () => {
         },
       };
 
-      const conditions = generateUserQueryConditions(param);
+      const conditions = generateQueryConditions<NewUser>(param);
 
       expect(conditions).toEqual({
         emailVerified: false,
@@ -596,7 +596,7 @@ describe("User CRUD Operations", () => {
         },
       };
 
-      const conditions = generateUserQueryConditions(param);
+      const conditions = generateQueryConditions<NewUser>(param);
 
       expect(conditions).toEqual({
         email: "test@example.com",

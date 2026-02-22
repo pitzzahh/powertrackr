@@ -6,7 +6,6 @@ import {
   getBillingInfos,
   getBillingInfoCountBy,
   mapNewBillingInfo_to_DTO,
-  generateBillingInfoQueryConditions,
   deleteBillingInfoBy,
 } from "../billing-info-crud";
 import {
@@ -26,6 +25,7 @@ import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/server/types/helper";
 import type { Payment } from "$/types/payment";
 import type { SubMeter } from "$/types/sub-meter";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Billing Info CRUD Operations", () => {
   beforeEach(() => {
@@ -1909,14 +1909,14 @@ describe("Billing Info CRUD Operations", () => {
     });
   });
 
-  describe("generateBillingInfoQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: { userId: "test-user-id" },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({ userId: "test-user-id" });
     });
@@ -1931,7 +1931,7 @@ describe("Billing Info CRUD Operations", () => {
         },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -1947,7 +1947,7 @@ describe("Billing Info CRUD Operations", () => {
         options: { exclude_id: "exclude-this-id" },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -1965,7 +1965,7 @@ describe("Billing Info CRUD Operations", () => {
         },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({
         totalkWh: 0,
@@ -1985,7 +1985,7 @@ describe("Billing Info CRUD Operations", () => {
         },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -2007,7 +2007,7 @@ describe("Billing Info CRUD Operations", () => {
         },
       };
 
-      const conditions = generateBillingInfoQueryConditions(param);
+      const conditions = generateQueryConditions<NewBillingInfo>(param);
 
       expect(conditions).toEqual({
         id: "test-id",
