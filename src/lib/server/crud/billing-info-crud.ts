@@ -21,6 +21,7 @@ import { error } from "@sveltejs/kit";
 import { getRequestEvent } from "$app/server";
 import { getEnergyUnit, type EnergyUnit } from "$/utils/converter/energy";
 import { originCheck } from "$/server/auth";
+import { generateQueryConditions } from "$/server/mapper";
 
 export type TotalEnergyUsageResult = {
   total: number;
@@ -95,7 +96,7 @@ export async function updateBillingInfoBy(
 
   const [old_billing_info] =
     billing_info_result.value as BillingInfoWithPaymentAndSubMetersWithPayment[];
-  const conditions = generateBillingInfoQueryConditions(by);
+  const conditions = generateQueryConditions<NewBillingInfo>(by);
   const changed_data = getChangedData(old_billing_info, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -125,7 +126,7 @@ export async function getBillingInfoBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<Partial<BillingInfoWithPaymentAndSubMetersWithPayment>[]>> {
   const { options } = data;
-  const conditions = generateBillingInfoQueryConditions(data);
+  const conditions = generateQueryConditions<NewBillingInfo>(data);
   const queryOptions: BillingInfoQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -205,7 +206,7 @@ export async function getBillingInfoCountBy(
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
   const { id, userId } = query;
-  const conditions = generateBillingInfoQueryConditions(data);
+  const conditions = generateQueryConditions<NewBillingInfo>(data);
   const request_query = (options?.tx || db()).select({ count: count() }).from(billingInfo);
 
   if (id || userId) {
@@ -226,32 +227,11 @@ export async function getBillingInfoCountBy(
   };
 }
 
-export function generateBillingInfoQueryConditions(data: HelperParam<NewBillingInfo>) {
-  const { query, options } = data;
-  const { id, userId, date, totalkWh, balance, status, payPerkWh, paymentId } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (userId) where.userId = userId;
-  if (date) where.date = date;
-  if (totalkWh !== undefined) where.totalkWh = totalkWh;
-  if (balance !== undefined) where.balance = balance;
-  if (status) where.status = status;
-  if (payPerkWh !== undefined) where.payPerkWh = payPerkWh;
-  if (paymentId) where.paymentId = paymentId;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
-}
-
 export async function deleteBillingInfoBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generateBillingInfoQueryConditions(data);
+  const conditions = generateQueryConditions<NewBillingInfo>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {

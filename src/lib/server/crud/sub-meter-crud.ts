@@ -14,6 +14,7 @@ import type {
   Payment,
   BillingInfo,
 } from "$lib/types/sub-meter";
+import { generateQueryConditions } from "$/server/mapper";
 
 type SubMeterQueryOptions = {
   with?: { payment?: true; billingInfo?: true };
@@ -76,7 +77,7 @@ export async function updateSubMeterBy(
   }
 
   const [old_sub_meter] = sub_meter_result.value as NewSubMeter[];
-  const conditions = generateSubMeterQueryConditions(by);
+  const conditions = generateQueryConditions<NewSubMeter>(by);
   const changed_data = getChangedData(old_sub_meter, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -117,7 +118,7 @@ export async function getSubMeterBy(
   HelperResult<Partial<NewSubMeter & { payment?: Payment | null; billingInfo?: BillingInfo }>[]>
 > {
   const { options } = data;
-  const conditions = generateSubMeterQueryConditions(data);
+  const conditions = generateQueryConditions<NewSubMeter>(data);
   const queryOptions: SubMeterQueryOptions = {
     with: {
       ...(options && options.with_payment ? { payment: true } : {}),
@@ -212,7 +213,7 @@ export async function getSubMeterCountBy(
 ): Promise<HelperResult<number>> {
   const { query } = data;
   const { id, billingInfoId } = query;
-  const conditions = generateSubMeterQueryConditions(data);
+  const conditions = generateQueryConditions<NewSubMeter>(data);
   const request_query = (data.options?.tx || db()).select({ count: count() }).from(subMeter);
 
   if (id || billingInfoId) {
@@ -237,7 +238,7 @@ export async function deleteSubMeterBy(
   data: HelperParam<NewSubMeter>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generateSubMeterQueryConditions(data);
+  const conditions = generateQueryConditions<NewSubMeter>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -257,25 +258,6 @@ export async function deleteSubMeterBy(
     message: `${deletedCount} sub meter(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generateSubMeterQueryConditions(data: HelperParam<SubMeter>) {
-  const { query, options } = data;
-  const { id, billingInfoId, subkWh, paymentId, reading } = query;
-
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (billingInfoId) where.billingInfoId = billingInfoId;
-  if (subkWh !== undefined) where.subkWh = subkWh;
-  if (paymentId) where.paymentId = paymentId;
-  if (reading !== undefined) where.reading = reading;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {

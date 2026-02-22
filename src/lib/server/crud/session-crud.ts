@@ -6,6 +6,7 @@ import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewSession, Session, SessionDTO } from "$/types/session";
+import { generateQueryConditions } from "$/server/mapper";
 
 type SessionQueryOptions = {
   where?: Record<string, unknown>;
@@ -54,7 +55,7 @@ export async function updateSessionBy(
   }
 
   const [old_session] = session_result.value as Session[];
-  const conditions = generateSessionQueryConditions(by);
+  const conditions = generateQueryConditions<NewSession>(by);
   const changed_data = getChangedData(old_session, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -84,7 +85,7 @@ export async function getSessionBy(
   data: HelperParam<NewSession>
 ): Promise<HelperResult<Partial<NewSession>[]>> {
   const { options } = data;
-  const conditions = generateSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewSession>(data);
   const queryOptions: SessionQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -132,7 +133,7 @@ export async function getSessionCountBy(
 ): Promise<HelperResult<number>> {
   const { query } = data;
   const { id, userId } = query;
-  const conditions = generateSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewSession>(data);
   const request_query = (data.options?.tx || db()).select({ count: count() }).from(session);
 
   if (id || userId) {
@@ -157,7 +158,7 @@ export async function deleteSessionBy(
   data: HelperParam<NewSession>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generateSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewSession>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -177,25 +178,6 @@ export async function deleteSessionBy(
     message: `${deletedCount} session(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generateSessionQueryConditions(data: HelperParam<NewSession>) {
-  const { query, options } = data;
-  const { id, expiresAt, ipAddress, userAgent, userId, twoFactorVerified } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (expiresAt) where.expiresAt = expiresAt;
-  if (ipAddress) where.ipAddress = ipAddress;
-  if (userAgent) where.userAgent = userAgent;
-  if (userId) where.userId = userId;
-  if (twoFactorVerified !== undefined) where.twoFactorVerified = twoFactorVerified;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<keyof Session, unknown>): SQL | undefined {

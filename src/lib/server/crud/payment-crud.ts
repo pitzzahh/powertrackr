@@ -8,6 +8,7 @@ import { getChangedData } from "$/utils/mapper";
 import { formatNumber } from "$/utils/format";
 import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
 import { originCheck } from "$/server/auth";
+import { generateQueryConditions } from "$/server/mapper";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;
@@ -84,7 +85,7 @@ export async function updatePaymentBy(
   }
 
   const [old_payment] = payment_result.value as NewPayment[];
-  const conditions = generatePaymentQueryConditions(by);
+  const conditions = generateQueryConditions<NewPayment>(by);
   const changed_data = getChangedData(old_payment, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -113,7 +114,7 @@ export async function getPaymentBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<Partial<Payment>[]>> {
   const { options } = data;
-  const conditions = generatePaymentQueryConditions(data);
+  const conditions = generateQueryConditions<NewPayment>(data);
   const queryOptions: PaymentQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -161,7 +162,7 @@ export async function getPaymentCountBy(
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
   const { id, amount } = query;
-  const conditions = generatePaymentQueryConditions(data);
+  const conditions = generateQueryConditions<NewPayment>(data);
   const request_query = (options?.tx || db()).select({ count: count() }).from(payment);
 
   if (id || amount) {
@@ -186,7 +187,7 @@ export async function deletePaymentBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generatePaymentQueryConditions(data);
+  const conditions = generateQueryConditions<NewPayment>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -206,22 +207,6 @@ export async function deletePaymentBy(
     message: `${deletedCount} payment(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generatePaymentQueryConditions(data: HelperParam<NewPayment>) {
-  const { query, options } = data;
-  const { id, amount, date } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (amount !== undefined) where.amount = amount;
-  if (date) where.date = date;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
