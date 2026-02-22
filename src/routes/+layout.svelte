@@ -23,10 +23,12 @@
   import { RenderScan } from "svelte-render-scan";
   import { dev } from "$app/environment";
   import { page } from "$app/state";
+  import { IsMobile } from "$/hooks/is-mobile.svelte.js";
 
   const { children, data } = $props();
 
   const sidebar = setSidebarStore();
+  const isMoile = new IsMobile();
 
   // Initialize sidebar state from server data immediately
   untrack(() => sidebar.init(data.sidebarCollapsed));
@@ -68,7 +70,9 @@
 </script>
 
 <ModeWatcher />
-<FocusRing />
+{#if !isMoile.current}
+  <FocusRing />
+{/if}
 <Toaster theme={mode.current} expand position="top-right" />
 {#if dev}
   <RenderScan />
