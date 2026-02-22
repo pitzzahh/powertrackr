@@ -17,8 +17,8 @@
   import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
   import { type Format } from "@number-flow/svelte";
 
-  const statsSource = source("/events/stats", { cache: false });
-  let unsubscribe: Unsubscriber;
+  const statsSource = source("/events/stats");
+  let unsubscribe: Unsubscriber | undefined;
 
   let { stats, oldStats } = $state<{ stats: Stats; oldStats: Stats }>({
     stats: {
@@ -79,28 +79,54 @@
     },
   ]);
 
-  $effect(() => {
+  function startSubscription() {
+    if (unsubscribe) return;
     unsubscribe = statsSource
       .select("stats")
       .json<Stats>()
       .subscribe((value) => {
         if (value) {
-          stats = value;
           oldStats = stats;
+          stats = value;
         }
       });
+  }
 
+  function stopSubscription() {
+    if (unsubscribe) {
+      try {
+        unsubscribe();
+      } catch (e) {
+        console.warn(e);
+      }
+      unsubscribe = undefined;
+    }
+  }
+
+  $effect(() => {
+    startSubscription();
     return () => {
-      statsSource.close();
-      unsubscribe();
+      stopSubscription();
+      try {
+        statsSource.close();
+      } catch (e) {
+        console.warn(e);
+      }
     };
   });
 </script>
 
 <svelte:window
+  onvisibilitychange={() => {
+    if (document.hidden) {
+      stopSubscription();
+    } else {
+      startSubscription();
+    }
+  }}
   onclose={() => {
     statsSource.close();
-    unsubscribe();
+    stopSubscription();
   }}
 />
 
