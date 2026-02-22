@@ -7,7 +7,6 @@ import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type {
   NewSubMeter,
-  SubMeter,
   SubMeterDTO,
   SubMeterDTOWithPayment,
   SubMeterDTOWithBillingInfo,
