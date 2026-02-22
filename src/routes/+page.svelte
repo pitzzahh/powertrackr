@@ -7,6 +7,7 @@
     HowItWorks,
     LandingFooter,
     LandingNav,
+    Scenarios,
     Stats,
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
@@ -40,6 +41,10 @@
   <!-- Features Section - Alternate background with enhanced texture -->
   <div class="relative bg-muted/20">
     <Features />
+  </div>
+
+  <div class="bg-muted/50">
+    <Scenarios />
   </div>
 
   <!-- CTA Section - With dramatic separators and parallax -->
