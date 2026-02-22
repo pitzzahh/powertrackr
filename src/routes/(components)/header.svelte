@@ -139,7 +139,7 @@
                               callback={quickAction.callback}
                               billingInfo={latestBillingInfo}
                               bind:open={quickAction.open}
-                            />
+                            />logo
                           {/if}
                         </div>
                       {/key}
@@ -174,5 +174,5 @@
   className,
   viewTransitionName = "logo",
 }: { className?: string; viewTransitionName?: string } = {})}
-  <Logo variant="ghost" class={cn("px-0", className)} {viewTransitionName} />
+  <Logo href="/dashboard" variant="ghost" class={cn("px-0", className)} {viewTransitionName} />
 {/snippet}
