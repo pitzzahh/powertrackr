@@ -9,6 +9,7 @@ import type {
   NewPasswordResetSession,
   PasswordResetSessionDTO,
 } from "$/types/password-reset-session";
+import { generateQueryConditions } from "$/server/mapper";
 
 type PasswordResetSessionQueryOptions = {
   where?: Record<string, unknown>;
@@ -65,7 +66,7 @@ export async function updatePasswordResetSessionBy(
   }
 
   const [old_session] = session_result.value as NewPasswordResetSession[];
-  const conditions = generatePasswordResetSessionQueryConditions(by);
+  const conditions = generateQueryConditions<NewPasswordResetSession>(by);
   const changed_data = getChangedData(old_session, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -94,7 +95,7 @@ export async function getPasswordResetSessionBy(
   data: HelperParam<NewPasswordResetSession>
 ): Promise<HelperResult<Partial<NewPasswordResetSession>[]>> {
   const { options } = data;
-  const conditions = generatePasswordResetSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewPasswordResetSession>(data);
   const queryOptions: PasswordResetSessionQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -149,7 +150,7 @@ export async function getPasswordResetSessionCountBy(
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
   const { id, email } = query;
-  const conditions = generatePasswordResetSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewPasswordResetSession>(data);
   console.log({ conditions });
   const request_query = (options?.tx || db()).select({ count: count() }).from(passwordResetSession);
 
@@ -175,7 +176,7 @@ export async function deletePasswordResetSessionBy(
   data: HelperParam<NewPasswordResetSession>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generatePasswordResetSessionQueryConditions(data);
+  const conditions = generateQueryConditions<NewPasswordResetSession>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -195,28 +196,6 @@ export async function deletePasswordResetSessionBy(
     message: `${deletedCount} password reset session(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generatePasswordResetSessionQueryConditions(
-  data: HelperParam<NewPasswordResetSession>
-) {
-  const { query, options } = data;
-  const { id, userId, email, code, expiresAt, emailVerified, twoFactorVerified } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (userId) where.userId = userId;
-  if (email) where.email = email;
-  if (code) where.code = code;
-  if (expiresAt) where.expiresAt = expiresAt;
-  if (emailVerified !== undefined) where.emailVerified = emailVerified;
-  if (twoFactorVerified !== undefined) where.twoFactorVerified = twoFactorVerified;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {

@@ -7,7 +7,6 @@ import {
   getSubMeterCountBy,
   deleteSubMeterBy,
   mapNewSubMeter_to_DTO,
-  generateSubMeterQueryConditions,
 } from "../sub-meter-crud";
 import {
   createSubMeter,
@@ -28,6 +27,7 @@ import type {
   SubMeterDTOWithBillingInfo,
 } from "$/types/sub-meter";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Sub Meter CRUD Operations", () => {
   beforeEach(() => {
@@ -1136,14 +1136,14 @@ describe("Sub Meter CRUD Operations", () => {
     });
   });
 
-  describe("generateSubMeterQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewSubMeter> = {
         query: { billingInfoId: "billing-1" } as unknown as NewSubMeter,
       };
 
-      const conditions = generateSubMeterQueryConditions(param);
+      const conditions = generateQueryConditions<NewSubMeter>(param);
 
       expect(conditions.billingInfoId).toBe("billing-1");
     });
@@ -1160,7 +1160,7 @@ describe("Sub Meter CRUD Operations", () => {
         } as unknown as NewSubMeter,
       };
 
-      const conditions = generateSubMeterQueryConditions(param);
+      const conditions = generateQueryConditions<NewSubMeter>(param);
 
       expect(conditions.id).toBe("sm-1");
       expect(conditions.billingInfoId).toBe("billing-1");
@@ -1181,7 +1181,7 @@ describe("Sub Meter CRUD Operations", () => {
         options: { exclude_id: "exclude-sm" },
       };
 
-      const conditions = generateSubMeterQueryConditions(param);
+      const conditions = generateQueryConditions<NewSubMeter>(param);
 
       const typedConditions = conditions as { NOT?: { id?: string } };
       expect(typedConditions.NOT).toBeDefined();
@@ -1197,7 +1197,7 @@ describe("Sub Meter CRUD Operations", () => {
         } as unknown as NewSubMeter,
       };
 
-      const conditions = generateSubMeterQueryConditions(param);
+      const conditions = generateQueryConditions<NewSubMeter>(param);
 
       expect(Object.keys(conditions)).toHaveLength(0);
     });

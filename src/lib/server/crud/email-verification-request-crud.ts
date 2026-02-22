@@ -12,6 +12,7 @@ import type {
 } from "$/types/email-verification-request";
 import { mapNewUser_to_DTO } from "./user-crud";
 import type { UserDTO } from "$/types/user";
+import { generateQueryConditions } from "$/server/mapper";
 
 type EmailVerificationRequestQueryOptions = {
   with?: { user: true };
@@ -69,7 +70,7 @@ export async function updateEmailVerificationRequestBy(
   }
 
   const [old_request] = request_result.value as NewEmailVerificationRequest[];
-  const conditions = generateEmailVerificationRequestQueryConditions(by);
+  const conditions = generateQueryConditions<NewEmailVerificationRequest>(by);
   const changed_data = getChangedData(old_request, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -99,7 +100,7 @@ export async function getEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<Partial<NewEmailVerificationRequest>[]>> {
   const { options } = data;
-  const conditions = generateEmailVerificationRequestQueryConditions(data);
+  const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
   const queryOptions: EmailVerificationRequestQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -156,7 +157,7 @@ export async function getEmailVerificationRequestCountBy(
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
   const { id, email } = query;
-  const conditions = generateEmailVerificationRequestQueryConditions(data);
+  const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
   const request_query = (options?.tx || db())
     .select({ count: count() })
     .from(emailVerificationRequest);
@@ -183,7 +184,7 @@ export async function deleteEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generateEmailVerificationRequestQueryConditions(data);
+  const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -203,26 +204,6 @@ export async function deleteEmailVerificationRequestBy(
     message: `${deletedCount} email verification request(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generateEmailVerificationRequestQueryConditions(
-  data: HelperParam<NewEmailVerificationRequest>
-) {
-  const { query, options } = data;
-  const { id, userId, email, code, expiresAt } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (userId) where.userId = userId;
-  if (email) where.email = email;
-  if (code) where.code = code;
-  if (expiresAt) where.expiresAt = expiresAt;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {

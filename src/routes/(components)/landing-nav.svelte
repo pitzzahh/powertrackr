@@ -72,16 +72,27 @@
 
       <div class="flex gap-2">
         {#if fullyAuthenticated}
-          <Button href="/dashboard" class="hidden sm:inline-flex">Go to Dashboard</Button>
+          <Button data-sveltekit-reload href="/dashboard" class="hidden sm:inline-flex"
+            >Go to Dashboard</Button
+          >
         {:else if needs2FA}
-          <Button href="/auth?act=2fa-checkpoint" class="hidden sm:inline-flex">
+          <Button
+            data-sveltekit-reload
+            href="/auth?act=2fa-checkpoint"
+            class="hidden sm:inline-flex"
+          >
             Verify Two-Factor Authentication
           </Button>
         {:else}
-          <Button variant="outline" href="/auth?act=login" class="hidden sm:inline-flex"
-            >Sign In</Button
+          <Button
+            data-sveltekit-reload
+            variant="outline"
+            href="/auth?act=login"
+            class="hidden sm:inline-flex">Sign In</Button
           >
-          <Button href="/auth?act=register" class="hidden sm:inline-flex">Get Started</Button>
+          <Button data-sveltekit-reload href="/auth?act=register" class="hidden sm:inline-flex"
+            >Get Started</Button
+          >
         {/if}
       </div>
     </div>

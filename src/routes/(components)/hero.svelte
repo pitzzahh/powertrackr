@@ -3,6 +3,10 @@
     user: App.Locals["user"];
     session: App.Locals["session"];
   }
+  type HeroState = {
+    texts: ("Billing" | "Payments" | "Usage" | "Expenses")[];
+    currentIndex: number;
+  };
 </script>
 
 <script lang="ts">
@@ -10,16 +14,27 @@
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
   import { Zap, PhilippinePeso, Banknote } from "$lib/assets/icons";
   import { TextLoop, Magnetic, ScrollReveal, ScrollStagger } from "$lib/motion-core";
+  import { fade } from "svelte/transition";
 
   let { user, session }: HeroProps = $props();
 
-  const { fullyAuthenticated, needs2FA } = $derived({
+  let { texts, currentIndex } = $state<HeroState>({
+    texts: ["Billing", "Payments", "Usage", "Expenses"],
+    currentIndex: 0,
+  });
+
+  const { fullyAuthenticated, needs2FA, currentText } = $derived({
     fullyAuthenticated:
       user &&
       session &&
       (user.isOauthUser || user.emailVerified) &&
       (!user.registeredTwoFactor || session.twoFactorVerified),
     needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
+    currentText: texts[currentIndex],
+  });
+
+  let { verb } = $derived({
+    verb: currentText === "Payments" ? "Generate" : "Track",
   });
 </script>
 
@@ -47,13 +62,11 @@
     <ScrollReveal preset="fade" duration={0.8} delay={0.2}>
       <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
         <h1 class="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-          Track{" "}
+          {#key verb}
+            <span in:fade>{verb}</span>
+          {/key}{" "}
           <span class="inline-flex justify-center align-baseline">
-            <TextLoop
-              class="text-primary"
-              texts={["Billing", "Payments", "Usage", "Expenses"]}
-              interval={2500}
-            />
+            <TextLoop class="text-primary" {texts} bind:currentIndex interval={2500} />
           </span>{" "}
           Easily
         </h1>
@@ -79,6 +92,7 @@
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
         {#if fullyAuthenticated}
           <Button
+            data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
             href="/dashboard"
@@ -87,6 +101,7 @@
           </Button>
         {:else if needs2FA}
           <Button
+            data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
             href="/auth?act=2fa-checkpoint"
@@ -95,13 +110,16 @@
           </Button>
         {:else}
           <Button
+            data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
             href="/auth?act=register"
           >
             Get Started Free
           </Button>
-          <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
+          <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
+            >Sign In</Button
+          >
         {/if}
       </div>
     </ScrollReveal>

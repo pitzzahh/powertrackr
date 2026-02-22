@@ -7,12 +7,12 @@ import {
   getSessionCountBy,
   deleteSessionBy,
   mapNewSession_to_DTO,
-  generateSessionQueryConditions,
 } from "../session-crud";
 import { createSession, createSessions, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewSession } from "$/types/session";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Session CRUD Operations", () => {
   beforeEach(() => {
@@ -781,14 +781,14 @@ describe("Session CRUD Operations", () => {
     });
   });
 
-  describe("generateSessionQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: { userId: "user-1" } as unknown as NewSession,
       };
 
-      const conditions = generateSessionQueryConditions(param);
+      const conditions = generateQueryConditions<NewSession>(param);
 
       expect(conditions.userId).toBe("user-1");
     });
@@ -805,7 +805,7 @@ describe("Session CRUD Operations", () => {
         } as unknown as NewSession,
       };
 
-      const conditions = generateSessionQueryConditions(param);
+      const conditions = generateQueryConditions<NewSession>(param);
 
       expect(conditions.id).toBe("s-1");
       expect(conditions.userId).toBe("user-1");
@@ -821,7 +821,7 @@ describe("Session CRUD Operations", () => {
         options: { exclude_id: "exclude-id" },
       };
 
-      const conditions = generateSessionQueryConditions(param);
+      const conditions = generateQueryConditions<NewSession>(param);
 
       expect((conditions as any).NOT.id).toBe("exclude-id");
     });
@@ -835,7 +835,7 @@ describe("Session CRUD Operations", () => {
         } as unknown as NewSession,
       };
 
-      const conditions = generateSessionQueryConditions(param);
+      const conditions = generateQueryConditions<NewSession>(param);
 
       expect(Object.keys(conditions)).toHaveLength(0);
     });

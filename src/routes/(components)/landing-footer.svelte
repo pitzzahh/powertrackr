@@ -91,6 +91,7 @@
       <div class="flex items-center gap-6">
         {#if user}
           <a
+            data-sveltekit-reload
             href="/dashboard"
             class="text-sm text-muted-foreground transition-colors hover:text-primary"
           >
@@ -98,12 +99,14 @@
           </a>
         {:else}
           <a
+            data-sveltekit-reload
             href="/auth?act=login"
             class="text-sm text-muted-foreground transition-colors hover:text-primary"
           >
             Sign In
           </a>
           <a
+            data-sveltekit-reload
             href="/auth?act=register"
             class="text-sm text-muted-foreground transition-colors hover:text-primary"
           >

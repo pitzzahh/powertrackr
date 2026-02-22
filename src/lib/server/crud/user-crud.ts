@@ -7,6 +7,7 @@ import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
 import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "$/types/user";
 import { originCheck } from "$/server/auth";
+import { generateQueryConditions } from "$/server/mapper";
 
 type UserQueryOptions = {
   with?: { sessions: true };
@@ -66,7 +67,7 @@ export async function updateUserBy(
   }
 
   const [old_user] = user_result.value as NewUser[];
-  const conditions = generateUserQueryConditions(by);
+  const conditions = generateQueryConditions<NewUser>(by);
   const changed_data = getChangedData(old_user, data);
 
   if (Object.keys(changed_data).length === 0) {
@@ -96,7 +97,7 @@ export async function getUserBy(
   data: HelperParam<NewUser>
 ): Promise<HelperResult<Partial<NewUser>[]>> {
   const { options } = data;
-  const conditions = generateUserQueryConditions(data);
+  const conditions = generateQueryConditions<NewUser>(data);
   const queryOptions: UserQueryOptions = {
     where: Object.keys(conditions).length > 0 ? conditions : undefined,
     ...(options && {
@@ -147,7 +148,7 @@ export function mapNewUser_to_DTO(
 export async function getUserCountBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
   const { query, options } = data;
   const { id, email } = query;
-  const conditions = generateUserQueryConditions(data);
+  const conditions = generateQueryConditions<NewUser>(data);
   const request_query = (options?.tx || db()).select({ count: count() }).from(user);
 
   if (id || email) {
@@ -170,7 +171,7 @@ export async function getUserCountBy(data: HelperParam<NewUser>): Promise<Helper
 
 export async function deleteUserBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
   const { query, options } = data;
-  const conditions = generateUserQueryConditions(data);
+  const conditions = generateQueryConditions<NewUser>(data);
   const whereSQL = buildWhereSQL(conditions);
 
   if (!whereSQL) {
@@ -190,25 +191,6 @@ export async function deleteUserBy(data: HelperParam<NewUser>): Promise<HelperRe
     message: `${deletedCount} user(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
     value: deletedCount,
   };
-}
-
-export function generateUserQueryConditions(data: HelperParam<NewUser>) {
-  const { query, options } = data;
-  const { id, githubId, name, email, registeredTwoFactor, emailVerified } = query;
-  const where: Record<string, unknown> = {};
-
-  if (id) where.id = id;
-  if (githubId !== undefined) where.githubId = githubId;
-  if (name) where.name = name;
-  if (email) where.email = email;
-  if (registeredTwoFactor !== undefined) where.registeredTwoFactor = registeredTwoFactor;
-  if (emailVerified !== undefined) where.emailVerified = emailVerified;
-
-  if (options && options.exclude_id) {
-    where.NOT = { id: options.exclude_id };
-  }
-
-  return where;
 }
 
 function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {

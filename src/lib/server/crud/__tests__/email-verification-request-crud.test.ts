@@ -7,12 +7,12 @@ import {
   getEmailVerificationRequestCountBy,
   deleteEmailVerificationRequestBy,
   mapNewEmailVerificationRequest_to_DTO,
-  generateEmailVerificationRequestQueryConditions,
 } from "../email-verification-request-crud";
 import { createEmailVerificationRequest, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewEmailVerificationRequest } from "$/types/email-verification-request";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Email Verification Request CRUD Operations", () => {
   beforeEach(() => {
@@ -1016,14 +1016,14 @@ describe("Email Verification Request CRUD Operations", () => {
     });
   });
 
-  describe("generateEmailVerificationRequestQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "test-user-id" },
       };
 
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>(param);
 
       expect(conditions).toEqual({ userId: "test-user-id" });
     });
@@ -1038,7 +1038,7 @@ describe("Email Verification Request CRUD Operations", () => {
         },
       };
 
-      const conditions = generateEmailVerificationRequestQueryConditions(param);
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>(param);
 
       expect(conditions).toEqual({
         userId: "test-user-id",
@@ -1049,7 +1049,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
     it("should handle exclude_id option", () => {
       if (process.env.CI === "true") return;
-      const conditions = generateEmailVerificationRequestQueryConditions({
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: { userId: "test-user-id" },
         options: { exclude_id: "exclude-this-id" },
       });
@@ -1063,7 +1063,7 @@ describe("Email Verification Request CRUD Operations", () => {
     it("should handle numeric expiresAt field", () => {
       if (process.env.CI === "true") return;
       const expiresAt = Date.now() + 15 * 60 * 1000;
-      const conditions = generateEmailVerificationRequestQueryConditions({
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
           expiresAt: expiresAt as unknown as Date,
         },
@@ -1076,7 +1076,7 @@ describe("Email Verification Request CRUD Operations", () => {
 
     it("should ignore undefined fields", () => {
       if (process.env.CI === "true") return;
-      const conditions = generateEmailVerificationRequestQueryConditions({
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
           userId: "test-user-id",
           email: undefined,
@@ -1093,7 +1093,7 @@ describe("Email Verification Request CRUD Operations", () => {
     it("should handle all available query fields", () => {
       if (process.env.CI === "true") return;
       const expiresAt = Date.now() + 30 * 60 * 1000;
-      const conditions = generateEmailVerificationRequestQueryConditions({
+      const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
           id: "test-id",
           userId: "test-user-id",

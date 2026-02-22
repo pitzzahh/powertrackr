@@ -7,12 +7,12 @@ import {
   getPasswordResetSessionCountBy,
   deletePasswordResetSessionBy,
   mapNewPasswordResetSession_to_DTO,
-  generatePasswordResetSessionQueryConditions,
 } from "../password-reset-session-crud";
 import { createPasswordResetSession, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewPasswordResetSession } from "$/types/password-reset-session";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Password Reset Session CRUD Operations", () => {
   beforeEach(() => {
@@ -697,13 +697,13 @@ describe("Password Reset Session CRUD Operations", () => {
     });
   });
 
-  describe("generatePasswordResetSessionQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewPasswordResetSession> = {
         query: { email: "a@b.com" } as unknown as NewPasswordResetSession,
       };
-      const cond = generatePasswordResetSessionQueryConditions(param);
+      const cond = generateQueryConditions<NewPasswordResetSession>(param);
       expect(cond.email).toBe("a@b.com");
     });
 
@@ -721,7 +721,7 @@ describe("Password Reset Session CRUD Operations", () => {
         } as unknown as NewPasswordResetSession,
       };
 
-      const cond = generatePasswordResetSessionQueryConditions(param);
+      const cond = generateQueryConditions<NewPasswordResetSession>(param);
       expect(cond.id).toBe("p-1");
       expect(cond.userId).toBe("user-1");
       const typedCond = cond as {
@@ -740,7 +740,7 @@ describe("Password Reset Session CRUD Operations", () => {
         query: {} as unknown as NewPasswordResetSession,
         options: { exclude_id: "exclude-me" },
       };
-      const cond = generatePasswordResetSessionQueryConditions(param);
+      const cond = generateQueryConditions<NewPasswordResetSession>(param);
       const typedCond = cond as { NOT?: { id?: string } };
       expect(typedCond.NOT).toBeDefined();
       expect(typedCond.NOT!.id).toBe("exclude-me");
@@ -754,7 +754,7 @@ describe("Password Reset Session CRUD Operations", () => {
           id: undefined as unknown as string,
         } as unknown as NewPasswordResetSession,
       };
-      const cond = generatePasswordResetSessionQueryConditions(param);
+      const cond = generateQueryConditions<NewPasswordResetSession>(param);
       expect(Object.keys(cond)).toHaveLength(0);
     });
   });

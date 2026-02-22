@@ -17,10 +17,10 @@
      * Additional CSS classes for the container.
      */
     class?: string;
+    currentIndex?: number;
   }
 
-  let { texts, interval = 2000, class: className }: Props = $props();
-  let currentIndex = $state(0);
+  let { texts, interval = 2000, class: className, currentIndex = $bindable(0) }: Props = $props();
   let isFirst = $state(true);
 
   function gsapTransition(node: HTMLElement, { direction }: { direction: "in" | "out" }) {

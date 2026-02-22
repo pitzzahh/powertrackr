@@ -7,11 +7,11 @@ import {
   getPaymentCountBy,
   deletePaymentBy,
   mapNewPayment_to_DTO,
-  generatePaymentQueryConditions,
 } from "../payment-crud";
 import { createPayment, createPayments, resetSequence } from "./helpers/factories";
 import type { NewPayment } from "$/types/payment";
 import type { HelperParam } from "$/server/types/helper";
+import { generateQueryConditions } from "$/server/mapper";
 
 describe("Payment CRUD Operations", () => {
   beforeEach(() => {
@@ -572,11 +572,11 @@ describe("Payment CRUD Operations", () => {
     });
   });
 
-  describe("generatePaymentQueryConditions", () => {
+  describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
       if (process.env.CI === "true") return;
       const param: HelperParam<NewPayment> = { query: { amount: 150 }, options: {} };
-      const conditions = generatePaymentQueryConditions(param);
+      const conditions = generateQueryConditions<NewPayment>(param);
       expect(conditions.amount).toBe(150);
     });
 
@@ -585,7 +585,7 @@ describe("Payment CRUD Operations", () => {
       const param: HelperParam<NewPayment> = {
         query: { amount: 200, date: new Date("2024-07-07"), id: "some-id" },
       };
-      const conditions = generatePaymentQueryConditions(param);
+      const conditions = generateQueryConditions<NewPayment>(param);
       expect(conditions.amount).toBe(200);
       expect(conditions.date).toStrictEqual(new Date("2024-07-07"));
       expect(conditions.id).toBe("some-id");
@@ -597,7 +597,7 @@ describe("Payment CRUD Operations", () => {
         query: {},
         options: { exclude_id: "exclude-this-id" },
       };
-      const conditions = generatePaymentQueryConditions(param);
+      const conditions = generateQueryConditions<NewPayment>(param);
       const typedConditions = conditions as { NOT?: { id?: string } };
       expect(typedConditions.NOT).toBeDefined();
       expect(typedConditions.NOT!.id).toBe("exclude-this-id");
@@ -608,7 +608,7 @@ describe("Payment CRUD Operations", () => {
       const param: HelperParam<NewPayment> = {
         query: { id: undefined as unknown as string, amount: undefined as unknown as number },
       };
-      const conditions = generatePaymentQueryConditions(param);
+      const conditions = generateQueryConditions<NewPayment>(param);
       expect(Object.keys(conditions)).toHaveLength(0);
     });
   });

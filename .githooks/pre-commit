@@ -11,8 +11,8 @@ if [ $FORMAT_EXIT -ne 0 ]; then
   exit 1
 fi
 
-echo "Running oxlint..."
-npm run lint
+echo "Running oxlint (strict: no warnings allowed)..."
+npm run lint -- --max-warnings=0
 LINT_EXIT=$?
 
 if [ $LINT_EXIT -ne 0 ]; then
