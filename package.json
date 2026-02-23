@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@lucide/svelte": "^0.575.0",
-    "@number-flow/svelte": "^0.3.11",
+    "@number-flow/svelte": "^0.3.13",
     "@prettier/plugin-oxc": "^0.1.3",
     "@svelte-put/qr": "^2.1.1",
     "@sveltejs/adapter-node": "^5.5.3",
