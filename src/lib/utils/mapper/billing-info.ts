@@ -41,15 +41,9 @@ export function billingInfoToTableView(original: BillingInfo): BillingInfoTableV
 export function extendedBillingInfoToTableView(
   original: ExtendedBillingInfo
 ): ExtendedBillingInfoTableView {
-  // Extract calendar date components and store as YYYY-MM-DD string
-  const dateObj = new Date(original.date);
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-  const day = String(dateObj.getDate()).padStart(2, "0");
-
   return {
     ...original,
-    date: `${year}-${month}-${day}`,
+    date: formatDate(original.date),
     createdAt: formatDate(new Date(original.createdAt), {
       format: DateFormat.DateTime,
     }),
