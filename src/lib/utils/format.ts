@@ -31,10 +31,27 @@ export const parseCalendarDate = (dateStr: string): Date => {
 };
 
 export const formatDate = (
-  date: Date,
+  dateInput: Date | string | number,
   options: { format?: DateFormat; locale?: string } = {}
 ): string => {
   const { format = DateFormat.DateOnly, locale = "en-PH" } = options;
+
+  // Normalize input into a Date instance.
+  let date: Date;
+  if (typeof dateInput === "string") {
+    // If it's a calendar date string YYYY-MM-DD, parse as UTC to avoid TZ shifts.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateInput)) {
+      date = parseCalendarDate(dateInput);
+    } else {
+      date = new Date(dateInput);
+    }
+  } else {
+    // number (ms since epoch) or Date
+    date = new Date(dateInput as any);
+  }
+
+  // If invalid date, return empty string so callers don't throw.
+  if (Number.isNaN(date.getTime())) return "";
 
   let intlOptions: Intl.DateTimeFormatOptions;
 

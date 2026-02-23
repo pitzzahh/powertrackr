@@ -15,7 +15,7 @@
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import { BillingInfoForm, SubPaymentsButton } from ".";
-  import { formatDate, formatNumber, parseCalendarDate } from "$/utils/format";
+  import { formatNumber } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
@@ -57,7 +57,7 @@
     },
     {
       label: "Date",
-      value: formatDate(parseCalendarDate(row.original.date)),
+      value: row.original.date,
       class: "font-mono",
     },
     {
@@ -88,7 +88,7 @@
   ]);
 
   async function handle_remove_billing_info() {
-    if (delete_confirm_value !== formatDate(parseCalendarDate(row.original.date))) {
+    if (delete_confirm_value !== row.original.date) {
       return showInspectorWarning();
     }
     app_state = "processing";
@@ -167,9 +167,7 @@
         </Dialog.Title>
         <Dialog.Description class="mt-2 text-lg text-muted-foreground">
           Comprehensive billing information for
-          <span class="font-mono text-primary"
-            >{formatDate(parseCalendarDate(row.original.date))}</span
-          >
+          <span class="font-mono text-primary">{row.original.date}</span>
         </Dialog.Description>
       </Dialog.Header>
       <ScrollArea class="max-h-[60vh] pr-2.5">
@@ -208,7 +206,7 @@
   {/if}
 
   {#if active_dialog_content === "remove"}
-    {@const currentDate = formatDate(parseCalendarDate(row.original.date))}
+    {@const currentDate = row.original.date}
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>
@@ -259,9 +257,7 @@
   <Sheet.Portal>
     <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
       <Sheet.Header class="border-b">
-        <Sheet.Title
-          >Edit billing info of {formatDate(parseCalendarDate(row.original.date))}</Sheet.Title
-        >
+        <Sheet.Title>Edit billing info of {row.original.date}</Sheet.Title>
         <Sheet.Description>
           Update the billing info details for billing info with id
           <span class="font-mono text-primary">
