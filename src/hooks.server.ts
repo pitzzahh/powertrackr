@@ -5,20 +5,6 @@ import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  if (
-    request.headers.get("connection")?.toLowerCase().includes("upgrade") &&
-    request.headers.get("upgrade")?.toLowerCase() === "websocket" &&
-    url.pathname.startsWith("/ws")
-  ) {
-    console.log("upgrading");
-    // We must use the platform.request here
-    await event.platform!.server.upgrade(event.platform!.request);
-    return new Response(null, { status: 101 });
-  }
-
   // Skip auth checks for auth-related paths and root landing page
   if (
     event.url.pathname.startsWith("/auth") ||
@@ -89,20 +75,6 @@ export const log: Handle = async ({ event, resolve }) => {
   );
 
   return resolve(event);
-};
-
-export const websocket: Bun.WebSocketHandler<undefined> = {
-  async open(ws) {
-    console.log("WebSocket opened");
-    ws.send("Hello WebSocket");
-  },
-  message(ws, message) {
-    console.log("WebSocket message received");
-    ws.send(message);
-  },
-  close() {
-    console.log("WebSocket closed");
-  },
 };
 
 export const handle = sequence(handleAuth, handleDevTools, log);
