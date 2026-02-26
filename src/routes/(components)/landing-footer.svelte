@@ -8,7 +8,7 @@
   import { gsap } from "gsap";
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
-  import { ChartLine, Users, Shield, Download } from "$lib/assets/icons";
+  import { ChartLine, Users, Shield, Download, InvoiceIcon } from "$lib/assets/icons";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
 
   let { user }: LandingFooterProps = $props();
@@ -122,28 +122,38 @@
 
 <footer use:footerAttach class="relative z-10 overflow-hidden border-t border-border bg-background">
   <!-- Electric grid canvas background -->
-  <canvas class="grid-canvas pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true"
+  <canvas class="grid-canvas pointer-events-none absolute inset-0 size-full" aria-hidden="true"
   ></canvas>
 
   <div class="relative z-10 container mx-auto px-4 py-16">
-    <div class="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
+    <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
       <!-- Brand Column -->
-      <div class="footer-col space-y-4">
+      <div class="footer-col flex flex-col gap-4">
         <Logo variant="ghost" class="px-0 md:pl-0!" viewTransitionName="logo-footer" />
         <p class="text-sm leading-relaxed text-muted-foreground">
-          {site.description}
-        </p>
-        <p class="text-sm leading-relaxed text-muted-foreground">
-          Software-focused tracking and billing for practical expense allocation.
+          {site.fullDescription}
         </p>
       </div>
 
+      <!-- Features -->
+      <div class="footer-col flex flex-col gap-4">
+        <h3 class="text-sm font-semibold">Features</h3>
+        <ul class="flex flex-col gap-0">
+          {#each [{ Icon: ChartLine, label: "Billing Summaries" }, { Icon: InvoiceIcon, label: "Sub‑Metering & Auto‑Billing" }, { Icon: Users, label: "User Accounts" }, { Icon: Shield, label: "Input Validation" }, { Icon: Download, label: "Import & Export" }] as { Icon, label }}
+            <li class="flex h-9 items-center gap-2 text-sm text-muted-foreground">
+              <Icon class="size-4 shrink-0" />
+              <span>{label}</span>
+            </li>
+          {/each}
+        </ul>
+      </div>
+
       <!-- Navigation Links -->
-      <div class="footer-col space-y-4">
+      <div class="footer-col flex flex-col gap-4">
         <h3 class="text-sm font-semibold">Navigation</h3>
-        <ul class="space-y-3">
+        <ul class="flex flex-col gap-0">
           {#each LANDING_NAV_ITEMS as item}
-            <li>
+            <li class="flex h-9 items-center">
               <a
                 href={item.href}
                 onclick={(e) => handleLandingNavClick(e, item.href)}
@@ -156,35 +166,12 @@
         </ul>
       </div>
 
-      <!-- Features -->
-      <div class="footer-col space-y-4">
-        <h3 class="text-sm font-semibold">Features</h3>
-        <ul class="space-y-3">
-          <li class="flex items-center gap-2 text-sm text-muted-foreground">
-            <ChartLine class="h-4 w-4 shrink-0" />
-            <span>Billing Summaries</span>
-          </li>
-          <li class="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users class="h-4 w-4 shrink-0" />
-            <span>User Accounts</span>
-          </li>
-          <li class="flex items-center gap-2 text-sm text-muted-foreground">
-            <Shield class="h-4 w-4 shrink-0" />
-            <span>Input Validation</span>
-          </li>
-          <li class="flex items-center gap-2 text-sm text-muted-foreground">
-            <Download class="h-4 w-4 shrink-0" />
-            <span>Import &amp; Export</span>
-          </li>
-        </ul>
-      </div>
-
       <!-- Use Cases -->
-      <div class="footer-col space-y-4">
+      <div class="footer-col flex flex-col gap-4">
         <h3 class="text-sm font-semibold">Built For</h3>
-        <ul class="space-y-3">
+        <ul class="flex flex-col gap-0">
           {#each ["Multi-Tenant Buildings", "Homeowners with Rentals", "Property Managers"] as item}
-            <li class="text-sm text-muted-foreground">{item}</li>
+            <li class="flex h-9 items-center text-sm text-muted-foreground">{item}</li>
           {/each}
         </ul>
       </div>
