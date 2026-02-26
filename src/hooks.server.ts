@@ -5,6 +5,30 @@ import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
+  const sessionToken = event.cookies.get(auth.sessionCookieName);
+
+  if (!sessionToken) {
+    event.locals.user = null;
+    event.locals.session = null;
+  } else {
+    try {
+      const { session, user } = await auth.validateSessionToken(sessionToken);
+
+      if (session) {
+        auth.setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+      } else {
+        auth.deleteSessionTokenCookie(event);
+      }
+
+      event.locals.user = user;
+      event.locals.session = session;
+    } catch (error) {
+      console.error("Auth error:", error);
+      event.locals.user = null;
+      event.locals.session = null;
+    }
+  }
+
   // Skip auth checks for auth-related paths and root landing page
   if (
     event.url.pathname.startsWith("/auth") ||
@@ -25,31 +49,6 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   }
   if (event.locals.user.registeredTwoFactor && !event.locals.session.twoFactorVerified) {
     redirect(303, "/auth?act=2fa-checkpoint");
-  }
-
-  const sessionToken = event.cookies.get(auth.sessionCookieName);
-
-  if (!sessionToken) {
-    event.locals.user = null;
-    event.locals.session = null;
-    return resolve(event);
-  }
-
-  try {
-    const { session, user } = await auth.validateSessionToken(sessionToken);
-
-    if (session) {
-      auth.setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
-    } else {
-      auth.deleteSessionTokenCookie(event);
-    }
-
-    event.locals.user = user;
-    event.locals.session = session;
-  } catch (error) {
-    console.error("Auth error:", error);
-    event.locals.user = null;
-    event.locals.session = null;
   }
 
   return resolve(event);
