@@ -12,8 +12,20 @@
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
   import { getAuthUser } from "$/api/auth.remote";
+  import { onMount } from "svelte";
 
-  let { user, session } = await getAuthUser();
+  let { user, session } = $state<App.Locals>({
+    user: null,
+    session: null,
+  });
+
+  onMount(() => {
+    try {
+      getAuthUser().then((data) => ([user, session] = [data.user, data.session]));
+    } catch (e) {
+      console.warn("Failed to fetch user data:", e);
+    }
+  });
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
