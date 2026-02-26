@@ -74,3 +74,4 @@ export { default as Shield } from "phosphor-svelte/lib/ShieldIcon";
 export { default as ShieldCheck } from "phosphor-svelte/lib/ShieldCheckIcon";
 export { default as ShieldOff } from "phosphor-svelte/lib/ShieldSlashIcon";
 export { default as Copy } from "phosphor-svelte/lib/CopyIcon";
+export { default as InvoiceIcon } from "phosphor-svelte/lib/InvoiceIcon";

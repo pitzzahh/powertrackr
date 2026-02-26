@@ -5,7 +5,7 @@ import type {
   ExtendedBillingInfo,
   ExtendedBillingInfoTableView,
 } from "$/types/billing-info";
-import { formatDate, DateFormat, parseCalendarDate } from "$/utils/format";
+import { formatDate, DateFormat } from "$/utils/format";
 
 export function billingInfoToDto(
   original: ExtendedBillingInfoTableView
@@ -13,7 +13,7 @@ export function billingInfoToDto(
   return {
     id: original.id,
     userId: original.userId,
-    date: parseCalendarDate(original.date),
+    date: original.date,
     totalkWh: original.totalkWh,
     balance: original.balance,
     payPerkWh: original.payPerkWh,
@@ -43,11 +43,11 @@ export function extendedBillingInfoToTableView(
 ): ExtendedBillingInfoTableView {
   return {
     ...original,
-    date: formatDate(original.date),
-    createdAt: formatDate(new Date(original.createdAt), {
+    dateFormatted: formatDate(original.date),
+    createdAtFormatted: formatDate(new Date(original.createdAt), {
       format: DateFormat.DateTime,
     }),
-    updatedAt: formatDate(new Date(original.updatedAt), {
+    updatedAtFormatted: formatDate(new Date(original.updatedAt), {
       format: DateFormat.DateTime,
     }),
   };

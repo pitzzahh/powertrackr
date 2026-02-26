@@ -7,8 +7,8 @@
   import { Button } from "$/components/ui/button/index.js";
   import { Loader } from "$lib/assets/icons.js";
   import * as InputOTP from "$/components/ui/input-otp";
-  import { checkpoint2FA } from "$/api/auth.remote";
-  import { showLoading, showSuccess, showWarning } from "$/components/toast";
+  import { checkpoint2FA, signout } from "$/api/auth.remote";
+  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
@@ -89,9 +89,7 @@
 
     <Button
       type="submit"
-      disabled={(checkpoint2FA.fields.code.value() &&
-        checkpoint2FA.fields.code.value().length !== 6) ||
-        status === "processing"}
+      disabled={checkpoint2FA.fields?.code.value()?.length !== 6 || status === "processing"}
       class="min-w-32"
     >
       {#if status === "processing"}
@@ -103,3 +101,28 @@
     </Button>
   </FieldGroup>
 </form>
+<div class="mt-4 flex justify-center">
+  <form
+    {...signout.enhance(async ({ submit }) => {
+      const toastId = showLoading("Logging out...");
+      try {
+        await submit();
+        showSuccess("Logged out successfully");
+      } catch (e) {
+        showError("Failed to logout. Please try again.");
+      } finally {
+        toast.dismiss(toastId);
+      }
+    })}
+    class="flex"
+  >
+    <Button
+      type="submit"
+      variant="link"
+      disabled={status === "processing"}
+      aria-label="Login with another account"
+    >
+      Login with another account
+    </Button>
+  </form>
+</div>

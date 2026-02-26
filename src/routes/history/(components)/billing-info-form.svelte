@@ -589,9 +589,12 @@
 
               {#if subMeter?.reading != 0}
                 <div class="text-sm text-muted-foreground">
-                  Consumption: {isNaN(currentMeter.reading) || currentMeter.reading === 0
+                  Consumption: {(currentMeter.reading && isNaN(currentMeter.reading)) ||
+                  currentMeter.reading === 0
                     ? formatEnergy(0)
-                    : formatEnergy(currentMeter.reading - subMeter.reading)}
+                    : formatEnergy(
+                        currentMeter.reading ? currentMeter.reading - subMeter.reading : 0
+                      )}
                 </div>
               {/if}
             </Field.Group>

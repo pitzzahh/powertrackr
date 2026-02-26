@@ -139,7 +139,7 @@
                               callback={quickAction.callback}
                               billingInfo={latestBillingInfo}
                               bind:open={quickAction.open}
-                            />logo
+                            />
                           {/if}
                         </div>
                       {/key}

@@ -578,8 +578,7 @@
                     <Button
                       type="submit"
                       variant="destructive"
-                      disabled={(disable2FA.fields.code.value() &&
-                        disable2FA.fields.code.value().length !== 6) ||
+                      disabled={disable2FA.fields?.code?.value()?.length !== 6 ||
                         securityAsyncState === "processing"}
                     >
                       {#if securityAsyncState === "processing"}

@@ -58,7 +58,7 @@
           column.toggleVisibility(!!value);
         }}
       >
-        {column.id}
+        {column.id.replace("Formatted", "")}
       </DropdownMenu.CheckboxItem>
     {/each}
   </DropdownMenu.Content>
