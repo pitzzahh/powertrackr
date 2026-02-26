@@ -33,13 +33,10 @@ export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "upd
   updatedAt: string;
 };
 
-export type ExtendedBillingInfoTableView = Omit<
-  ExtendedBillingInfo,
-  "date" | "createdAt" | "updatedAt"
-> & {
-  date: string;
-  createdAt: string;
-  updatedAt: string;
+export type ExtendedBillingInfoTableView = ExtendedBillingInfo & {
+  dateFormatted: string;
+  createdAtFormatted: string;
+  updatedAtFormatted: string;
 };
 
 export type ExtendedBillingInfo = BillingInfo & {

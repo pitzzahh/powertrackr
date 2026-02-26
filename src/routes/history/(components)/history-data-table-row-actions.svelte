@@ -15,7 +15,7 @@
   import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import { BillingInfoForm, SubPaymentsButton } from ".";
-  import { formatNumber } from "$/utils/format";
+  import { formatDate, formatNumber } from "$/utils/format";
   import type { Row } from "@tanstack/table-core";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
@@ -88,7 +88,7 @@
   ]);
 
   async function handle_remove_billing_info() {
-    if (delete_confirm_value !== row.original.date) {
+    if (delete_confirm_value !== formatDate(row.original.date)) {
       return showInspectorWarning();
     }
     app_state = "processing";
@@ -206,7 +206,7 @@
   {/if}
 
   {#if active_dialog_content === "remove"}
-    {@const currentDate = row.original.date}
+    {@const currentDate = formatDate(row.original.date)}
     <Dialog.Content>
       <Dialog.Header>
         <Dialog.Title>Remove Billing Info Record</Dialog.Title>

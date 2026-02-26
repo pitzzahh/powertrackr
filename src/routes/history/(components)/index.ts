@@ -30,7 +30,7 @@ export function historyTableColumns() {
       enableHiding: false,
     },
     {
-      accessorKey: "date",
+      accessorKey: "dateFormatted",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
@@ -40,7 +40,7 @@ export function historyTableColumns() {
         renderComponent(Badge, {
           children: createRawSnippet(() => {
             return {
-              render: () => `<span>${row.original.date}</span>`,
+              render: () => `<span>${row.original.dateFormatted}</span>`,
             };
           }),
         }),
@@ -151,7 +151,7 @@ export function historyTableColumns() {
       },
     },
     {
-      accessorKey: "createdAt",
+      accessorKey: "createdAtFormatted",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
@@ -162,7 +162,7 @@ export function historyTableColumns() {
           variant: "outline",
           children: createRawSnippet(() => {
             return {
-              render: () => `<span>${row.original.createdAt}</span>`,
+              render: () => `<span>${row.original.createdAtFormatted}</span>`,
             };
           }),
         }),
@@ -172,7 +172,7 @@ export function historyTableColumns() {
       },
     },
     {
-      accessorKey: "updatedAt",
+      accessorKey: "updatedAtFormatted",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
@@ -183,7 +183,7 @@ export function historyTableColumns() {
           variant: "outline",
           children: createRawSnippet(() => {
             return {
-              render: () => `<span>${row.original.updatedAt}</span>`,
+              render: () => `<span>${row.original.updatedAtFormatted}</span>`,
             };
           }),
         }),
