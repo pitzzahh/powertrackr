@@ -204,8 +204,7 @@
               <Button
                 type="submit"
                 class="w-full"
-                disabled={(verify2FA.fields.code.value() &&
-                  verify2FA.fields.code.value().length !== 6) ||
+                disabled={verify2FA.fields?.code?.value()?.length !== 6 ||
                   asyncState === "processing"}
               >
                 {#if asyncState === "processing"}
