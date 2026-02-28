@@ -1,0 +1,1 @@
+ALTER TABLE "sub_meter" ADD COLUMN "status" text DEFAULT '' NOT NULL;
