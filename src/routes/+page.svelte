@@ -14,14 +14,21 @@
   import { getAuthUser } from "$/api/auth.remote";
   import { onMount } from "svelte";
 
-  let { user, session } = $state<App.Locals>({
+  let { user, session, loading } = $state<
+    App.Locals & {
+      loading: boolean;
+    }
+  >({
     user: null,
     session: null,
+    loading: true,
   });
 
   onMount(() => {
     try {
-      getAuthUser().then((data) => ([user, session] = [data.user, data.session]));
+      getAuthUser()
+        .then((data) => ([user, session] = [data.user, data.session]))
+        .finally(() => (loading = false));
     } catch (e) {
       console.warn("Failed to fetch user data:", e);
     }
@@ -29,11 +36,11 @@
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
-  <LandingNav {user} {session} />
+  <LandingNav {loading} {user} {session} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero {user} {session} />
+    <Hero {loading} {user} {session} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -62,12 +69,12 @@
   <!-- CTA Section - With dramatic separators and parallax -->
   <div class="relative">
     <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta {user} />
+      <Cta {loading} {user} />
     </ScrollParallax>
   </div>
 
   <!-- Footer -->
   <div class="relative">
-    <LandingFooter {user} />
+    <LandingFooter {loading} {user} />
   </div>
 </div>

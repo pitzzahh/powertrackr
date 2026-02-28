@@ -1,6 +1,7 @@
 <script module lang="ts">
   interface CtaProps {
     user?: App.Locals["user"];
+    loading: boolean;
   }
 </script>
 
@@ -8,7 +9,7 @@
   import { Button } from "$/components/ui/button";
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
 
-  let { user = null }: CtaProps = $props();
+  let { user, loading }: CtaProps = $props();
 </script>
 
 <section class="relative z-10 py-32">
@@ -44,6 +45,7 @@
             <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
               {#if user}
                 <Button
+                  disabled={loading}
                   data-sveltekit-reload
                   size="lg"
                   class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -53,6 +55,7 @@
                 </Button>
               {:else}
                 <Button
+                  disabled={loading}
                   data-sveltekit-reload
                   size="lg"
                   class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -60,8 +63,12 @@
                 >
                   Get Started Free
                 </Button>
-                <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
-                  >Sign In</Button
+                <Button
+                  disabled={loading}
+                  data-sveltekit-reload
+                  size="lg"
+                  variant="outline"
+                  href="/auth?act=login">Sign In</Button
                 >
               {/if}
             </div>

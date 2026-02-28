@@ -2,6 +2,7 @@
   interface HeroProps {
     user: App.Locals["user"];
     session: App.Locals["session"];
+    loading: boolean;
   }
   type HeroState = {
     texts: ("Billing" | "Payments" | "Usage" | "Expenses")[];
@@ -16,7 +17,7 @@
   import { TextLoop, Magnetic, ScrollReveal, ScrollStagger } from "$lib/motion-core";
   import { fade } from "svelte/transition";
 
-  let { user, session }: HeroProps = $props();
+  let { user, session, loading }: HeroProps = $props();
 
   let { texts, currentIndex } = $state<HeroState>({
     texts: ["Billing", "Payments", "Usage", "Expenses"],
@@ -92,6 +93,7 @@
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
         {#if fullyAuthenticated}
           <Button
+            disabled={loading}
             data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -101,6 +103,7 @@
           </Button>
         {:else if needs2FA}
           <Button
+            disabled={loading}
             data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -110,6 +113,7 @@
           </Button>
         {:else}
           <Button
+            disabled={loading}
             data-sveltekit-reload
             size="lg"
             class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -117,8 +121,12 @@
           >
             Get Started Free
           </Button>
-          <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
-            >Sign In</Button
+          <Button
+            disabled={loading}
+            data-sveltekit-reload
+            size="lg"
+            variant="outline"
+            href="/auth?act=login">Sign In</Button
           >
         {/if}
       </div>

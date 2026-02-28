@@ -2,6 +2,7 @@
   interface LandingNavProps {
     user: App.Locals["user"];
     session: App.Locals["session"];
+    loading: boolean;
   }
 </script>
 
@@ -10,7 +11,7 @@
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
 
-  let { user, session }: LandingNavProps = $props();
+  let { user, session, loading }: LandingNavProps = $props();
 
   let scrollY = $state(0);
   const isFloating = $derived(scrollY > 50);
@@ -72,11 +73,15 @@
 
       <div class="flex gap-2">
         {#if fullyAuthenticated}
-          <Button data-sveltekit-reload href="/dashboard" class="hidden sm:inline-flex"
-            >Go to Dashboard</Button
+          <Button
+            disabled={loading}
+            data-sveltekit-reload
+            href="/dashboard"
+            class="hidden sm:inline-flex">Go to Dashboard</Button
           >
         {:else if needs2FA}
           <Button
+            disabled={loading}
             data-sveltekit-reload
             href="/auth?act=2fa-checkpoint"
             class="hidden sm:inline-flex"
@@ -85,13 +90,17 @@
           </Button>
         {:else}
           <Button
+            disabled={loading}
             data-sveltekit-reload
             variant="outline"
             href="/auth?act=login"
             class="hidden sm:inline-flex">Sign In</Button
           >
-          <Button data-sveltekit-reload href="/auth?act=register" class="hidden sm:inline-flex"
-            >Get Started</Button
+          <Button
+            disabled={loading}
+            data-sveltekit-reload
+            href="/auth?act=register"
+            class="hidden sm:inline-flex">Get Started</Button
           >
         {/if}
       </div>

@@ -20,7 +20,7 @@
 <Dialog {open} {onOpenChange}>
   <DialogContent>
     <DialogHeader>
-      <DialogTitle>Sub Payments for [{billingInfo.date}]</DialogTitle>
+      <DialogTitle>Sub Payments for [{billingInfo.dateFormatted}]</DialogTitle>
     </DialogHeader>
     <ScrollArea class="max-h-96 pr-2.5">
       {#each billingInfo.subMeters as subMeter, index}
