@@ -75,6 +75,15 @@
     ...restProps
   }: ComponentProps = $props();
 
+  // Filter out ARIA and role attributes so ancestor ARIA labels/roles are not forwarded
+  // to the internal wrapper element. This prevents duplicate/prohibited ARIA usage
+  // when consumers pass `aria-*` or `role` to this component.
+  const forwardedProps = $derived(
+    Object.fromEntries(
+      Object.entries(restProps ?? {}).filter(([k]) => !k.startsWith("aria-") && k !== "role")
+    )
+  );
+
   const resolvedConfig = $derived.by(() => {
     const overrides = config?.[mode];
     const defaults = DEFAULT_CONFIG[mode];
@@ -91,7 +100,7 @@
     }
   }
 
-  function initSplitReveal(node: HTMLSpanElement) {
+  function initSplitReveal(node: HTMLElement) {
     gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
     CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
 
@@ -155,10 +164,11 @@
   }
 </script>
 
-<span
-  {...restProps}
+<svelte:element
+  this={as}
+  {...forwardedProps}
   {@attach initSplitReveal}
   class={cn("font-inherit relative align-baseline text-inherit", className)}
 >
   {@render children?.()}
-</span>
+</svelte:element>
