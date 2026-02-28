@@ -212,7 +212,7 @@ export const updateBillingInfo = form(
   async (data): Promise<BillingInfo> => {
     const { session } = requireAuth();
     const { id: billingInfoId, subMeters, ...updateData } = data;
-
+    console.log(JSON.stringify(data, null, 2));
     const {
       valid: validBillingInfo,
       value: [billingInfoWithSubMetersToUpdate],
@@ -245,8 +245,6 @@ export const updateBillingInfo = form(
       updatedData
     );
 
-    console.log({ billingInfoWithSubMetersToUpdate, changed_data });
-
     // Determine whether provided subMeters actually differ from existing ones
     // (cheap checks) so we can skip heavy work when they don't.
     const existingSubMeters = billingInfoWithSubMetersToUpdate.subMeters ?? [];
@@ -269,7 +267,11 @@ export const updateBillingInfo = form(
             subMetersHaveChanges = true;
             break;
           }
-          if (existing.label !== s.label || existing.reading !== s.reading) {
+          if (
+            existing.label !== s.label ||
+            existing.reading !== s.reading ||
+            existing.status !== s.status
+          ) {
             subMetersHaveChanges = true;
             break;
           }
@@ -286,6 +288,17 @@ export const updateBillingInfo = form(
       }
     }
 
+    console.log(
+      JSON.stringify(
+        {
+          billingInfoWithSubMetersToUpdate,
+          changed_data,
+          subMetersHaveChanges,
+        },
+        null,
+        2
+      )
+    );
     if (Object.keys(changed_data).length === 0 && !subMetersHaveChanges) {
       console.info("Bail out, no changed data");
       return billingInfoWithSubMetersToUpdate as BillingInfo;
@@ -316,6 +329,7 @@ export const updateBillingInfo = form(
             label: sub.label,
             reading: sub.reading,
             subkWh,
+            status: sub.status,
             paymentAmount,
             paymentId: currentMeter.paymentId,
           };
@@ -331,6 +345,7 @@ export const updateBillingInfo = form(
             reading: sub.reading,
             subkWh,
             paymentAmount,
+            status: sub.status,
           };
         }
       }) ?? [];
@@ -389,6 +404,7 @@ export const updateBillingInfo = form(
               {
                 reading: subData.reading,
                 subkWh: subData.subkWh,
+                status: subData.status,
               }
             );
 
@@ -421,6 +437,7 @@ export const updateBillingInfo = form(
                 reading: subData.reading,
                 subkWh: subData.subkWh,
                 paymentId,
+                status: subData.status,
               },
             ];
             const { valid: validSubMeterInsert } = await addSubMeter(subMeterInserts, tx);
