@@ -15,10 +15,10 @@
     billingInfo: ExtendedBillingInfoTableView;
   }
 
-  let { open, onOpenChange, billingInfo }: Props = $props();
+  let { open = $bindable(false), onOpenChange, billingInfo }: Props = $props();
 </script>
 
-<Dialog {open} {onOpenChange}>
+<Dialog bind:open {onOpenChange}>
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Sub Payments for [{billingInfo.dateFormatted}]</DialogTitle>
