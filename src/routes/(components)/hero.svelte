@@ -15,7 +15,6 @@
   import { Card, CardDescription, CardHeader, CardTitle } from "$/components/ui/card";
   import { Zap, PhilippinePeso, Banknote } from "$lib/assets/icons";
   import { TextLoop, Magnetic, ScrollReveal, ScrollStagger } from "$lib/motion-core";
-  import { fade } from "svelte/transition";
 
   let { user, session, loading }: HeroProps = $props();
 
@@ -32,10 +31,6 @@
       (!user.registeredTwoFactor || session.twoFactorVerified),
     needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
     currentText: texts[currentIndex],
-  });
-
-  let { verb } = $derived({
-    verb: currentText === "Payments" ? "Generate" : "Track",
   });
 </script>
 
@@ -63,12 +58,10 @@
     <ScrollReveal preset="fade" duration={0.8} delay={0.2}>
       <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
         <h1 class="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-          {#key verb}
-            <span in:fade>{verb}</span>
-          {/key}{" "}
+          <span>{currentText === "Payments" ? "Generate" : "Track"}</span>
           <span class="inline-flex justify-center align-baseline">
             <TextLoop class="text-primary" {texts} bind:currentIndex interval={2500} />
-          </span>{" "}
+          </span>
           Easily
         </h1>
         <p class="mt-2 text-3xl font-normal text-muted-foreground md:text-4xl lg:text-5xl">
