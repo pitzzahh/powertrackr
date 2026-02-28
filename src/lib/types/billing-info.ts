@@ -10,13 +10,15 @@ export type BillingInfoWithPaymentAndSubMetersWithPayment = BillingInfo & {
   subMeters?: SubMeterWithPayment[];
 };
 
+export type Status = "paid" | "pending" | "due";
+
 export type BillingInfoDTO = {
   id: string;
   userId: string;
   date: Date;
   totalkWh: number;
   balance: number;
-  status: "Paid" | "Pending" | "N/A";
+  status: Status;
   payPerkWh: number;
   paymentId: string | null;
   createdAt: Date;
