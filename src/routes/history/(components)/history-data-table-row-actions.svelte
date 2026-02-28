@@ -57,7 +57,7 @@
     },
     {
       label: "Date",
-      value: row.original.date,
+      value: row.original.dateFormatted,
       class: "font-mono",
     },
     {
@@ -167,7 +167,7 @@
         </Dialog.Title>
         <Dialog.Description class="mt-2 text-lg text-muted-foreground">
           Comprehensive billing information for
-          <span class="font-mono text-primary">{row.original.date}</span>
+          <span class="font-mono text-primary">{row.original.dateFormatted}</span>
         </Dialog.Description>
       </Dialog.Header>
       <ScrollArea class="max-h-[60vh] pr-2.5">
@@ -257,7 +257,7 @@
   <Sheet.Portal>
     <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
       <Sheet.Header class="border-b">
-        <Sheet.Title>Edit billing info of {row.original.date}</Sheet.Title>
+        <Sheet.Title>Edit billing info of {row.original.dateFormatted}</Sheet.Title>
         <Sheet.Description>
           Update the billing info details for billing info with id
           <span class="font-mono text-primary">

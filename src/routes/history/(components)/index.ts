@@ -5,7 +5,7 @@ import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
 import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
-import { formatNumber } from "$/utils/format";
+import { formatDate, formatNumber } from "$/utils/format";
 
 export function historyTableColumns() {
   return [
@@ -30,7 +30,7 @@ export function historyTableColumns() {
       enableHiding: false,
     },
     {
-      accessorKey: "dateFormatted",
+      accessorKey: "date",
       header: ({ column }) =>
         renderComponent(DataTableColumnHeader<ExtendedBillingInfoTableView, unknown>, {
           column,
@@ -45,7 +45,7 @@ export function historyTableColumns() {
           }),
         }),
       filterFn: (row, id, value) => {
-        const dateStr = row.getValue(id) as string;
+        const dateStr = formatDate(row.getValue(id)) as string;
         return dateStr === value || dateStr.toLowerCase().includes(value.toLowerCase());
       },
     },
