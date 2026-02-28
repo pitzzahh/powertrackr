@@ -65,12 +65,12 @@ export const handleDevTools: Handle = async ({ event, resolve }) => {
 export const log: Handle = async ({ event, resolve }) => {
   const {
     request: { method },
-    url: { pathname, origin },
+    url,
     locals: { user, session },
   } = event;
 
   console.info(
-    `[${user && session ? "Authenticated" : "Unauthenticated"}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | ${method} | ${origin}${pathname}`
+    `[${user && session ? "Authenticated" : "Unauthenticated"}] ${new Date().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "numeric", second: "numeric", hour12: true })} | [${method}]: ${url}`
   );
 
   return resolve(event);

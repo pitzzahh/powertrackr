@@ -183,6 +183,9 @@ export async function mapNewSubMeter_to_DTO(
         reading: Object.prototype.hasOwnProperty.call(_sub_meter, "reading")
           ? (_sub_meter as any).reading
           : undefined,
+        status: Object.prototype.hasOwnProperty.call(_sub_meter, "status")
+          ? (_sub_meter as any).status
+          : undefined,
         paymentId: Object.prototype.hasOwnProperty.call(_sub_meter, "paymentId")
           ? (_sub_meter as any).paymentId
           : undefined,
@@ -275,6 +278,8 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
       conditions.push(eq(subMeter.reading, value as number));
     } else if (key === "paymentId") {
       conditions.push(eq(subMeter.paymentId, value as string));
+    } else if (key === "status") {
+      conditions.push(eq(subMeter.status, value as string));
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;

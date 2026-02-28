@@ -29,6 +29,7 @@
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { billingInfoToDto } from "$/utils/mapper/billing-info";
+  import { convertToNormalText } from "$/utils/text";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
@@ -72,8 +73,8 @@
     },
     {
       label: "Status",
-      value: row.original.status,
-      class: `font-semibold ${row.original.status === "Paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`,
+      value: convertToNormalText(row.original.status),
+      class: `font-semibold ${row.original.status === "paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`,
     },
     {
       label: "Pay Per kWh",

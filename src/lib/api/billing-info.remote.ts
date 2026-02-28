@@ -8,7 +8,6 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
-  generateRandomBillingInfosSchema,
 } from "$/validators/billing-info";
 import type {
   BillingInfo,
@@ -31,7 +30,6 @@ import { error, invalid } from "@sveltejs/kit";
 import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
 import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
-import { dev } from "$app/environment";
 import { getTotalUserCount } from "./user.remote";
 import { getTotalPaymentsAmount } from "./payment.remote";
 
@@ -208,97 +206,13 @@ export const createBillingInfo = form(
   }
 );
 
-// Form to generate random billing infos for testing
-export const generateRandomBillingInfos = command(
-  generateRandomBillingInfosSchema,
-  async (data): Promise<HelperResult<number>> => {
-    const {
-      session: { userId },
-    } = requireAuth();
-
-    if (!dev) error(404, "Not found");
-
-    const { count, minSubMeters, maxSubMeters } = data as {
-      count: number;
-      minSubMeters: number;
-      maxSubMeters: number;
-    };
-
-    console.log("Generating random bills:", { count, minSubMeters, maxSubMeters });
-
-    // Get latest billing info for sub meter readings
-    const { valid: _validLatest, value: latestInfos } = await getExtendedBillingInfos({ userId });
-    const latest = latestInfos[0];
-    let subMeterReadings: Record<string, number> = {};
-    if (latest) {
-      latest.subMeters?.forEach((sub) => {
-        subMeterReadings[sub.label] = sub.reading;
-      });
-    }
-
-    // Generate sequential months from 2000 to current year
-    const end = new Date();
-    const totalYears = end.getFullYear() - 2000;
-    const totalMonths = totalYears * 12 + end.getMonth() + 1;
-    const monthsPerBill = totalMonths / count;
-
-    let created = 0;
-    console.log("Starting loop for", count, "bills");
-    for (let i = 0; i < count; i++) {
-      console.log("Creating bill", i + 1);
-      const monthIndex = Math.floor(i * monthsPerBill);
-      const year = 2000 + Math.floor(monthIndex / 12);
-      const month = (monthIndex % 12) + 1;
-      const day = Math.floor(Math.random() * 28) + 1; // 1-28 to avoid invalid dates
-      const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      const numSub = Math.floor(Math.random() * (maxSubMeters - minSubMeters + 1)) + minSubMeters;
-      const totalkWh = Math.floor(Math.random() * 2000) + 1000 + numSub * 100; // 1000-3000 + buffer
-      const balance = Math.floor(Math.random() * 2000) + 1000 + numSub * 100; // 1000-3000 + buffer
-      const status = Math.random() > 0.5 ? "Paid" : "Pending";
-      const subMeters = [];
-      for (let j = 1; j <= numSub; j++) {
-        const label = `Sub Meter ${j}`;
-        const prevReading = subMeterReadings[label] || 0;
-        const reading = prevReading + Math.floor(Math.random() * 50) + 10; // +10-60
-        subMeters.push({ label, reading });
-        subMeterReadings[label] = reading;
-      }
-
-      try {
-        await createBillingInfoLogic(
-          {
-            date,
-            totalkWh,
-            balance,
-            status,
-            subMeters,
-          },
-          userId
-        );
-        created++;
-        console.log("Created bill", i + 1);
-      } catch (err) {
-        console.error(`Failed to create billing info ${i + 1}:`, err);
-      }
-    }
-    console.log("Created", created, "bills");
-
-    getExtendedBillingInfos({ userId }).refresh();
-    return {
-      valid: true,
-      value: created,
-      message: `Generated ${created} random billing infos`,
-    };
-  }
-);
-
 // Form to update an existing billing info with multiple sub meters
 export const updateBillingInfo = form(
   updateBillingInfoSchema,
   async (data): Promise<BillingInfo> => {
     const { session } = requireAuth();
     const { id: billingInfoId, subMeters, ...updateData } = data;
-
+    console.log(JSON.stringify(data, null, 2));
     const {
       valid: validBillingInfo,
       value: [billingInfoWithSubMetersToUpdate],
@@ -331,8 +245,6 @@ export const updateBillingInfo = form(
       updatedData
     );
 
-    console.log({ billingInfoWithSubMetersToUpdate, changed_data });
-
     // Determine whether provided subMeters actually differ from existing ones
     // (cheap checks) so we can skip heavy work when they don't.
     const existingSubMeters = billingInfoWithSubMetersToUpdate.subMeters ?? [];
@@ -355,7 +267,11 @@ export const updateBillingInfo = form(
             subMetersHaveChanges = true;
             break;
           }
-          if (existing.label !== s.label || existing.reading !== s.reading) {
+          if (
+            existing.label !== s.label ||
+            existing.reading !== s.reading ||
+            existing.status !== s.status
+          ) {
             subMetersHaveChanges = true;
             break;
           }
@@ -372,6 +288,17 @@ export const updateBillingInfo = form(
       }
     }
 
+    console.log(
+      JSON.stringify(
+        {
+          billingInfoWithSubMetersToUpdate,
+          changed_data,
+          subMetersHaveChanges,
+        },
+        null,
+        2
+      )
+    );
     if (Object.keys(changed_data).length === 0 && !subMetersHaveChanges) {
       console.info("Bail out, no changed data");
       return billingInfoWithSubMetersToUpdate as BillingInfo;
@@ -402,6 +329,7 @@ export const updateBillingInfo = form(
             label: sub.label,
             reading: sub.reading,
             subkWh,
+            status: sub.status,
             paymentAmount,
             paymentId: currentMeter.paymentId,
           };
@@ -417,6 +345,7 @@ export const updateBillingInfo = form(
             reading: sub.reading,
             subkWh,
             paymentAmount,
+            status: sub.status,
           };
         }
       }) ?? [];
@@ -475,6 +404,7 @@ export const updateBillingInfo = form(
               {
                 reading: subData.reading,
                 subkWh: subData.subkWh,
+                status: subData.status,
               }
             );
 
@@ -507,6 +437,7 @@ export const updateBillingInfo = form(
                 reading: subData.reading,
                 subkWh: subData.subkWh,
                 paymentId,
+                status: subData.status,
               },
             ];
             const { valid: validSubMeterInsert } = await addSubMeter(subMeterInserts, tx);

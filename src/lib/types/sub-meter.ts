@@ -1,4 +1,5 @@
 import type { subMeter, payment, billingInfo } from "$/server/db/schema";
+import type { Status } from "$/types/billing-info";
 
 export type Payment = typeof payment.$inferSelect;
 export type BillingInfo = typeof billingInfo.$inferSelect;
@@ -15,6 +16,7 @@ export type SubMeterDTO = {
   paymentId: string;
   createdAt: Date;
   updatedAt: Date;
+  status: Status;
 };
 
 export type SubMeterTableView = Omit<SubMeter, "createdAt" | "updatedAt"> & {

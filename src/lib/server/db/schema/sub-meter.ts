@@ -13,6 +13,7 @@ export const subMeter = pgTable(
       .references(() => billingInfo.id, { onDelete: "cascade", onUpdate: "cascade" }),
     subkWh: integer("sub_kWh").notNull(),
     reading: integer().notNull(),
+    status: text().notNull().default(""),
     paymentId: text("payment_id")
       .references(() => payment.id, {
         onDelete: "cascade",

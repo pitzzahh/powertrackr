@@ -20,6 +20,7 @@
     id: string;
     label: string;
     reading: number;
+    status?: Status;
   };
 
   type NormalizedBillingData = {
@@ -27,7 +28,7 @@
     date?: string;
     balance?: number;
     totalkWh?: number;
-    status?: string;
+    status?: Status;
     subMeters?: SubMeterForm[];
   };
 
@@ -36,13 +37,12 @@
     date?: string;
     balance?: number | string;
     totalkWh?: number | string;
-    status?: string;
+    status?: Status;
     subMeters?: SubMeterForm[];
   };
 
   type BillingInfoFormState = {
     dateValue: CalendarDate | undefined;
-    status: BillingInfoDTO["status"];
     subMeters: SubMeterForm[];
     asyncState: AsyncState;
     openDatePicker: boolean;
@@ -62,7 +62,11 @@
   import { ChevronDown, CirclePlus, Loader, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
-  import type { BillingInfoDTO, BillingInfoDTOWithSubMeters } from "$/types/billing-info";
+  import {
+    STATUS_VALUES,
+    type BillingInfoDTOWithSubMeters,
+    type Status,
+  } from "$/types/billing-info";
   import { formatDate, formatEnergy } from "$/utils/format";
   import { convertToNormalText } from "$/utils/text";
   import * as v from "valibot";
@@ -86,14 +90,13 @@
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
 
-  let { dateValue, status, openDatePicker, asyncState } = $derived<
-    Omit<BillingInfoFormState, "subMeters">
-  >({
-    dateValue: undefined,
-    status: "Pending",
-    openDatePicker: false,
-    asyncState: "idle",
-  });
+  let { dateValue, openDatePicker, asyncState } = $derived<Omit<BillingInfoFormState, "subMeters">>(
+    {
+      dateValue: undefined,
+      openDatePicker: false,
+      asyncState: "idle",
+    }
+  );
 
   const { currentAction } = $derived({
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
@@ -109,6 +112,7 @@
           id: s.id,
           label: s.label,
           reading: s.reading,
+          status: s.status,
         }));
       } else if (key === "date") {
         const d = new Date(billingInfo.date);
@@ -163,7 +167,11 @@
             subsChanged = true;
             break;
           }
-          if (ex.label !== s.label || Number(ex.reading) !== Number(s.reading)) {
+          if (
+            ex.label !== s.label ||
+            Number(ex.reading) !== Number(s.reading) ||
+            ex.status !== s.status
+          ) {
             subsChanged = true;
             break;
           }
@@ -192,7 +200,7 @@
         : "");
     const balanceVal = currentAction.fields.balance.value();
     const totalkWhVal = currentAction.fields.totalkWh.value();
-    const statusVal = currentAction.fields.status.value() ?? status;
+    const statusVal = currentAction.fields.status.value();
 
     const balance =
       typeof balanceVal === "string" || typeof balanceVal === "number" ? Number(balanceVal) : NaN;
@@ -208,9 +216,12 @@
       totalkWh,
       status: statusVal,
       subMeters: subMeters.map((s: SubMeterForm) => {
-        const mapped: { label: string; reading: number; id?: string } = {
+        const mapped: Omit<SubMeterForm, "id"> & {
+          id?: string;
+        } = {
           label: s.label,
           reading: Number(s.reading),
+          status: s.status,
         };
         // Only include `id` for update operations where an id is meaningful
         if (action === "update" && s.id) mapped.id = s.id;
@@ -231,6 +242,7 @@
       id: crypto.randomUUID(),
       label: "",
       reading: 0,
+      status: undefined,
     });
 
     // Ensure action fields get updated with current form values plus the new sub-meter
@@ -242,9 +254,10 @@
             id: s.id,
             label: currentFormValues[idx].label ?? s.label,
             reading: currentFormValues[idx].reading ?? s.reading,
+            status: currentFormValues[idx].status ?? s.status,
           };
         }
-        return { id: s.id, label: s.label, reading: s.reading };
+        return { id: s.id, label: s.label, reading: s.reading, status: s.status };
       })
     );
   }
@@ -267,9 +280,10 @@
               id: s.id,
               label: currentFormValues[formIdx].label ?? s.label,
               reading: currentFormValues[formIdx].reading ?? s.reading,
+              status: currentFormValues[formIdx].status ?? s.status,
             };
           }
-          return { id: s.id, label: s.label, reading: s.reading };
+          return { id: s.id, label: s.label, reading: s.reading, status: s.status };
         })
       );
     }
@@ -291,7 +305,6 @@
           ? new Date(Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)).toISOString()
           : ""
       );
-      status = billingInfo.status;
       //@ts-expect-error id exists for update action
       currentAction.fields.id.set(billingInfo.id);
       currentAction.fields.balance.set(billingInfo.balance);
@@ -307,7 +320,6 @@
             1
           )
         : undefined;
-      status = "Pending";
       // Sync date with action fields so client-side validation can run
       // Convert CalendarDate to UTC ISO string to prevent timezone issues
       currentAction?.fields?.date?.set?.(
@@ -322,6 +334,7 @@
         id: sub.id,
         label: sub.label,
         reading: sub.reading,
+        status: sub.status,
       })) ?? [];
 
     currentAction.fields.subMeters.set(
@@ -329,6 +342,7 @@
         id: s.id,
         label: s.label,
         reading: s.reading,
+        status: s.status,
       }))
     );
   });
@@ -487,25 +501,24 @@
         <Field.Label for="{identity}-status">Status</Field.Label>
         <Select.Root
           type="single"
-          bind:value={status}
           disabled={action === "add"}
-          onValueChange={(v) => currentAction?.fields?.status?.set?.(v as BillingInfoDTO["status"])}
+          onValueChange={(v) => currentAction?.fields.status.set(v as Status)}
         >
           <Select.Trigger id="{identity}-status" class="w-full">
-            {convertToNormalText(status) || "Select status"}
+            {convertToNormalText(currentAction.fields.status.value() || "pending")}
           </Select.Trigger>
           <Select.Content>
             <Select.Group>
               <Select.Label>Status</Select.Label>
-              {#each ["Paid", "Pending"] as option (option)}
+              {#each STATUS_VALUES as option (option)}
                 <Select.Item value={option} label={option}>
-                  {option}
+                  {convertToNormalText(option)}
                 </Select.Item>
               {/each}
             </Select.Group>
           </Select.Content>
         </Select.Root>
-        <input hidden {...currentAction.fields.status.as("text")} value={status} />
+        <input hidden {...currentAction.fields.status.as("text")} />
         <Field.Description>Select billing status</Field.Description>
       </Field.Field>
     </Field.Group>
@@ -524,7 +537,6 @@
     </div>
 
     {#each subMeters as subMeter, subIndex (subMeter.id)}
-      {@const currentMeter = currentAction.fields.subMeters[subIndex].value()}
       <div in:scale={{ duration: 250, delay: subIndex * 100, easing: sineInOut }}>
         <Card.Root class="gap-4 border-dashed">
           <Card.Header class="border-b">
@@ -555,11 +567,11 @@
                 />
               </Field.Field>
             {/if}
-            <Field.Group>
+            <Field.Group class="py-4">
               <Field.Field>
-                <Field.Label for="sub-label-{subMeter.id}">Label</Field.Label>
+                <Field.Label for="{identity}-sub-meter-label">Label</Field.Label>
                 <Input
-                  id="sub-label-{subMeter.id}"
+                  id="{identity}-sub-meter-label"
                   placeholder="Enter Sub meter label"
                   required
                   {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
@@ -567,17 +579,18 @@
               </Field.Field>
 
               <Field.Field>
-                <Field.Label for="sub-reading-{subMeter.id}">Current Reading</Field.Label>
+                <Field.Label for="{identity}-sub-meter-reading">Current Reading</Field.Label>
                 <Input
-                  id="sub-reading-{subMeter.id}"
+                  id="{identity}-sub-meter-reading"
                   placeholder="Enter current reading"
                   min={subMeter.reading}
                   step={1}
                   required
                   {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
                 />
+                <!-- TODO: Fix this, must get previous reading -->
                 <Field.Description>
-                  {#if currentMeter}
+                  {#if subMeter.reading > 0}
                     Previous reading: [{subMeter.reading}]
                   {:else}
                     Current sub-meter reading for calculation
@@ -585,16 +598,48 @@
                 </Field.Description>
               </Field.Field>
 
-              <Separator />
+              <Field.Field>
+                <Field.Label for="{identity}-sub-meter-status">Status</Field.Label>
+                <Select.Root
+                  type="single"
+                  disabled={action === "add"}
+                  onValueChange={(v) =>
+                    currentAction.fields.subMeters[subIndex]["status"].set(v as Status)}
+                >
+                  <Select.Trigger id="{identity}-sub-meter-status" class="w-full">
+                    {#if action === "add"}
+                      Pending
+                    {:else}
+                      {convertToNormalText(
+                        currentAction.fields.subMeters[subIndex]["status"].value() ||
+                          "Select status"
+                      )}
+                    {/if}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Group>
+                      <Select.Label>Status</Select.Label>
+                      {#each STATUS_VALUES as option (option)}
+                        <Select.Item value={option} label={option}>
+                          {convertToNormalText(option)}
+                        </Select.Item>
+                      {/each}
+                    </Select.Group>
+                  </Select.Content>
+                </Select.Root>
+                <input hidden {...currentAction.fields.subMeters[subIndex]["status"].as("text")} />
+              </Field.Field>
 
               {#if subMeter?.reading != 0}
+                <Separator />
                 <div class="text-sm text-muted-foreground">
-                  Consumption: {(currentMeter.reading && isNaN(currentMeter.reading)) ||
-                  currentMeter.reading === 0
-                    ? formatEnergy(0)
-                    : formatEnergy(
-                        currentMeter.reading ? currentMeter.reading - subMeter.reading : 0
-                      )}
+                  Consumption:
+                  {#if Number.isFinite(Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()))}
+                    {formatEnergy(
+                      Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()) -
+                        Number(subMeter.reading)
+                    )}
+                  {/if}
                 </div>
               {/if}
             </Field.Group>

@@ -16,7 +16,7 @@ export type BillingInfoDTO = {
   date: Date;
   totalkWh: number;
   balance: number;
-  status: "Paid" | "Pending" | "N/A";
+  status: Status;
   payPerkWh: number;
   paymentId: string | null;
   createdAt: Date;
@@ -66,3 +66,6 @@ export type BillingCreateForm = {
   status: string;
   subMeters: { label: string; reading: number }[];
 };
+
+export const STATUS_VALUES = ["paid", "pending", "due"] as const;
+export type Status = (typeof STATUS_VALUES)[number];

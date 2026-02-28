@@ -6,6 +6,7 @@ import type { ColumnDef, Table } from "@tanstack/table-core";
 import { createRawSnippet } from "svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
 import { formatDate, formatNumber } from "$/utils/format";
+import { convertToNormalText } from "$/utils/text";
 
 export function historyTableColumns() {
   return [
@@ -132,10 +133,10 @@ export function historyTableColumns() {
         const status = row.original.status;
         return renderComponent(Badge, {
           title: status,
-          variant: status === "Paid" ? "default" : "destructive",
+          variant: status === "paid" ? "default" : status === "pending" ? "outline" : "destructive",
           children: createRawSnippet(() => {
             return {
-              render: () => `<span>${status}</span>`,
+              render: () => `<span>${convertToNormalText(status)}</span>`,
             };
           }),
         });
