@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Separator } from "$/components/ui/separator/index.js";
   import { formatNumber } from "$/utils/format";
+  import { convertToNormalText } from "$/utils/text";
   import { Dialog, DialogContent, DialogHeader, DialogTitle } from "$lib/components/ui/dialog";
   import { ScrollArea } from "$lib/components/ui/scroll-area";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
@@ -32,6 +33,17 @@
           <div class="max-w-full overflow-x-auto rounded-md border bg-background">
             <Table class="min-w-0 table-fixed">
               <TableBody>
+                <TableRow
+                  class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
+                >
+                  <TableCell
+                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                    >Status</TableCell
+                  >
+                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
+                    >{convertToNormalText(subMeter.status)}</TableCell
+                  >
+                </TableRow>
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >
