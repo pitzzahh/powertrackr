@@ -13,27 +13,34 @@
   import { ScrollParallax } from "$lib/motion-core";
   import { getAuthUser } from "$/api/auth.remote";
   import { onMount } from "svelte";
+  import type { RemoteQuery } from "@sveltejs/kit";
 
-  let { user, session } = $state<App.Locals>({
-    user: null,
-    session: null,
+  let { current, loading } = $derived<Pick<RemoteQuery<App.Locals>, "current" | "loading">>({
+    current: {
+      user: null,
+      session: null,
+    },
+    loading: true,
   });
 
-  onMount(() => {
-    try {
-      getAuthUser().then((data) => ([user, session] = [data.user, data.session]));
-    } catch (e) {
-      console.warn("Failed to fetch user data:", e);
-    }
-  });
+  onMount(() =>
+    getAuthUser()
+      .then((data) => {
+        current = {
+          user: data.user,
+          session: data.session,
+        };
+      })
+      .finally(() => (loading = false))
+  );
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
-  <LandingNav {user} {session} />
+  <LandingNav {loading} user={current?.user || null} session={current?.session || null} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero {user} {session} />
+    <Hero {loading} user={current?.user || null} session={current?.session || null} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -62,12 +69,12 @@
   <!-- CTA Section - With dramatic separators and parallax -->
   <div class="relative">
     <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta {user} />
+      <Cta user={current?.user || null} {loading} />
     </ScrollParallax>
   </div>
 
   <!-- Footer -->
   <div class="relative">
-    <LandingFooter {user} />
+    <LandingFooter user={current?.user || null} {loading} />
   </div>
 </div>
