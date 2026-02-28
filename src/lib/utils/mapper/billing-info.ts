@@ -4,8 +4,10 @@ import type {
   BillingInfoTableView,
   ExtendedBillingInfo,
   ExtendedBillingInfoTableView,
+  Status,
 } from "$/types/billing-info";
 import { formatDate, DateFormat } from "$/utils/format";
+import { omit } from "$/utils/mapper";
 
 export function billingInfoToDto(
   original: ExtendedBillingInfoTableView
@@ -17,11 +19,14 @@ export function billingInfoToDto(
     totalkWh: original.totalkWh,
     balance: original.balance,
     payPerkWh: original.payPerkWh,
-    status: original.status as "Pending" | "Paid",
+    status: original.status as Status,
     createdAt: new Date(original.createdAt),
     updatedAt: new Date(original.updatedAt),
     paymentId: original.paymentId,
-    subMeters: original.subMeters,
+    subMeters: original.subMeters.map((s) => ({
+      ...omit(s, ["payment"]),
+      status: s.status as Status,
+    })),
   };
 }
 
