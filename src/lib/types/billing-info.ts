@@ -10,8 +10,6 @@ export type BillingInfoWithPaymentAndSubMetersWithPayment = BillingInfo & {
   subMeters?: SubMeterWithPayment[];
 };
 
-export type Status = "paid" | "pending" | "due";
-
 export type BillingInfoDTO = {
   id: string;
   userId: string;
@@ -68,3 +66,6 @@ export type BillingCreateForm = {
   status: string;
   subMeters: { label: string; reading: number }[];
 };
+
+export const STATUS_VALUES = ["paid", "pending", "due"] as const;
+export type Status = (typeof STATUS_VALUES)[number];
