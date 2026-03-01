@@ -45,10 +45,11 @@
   import type { AsyncState } from "$/types/state";
   import type { TimeRangeOption } from "./types";
   import { getEnergyUnit } from "$/utils/converter/energy";
+  import { onDestroy } from "svelte";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
-  let worker: Worker | null = null; // cannot be a $state rune
+  let worker: Worker = null!; // cannot be a $state rune
 
   let { timeRange, activeChart, context, totalkWh, mainKWh, subkWh }: ChartBarState = $state({
     timeRange: "1y",
@@ -129,10 +130,12 @@
   }
 
   $effect(() => {
-    if (!worker) return;
-    worker.postMessage({ data: filteredData });
-    return () => worker?.terminate();
+    if (worker) {
+      worker.postMessage({ data: filteredData });
+    }
   });
+
+  onDestroy(() => worker?.terminate());
 </script>
 
 <Card.Root class="pt-0 pb-6">
