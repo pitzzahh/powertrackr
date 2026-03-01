@@ -81,10 +81,6 @@
 
 <form
   {...verifyEmail.enhance(async ({ submit }) => {
-    if (countdown > 0) {
-      showInspectorWarning();
-      return;
-    }
     status = "processing";
     const toastId = showLoading("Verifying your email...");
     try {
@@ -147,6 +143,10 @@
         aria-label="Resend verification code"
         style="opacity: {countdown > 0 ? 0.3 + ((60 - countdown) / 60) * 0.7 : 1}"
         onclick={async () => {
+          if (countdown > 0) {
+            showInspectorWarning();
+            return;
+          }
           status = "processing";
           const toastId = showLoading("Resending verification code...");
           try {
