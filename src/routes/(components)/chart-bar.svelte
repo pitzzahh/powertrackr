@@ -44,8 +44,11 @@
   import { Button } from "$/components/ui/button";
   import type { AsyncState } from "$/types/state";
   import type { TimeRangeOption } from "./types";
-  import { getEnergyUnit } from "$/utils/converter/energy";
+  import { getEnergyUnit, convertEnergy } from "$/utils/converter/energy";
+  import { NumberTicker } from "$lib/components/number-ticker";
+  import type { Format } from "@number-flow/svelte";
   import { onDestroy } from "svelte";
+  import { cn } from "$/utils/style";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
@@ -149,6 +152,17 @@
     <div class="grid h-fit grid-cols-2 md:grid-cols-4">
       {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
         {@const chart = key}
+        {@const value =
+          key === "all"
+            ? totalkWh
+            : key === "totalkWh"
+              ? totalkWh
+              : key === "mainKWh"
+                ? mainKWh
+                : subkWh}
+        {@const unit = getEnergyUnit(value)}
+        {@const convertedValue = convertEnergy(value, unit)}
+        {@const tickerFormat: Format = { style: "decimal", maximumFractionDigits: unit === "kWh" ? 0 : 2, trailingZeroDisplay: "stripIfInteger" }}
         <button
           data-active={activeChart === chart}
           class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s data-[active=true]:bg-muted/50 sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
@@ -157,22 +171,14 @@
           <span class="text-xs {activeChart === chart ? 'text-primary' : 'text-muted-foreground'}">
             {key === "all" ? "All" : CHART_CONFIG[key as keyof typeof CHART_CONFIG].label}
           </span>
-          <span
-            class={[
-              {
-                "text-lg leading-none font-bold transition-colors sm:text-3xl": true,
-                "text-primary": activeChart === chart,
-              },
-            ]}
-          >
-            {key === "all"
-              ? formatEnergy(totalkWh)
-              : key === "totalkWh"
-                ? formatEnergy(totalkWh)
-                : key === "mainKWh"
-                  ? formatEnergy(mainKWh)
-                  : formatEnergy(subkWh)}
-          </span>
+          <NumberTicker
+            class={cn("text-lg leading-none font-bold transition-colors sm:text-3xl", {
+              "text-primary": activeChart === chart,
+            })}
+            value={convertedValue}
+            format={tickerFormat}
+            suffix={unit}
+          />
         </button>
       {/each}
     </div>
