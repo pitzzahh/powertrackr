@@ -40,13 +40,15 @@
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
   import { browser } from "$app/environment";
   import type { Total } from "$lib/workers/total-calculator";
-  import { onDestroy } from "svelte";
   import { Loader, RefreshCw } from "$lib/assets/icons";
   import { Button } from "$/components/ui/button";
   import type { AsyncState } from "$/types/state";
   import type { TimeRangeOption } from "./types";
+  import { getEnergyUnit } from "$/utils/converter/energy";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
+
+  let worker: Worker | null = null; // cannot be a $state rune
 
   let { timeRange, activeChart, context, totalkWh, mainKWh, subkWh }: ChartBarState = $state({
     timeRange: "1y",
@@ -88,16 +90,14 @@
           ],
   });
 
-  const chartUnit = $derived.by(() => {
-    const max = filteredData.reduce(
-      (m, d) => Math.max(m, d?.totalkWh || 0, d?.mainKWh || 0, d?.subkWh || 0),
-      0
-    );
-    if (max >= 1_000_000_000) return "TWh";
-    if (max >= 1_000_000) return "GWh";
-    if (max >= 1_000) return "MWh";
-    return "kWh";
-  });
+  const chartUnit = $derived(
+    getEnergyUnit(
+      filteredData.reduce(
+        (m, d) => Math.max(m, d?.totalkWh || 0, d?.mainKWh || 0, d?.subkWh || 0),
+        0
+      )
+    )
+  );
 
   const chartDivisor = $derived.by(() =>
     chartUnit === "TWh"
@@ -118,8 +118,6 @@
     }))
   );
 
-  let worker: Worker | null = null;
-
   if (browser) {
     worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url));
 
@@ -131,12 +129,10 @@
   }
 
   $effect(() => {
-    if (browser && worker) {
-      worker.postMessage({ data: filteredData });
-    }
+    if (!worker) return;
+    worker.postMessage({ data: filteredData });
+    return () => worker?.terminate();
   });
-
-  onDestroy(() => worker?.terminate());
 </script>
 
 <Card.Root class="pt-0 pb-6">
