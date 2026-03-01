@@ -4,6 +4,7 @@
     variant?: ButtonVariant;
     size?: ButtonSize;
     class?: string;
+    onclick?: ButtonProps["onclick"];
     viewTransitionName?: string;
   };
 </script>
@@ -20,6 +21,7 @@
 
   let {
     href = "/",
+    onclick,
     class: className,
     variant = "default",
     size = "default",
@@ -35,6 +37,7 @@
   class={cn("flex cursor-pointer items-center justify-center rounded-sm", className)}
   {size}
   {variant}
+  {onclick}
   {...restProps}
 >
   <Zap class="size-6 text-primary-foreground dark:text-primary" />
