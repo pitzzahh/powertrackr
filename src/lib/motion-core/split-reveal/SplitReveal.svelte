@@ -51,7 +51,7 @@
      * The HTML tag to use for the wrapper.
      * @default "div"
      */
-    as?: keyof HTMLElementTagNameMap;
+    as?: keyof HTMLSpanElement;
     [prop: string]: unknown;
   }
 
@@ -68,7 +68,7 @@
     class: className = "",
     mode = "lines" as SplitMode,
     config,
-    as = "div" as keyof HTMLElementTagNameMap,
+    as = "span" as keyof HTMLSpanElement,
     delay = 0,
     triggerOnScroll = false,
     scrollElement,
