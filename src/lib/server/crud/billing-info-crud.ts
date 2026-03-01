@@ -346,6 +346,7 @@ export async function createBillingInfoLogic(
       reading: sub.reading,
       subkWh,
       paymentAmount,
+      status: sub.status,
     };
   });
 
@@ -424,6 +425,7 @@ export async function createBillingInfoLogic(
         subkWh: subData.subkWh,
         reading: subData.reading,
         paymentId: addedPayment.id,
+        status: subData.status,
       });
     }
 
@@ -495,6 +497,7 @@ export async function createBillingInfoLogic(
         subkWh: subData.subkWh,
         reading: subData.reading,
         paymentId: addedPayment.id,
+        status: subData.status,
       });
     }
 

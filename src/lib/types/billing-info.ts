@@ -64,7 +64,7 @@ export type BillingCreateForm = {
   totalkWh: number;
   balance: number;
   status: string;
-  subMeters: { label: string; reading: number }[];
+  subMeters: { label: string; reading: number; status: Status }[];
 };
 
 export const STATUS_VALUES = ["paid", "pending", "due"] as const;
