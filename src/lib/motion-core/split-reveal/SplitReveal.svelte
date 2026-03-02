@@ -119,6 +119,7 @@
         type: "lines, words, chars",
         tag: as,
         mask: "lines",
+        aria: "none",
       });
 
       const targets =
