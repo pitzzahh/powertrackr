@@ -147,7 +147,7 @@
             >
               <Zap class="h-7 w-7 text-primary" />
             </div>
-            <CardTitle class="text-lg">Billing Records</CardTitle>
+            <h2 class="text-lg leading-none font-semibold">Billing Records</h2>
             <CardDescription>
               Record periodic billing entries with total kWh and balances per billing cycle.
             </CardDescription>
@@ -168,7 +168,7 @@
             >
               <PhilippinePeso class="h-7 w-7 text-primary" />
             </div>
-            <CardTitle class="text-lg">Sub-Meter Tracking</CardTitle>
+            <h2 class="text-lg leading-none font-semibold">Sub-Meter Tracking</h2>
             <CardDescription>
               Support multiple sub-meters per billing period to track each unit's usage separately.
             </CardDescription>
@@ -189,7 +189,7 @@
             >
               <Banknote class="h-7 w-7 text-primary" />
             </div>
-            <CardTitle class="text-lg">Payment Reconciliation</CardTitle>
+            <h2 class="text-lg leading-none font-semibold">Payment Reconciliation</h2>
             <CardDescription>
               Associate payments with billing and sub-meter records for clear reconciliation.
             </CardDescription>
