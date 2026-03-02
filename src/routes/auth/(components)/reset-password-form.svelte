@@ -21,7 +21,7 @@
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
-  import * as Password from "$/components/password";
+  import Password from "$/components/password.svelte";
   import { Loader, Lock } from "$/assets/icons";
   import { resetPassword } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
@@ -80,31 +80,26 @@
     </Field>
     <Field>
       <FieldLabel for="password-{id}">New Password</FieldLabel>
-      <Password.Root enableStrengthCheck>
-        <Password.Input
-          id="password-{id}"
-          required
-          autocomplete="new-password"
-          {...resetPassword.fields.password.as("password")}
-        >
-          <Password.ToggleVisibility />
-        </Password.Input>
-        <Password.Strength />
-      </Password.Root>
+      <Password
+        id="password-{id}"
+        required
+        autocomplete="new-password"
+        showProgress={true}
+        showRequirements={true}
+        {...resetPassword.fields.password.as("password")}
+      />
       <FieldError errors={resetPassword.fields.password.issues()} />
     </Field>
     <Field>
       <FieldLabel for="confirm-password-{id}">Confirm New Password</FieldLabel>
-      <Password.Root>
-        <Password.Input
-          id="confirm-password-{id}"
-          required
-          autocomplete="new-password"
-          {...resetPassword.fields.confirmPassword.as("password")}
-        >
-          <Password.ToggleVisibility />
-        </Password.Input>
-      </Password.Root>
+      <Password
+        id="confirm-password-{id}"
+        required
+        autocomplete="new-password"
+        showProgress={true}
+        showRequirements={false}
+        {...resetPassword.fields.confirmPassword.as("password")}
+      />
       <FieldError errors={resetPassword.fields.confirmPassword.issues()} />
     </Field>
     <Field>
