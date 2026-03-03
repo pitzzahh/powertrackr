@@ -11,33 +11,16 @@
     Stats,
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
-  import { getAuthUser } from "$/api/auth.remote";
-  import { onMount } from "svelte";
 
-  let { user, session, loading } = $state<
-    App.Locals & {
-      loading: boolean;
-    }
-  >({
-    user: null,
-    session: null,
-    loading: true,
-  });
-
-  onMount(() =>
-    getAuthUser()
-      .then((data) => ([user, session] = [data.user, data.session]))
-      .catch((e) => console.warn("Failed to fetch user data:", e))
-      .finally(() => (loading = false))
-  );
+  let { data } = $props();
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
-  <LandingNav {loading} {user} {session} />
+  <LandingNav user={data.user} session={data.session} />
 
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
-    <Hero {loading} {user} {session} />
+    <Hero user={data.user} session={data.session} />
   </div>
 
   <!-- Benefits Marquee - Visual break with movement -->
@@ -66,12 +49,12 @@
   <!-- CTA Section - With dramatic separators and parallax -->
   <div class="relative">
     <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta {loading} {user} />
+      <Cta user={data.user} />
     </ScrollParallax>
   </div>
 
   <!-- Footer -->
   <div class="relative">
-    <LandingFooter {loading} {user} />
+    <LandingFooter user={data.user} />
   </div>
 </div>

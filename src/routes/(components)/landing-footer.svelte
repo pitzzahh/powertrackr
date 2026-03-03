@@ -1,7 +1,6 @@
 <script module lang="ts">
   interface LandingFooterProps {
     user: App.Locals["user"];
-    loading: boolean;
   }
 </script>
 
@@ -12,7 +11,7 @@
   import { ChartLine, Users, Shield, Download, InvoiceIcon } from "$lib/assets/icons";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
 
-  let { user, loading }: LandingFooterProps = $props();
+  let { user }: LandingFooterProps = $props();
 
   // ─── Canvas grid drawing ───────────────────────────────────────────────────
   function initCanvas(canvas: HTMLCanvasElement) {
@@ -190,7 +189,6 @@
       <div class="flex items-center gap-6">
         {#if user}
           <a
-            aria-disabled={loading}
             data-sveltekit-reload
             href="/dashboard"
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
@@ -199,7 +197,6 @@
           </a>
         {:else}
           <a
-            aria-disabled={loading}
             data-sveltekit-reload
             href="/auth?act=login"
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
@@ -207,7 +204,6 @@
             Sign In
           </a>
           <a
-            aria-disabled={loading}
             data-sveltekit-reload
             href="/auth?act=register"
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
