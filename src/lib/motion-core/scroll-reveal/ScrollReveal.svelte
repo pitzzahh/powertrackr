@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { gsap } from "gsap/dist/gsap";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
-  import { CustomEase } from "gsap/dist/CustomEase";
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { CustomEase } from "gsap/CustomEase";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
 

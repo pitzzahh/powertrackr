@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { gsap } from "gsap/dist/gsap";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
 
   function initParallaxBlobs(node: HTMLElement) {
     gsap.registerPlugin(ScrollTrigger);

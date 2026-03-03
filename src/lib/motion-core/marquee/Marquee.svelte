@@ -1,6 +1,6 @@
 <script lang="ts">
   import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
 
