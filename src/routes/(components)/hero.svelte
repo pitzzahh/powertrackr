@@ -14,7 +14,7 @@
   import { Button } from "$/components/ui/button";
   import { Card, CardDescription, CardHeader } from "$/components/ui/card";
   import { Zap, PhilippinePeso, Banknote } from "$lib/assets/icons";
-  import { TextLoop, Magnetic, ScrollReveal } from "$lib/motion-core";
+  import { TextLoop, Magnetic } from "$lib/motion-core";
 
   let { user, session, loading }: HeroProps = $props();
 
@@ -67,15 +67,11 @@
     </div>
 
     <!-- Description - above fold, play once -->
-    <ScrollReveal preset="slide-up" duration={0.7} delay={0.4} once>
-      <p
-        class="mx-auto my-6 mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl"
-      >
-        Record, organize, and reconcile electricity usage and payments across your account and
-        sub-meters. Built for landlords, property managers, and multi-unit properties who need
-        practical billing and expense allocation.
-      </p>
-    </ScrollReveal>
+    <p class="mx-auto my-6 mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+      Record, organize, and reconcile electricity usage and payments across your account and
+      sub-meters. Built for landlords, property managers, and multi-unit properties who need
+      practical billing and expense allocation.
+    </p>
 
     <!-- Buttons - above fold, play once, no Magnetic -->
     <div class="flex flex-col justify-center gap-4 sm:flex-row">
