@@ -27,7 +27,7 @@
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
-  import * as Password from "$/components/password";
+  import Password from "$/components/password.svelte";
   import { Github, Loader } from "$/assets/icons";
   import { login, register } from "$/api/auth.remote";
   import { toast } from "svelte-sonner";
@@ -138,19 +138,15 @@
           </a>
         {/if}
       </div>
-      <Password.Root enableStrengthCheck={action === "register"}>
-        <Password.Input
-          id="password-{id}"
-          required
-          autocomplete="current-password"
-          {...currentAction.fields.password.as("password")}
-        >
-          <Password.ToggleVisibility />
-        </Password.Input>
-        {#if action === "register"}
-          <Password.Strength />
-        {/if}
-      </Password.Root>
+
+      <Password
+        id="password-{id}"
+        required
+        autocomplete="current-password"
+        showProgress={action === "register"}
+        showRequirements={action === "register"}
+        {...register.fields.password.as("password")}
+      />
       <FieldError errors={currentAction.fields.password.issues()} />
     </Field>
     {#if action === "register"}
@@ -158,17 +154,14 @@
         <div class="flex items-center">
           <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
         </div>
-        <Password.Root>
-          <Password.Input
-            id="confirm-password-{id}"
-            required
-            autocomplete="new-password"
-            {...register.fields.confirmPassword.as("password")}
-          >
-            <Password.ToggleVisibility />
-          </Password.Input>
-          <Password.Strength />
-        </Password.Root>
+        <Password
+          id="confirm-password-{id}"
+          autocomplete="new-password"
+          required
+          showProgress={true}
+          showRequirements={false}
+          {...register.fields.confirmPassword.as("password")}
+        />
         <FieldError errors={register.fields.confirmPassword.issues()} />
       </Field>
     {/if}
@@ -232,6 +225,7 @@
           onclick={() => {
             statuses.email = "idle";
             statuses.github = "idle";
+            (ref as HTMLFormElement)?.reset();
           }}
         >
           {action === "login" ? "Sign up" : "Login"}

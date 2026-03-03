@@ -35,11 +35,13 @@
   import { getLatestBillingInfo } from "$/api/billing-info.remote";
   import { Badge } from "$/components/ui/badge";
   import { BillingInfoForm } from "$routes/history/(components)";
+  import { useSidebarStore } from "$/stores/sidebar.svelte";
 
   let { user }: HeaderProps = $props();
 
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
+  const sidebarStore = useSidebarStore();
 
   let { billingInfo } = $derived({
     billingInfo: getLatestBillingInfo({ userId: user?.id || "" }),
@@ -174,5 +176,14 @@
   className,
   viewTransitionName = "logo",
 }: { className?: string; viewTransitionName?: string } = {})}
-  <Logo href="/dashboard" variant="ghost" class={cn("px-0", className)} {viewTransitionName} />
+  <Logo
+    onclick={() =>
+      sidebarStore.navItems.forEach((item) => {
+        item.active = item.label === "Dashboard";
+      })}
+    href="/dashboard"
+    variant="ghost"
+    class={cn("px-0", className)}
+    {viewTransitionName}
+  />
 {/snippet}

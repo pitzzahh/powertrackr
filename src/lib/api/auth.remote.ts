@@ -143,8 +143,6 @@ export const register = form(registerSchema, async (newUser, issues) => {
   }
 
   const passwordHash = await hashPassword(password);
-  const recoveryCode = generateRandomRecoveryCode();
-  const encryptedRecoveryCode = Buffer.from(encryptString(recoveryCode));
   const {
     valid,
     value: [userResult],
@@ -153,7 +151,6 @@ export const register = form(registerSchema, async (newUser, issues) => {
       email,
       name,
       passwordHash,
-      recoveryCode: encryptedRecoveryCode,
     },
   ]);
 

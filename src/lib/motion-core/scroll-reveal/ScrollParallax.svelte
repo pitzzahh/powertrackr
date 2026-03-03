@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { gsap } from "gsap/dist/gsap";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
+  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   type ParallaxDirection = "vertical" | "horizontal";
 
@@ -127,6 +128,7 @@
   }: ComponentProps = $props();
 
   function initScrollParallax(node: HTMLElement) {
+    if (shouldDisableAnimations()) return () => {};
     gsap.registerPlugin(ScrollTrigger);
 
     // Calculate the parallax distance based on speed

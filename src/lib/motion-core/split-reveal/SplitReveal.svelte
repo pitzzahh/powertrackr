@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { gsap } from "gsap/dist/gsap";
-  import { CustomEase } from "gsap/dist/CustomEase";
-  import { SplitText } from "gsap/dist/SplitText";
-  import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+  import { gsap } from "gsap";
+  import { CustomEase } from "gsap/CustomEase";
+  import { SplitText } from "gsap/SplitText";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
+  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   type SplitMode = "lines" | "words" | "chars";
 
@@ -51,7 +52,7 @@
      * The HTML tag to use for the wrapper.
      * @default "div"
      */
-    as?: keyof HTMLElementTagNameMap;
+    as?: keyof HTMLSpanElement;
     [prop: string]: unknown;
   }
 
@@ -68,7 +69,7 @@
     class: className = "",
     mode = "lines" as SplitMode,
     config,
-    as = "div" as keyof HTMLElementTagNameMap,
+    as = "span" as keyof HTMLSpanElement,
     delay = 0,
     triggerOnScroll = false,
     scrollElement,
@@ -101,6 +102,7 @@
   }
 
   function initSplitReveal(node: HTMLElement) {
+    if (shouldDisableAnimations()) return () => {};
     gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
     CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
 
@@ -119,6 +121,7 @@
         type: "lines, words, chars",
         tag: as,
         mask: "lines",
+        aria: "none",
       });
 
       const targets =

@@ -54,11 +54,11 @@
               >
                 {step.number}
               </div>
-              <h3 class="mb-2 text-xl font-semibold">
+              <h2 class="mb-2 text-xl font-semibold">
                 <SplitReveal mode="chars" triggerOnScroll delay={0.1 * i}>
                   {step.title}
                 </SplitReveal>
-              </h3>
+              </h2>
               <p class="text-muted-foreground">
                 <SplitReveal mode="lines" triggerOnScroll delay={0.2 + 0.1 * i}>
                   {step.description}

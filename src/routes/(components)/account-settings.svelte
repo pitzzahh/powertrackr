@@ -36,7 +36,7 @@
   import { changePassword, disable2FA } from "$/api/auth.remote";
   import * as InputOTP from "$/components/ui/input-otp";
   import { isHttpError } from "@sveltejs/kit";
-  import * as Password from "$/components/password";
+  import Password from "$/components/password.svelte";
   import { Checkbox } from "$/components/ui/checkbox/index.js";
   import { Label } from "$/components/ui/label/index.js";
   import { fly } from "svelte/transition";
@@ -370,17 +370,15 @@
               <Field.Group>
                 <Field.Field>
                   <Field.Label for="current-password" class="px-1">Current Password</Field.Label>
-                  <Password.Root>
-                    <Password.Input
-                      id="current-password"
-                      placeholder="Enter current password"
-                      disabled={passwordAsyncState === "processing"}
-                      autocomplete="current-password"
-                      {...changePassword.fields.currentPassword.as("password")}
-                    >
-                      <Password.ToggleVisibility />
-                    </Password.Input>
-                  </Password.Root>
+                  <Password
+                    id="current-password"
+                    placeholder="Enter current password"
+                    disabled={passwordAsyncState === "processing"}
+                    autocomplete="current-password"
+                    showProgress={false}
+                    showRequirements={false}
+                    {...changePassword.fields.currentPassword.as("password")}
+                  />
                   <Field.Description>
                     Enter your current password to verify your identity.
                   </Field.Description>
@@ -389,18 +387,15 @@
 
                 <Field.Field>
                   <Field.Label for="new-password" class="px-1">New Password</Field.Label>
-                  <Password.Root enableStrengthCheck>
-                    <Password.Input
-                      id="new-password"
-                      placeholder="Enter new password"
-                      disabled={passwordAsyncState === "processing"}
-                      autocomplete="new-password"
-                      {...changePassword.fields.newPassword.as("password")}
-                    >
-                      <Password.ToggleVisibility />
-                    </Password.Input>
-                    <Password.Strength />
-                  </Password.Root>
+                  <Password
+                    id="new-password"
+                    placeholder="Enter new password"
+                    disabled={passwordAsyncState === "processing"}
+                    autocomplete="new-password"
+                    showProgress={true}
+                    showRequirements={true}
+                    {...changePassword.fields.newPassword.as("password")}
+                  />
                   <Field.Description>
                     Password must be at least 8 characters long.
                   </Field.Description>
@@ -410,18 +405,15 @@
                 <Field.Field>
                   <Field.Label for="confirm-password" class="px-1">Confirm New Password</Field.Label
                   >
-                  <Password.Root>
-                    <Password.Input
-                      id="confirm-password"
-                      placeholder="Confirm new password"
-                      disabled={passwordAsyncState === "processing"}
-                      autocomplete="new-password"
-                      {...changePassword.fields.confirmPassword.as("password")}
-                    >
-                      <Password.ToggleVisibility />
-                    </Password.Input>
-                    <Password.Strength />
-                  </Password.Root>
+                  <Password
+                    id="confirm-password"
+                    placeholder="Confirm new password"
+                    disabled={passwordAsyncState === "processing"}
+                    autocomplete="new-password"
+                    showProgress={true}
+                    showRequirements={false}
+                    {...changePassword.fields.confirmPassword.as("password")}
+                  />
                   <Field.Description>Re-enter your new password to confirm.</Field.Description>
                   <Field.Error errors={changePassword.fields.confirmPassword.issues()} />
                 </Field.Field>
