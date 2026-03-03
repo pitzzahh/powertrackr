@@ -4,6 +4,7 @@
   import { CustomEase } from "gsap/CustomEase";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
+  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   type AnimationPreset =
     | "fade"
@@ -186,6 +187,7 @@
   }
 
   function initScrollStagger(node: HTMLElement) {
+    if (shouldDisableAnimations()) return () => {};
     gsap.registerPlugin(ScrollTrigger, CustomEase);
     CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
 

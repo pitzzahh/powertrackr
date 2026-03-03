@@ -1,8 +1,10 @@
 <script lang="ts">
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { shouldDisableAnimations } from "$lib/motion-core/utils/reduced-motion";
 
   function initParallaxBlobs(node: HTMLElement) {
+    if (shouldDisableAnimations()) return () => {};
     gsap.registerPlugin(ScrollTrigger);
 
     const blobs = node.querySelectorAll(".blob");

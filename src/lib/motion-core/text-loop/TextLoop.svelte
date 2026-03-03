@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { gsap } from "gsap";
   import { cn } from "../utils/cn";
+  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   interface Props {
     /**
@@ -74,6 +75,7 @@
   }
 
   onMount(() => {
+    if (shouldDisableAnimations()) return;
     const loopInterval = setInterval(() => {
       if (document.hidden) return;
       isFirst = false;

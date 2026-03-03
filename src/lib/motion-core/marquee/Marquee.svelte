@@ -3,6 +3,7 @@
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
+  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   interface Props {
     /**
@@ -56,6 +57,7 @@
   }: Props = $props();
 
   function initMarquee(container: HTMLDivElement) {
+    if (shouldDisableAnimations()) return () => {};
     gsap.registerPlugin(ScrollTrigger);
 
     const parts = container.querySelectorAll(".marquee-part");
