@@ -39,7 +39,7 @@
 >
   <div class="container mx-auto w-full max-w-4xl">
     <!-- Badge - above fold, play once -->
-    <ScrollReveal preset="slide-down" duration={0.6} delay={0.1}>
+    <ScrollReveal preset="slide-down" duration={0.6} delay={0.1} once>
       <div class="group relative mx-auto mb-6 inline-flex">
         <!-- Animated glow border -->
         <div
@@ -55,7 +55,7 @@
     </ScrollReveal>
 
     <!-- Hero Title - above fold, play once -->
-    <ScrollReveal preset="fade" duration={0.8} delay={0.2}>
+    <ScrollReveal preset="fade" duration={0.8} delay={0.2} once>
       <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
         <h1 class="text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
           <span>{currentText === "Payments" ? "Generate" : "Track"}</span>
@@ -71,7 +71,7 @@
     </ScrollReveal>
 
     <!-- Description - above fold, play once -->
-    <ScrollReveal preset="slide-up" duration={0.7} delay={0.4}>
+    <ScrollReveal preset="slide-up" duration={0.7} delay={0.4} once>
       <p
         class="mx-auto my-6 mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl"
       >
@@ -82,7 +82,7 @@
     </ScrollReveal>
 
     <!-- Buttons - above fold, play once, no Magnetic -->
-    <ScrollReveal preset="slide-up" duration={0.6} delay={0.5}>
+    <ScrollReveal preset="slide-up" duration={0.6} delay={0.5} once>
       <div class="flex flex-col justify-center gap-4 sm:flex-row">
         {#if fullyAuthenticated}
           <Button
@@ -131,6 +131,7 @@
       stagger={0.15}
       duration={0.6}
       delay={0.6}
+      once
       distance={30}
       class="mt-16 grid gap-6 md:grid-cols-3"
     >
