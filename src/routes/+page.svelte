@@ -24,15 +24,12 @@
     loading: true,
   });
 
-  onMount(() => {
-    try {
-      getAuthUser()
-        .then((data) => ([user, session] = [data.user, data.session]))
-        .finally(() => (loading = false));
-    } catch (e) {
-      console.warn("Failed to fetch user data:", e);
-    }
-  });
+  onMount(() =>
+    getAuthUser()
+      .then((data) => ([user, session] = [data.user, data.session]))
+      .catch((e) => console.warn("Failed to fetch user data:", e))
+      .finally(() => (loading = false))
+  );
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
