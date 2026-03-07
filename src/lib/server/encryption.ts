@@ -8,42 +8,44 @@ import crypto from "node:crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
 import { dev } from "$app/environment";
-import { scrypt } from "@noble/hashes/scrypt.js";
+import { pbkdf2, sha256 } from "@noble/hashes/webcrypto.js";
+import { randomBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 
-const SCRYPT_PREFIX = "scrypt";
-const SCRYPT_PARAMS = dev
-  ? { N: 2 ** 12, r: 8, p: 1, dkLen: 32 }
-  : { N: 2 ** 15, r: 8, p: 1, dkLen: 32 };
+const PBKDF2_PREFIX = "pbkdf2";
+const PBKDF2_PARAMS = dev
+  ? { iterations: 10_000, hash: "SHA-256" as const, dkLen: 32 }
+  : { iterations: 120_000, hash: "SHA-256" as const, dkLen: 32 };
 
-function encodeScryptHash(
-  salt: Uint8Array,
-  derivedKey: Uint8Array,
-  params: { N: number; r: number; p: number }
-) {
-  return `${SCRYPT_PREFIX}$N=${params.N}$r=${params.r}$p=${params.p}$${encodeBase64url(salt)}$${encodeBase64url(derivedKey)}`;
+async function derivePbkdf2(password: string, salt: Uint8Array, iterations: number, dkLen: number) {
+  return pbkdf2(sha256, utf8ToBytes(password), salt, { c: iterations, dkLen });
 }
 
-function decodeScryptHash(hash: string) {
+function encodePbkdf2Hash(
+  salt: Uint8Array,
+  derivedKey: Uint8Array,
+  params: { iterations: number; hash: "SHA-256" }
+) {
+  return `${PBKDF2_PREFIX}$${params.hash}$i=${params.iterations}$${encodeBase64url(salt)}$${encodeBase64url(derivedKey)}`;
+}
+
+function decodePbkdf2Hash(hash: string) {
   const parts = hash.split("$");
-  if (parts.length !== 6 || parts[0] !== SCRYPT_PREFIX) {
+  if (parts.length !== 5 || parts[0] !== PBKDF2_PREFIX) {
     return null;
   }
-  const [_, nPart, rPart, pPart, saltPart, hashPart] = parts;
-  if (!nPart.startsWith("N=") || !rPart.startsWith("r=") || !pPart.startsWith("p=")) {
+  const [_, hashAlg, iterPart, saltPart, hashPart] = parts;
+  if (hashAlg !== "SHA-256" || !iterPart.startsWith("i=")) {
     return null;
   }
-  const N = Number(nPart.slice(2));
-  const r = Number(rPart.slice(2));
-  const p = Number(pPart.slice(2));
-  if (!Number.isFinite(N) || !Number.isFinite(r) || !Number.isFinite(p)) {
+  const iterations = Number(iterPart.slice(2));
+  if (!Number.isFinite(iterations) || iterations <= 0) {
     return null;
   }
   return {
-    N,
-    r,
-    p,
+    iterations,
+    hash: "SHA-256" as const,
     salt: decodeBase64url(saltPart),
-    hash: decodeBase64url(hashPart),
+    derived: decodeBase64url(hashPart),
   };
 }
 
@@ -101,23 +103,28 @@ export function generateRandomRecoveryCode(): string {
 }
 
 export async function hashPassword(password: string): Promise<string> {
-  const salt = crypto.randomBytes(16);
-  const derivedKey = scrypt(password, salt, SCRYPT_PARAMS);
-  return encodeScryptHash(salt, derivedKey, SCRYPT_PARAMS);
+  const salt = randomBytes(16);
+  const derivedKey = await derivePbkdf2(
+    password,
+    salt,
+    PBKDF2_PARAMS.iterations,
+    PBKDF2_PARAMS.dkLen
+  );
+  return encodePbkdf2Hash(salt, derivedKey, PBKDF2_PARAMS);
 }
 
 export async function verifyPasswordHash(hash: string, password: string): Promise<boolean> {
-  const parsed = decodeScryptHash(hash);
+  const parsed = decodePbkdf2Hash(hash);
   if (!parsed) {
     return false;
   }
-  const derivedKey = scrypt(password, parsed.salt, {
-    N: parsed.N,
-    r: parsed.r,
-    p: parsed.p,
-    dkLen: parsed.hash.length,
-  });
-  return timingSafeEqualBytes(parsed.hash, derivedKey);
+  const derivedKey = await derivePbkdf2(
+    password,
+    parsed.salt,
+    parsed.iterations,
+    parsed.derived.length
+  );
+  return timingSafeEqualBytes(parsed.derived, derivedKey);
 }
 
 export function generateSessionToken() {
