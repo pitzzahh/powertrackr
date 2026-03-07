@@ -1,32 +1,59 @@
 import { House, Zap, Clock } from "$lib/assets/icons";
 import { getContext, setContext } from "svelte";
 
-class SidebarStore {
-  navItems = $state([
+type NavItem = {
+  icon: typeof House;
+  label: string;
+  active: boolean;
+  route: string;
+};
+
+type SidebarStore = {
+  navItems: NavItem[];
+  collapsed: boolean;
+  init(collapsed: boolean): void;
+  toggleCollapse(): void;
+};
+
+function createSidebarStore(): SidebarStore {
+  let navItems = $state<NavItem[]>([
     { icon: House, label: "DASHBOARD", active: false, route: "/dashboard" },
     { icon: Zap, label: "CONSUMPTION", active: false, route: "/consumption" },
     { icon: Clock, label: "HISTORY", active: false, route: "/history" },
   ]);
 
-  collapsed = $state(false);
-  #initialized = false;
+  let collapsed = $state(false);
+  let initialized = false;
 
-  init(collapsed: boolean) {
-    if (!this.#initialized) {
-      this.collapsed = collapsed;
-      this.#initialized = true;
-    }
-  }
+  return {
+    get navItems() {
+      return navItems;
+    },
+    set navItems(value) {
+      navItems = value;
+    },
+    get collapsed() {
+      return collapsed;
+    },
+    set collapsed(value) {
+      collapsed = value;
+    },
+    init(value: boolean) {
+      if (!initialized) {
+        collapsed = value;
+        initialized = true;
+      }
+    },
+    toggleCollapse() {
+      collapsed = !collapsed;
 
-  toggleCollapse() {
-    this.collapsed = !this.collapsed;
-
-    // Save to cookie
-    if (typeof document !== "undefined") {
-      const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
-      document.cookie = `sidebar-collapsed=${this.collapsed};max-age=${maxAge};path=/;SameSite=Lax`;
-    }
-  }
+      // Save to cookie
+      if (typeof document !== "undefined") {
+        const maxAge = 365 * 24 * 60 * 60; // 1 year in seconds
+        document.cookie = `sidebar-collapsed=${collapsed};max-age=${maxAge};path=/;SameSite=Lax`;
+      }
+    },
+  };
 }
 
 const SYMBOL_KEY = "custom-sidebar";
@@ -37,7 +64,8 @@ const SYMBOL_KEY = "custom-sidebar";
  * @returns The `SidebarStore` instance.
  */
 export function setSidebarStore(): SidebarStore {
-  return setContext(Symbol.for(SYMBOL_KEY), new SidebarStore());
+  const store = createSidebarStore();
+  return setContext(Symbol.for(SYMBOL_KEY), store);
 }
 
 /**
