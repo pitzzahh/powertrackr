@@ -1,4 +1,4 @@
-import type { D1Database } from "@cloudflare/workers-types";
+/// <reference types="./worker-configuration" />
 
 declare global {
   namespace App {
@@ -11,6 +11,8 @@ declare global {
       env: {
         DB: D1Database;
       };
+      cf: CfProperties;
+      ctx: ExecutionContext;
     }
   }
 }

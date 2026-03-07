@@ -22,7 +22,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "cf:types": "wrangler types && mv worker-configuration.d.ts src/"
   },
   "dependencies": {
     "@internationalized/date": "^3.12.0",
