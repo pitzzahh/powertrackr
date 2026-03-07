@@ -13,4 +13,9 @@ database_name = "powertrackr-db"
 database_id = "f37e5712-bf91-425b-bb30-048600ceb0a8"
 
 [observability]
+[observability.logs]
 enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
