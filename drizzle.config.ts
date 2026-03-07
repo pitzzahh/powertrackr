@@ -1,25 +1,20 @@
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
 
-if (!process.env.BUILD_DATABASE_URL) {
-  throw new Error("BUILD_DATABASE_URL is not defined in environment variables");
+const databaseUrl =
+  process.env.BUILD_DATABASE_URL ?? process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  throw new Error(
+    "BUILD_DATABASE_URL, TEST_DATABASE_URL, or DATABASE_URL is not defined in environment variables"
+  );
 }
 
 export default defineConfig({
-  out: "./drizzle",
+  out: "./migrations",
   schema: "./src/lib/server/db/schema/index.ts",
-  dialect: "postgresql",
+  dialect: "sqlite",
   dbCredentials: {
-    url: process.env.BUILD_DATABASE_URL,
+    url: databaseUrl,
   },
-  schemaFilter: ["public"],
-  tablesFilter: [
-    "user",
-    "payment",
-    "billing_info",
-    "sub_meter",
-    "session",
-    "email_verification_request",
-    "password_reset_session",
-  ],
 });
