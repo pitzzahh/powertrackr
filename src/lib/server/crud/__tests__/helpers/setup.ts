@@ -12,19 +12,25 @@ import {
 import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { config } from "dotenv";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
-const testDatabaseUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+const envPath = resolve(process.cwd(), ".env");
+if (existsSync(envPath)) {
+  config({ path: envPath, override: false });
+}
+
+const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 const isLibsqlUrl = (url: string) => /^(libsql|https?|wss?|file):/i.test(url);
 
 if (!testDatabaseUrl) {
-  throw new Error(
-    "TEST_DATABASE_URL or DATABASE_URL is required for test migrations. Use a libsql URL."
-  );
+  throw new Error("TEST_DATABASE_URL is required for test migrations. Use a libsql URL.");
 }
 
 if (!isLibsqlUrl(testDatabaseUrl)) {
   throw new Error(
-    "TEST_DATABASE_URL or DATABASE_URL must use a libsql-compatible URL (libsql, https, http, ws, wss, file)."
+    "TEST_DATABASE_URL must use a libsql-compatible URL (libsql, https, http, ws, wss, file)."
   );
 }
 
