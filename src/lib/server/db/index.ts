@@ -1,6 +1,7 @@
+/// <reference types="../../../worker-configuration" />
+
 import { drizzle } from "drizzle-orm/d1";
 import { getRequestEvent } from "$app/server";
-import type { D1Database } from "@cloudflare/workers-types";
 import { relations } from "./relations";
 import * as schema from "./schema";
 
