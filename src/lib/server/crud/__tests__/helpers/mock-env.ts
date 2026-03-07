@@ -9,12 +9,13 @@ if (existsSync(envTestPath)) {
 }
 
 // Export the values expected by `$env/static/private`. Prefer actual process.env values.
-export const DATABASE_URL: string | undefined = process.env.DATABASE_URL;
+export const DATABASE_URL: string | undefined =
+  process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
 
 // Only throw error if DATABASE_URL is missing and we're not in CI (where tests are skipped)
 if (!DATABASE_URL && !process.env.CI) {
   throw new Error(
-    "DATABASE_URL is not defined. For tests set DATABASE_URL in the environment or create a .env.test file."
+    "DATABASE_URL is not defined. For tests set TEST_DATABASE_URL/DATABASE_URL or create a .env.test file."
   );
 }
 
