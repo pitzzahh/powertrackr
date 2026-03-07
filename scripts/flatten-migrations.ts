@@ -1,3 +1,5 @@
+// Thanks to https://github.com/drizzle-team/drizzle-orm/issues/5266#issuecomment-3894116062
+
 import { promises as fs } from "node:fs";
 import { resolve, join } from "node:path";
 
