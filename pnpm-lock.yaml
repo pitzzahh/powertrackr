@@ -57,9 +57,6 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0(typescript@5.9.3)
     devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^4.20260307.1
-        version: 4.20260307.1
       '@libsql/client':
         specifier: ^0.17.0
         version: 0.17.0
