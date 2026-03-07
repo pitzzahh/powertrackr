@@ -1,34 +1,58 @@
-import { db, pool } from "$/server/db";
+import { setTestDb, type Database } from "$/server/db";
+import { createTestDb, closeTestDb } from "$/server/db/test-db";
+import {
+  billingInfo,
+  emailVerificationRequest,
+  passwordResetSession,
+  payment,
+  session,
+  subMeter,
+  user,
+} from "$/server/db/schema";
 import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
 
-// Ensure local migrations are applied when not running in CI
-if (!process.env.CI) {
-  await promisify(exec)("npm run db:push");
+const testDatabaseUrl = process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL;
+const isLibsqlUrl = (url: string) => /^(libsql|https?|wss?|file):/i.test(url);
+
+if (!testDatabaseUrl) {
+  throw new Error(
+    "TEST_DATABASE_URL or DATABASE_URL is required for test migrations. Use a libsql URL."
+  );
 }
+
+if (!isLibsqlUrl(testDatabaseUrl)) {
+  throw new Error(
+    "TEST_DATABASE_URL or DATABASE_URL must use a libsql-compatible URL (libsql, https, http, ws, wss, file)."
+  );
+}
+
+process.env.BUILD_DATABASE_URL = testDatabaseUrl;
+await promisify(exec)("pnpm db:push");
+
+const testDb = createTestDb();
+setTestDb(testDb as unknown as Database);
 
 /**
- * Helpers to expose the real DB and pool to tests.
- * Tests will run against a real Postgres instance pointed to via DATABASE_URL.
+ * Helpers to expose the real DB to tests.
+ * Tests will run against a fast libsql instance pointed to via DATABASE_URL.
  */
 export function getTestDb() {
-  return db();
-}
-
-export function getTestPool() {
-  return pool();
+  return testDb;
 }
 
 export async function cleanupTestDatabase() {
-  if (process.env.CI === "true") return;
-
-  const p = getTestPool();
+  const db = getTestDb();
 
   // Clean up all tables in reverse order of dependencies
-  await p.query(
-    'TRUNCATE password_reset_session, email_verification_request, session, sub_meter, billing_info, payment, "user" RESTART IDENTITY CASCADE;'
-  );
+  await db.delete(passwordResetSession);
+  await db.delete(emailVerificationRequest);
+  await db.delete(session);
+  await db.delete(subMeter);
+  await db.delete(billingInfo);
+  await db.delete(payment);
+  await db.delete(user);
 }
 
 afterEach(async () => {
@@ -36,9 +60,5 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  if (process.env.CI === "true") return;
-
-  // Close the pool when the worker finishes to avoid hanging test processes
-  const p = getTestPool();
-  await p.end();
+  await closeTestDb();
 });
