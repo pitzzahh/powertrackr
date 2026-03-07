@@ -27,13 +27,11 @@
   import { isHttpError } from "@sveltejs/kit";
   import { showInspectorWarning, showSuccess, showError, showLoading } from "$/components/toast";
   import { scale } from "svelte/transition";
-  import { onMount, untrack } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import * as v from "valibot";
   import { billFormSchema } from "$/validators/billing-info";
   import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area/index.js";
-  import type { BillingCreateForm } from "$/types/billing-info";
   import { toast } from "svelte-sonner";
   let { collapsed = false }: SettingsDialogProps = $props();
 

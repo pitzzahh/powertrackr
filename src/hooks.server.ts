@@ -40,7 +40,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
   // Require authentication for other paths
   if (!event.locals.user || !event.locals.session) {
-    redirect(307, "/");
+    redirect(307, "/auth?act=login");
   }
 
   // Check additional auth requirements
@@ -76,4 +76,11 @@ export const log: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleAuth, handleDevTools, log);
+export const handleHSTS: Handle = async ({ event, resolve }) => {
+  event.setHeaders({
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  });
+  return resolve(event);
+};
+
+export const handle = sequence(handleAuth, handleDevTools, log, handleHSTS);

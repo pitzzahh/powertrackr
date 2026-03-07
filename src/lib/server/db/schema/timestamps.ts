@@ -1,15 +1,14 @@
 import { sql } from "drizzle-orm";
-import { timestamp } from "drizzle-orm/pg-core";
+import { integer } from "drizzle-orm/sqlite-core";
 
 /**
- * Use Postgres `timestamp` columns so timestamps are stored as native
- * timestamp values. Defaults use the database current time.
+ * Use SQLite integer timestamps (ms) so values map to JS Date.
  */
 export const timestamps = {
-  createdAt: timestamp("created_at")
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
-    .default(sql`now()`),
-  updatedAt: timestamp("updated_at")
+    .default(sql`(unixepoch() * 1000)`),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .$onUpdateFn(() => new Date()),
 };

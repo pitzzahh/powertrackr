@@ -11,7 +11,17 @@
 </script>
 
 <script lang="ts">
-  import NumberFlow, { continuous, type Format } from "@number-flow/svelte";
+  import type { Format } from "@number-flow/svelte";
+  import { onMount } from "svelte";
+
+  let NumberFlowComponent: typeof import("@number-flow/svelte").default | null = $state(null);
+  let continuousPlugin: typeof import("@number-flow/svelte").continuous | null = $state(null);
+
+  onMount(async () => {
+    const mod = await import("@number-flow/svelte");
+    NumberFlowComponent = mod.default;
+    continuousPlugin = mod.continuous;
+  });
 
   let {
     value = 0,
@@ -79,12 +89,16 @@
 
 <!-- Waiting for https://github.com/barvian/number-flow/pull/162 to fix hydration mismatch -->
 <span use:observe class="tracking-tight text-foreground tabular-nums">
-  <NumberFlow
-    class={className}
-    {suffix}
-    {prefix}
-    {format}
-    plugins={[continuous]}
-    value={targetValue}
-  />
+  {#if NumberFlowComponent}
+    <NumberFlowComponent
+      class={className}
+      {suffix}
+      {prefix}
+      {format}
+      plugins={continuousPlugin ? [continuousPlugin] : []}
+      value={targetValue}
+    />
+  {:else}
+    <span class={className}>{prefix}{targetValue}{suffix}</span>
+  {/if}
 </span>

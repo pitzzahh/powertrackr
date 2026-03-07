@@ -1,5 +1,5 @@
 import { db } from "$/server/db";
-import type { Transaction } from "$/server/db";
+
 import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
 import { payment, billingInfo } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
@@ -19,8 +19,7 @@ type PaymentQueryOptions = {
 };
 
 export async function addPayment(
-  data: Omit<NewPayment, "id">[],
-  tx?: Transaction
+  data: Omit<NewPayment, "id">[]
 ): Promise<HelperResult<NewPayment[]>> {
   if (data.length === 0) {
     return {
@@ -30,7 +29,7 @@ export async function addPayment(
     };
   }
 
-  const insert_result = await (tx || db())
+  const insert_result = await db()
     .insert(payment)
     .values(
       data.map((payment_data) => {
@@ -55,9 +54,9 @@ export type TotalPaymentsAmountResult = {
   formatted: string;
 };
 
-export async function getTotalPaymentsAmount(tx?: Transaction): Promise<TotalPaymentsAmountResult> {
+export async function getTotalPaymentsAmount(): Promise<TotalPaymentsAmountResult> {
   // Only sum payments that are linked to billing info (main payments, not sub-meter payments)
-  const result = await (tx || db())
+  const result = await db()
     .select({ total: sum(payment.amount) })
     .from(payment)
     .innerJoin(billingInfo, eq(billingInfo.paymentId, payment.id));
@@ -72,7 +71,7 @@ export async function updatePaymentBy(
   by: HelperParam<NewPayment>,
   data: Partial<NewPayment>
 ): Promise<HelperResult<NewPayment[]>> {
-  const { query, options } = by;
+  const { query } = by;
   const payment_param = { ...by, options: { ...by.options, fields: undefined } };
   const payment_result = await getPaymentBy(payment_param);
 
@@ -96,11 +95,7 @@ export async function updatePaymentBy(
     };
   }
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db())
-    .update(payment)
-    .set(changed_data)
-    .returning()
-    .where(whereSQL);
+  const updateDBRequest = await db().update(payment).set(changed_data).returning().where(whereSQL);
 
   const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
@@ -129,7 +124,7 @@ export async function getPaymentBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db()).query.payment.findMany(queryOptions);
+  const queryDBResult = await db().query.payment.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -160,10 +155,10 @@ export function mapNewPayment_to_DTO(data: Partial<NewPayment>[]): Partial<Payme
 export async function getPaymentCountBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const { id, amount } = query;
   const conditions = generateQueryConditions<NewPayment>(data);
-  const request_query = (options?.tx || db()).select({ count: count() }).from(payment);
+  const request_query = db().select({ count: count() }).from(payment);
 
   if (id || amount) {
     request_query.limit(1);
@@ -186,7 +181,7 @@ export async function getPaymentCountBy(
 export async function deletePaymentBy(
   data: HelperParam<NewPayment>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const conditions = generateQueryConditions<NewPayment>(data);
   const whereSQL = buildWhereSQL(conditions);
 
@@ -198,9 +193,11 @@ export async function deletePaymentBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db()).delete(payment).where(whereSQL);
+  const deleteResult = await db().delete(payment).where(whereSQL).returning({
+    deletedId: payment.id,
+  });
 
-  const deletedCount = deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

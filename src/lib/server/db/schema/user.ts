@@ -1,20 +1,25 @@
-import { pgTable, uniqueIndex, text, integer, boolean, bytea } from "drizzle-orm/pg-core";
+import { sqliteTable, uniqueIndex, text, integer } from "drizzle-orm/sqlite-core";
 import { timestamps } from ".";
 
-export const user = pgTable(
+export const user = sqliteTable(
   "user",
   {
     id: text().primaryKey().notNull(),
-    githubId: integer("github_id").unique(),
+    githubId: integer("github_id"),
     name: text().notNull(),
     email: text().notNull(),
-    emailVerified: boolean("email_verified").default(false).notNull(),
-    totpKey: bytea("totp_key"),
-    recoveryCode: bytea("recovery_code"),
-    registeredTwoFactor: boolean("registered_two_factor").default(false).notNull(),
+    emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
+    totpKey: text("totp_key"),
+    recoveryCode: text("recovery_code"),
+    registeredTwoFactor: integer("registered_two_factor", { mode: "boolean" })
+      .default(false)
+      .notNull(),
     image: text(),
     passwordHash: text("password_hash"),
     ...timestamps,
   },
-  (table) => [uniqueIndex("user_email_key").on(table.email)]
+  (table) => [
+    uniqueIndex("user_email_key").on(table.email),
+    uniqueIndex("user_github_id_key").on(table.githubId),
+  ]
 );

@@ -2,19 +2,19 @@ import { config } from "dotenv";
 import { existsSync } from "fs";
 import { resolve } from "path";
 
-// Load .env.test if present, but do not override already-set env vars.
-const envTestPath = resolve(process.cwd(), ".env");
-if (existsSync(envTestPath)) {
-  config({ path: envTestPath, override: false });
+// Load .env if present, but do not override already-set env vars.
+const envPath = resolve(process.cwd(), ".env");
+if (existsSync(envPath)) {
+  config({ path: envPath, override: false });
 }
 
 // Export the values expected by `$env/static/private`. Prefer actual process.env values.
-export const DATABASE_URL: string | undefined = process.env.DATABASE_URL;
+export const DATABASE_URL: string | undefined = process.env.TEST_DATABASE_URL;
 
 // Only throw error if DATABASE_URL is missing and we're not in CI (where tests are skipped)
 if (!DATABASE_URL && !process.env.CI) {
   throw new Error(
-    "DATABASE_URL is not defined. For tests set DATABASE_URL in the environment or create a .env.test file."
+    "TEST_DATABASE_URL is not defined. For tests set TEST_DATABASE_URL or add it to .env."
   );
 }
 
