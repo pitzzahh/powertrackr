@@ -386,12 +386,31 @@ export async function importBillingHandler(
     return created;
   }
 
-  // Create a transaction for the whole import
-  return await db().transaction(async (txLocal) => {
+  const runWithoutTransaction = async () => {
+    created.length = 0;
     for (const item of sortedItems) {
-      const ci = await createBillingInfoLogic(item, userId, txLocal);
+      const ci = await createBillingInfoLogic(item, userId);
       created.push(ci);
     }
     return created;
-  });
+  };
+
+  const runWithTransaction = async () =>
+    db().transaction(async (txLocal) => {
+      created.length = 0;
+      for (const item of sortedItems) {
+        const ci = await createBillingInfoLogic(item, userId, txLocal);
+        created.push(ci);
+      }
+      return created;
+    });
+
+  try {
+    return await runWithTransaction();
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("Failed query: begin")) {
+      return await runWithoutTransaction();
+    }
+    throw err;
+  }
 }
