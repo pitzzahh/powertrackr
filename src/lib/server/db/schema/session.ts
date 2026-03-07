@@ -1,19 +1,18 @@
-import { pgTable, index, foreignKey } from "drizzle-orm/pg-core";
+import { sqliteTable, index, foreignKey, text, integer } from "drizzle-orm/sqlite-core";
 import { user } from "./user";
 
-export const session = pgTable(
+export const session = sqliteTable(
   "session",
-  (t) => ({
-    id: t.text().primaryKey().notNull(),
-    expiresAt: t.timestamp("expires_at").notNull(),
-    ipAddress: t.text("ip_address"),
-    userAgent: t.text("user_agent"),
-    userId: t
-      .text("user_id")
+  {
+    id: text("id").primaryKey().notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    twoFactorVerified: t.boolean("two_factor_verified").notNull().default(false),
-  }),
+    twoFactorVerified: integer("two_factor_verified", { mode: "boolean" }).notNull().default(false),
+  },
   (table) => [
     index("session_user_id_idx").on(table.userId),
     foreignKey({

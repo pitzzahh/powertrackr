@@ -1,19 +1,19 @@
-import { pgTable, index, foreignKey, text, integer } from "drizzle-orm/pg-core";
+import { sqliteTable, index, foreignKey, text, integer } from "drizzle-orm/sqlite-core";
 import { payment } from "./payment";
 import { billingInfo } from "./billing-info";
 import { timestamps } from ".";
 
-export const subMeter = pgTable(
+export const subMeter = sqliteTable(
   "sub_meter",
   {
-    id: text().primaryKey().notNull(),
-    label: text().notNull(),
+    id: text("id").primaryKey().notNull(),
+    label: text("label").notNull(),
     billingInfoId: text("billing_info_id")
       .notNull()
       .references(() => billingInfo.id, { onDelete: "cascade", onUpdate: "cascade" }),
     subkWh: integer("sub_kWh").notNull(),
-    reading: integer().notNull(),
-    status: text().notNull().default(""),
+    reading: integer("reading").notNull(),
+    status: text("status").notNull().default(""),
     paymentId: text("payment_id")
       .references(() => payment.id, {
         onDelete: "cascade",
