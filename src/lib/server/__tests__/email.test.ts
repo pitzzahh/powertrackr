@@ -107,7 +107,8 @@ describe("Plunk email helpers", () => {
       }
       if (url.includes("/templates")) {
         return makeJsonResponse({
-          data: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }],
+          success: true,
+          data: { items: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }] },
         });
       }
       if (url.includes("/v1/send")) {
@@ -147,7 +148,8 @@ describe("Plunk email helpers", () => {
       }
       if (url.includes("/templates")) {
         return makeJsonResponse({
-          data: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }],
+          success: true,
+          data: { items: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }] },
         });
       }
       if (url.includes("/v1/send")) {
@@ -185,7 +187,7 @@ describe("Plunk email helpers", () => {
         return makeJsonResponse({ success: true });
       }
       if (url.includes("/templates")) {
-        return makeJsonResponse({ data: [] });
+        return makeJsonResponse({ success: true, data: { items: [] } });
       }
       if (url.includes("/v1/send")) {
         return makeJsonResponse({ success: true, inline: true });
