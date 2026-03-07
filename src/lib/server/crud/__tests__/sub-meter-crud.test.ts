@@ -36,7 +36,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("addSubMeter", () => {
     it("should successfully add a single sub meter", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -80,7 +79,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should successfully add multiple sub meters", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -119,7 +117,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-
       const result = await addSubMeter([]);
 
       expect(result.valid).toBe(true);
@@ -128,7 +125,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle sub meter with payment reference", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -172,7 +168,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle sub meter with null payment", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -215,7 +210,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeterBy", () => {
     it("should find sub meter by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -264,7 +258,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should throw when paymentId is missing", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -304,7 +297,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should find sub meter by billingInfoId", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -348,7 +340,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should find sub meter by subReadingLatest", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -397,7 +388,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should find sub meter by paymentId", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -451,7 +441,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should return empty result when sub meter not found", async () => {
-
       const searchParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
       };
@@ -464,7 +453,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -509,7 +497,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -554,7 +541,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -604,7 +590,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include payment when with_payment option is true", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -662,7 +647,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include billing info when with_billing_info option is true", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -716,7 +700,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("updateSubMeterBy", () => {
     it("should successfully update sub meter by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -765,7 +748,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -814,7 +796,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle nonexistent sub meter update", async () => {
-
       const updateParam: HelperParam<NewSubMeter> = {
         query: { id: "nonexistent-id" },
       };
@@ -829,7 +810,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeterCountBy", () => {
     it("should return correct count for existing sub meters", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -874,7 +854,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should return zero count when no sub meters match", async () => {
-
       const countParam: HelperParam<NewSubMeter> = {
         query: { id: "nope" },
       };
@@ -887,7 +866,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should count sub meters with specific criteria", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -936,7 +914,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("getSubMeters & mapNewSubMeter_to_DTO", () => {
     it("should return DTO format sub meters", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -984,7 +961,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include payment in DTO when requested", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -1039,7 +1015,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should include billing info in DTO when requested", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -1088,7 +1063,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("mapNewSubMeter_to_DTO should handle null/undefined values", async () => {
-
       const data: Partial<NewSubMeter>[] = [
         {
           id: undefined,
@@ -1175,7 +1149,6 @@ describe("Sub Meter CRUD Operations", () => {
 
   describe("deleteSubMeterBy", () => {
     it("should successfully delete sub meter by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -1228,7 +1201,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should successfully delete multiple sub meters by billingInfoId", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -1281,7 +1253,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle nonexistent sub meter deletion", async () => {
-
       const deleteParam: HelperParam<NewSubMeter> = {
         query: { id: "non-existent-id" },
       };
@@ -1294,7 +1265,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewSubMeter> = {
         query: {},
       };
@@ -1307,7 +1277,6 @@ describe("Sub Meter CRUD Operations", () => {
     });
 
     it("should delete sub meters with multiple conditions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],

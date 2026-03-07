@@ -723,7 +723,6 @@ describe("User CRUD Operations", () => {
 
   describe("deleteUserBy", () => {
     it("should successfully delete user by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -750,7 +749,6 @@ describe("User CRUD Operations", () => {
     });
 
     it("should successfully delete multiple users by emailVerified", async () => {
-
       const usersData = [
         createUser({ emailVerified: true }),
         createUser({ emailVerified: true }),
@@ -783,7 +781,6 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle nonexistent user deletion", async () => {
-
       const deleteParam: HelperParam<NewUser> = {
         query: { id: "non-existent-id" },
       };
@@ -796,7 +793,6 @@ describe("User CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewUser> = {
         query: {},
       };
@@ -809,7 +805,6 @@ describe("User CRUD Operations", () => {
     });
 
     it("should delete users with multiple conditions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],

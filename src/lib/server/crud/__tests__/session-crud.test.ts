@@ -684,7 +684,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent session deletion", async () => {
-
       const deleteParam: HelperParam<NewSession> = {
         query: { id: "non-existent-id" },
       };
@@ -697,7 +696,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewSession> = {
         query: {},
       };

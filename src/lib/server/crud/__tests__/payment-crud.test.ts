@@ -20,7 +20,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("addPayment", () => {
     it("should successfully add a single payment", async () => {
-
       const {
         valid,
         value: [addedPayment],
@@ -34,7 +33,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should successfully add multiple payments", async () => {
-
       const paymentsData = createPayments(3).map((payment) => {
         const { id: _, ...rest } = payment;
         return rest;
@@ -48,7 +46,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-
       const { valid, value } = await addPayment([]);
 
       expect(valid).toBe(true);
@@ -58,7 +55,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("getPaymentBy", () => {
     it("should find payment by ID", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -81,7 +77,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should find payment by amount", async () => {
-
       const testAmount = 500.5;
       const {
         valid: validPayment,
@@ -103,7 +98,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should find payment by date", async () => {
-
       const testDate = new Date("2024-03-01");
       const {
         valid: validPayment,
@@ -125,7 +119,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should return empty result when payment not found", async () => {
-
       const searchParam: HelperParam<NewPayment> = {
         query: { id: "nonexistent-id" },
       };
@@ -138,7 +131,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-
       const paymentsData = createPayments(5).map((p) => {
         const { id: _, ...rest } = p;
         return rest;
@@ -159,7 +151,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-
       const paymentsData = createPayments(5).map((p) => {
         const { id: _, ...rest } = p;
         return rest;
@@ -180,7 +171,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -208,7 +198,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-
       const payments = createPayments(2).map((p) => {
         const { id: _, ...rest } = p;
         return rest;
@@ -234,7 +223,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("updatePaymentBy", () => {
     it("should successfully update payment by ID", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -261,7 +249,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -287,7 +274,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle nonexistent payment update", async () => {
-
       const updateParam: HelperParam<NewPayment> = {
         query: { id: "nonexistent-id" },
       };
@@ -306,7 +292,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("getPaymentCountBy", () => {
     it("should return correct count for existing payments", async () => {
-
       const paymentsData = createPayments(5).map((p) => {
         const { id: _, ...rest } = p;
         return rest;
@@ -327,7 +312,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should return zero count when no payments match", async () => {
-
       const countParam: HelperParam<NewPayment> = {
         query: { amount: 999999 },
       };
@@ -340,7 +324,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should count payments with specific criteria", async () => {
-
       const paymentsData = [
         createPayment({ amount: 10 }),
         createPayment({ amount: 10 }),
@@ -367,7 +350,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("getPayments & mapNewPayment_to_DTO", () => {
     it("should return DTO format payments", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -394,7 +376,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should return empty array when no payments found", async () => {
-
       const searchParam: HelperParam<NewPayment> = {
         query: { amount: 888888 },
       };
@@ -405,7 +386,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("mapNewPayment_to_DTO should handle null/undefined values", async () => {
-
       const input: Partial<NewPayment>[] = [
         {
           id: undefined as unknown as string,
@@ -426,7 +406,6 @@ describe("Payment CRUD Operations", () => {
 
   describe("deletePaymentBy", () => {
     it("should successfully delete payment by ID", async () => {
-
       const {
         valid: validPayment,
         value: [addedPayment],
@@ -453,7 +432,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should successfully delete multiple payments by amount", async () => {
-
       const paymentsData = [
         createPayment({ amount: 100 }),
         createPayment({ amount: 100 }),
@@ -486,7 +464,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle nonexistent payment deletion", async () => {
-
       const deleteParam: HelperParam<NewPayment> = {
         query: { id: "non-existent-id" },
       };
@@ -499,7 +476,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewPayment> = {
         query: {},
       };
@@ -512,7 +488,6 @@ describe("Payment CRUD Operations", () => {
     });
 
     it("should delete payments with multiple conditions", async () => {
-
       const testDate = new Date("2024-06-06");
       const testAmount = 250.5;
 

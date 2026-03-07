@@ -1149,7 +1149,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle nonexistent verification request deletion", async () => {
-
       const deleteParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "non-existent-id" },
       };
@@ -1162,7 +1161,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewEmailVerificationRequest> = {
         query: {},
       };

@@ -21,7 +21,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("addPasswordResetSession", () => {
     it("should successfully add a single password reset session", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -54,7 +53,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should successfully add multiple password reset sessions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -80,7 +78,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-
       const result = await addPasswordResetSession([]);
 
       expect(result.valid).toBe(true);
@@ -89,7 +86,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle emailVerified and twoFactorVerified flags", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -114,7 +110,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessionBy", () => {
     it("should find password reset session by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -144,7 +139,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset sessions by userId", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -175,7 +169,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by email", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -206,7 +199,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by code", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -234,7 +226,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find password reset session by expiresAt", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -265,7 +256,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should find by emailVerified and twoFactorVerified flags", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -298,14 +288,12 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return empty result when not found", async () => {
-
       const result = await getPasswordResetSessionBy({ query: { id: "nope" }, options: {} });
       expect(result.valid).toBe(false);
       expect(result.value).toHaveLength(0);
     });
 
     it("should apply limit and offset and fields selection", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -342,7 +330,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -377,7 +364,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("updatePasswordResetSessionBy", () => {
     it("should successfully update password reset session by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -411,7 +397,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -441,7 +426,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent session update", async () => {
-
       const updateParam: HelperParam<NewPasswordResetSession> = {
         query: { id: "nope" },
       };
@@ -452,7 +436,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -487,7 +470,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should perform update when update data is empty", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -515,7 +497,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should treat empty string code as no data changed", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -547,7 +528,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessionCountBy", () => {
     it("should return correct count for existing password reset sessions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -571,7 +551,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return zero count when none match", async () => {
-
       const result = await getPasswordResetSessionCountBy({
         query: { email: "nope" },
       });
@@ -581,7 +560,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should count by emailVerified flag", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -613,7 +591,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("getPasswordResetSessions & mapNewPasswordResetSession_to_DTO", () => {
     it("should return DTO format password reset sessions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -644,13 +621,11 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should return empty array when none found", async () => {
-
       const result = await getPasswordResetSessions({ query: { userId: "no" }, options: {} });
       expect(result).toHaveLength(0);
     });
 
     it("mapNewPasswordResetSession_to_DTO should handle missing values", async () => {
-
       const input: Partial<NewPasswordResetSession>[] = [
         {
           id: undefined as unknown as string,
@@ -732,7 +707,6 @@ describe("Password Reset Session CRUD Operations", () => {
 
   describe("deletePasswordResetSessionBy", () => {
     it("should successfully delete password reset session by ID", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -767,7 +741,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should successfully delete multiple password reset sessions by userId", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
@@ -809,7 +782,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent password reset session deletion", async () => {
-
       const deleteParam: HelperParam<NewPasswordResetSession> = {
         query: { id: "non-existent-id" },
       };
@@ -822,7 +794,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-
       const deleteParam: HelperParam<NewPasswordResetSession> = {
         query: {},
       };
@@ -835,7 +806,6 @@ describe("Password Reset Session CRUD Operations", () => {
     });
 
     it("should delete password reset sessions with multiple conditions", async () => {
-
       const {
         valid: validUser,
         value: [addedUser],
