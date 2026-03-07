@@ -120,26 +120,36 @@ export const getBillingSummary = query(
     }
 
     const latest = extendedInfos[0];
-    const current = latest?.balance ?? 0;
+    if (!latest) {
+      return {
+        current: 0,
+        invested: 0,
+        totalReturns: 0,
+        netReturns: 0,
+        oneDayReturns: 0,
+        averageDailyReturn: 0,
+        averageMonthlyReturn: 0,
+        periodPaymentChange: 0,
+        periodPaymentChangePct: 0,
+      };
+    }
+    const current = latest.balance ?? 0;
     const invested = extendedInfos.reduce(
-      (sum: number, info: any) =>
+      (sum, info) =>
         sum +
         ((info.payment?.amount ?? 0) +
-          info.subMeters?.reduce(
-            (subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0),
-            0
-          )),
+          (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
       0
     );
     const totalReturns = extendedInfos.reduce(
-      (sum: number, info: any) =>
+      (sum: number, info) =>
         sum +
-        info.subMeters.reduce((subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0), 0),
+        (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
       0
     );
     const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
     const oneDayReturns =
-      latest.subMeters?.reduce((sum: number, sub: any) => sum + (sub.payment?.amount ?? 0), 0) ?? 0;
+      latest.subMeters?.reduce((sum, sub) => sum + (sub.payment?.amount ?? 0), 0) ?? 0;
 
     const firstDate = extendedInfos[extendedInfos.length - 1].date;
     const lastDate = latest.date;
@@ -152,9 +162,9 @@ export const getBillingSummary = query(
     const averageMonthlyReturn = totalReturns / totalMonths;
 
     // period change (previous_totalPayment - latest_totalPayment)
-    const totalPayment = (info: any) =>
+    const totalPayment = (info: BillingInfoWithPaymentAndSubMetersWithPayment) =>
       (info.payment?.amount ?? 0) +
-      info.subMeters.reduce((subSum: number, sub: any) => subSum + (sub.payment?.amount ?? 0), 0);
+      (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0);
     const latestTotalPayment = totalPayment(latest);
     const prevTotalPayment = extendedInfos[1] ? totalPayment(extendedInfos[1]) : latestTotalPayment;
     const periodPaymentChange = prevTotalPayment - latestTotalPayment;
