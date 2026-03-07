@@ -1,5 +1,4 @@
 import { db } from "$/server/db";
-import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { emailVerificationRequest } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
@@ -24,8 +23,7 @@ type EmailVerificationRequestQueryOptions = {
 };
 
 export async function addEmailVerificationRequest(
-  data: Omit<NewEmailVerificationRequest, "id">[],
-  tx?: Transaction
+  data: Omit<NewEmailVerificationRequest, "id">[]
 ): Promise<HelperResult<NewEmailVerificationRequest[]>> {
   if (data.length === 0) {
     return {
@@ -35,7 +33,7 @@ export async function addEmailVerificationRequest(
     };
   }
 
-  const insert_result = await (tx || db())
+  const insert_result = await db()
     .insert(emailVerificationRequest)
     .values(
       data.map((request_data) => ({
@@ -57,7 +55,7 @@ export async function updateEmailVerificationRequestBy(
   by: HelperParam<NewEmailVerificationRequest>,
   data: Partial<NewEmailVerificationRequest>
 ): Promise<HelperResult<NewEmailVerificationRequest[]>> {
-  const { query, options } = by;
+  const { query } = by;
   const request_param = { ...by, options: { ...by.options, fields: undefined } };
   const request_result = await getEmailVerificationRequestBy(request_param);
 
@@ -82,7 +80,7 @@ export async function updateEmailVerificationRequestBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db())
+  const updateDBRequest = await db()
     .update(emailVerificationRequest)
     .set(changed_data)
     .returning()
@@ -116,9 +114,7 @@ export async function getEmailVerificationRequestBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db()).query.emailVerificationRequest.findMany(
-    queryOptions
-  );
+  const queryDBResult = await db().query.emailVerificationRequest.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -155,12 +151,10 @@ export async function mapNewEmailVerificationRequest_to_DTO(
 export async function getEmailVerificationRequestCountBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const { id, email } = query;
   const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
-  const request_query = (options?.tx || db())
-    .select({ count: count() })
-    .from(emailVerificationRequest);
+  const request_query = db().select({ count: count() }).from(emailVerificationRequest);
 
   if (id || email) {
     request_query.limit(1);
@@ -183,7 +177,7 @@ export async function getEmailVerificationRequestCountBy(
 export async function deleteEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
   const whereSQL = buildWhereSQL(conditions);
 
@@ -195,7 +189,7 @@ export async function deleteEmailVerificationRequestBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db()).delete(emailVerificationRequest).where(whereSQL);
+  const deleteResult = await db().delete(emailVerificationRequest).where(whereSQL);
 
   const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

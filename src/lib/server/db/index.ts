@@ -12,8 +12,14 @@ function createDb(d1: D1Database) {
 
 // Export a Database type consumers can reference if needed.
 export type Database = ReturnType<typeof createDb>;
-// Transaction helper type representing the `tx` instance passed into a transaction callback.
-export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+// Batch helper types for D1 batch API.
+export type BatchQuery = Parameters<Database["batch"]>[0][number];
+export type BatchResult = Awaited<ReturnType<Database["batch"]>>[number];
+export type NonEmptyArray<T> = [T, ...T[]];
+
+export function asNonEmptyBatch<T extends BatchQuery>(queries: T[]): NonEmptyArray<T> | null {
+  return queries.length > 0 ? (queries as NonEmptyArray<T>) : null;
+}
 
 let _testDb: Database | undefined;
 

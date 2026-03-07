@@ -1,5 +1,4 @@
 import { db } from "$/server/db";
-import type { Transaction } from "$/server/db";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
 import { session } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
@@ -16,10 +15,7 @@ type SessionQueryOptions = {
   columns?: Record<string, true>;
 };
 
-export async function addSession(
-  data: NewSession[],
-  tx?: Transaction
-): Promise<HelperResult<Session[]>> {
+export async function addSession(data: NewSession[]): Promise<HelperResult<Session[]>> {
   if (data.length === 0) {
     return {
       valid: true,
@@ -28,7 +24,7 @@ export async function addSession(
     };
   }
 
-  const insert_result = await (tx || db()).insert(session).values(data).returning();
+  const insert_result = await db().insert(session).values(data).returning();
 
   const is_valid = insert_result.length === data.length;
   return {
@@ -42,7 +38,7 @@ export async function updateSessionBy(
   by: HelperParam<NewSession>,
   data: Partial<NewSession>
 ): Promise<HelperResult<Session[]>> {
-  const { query, options } = by;
+  const { query } = by;
   const session_param = { ...by, options: { ...by.options, fields: undefined } };
   const session_result = await getSessionBy(session_param);
 
@@ -67,11 +63,7 @@ export async function updateSessionBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db())
-    .update(session)
-    .set(changed_data)
-    .returning()
-    .where(whereSQL);
+  const updateDBRequest = await db().update(session).set(changed_data).returning().where(whereSQL);
 
   const is_valid = Object.keys(conditions).length > 0 && updateDBRequest.length > 0;
   return {
@@ -100,7 +92,7 @@ export async function getSessionBy(
       {}
     );
   }
-  const queryDBResult = await (options?.tx || db()).query.session.findMany(queryOptions);
+  const queryDBResult = await db().query.session.findMany(queryOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -134,7 +126,7 @@ export async function getSessionCountBy(
   const { query } = data;
   const { id, userId } = query;
   const conditions = generateQueryConditions<NewSession>(data);
-  const request_query = (data.options?.tx || db()).select({ count: count() }).from(session);
+  const request_query = db().select({ count: count() }).from(session);
 
   if (id || userId) {
     request_query.limit(1);
@@ -157,7 +149,7 @@ export async function getSessionCountBy(
 export async function deleteSessionBy(
   data: HelperParam<NewSession>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const conditions = generateQueryConditions<NewSession>(data);
   const whereSQL = buildWhereSQL(conditions);
 
@@ -169,7 +161,7 @@ export async function deleteSessionBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db()).delete(session).where(whereSQL);
+  const deleteResult = await db().delete(session).where(whereSQL);
 
   const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;

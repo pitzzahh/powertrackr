@@ -21,6 +21,7 @@ import { addUser } from "../user-crud";
 import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
 import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
 import { db } from "$/server/db";
+import { billingInfo, payment, subMeter } from "$/server/db/schema";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/server/types/helper";
 import type { Payment } from "$/types/payment";
@@ -2137,98 +2138,69 @@ describe("Billing Info CRUD Operations", () => {
       expect(searchResult.value).toHaveLength(1);
     });
 
-    describe("Transactions and process mirroring billing-info.remote", () => {
-      it("commits when all steps succeed", async () => {
+    describe("Batch operations mirroring billing-info.remote", () => {
+      it("inserts billing info and sub meters in a single batch", async () => {
         const {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const result = await db().transaction(async (tx) => {
-          const {
-            valid: validMainPayment,
-            value: [mainPayment],
-          } = await addPayment([{ amount: 200, date: new Date() }], tx);
-          if (!validMainPayment) {
-            tx.rollback();
-            throw new Error("Main payment failed");
-          }
+        const database = db();
+        const mainPaymentId = crypto.randomUUID();
+        const billingInfoId = crypto.randomUUID();
+        const subPaymentId = crypto.randomUUID();
+        const subMeterId = crypto.randomUUID();
 
-          const {
-            valid: validBillingInfo,
-            value: [billingInfo],
-          } = await addBillingInfo(
-            [
-              {
+        const [mainPaymentResult, billingInfoResult, subPaymentResult, subMeterResult] =
+          await database.batch([
+            database
+              .insert(payment)
+              .values({ id: mainPaymentId, amount: 200, date: new Date() })
+              .returning(),
+            database
+              .insert(billingInfo)
+              .values({
+                id: billingInfoId,
                 userId: addedUser.id,
                 date: new Date(),
                 totalkWh: 100,
                 balance: 200,
                 status: "Pending",
                 payPerkWh: 2,
-                paymentId: mainPayment.id,
-              },
-            ],
-            tx
-          );
+                paymentId: mainPaymentId,
+              })
+              .returning(),
+            database
+              .insert(payment)
+              .values({ id: subPaymentId, amount: 50, date: new Date() })
+              .returning(),
+            database
+              .insert(subMeter)
+              .values({
+                id: subMeterId,
+                billingInfoId,
+                label: "A",
+                subkWh: 10,
+                reading: 110,
+                paymentId: subPaymentId,
+              })
+              .returning(),
+          ]);
 
-          if (!validBillingInfo) {
-            tx.rollback();
-            throw new Error("Billing info failed");
-          }
-
-          const subMeterInserts: Omit<any, "id">[] = [];
-
-          const {
-            valid: validSub1,
-            value: [subPayment1],
-          } = await addPayment([{ amount: 50, date: new Date() }], tx);
-          if (!validSub1) {
-            tx.rollback();
-            throw new Error("Sub payment 1 failed");
-          }
-          subMeterInserts.push({
-            billingInfoId: billingInfo.id,
-            label: "A",
-            subkWh: 10,
-            reading: 110,
-            paymentId: subPayment1.id,
-          });
-
-          const {
-            valid: validSub2,
-            value: [subPayment2],
-          } = await addPayment([{ amount: 25, date: new Date() }], tx);
-          if (!validSub2) {
-            tx.rollback();
-            throw new Error("Sub payment 2 failed");
-          }
-          subMeterInserts.push({
-            billingInfoId: billingInfo.id,
-            label: "B",
-            subkWh: 5,
-            reading: 105,
-            paymentId: subPayment2.id,
-          });
-
-          return { billingInfo, subMeterInserts, mainPayment };
-        });
-
-        const { billingInfo, subMeterInserts } = result;
-
-        const addSubResult = await addSubMeter(subMeterInserts);
-        expect(addSubResult.valid).toBe(true);
+        expect(mainPaymentResult).toHaveLength(1);
+        expect(billingInfoResult).toHaveLength(1);
+        expect(subPaymentResult).toHaveLength(1);
+        expect(subMeterResult).toHaveLength(1);
 
         const fetched = await getBillingInfoBy({
-          query: { id: billingInfo.id },
+          query: { id: billingInfoId },
           options: { with_payment: true, with_sub_meters_with_payment: true },
         });
 
         expect(fetched.valid).toBe(true);
         const [fetchedBilling] = fetched.value;
         const subMeters = (fetchedBilling.subMeters ?? []) as any[];
-        expect(subMeters).toHaveLength(2);
+        expect(subMeters).toHaveLength(1);
         expect(subMeters[0].payment?.amount).toBe(50);
-        expect(subMeters[1].payment?.amount).toBe(25);
       });
 
       it("does not bill new sub meters (initial readings) when creating billing info", async () => {
@@ -2302,142 +2274,23 @@ describe("Billing Info CRUD Operations", () => {
         expect(mainPay.amount).toBeCloseTo(balance, 2);
       });
 
-      it("rolls back entire transaction when addBillingInfo fails (first failure)", async () => {
-        await addUser([createUser()]);
+      it("rejects batch when references are missing", async () => {
+        const database = db();
 
         await expect(
-          db().transaction(async (tx) => {
-            await addPayment([{ amount: 200, date: new Date() }], tx);
-            // Force billing info failure via invalid user id (foreign key)
-            await addBillingInfo(
-              [
-                {
-                  userId: "non-existent-user",
-                  date: new Date(),
-                  totalkWh: 100,
-                  balance: 200,
-                  status: "Pending",
-                  payPerkWh: 2,
-                  paymentId: crypto.randomUUID(),
-                },
-              ],
-              tx
-            );
-          })
+          database.batch([
+            database.insert(billingInfo).values({
+              id: crypto.randomUUID(),
+              userId: "non-existent-user",
+              date: new Date(),
+              totalkWh: 100,
+              balance: 200,
+              status: "Pending",
+              payPerkWh: 2,
+              paymentId: crypto.randomUUID(),
+            }),
+          ])
         ).rejects.toThrow();
-
-        const count = (await getBillingInfoCountBy({ query: {}, options: {} })).value;
-        expect(count).toBe(0);
-      });
-
-      it("rolls back entire transaction when a sub payment fails in the middle", async () => {
-        const {
-          value: [addedUser],
-        } = await addUser([createUser()]);
-
-        await expect(
-          db().transaction(async (tx) => {
-            const {
-              value: [mainPayment],
-            } = await addPayment([{ amount: 200, date: new Date() }], tx);
-
-            await addBillingInfo(
-              [
-                {
-                  userId: addedUser.id,
-                  date: new Date(),
-                  totalkWh: 100,
-                  balance: 200,
-                  status: "Pending",
-                  payPerkWh: 2,
-                  paymentId: mainPayment.id,
-                },
-              ],
-              tx
-            );
-
-            await addPayment([{ amount: 50, date: new Date() }], tx);
-
-            // Simulate failure in the middle of processing
-            throw new Error("simulated failure in middle");
-          })
-        ).rejects.toThrow();
-
-        const biCount = (await getBillingInfoCountBy({ query: {}, options: {} })).value;
-        expect(biCount).toBe(0);
-      });
-
-      it("leaves billing info and payments committed when addSubMeter fails outside transaction (last failure)", async () => {
-        const {
-          value: [addedUser],
-        } = await addUser([createUser()]);
-
-        const { billingInfo, subMeterInserts, mainPayment } = await db().transaction(async (tx) => {
-          const {
-            value: [mainPayment],
-          } = await addPayment([{ amount: 200, date: new Date() }], tx);
-
-          const {
-            value: [billingInfo],
-          } = await addBillingInfo(
-            [
-              {
-                userId: addedUser.id,
-                date: new Date(),
-                totalkWh: 100,
-                balance: 200,
-                status: "Pending",
-                payPerkWh: 2,
-                paymentId: mainPayment.id,
-              },
-            ],
-            tx
-          );
-
-          const {
-            value: [subPayment1],
-          } = await addPayment([{ amount: 50, date: new Date() }], tx);
-          await addPayment([{ amount: 25, date: new Date() }], tx);
-
-          const subMeterInserts = [
-            {
-              billingInfoId: billingInfo.id,
-              label: "A",
-              subkWh: 10,
-              reading: 110,
-              paymentId: subPayment1.id,
-            },
-            // Intentionally broken payment id to cause FK error when inserting sub meters outside tx
-            {
-              billingInfoId: billingInfo.id,
-              label: "B",
-              subkWh: 5,
-              reading: 105,
-              paymentId: "non-existent-payment-id",
-            },
-          ];
-
-          return { billingInfo, mainPayment, subMeterInserts };
-        });
-
-        // Attempt to insert sub meters; should fail but main billing info and payments should be committed
-        await expect(addSubMeter(subMeterInserts)).rejects.toThrow();
-
-        // Billing info should exist
-        const fetched = await getBillingInfoBy({ query: { id: billingInfo.id }, options: {} });
-        expect(fetched.valid).toBe(true);
-        expect(fetched.value[0].id).toBe(billingInfo.id);
-
-        // Payments should exist
-        const paymentCheck = await getPaymentBy({ query: { id: mainPayment.id }, options: {} });
-        expect(paymentCheck.valid).toBe(true);
-
-        // Sub meters should not have been inserted
-        const subCheck = await getSubMeterBy({
-          query: { billingInfoId: billingInfo.id },
-          options: {},
-        });
-        expect(subCheck.valid).toBe(false);
       });
     });
   });

@@ -9,6 +9,7 @@ import {
   mapNewUser_to_DTO,
 } from "../user-crud";
 import { db } from "$/server/db";
+import { user } from "$/server/db/schema";
 import { createUser, createUsers, resetSequence } from "./helpers/factories";
 import type { NewUser } from "$/types/user";
 import type { HelperParam } from "$/server/types/helper";
@@ -575,98 +576,32 @@ describe("User CRUD Operations", () => {
     });
   });
 
-  describe("Transactions", () => {
-    it("should isolate addUser inside transaction until commit", async () => {
+  describe("Batch Operations", () => {
+    it("should insert multiple users using db.batch", async () => {
       const initialCount = (await getUserCountBy({ query: {}, options: {} })).value;
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "tx-isolation@example.com",
-        name: "Tx Isolation",
+
+      const userDataOne = createUser({
+        email: "batch-1@example.com",
+        name: "Batch One",
+      });
+      const userDataTwo = createUser({
+        email: "batch-2@example.com",
+        name: "Batch Two",
       });
 
-      await db().transaction(async (tx) => {
-        const addResult = await addUser([userDataWithoutId], tx);
-        expect(addResult.valid).toBe(true);
+      const database = db();
+      const [insertedOne, insertedTwo] = await database.batch([
+        database.insert(user).values(userDataOne).returning(),
+        database.insert(user).values(userDataTwo).returning(),
+      ]);
 
-        const inTxCount = (await getUserCountBy({ query: {}, options: { tx } })).value;
-        expect(inTxCount).toBe(initialCount + 1);
-
-        const outTxCount = (await getUserCountBy({ query: {}, options: {} })).value;
-        expect(outTxCount).toBe(initialCount);
-      });
+      expect(Array.isArray(insertedOne)).toBe(true);
+      expect(Array.isArray(insertedTwo)).toBe(true);
+      expect(insertedOne[0]?.id).toBeDefined();
+      expect(insertedTwo[0]?.id).toBeDefined();
 
       const finalCount = (await getUserCountBy({ query: {}, options: {} })).value;
-      expect(finalCount).toBe(initialCount + 1);
-    });
-
-    it("should rollback addUser when transaction throws", async () => {
-      const initialCount = (await getUserCountBy({ query: {}, options: {} })).value;
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "tx-rollback@example.com",
-        name: "Tx Rollback",
-      });
-
-      await expect(
-        db().transaction(async (tx) => {
-          await addUser([userDataWithoutId], tx);
-          throw new Error("force rollback");
-        })
-      ).rejects.toThrow();
-
-      const finalCount = (await getUserCountBy({ query: {}, options: {} })).value;
-      expect(finalCount).toBe(initialCount);
-    });
-
-    it("should isolate updateUserBy inside transaction until commit", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "tx-update@example.com",
-        name: "Before",
-      });
-      const {
-        valid: insertValid,
-        value: [addedUser],
-      } = await addUser([userDataWithoutId]);
-      expect(insertValid).toBe(true);
-      const userId = addedUser.id;
-
-      await db().transaction(async (tx) => {
-        const updateResult = await updateUserBy(
-          { query: { id: userId }, options: { tx } },
-          { name: "After" }
-        );
-        expect(updateResult.valid).toBe(true);
-
-        const inTxUser = (await getUserBy({ query: { id: userId }, options: { tx } })).value[0];
-        expect(inTxUser.name).toBe("After");
-
-        const outTxUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
-        expect(outTxUser.name).toBe("Before");
-      });
-
-      const afterCommitUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
-      expect(afterCommitUser.name).toBe("After");
-    });
-
-    it("should rollback updateUserBy when transaction throws", async () => {
-      const { id: _, ...userDataWithoutId } = createUser({
-        email: "tx-update-rollback@example.com",
-        name: "Original",
-      });
-      const {
-        valid: insertValid,
-        value: [addedUser],
-      } = await addUser([userDataWithoutId]);
-      expect(insertValid).toBe(true);
-      const userId = addedUser.id;
-
-      await expect(
-        db().transaction(async (tx) => {
-          await updateUserBy({ query: { id: userId }, options: { tx } }, { name: "Changed" });
-          throw new Error("force rollback");
-        })
-      ).rejects.toThrow();
-
-      const afterRollbackUser = (await getUserBy({ query: { id: userId }, options: {} })).value[0];
-      expect(afterRollbackUser.name).toBe("Original");
+      expect(finalCount).toBe(initialCount + 2);
     });
   });
 

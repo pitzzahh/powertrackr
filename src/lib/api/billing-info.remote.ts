@@ -1,5 +1,6 @@
 import { query, form, command } from "$app/server";
-import { db } from "$lib/server/db/index";
+import { db, asNonEmptyBatch } from "$lib/server/db/index";
+import type { BatchQuery } from "$lib/server/db/index";
 import { calculatePayPerKwh } from "$lib";
 import {
   billFormSchema,
@@ -17,7 +18,6 @@ import type {
 } from "$/types/billing-info";
 import { requireAuth } from "$/server/auth";
 import {
-  updateBillingInfoBy as updateBillingInfoCrud,
   getBillingInfoBy as getBillingInfoByCrud,
   deleteBillingInfoBy,
   createBillingInfoLogic,
@@ -25,10 +25,9 @@ import {
   getTotalBillingInfoCountLogic,
 } from "$/server/crud/billing-info-crud";
 import { getChangedData, omit } from "$/utils/mapper";
-import { addPayment } from "$/server/crud/payment-crud";
+import { eq, inArray } from "drizzle-orm";
+import { billingInfo, payment, subMeter } from "$/server/db/schema";
 import { error, invalid } from "@sveltejs/kit";
-import { addSubMeter, deleteSubMeterBy, updateSubMeterBy } from "$/server/crud/sub-meter-crud";
-import { updatePaymentBy } from "$/server/crud/payment-crud";
 import type { HelperResult } from "$/server/types/helper";
 import { getTotalUserCount } from "./user.remote";
 import { getTotalPaymentsAmount } from "./payment.remote";
@@ -360,238 +359,125 @@ export const updateBillingInfo = form(
       );
     }
 
-    // Perform all DB operations in a transaction (fallback to non-transaction when D1 cannot begin)
+    // Perform all DB operations in a single D1 batch
     let result: BillingInfo;
-    try {
-      result = await db().transaction(async (tx) => {
-        // Update the main billing info
-        const {
-          valid: validBillingInfoUpdate,
-          value: [updatedBillingInfo],
-        } = await updateBillingInfoCrud(
-          { query: { id: billingInfoId }, options: { tx } },
-          {
-            ...updateData,
-            date: new Date(updateData.date),
-          }
-        );
 
-        if (!validBillingInfoUpdate || !updatedBillingInfo) {
-          tx.rollback();
-          throw error(400, "Failed to update billing info");
-        }
+    const database = db();
+    const batchQueries: BatchQuery[] = [];
+    let billingInfoResultIndex: number | null = null;
 
-        // Handle sub meters update if provided and only if changes detected
-        if (subMeters && subMetersHaveChanges) {
-          const existingIds = billingInfoWithSubMetersToUpdate.subMeters?.map((s) => s.id) || [];
-          const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id!);
-          const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
-
-          if (toDeleteIds.length > 0) {
-            await Promise.all(
-              toDeleteIds.map((id) => deleteSubMeterBy({ query: { id }, options: { tx } }))
-            );
-          }
-
-          for (const subData of subMetersData) {
-            if (subData.id) {
-              // update existing
-              await updateSubMeterBy(
-                {
-                  query: {
-                    id: subData.id,
-                  },
-                  options: { tx },
-                },
-                {
-                  reading: subData.reading,
-                  subkWh: subData.subkWh,
-                  status: subData.status,
-                }
-              );
-
-              await updatePaymentBy(
-                { query: { id: subData.paymentId }, options: { tx } },
-                { amount: subData.paymentAmount }
-              );
-            } else {
-              // add new
-              const {
-                valid: validSubPayment,
-                value: [{ id: paymentId }],
-              } = await addPayment(
-                [
-                  {
-                    date: new Date(),
-                    amount: subData.paymentAmount,
-                  },
-                ],
-                tx
-              );
-              if (!validSubPayment) {
-                tx.rollback();
-                throw error(400, "Failed to add sub payment");
-              }
-              const subMeterInserts = [
-                {
-                  label: subData.label,
-                  billingInfoId,
-                  reading: subData.reading,
-                  subkWh: subData.subkWh,
-                  paymentId,
-                  status: subData.status,
-                },
-              ];
-              const { valid: validSubMeterInsert } = await addSubMeter(subMeterInserts, tx);
-              if (!validSubMeterInsert) {
-                tx.rollback();
-                throw error(400, "Failed to add sub meters");
-              }
-            }
-          }
-        }
-
-        if (!billingInfoWithSubMetersToUpdate.paymentId) {
-          tx.rollback();
-          throw error(400, "Billing info missing payment ID");
-        }
-
-        const totalSubPayment = subMetersHaveChanges
-          ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
-          : (billingInfoWithSubMetersToUpdate.subMeters || []).reduce(
-              (sum, sub) => sum + (sub.payment?.amount ?? 0),
-              0
-            );
-
-        const mainPaymentAmount = (updatedBillingInfo.balance ?? 0) - totalSubPayment;
-        if (mainPaymentAmount < 0) {
-          tx.rollback();
-          throw error(400, "Main payment amount cannot be negative");
-        }
-
-        const { valid: validMainPaymentUpdate } = await updatePaymentBy(
-          { query: { id: billingInfoWithSubMetersToUpdate.paymentId }, options: { tx } },
-          {
-            amount: mainPaymentAmount,
-          }
-        );
-
-        if (!validMainPaymentUpdate) {
-          tx.rollback();
-          throw error(400, "Failed to update main payment");
-        }
-
-        return updatedBillingInfo;
-      });
-    } catch (err) {
-      if (!(err instanceof Error) || !err.message.includes("Failed query: begin")) {
-        throw err;
-      }
-
-      // Non-transaction fallback for D1 environments that cannot begin transactions
-      const {
-        valid: validBillingInfoUpdate,
-        value: [updatedBillingInfo],
-      } = await updateBillingInfoCrud(
-        { query: { id: billingInfoId } },
-        {
-          ...updateData,
-          date: new Date(updateData.date),
-        }
+    if (Object.keys(changed_data).length > 0) {
+      billingInfoResultIndex = batchQueries.length;
+      batchQueries.push(
+        database
+          .update(billingInfo)
+          .set(changed_data)
+          .where(eq(billingInfo.id, billingInfoId))
+          .returning()
       );
+    }
 
-      if (!validBillingInfoUpdate || !updatedBillingInfo) {
-        throw error(400, "Failed to update billing info");
+    // Handle sub meters update if provided and only if changes detected
+    if (subMeters && subMetersHaveChanges) {
+      const existingIds = billingInfoWithSubMetersToUpdate.subMeters?.map((s) => s.id) || [];
+      const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id!);
+      const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
+
+      if (toDeleteIds.length > 0) {
+        batchQueries.push(database.delete(subMeter).where(inArray(subMeter.id, toDeleteIds)));
       }
 
-      if (subMeters && subMetersHaveChanges) {
-        const existingIds = billingInfoWithSubMetersToUpdate.subMeters?.map((s) => s.id) || [];
-        const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id!);
-        const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
-
-        if (toDeleteIds.length > 0) {
-          await Promise.all(toDeleteIds.map((id) => deleteSubMeterBy({ query: { id } })));
-        }
-
-        for (const subData of subMetersData) {
-          if (subData.id) {
-            await updateSubMeterBy(
-              {
-                query: {
-                  id: subData.id,
-                },
-              },
-              {
+      for (const subData of subMetersData) {
+        if (subData.id) {
+          // update existing
+          batchQueries.push(
+            database
+              .update(subMeter)
+              .set({
                 reading: subData.reading,
                 subkWh: subData.subkWh,
                 status: subData.status,
-              }
-            );
-
-            await updatePaymentBy(
-              { query: { id: subData.paymentId } },
-              { amount: subData.paymentAmount }
-            );
-          } else {
-            const {
-              valid: validSubPayment,
-              value: [{ id: paymentId }],
-            } = await addPayment([
-              {
-                date: new Date(),
-                amount: subData.paymentAmount,
-              },
-            ]);
-            if (!validSubPayment) {
-              throw error(400, "Failed to add sub payment");
-            }
-            const subMeterInserts = [
-              {
-                label: subData.label,
-                billingInfoId,
-                reading: subData.reading,
-                subkWh: subData.subkWh,
-                paymentId,
-                status: subData.status,
-              },
-            ];
-            const { valid: validSubMeterInsert } = await addSubMeter(subMeterInserts);
-            if (!validSubMeterInsert) {
-              throw error(400, "Failed to add sub meters");
-            }
-          }
-        }
-      }
-
-      if (!billingInfoWithSubMetersToUpdate.paymentId) {
-        throw error(400, "Billing info missing payment ID");
-      }
-
-      const totalSubPayment = subMetersHaveChanges
-        ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
-        : (billingInfoWithSubMetersToUpdate.subMeters || []).reduce(
-            (sum, sub) => sum + (sub.payment?.amount ?? 0),
-            0
+              })
+              .where(eq(subMeter.id, subData.id))
           );
 
-      const mainPaymentAmount = (updatedBillingInfo.balance ?? 0) - totalSubPayment;
-      if (mainPaymentAmount < 0) {
-        throw error(400, "Main payment amount cannot be negative");
-      }
+          batchQueries.push(
+            database
+              .update(payment)
+              .set({ amount: subData.paymentAmount })
+              .where(eq(payment.id, subData.paymentId))
+          );
+        } else {
+          // add new
+          const newPaymentId = crypto.randomUUID();
+          const newSubMeterId = crypto.randomUUID();
 
-      const { valid: validMainPaymentUpdate } = await updatePaymentBy(
-        { query: { id: billingInfoWithSubMetersToUpdate.paymentId } },
-        {
-          amount: mainPaymentAmount,
+          batchQueries.push(
+            database.insert(payment).values({
+              id: newPaymentId,
+              date: new Date(),
+              amount: subData.paymentAmount,
+            })
+          );
+
+          batchQueries.push(
+            database.insert(subMeter).values({
+              id: newSubMeterId,
+              label: subData.label,
+              billingInfoId,
+              reading: subData.reading,
+              subkWh: subData.subkWh,
+              paymentId: newPaymentId,
+              status: subData.status,
+            })
+          );
         }
-      );
-
-      if (!validMainPaymentUpdate) {
-        throw error(400, "Failed to update main payment");
       }
-
-      result = updatedBillingInfo;
     }
+
+    if (!billingInfoWithSubMetersToUpdate.paymentId) {
+      throw error(400, "Billing info missing payment ID");
+    }
+
+    const totalSubPayment = subMetersHaveChanges
+      ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
+      : (billingInfoWithSubMetersToUpdate.subMeters || []).reduce(
+          (sum, sub) => sum + (sub.payment?.amount ?? 0),
+          0
+        );
+
+    const updatedBalance = updateData.balance ?? billingInfoWithSubMetersToUpdate.balance ?? 0;
+    const mainPaymentAmount = updatedBalance - totalSubPayment;
+    if (mainPaymentAmount < 0) {
+      throw error(400, "Main payment amount cannot be negative");
+    }
+
+    batchQueries.push(
+      database
+        .update(payment)
+        .set({
+          amount: mainPaymentAmount,
+        })
+        .where(eq(payment.id, billingInfoWithSubMetersToUpdate.paymentId))
+    );
+
+    const batchPayload = asNonEmptyBatch(batchQueries);
+    if (!batchPayload) {
+      throw error(400, "Failed to update billing info, no batch queries were generated");
+    }
+    const batchResults = await database.batch(batchPayload);
+    const updatedBillingInfo =
+      billingInfoResultIndex !== null
+        ? Array.isArray(batchResults[billingInfoResultIndex])
+          ? batchResults[billingInfoResultIndex][0]
+          : undefined
+        : (billingInfoWithSubMetersToUpdate as BillingInfo);
+
+    if (billingInfoResultIndex !== null && !updatedBillingInfo) {
+      throw error(400, "Failed to update billing info");
+    }
+
+    result = updatedBillingInfo;
     getExtendedBillingInfos({ userId: session.userId }).refresh();
     return result;
   }

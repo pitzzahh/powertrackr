@@ -1,4 +1,3 @@
-import type { Transaction } from "$/server/db";
 import type { TimeRangeOption } from "$routes/(components)/types";
 
 export type HelperResult<T = unknown> = {
@@ -32,7 +31,6 @@ export type HelperParamOptions<T> = {
   with_billing_info: boolean;
   with_sub_meters: boolean;
   with_sub_meters_with_payment: boolean;
-  tx: Transaction;
 };
 
 export type APIReturnedData<T> = {

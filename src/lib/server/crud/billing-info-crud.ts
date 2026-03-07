@@ -1,7 +1,7 @@
-import { db } from "$/server/db";
-import type { Transaction } from "$/server/db";
+import { db, asNonEmptyBatch } from "$/server/db";
+import type { BatchQuery } from "$/server/db";
 import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
-import { billingInfo } from "$/server/db/schema";
+import { billingInfo, payment, subMeter } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
 import { getChangedData } from "$/utils/mapper";
@@ -14,9 +14,6 @@ import type {
 } from "$/types/billing-info";
 import { calculatePayPerKwh } from "$lib";
 import { formatEnergy } from "$/utils/format";
-import { addPayment } from "$/server/crud/payment-crud";
-import { addSubMeter } from "$/server/crud/sub-meter-crud";
-import type { NewSubMeter } from "$/types/sub-meter";
 import { error } from "@sveltejs/kit";
 import { getRequestEvent } from "$app/server";
 import { getEnergyUnit, type EnergyUnit } from "$/utils/converter/energy";
@@ -29,8 +26,10 @@ export type TotalEnergyUsageResult = {
   energyUnit: EnergyUnit;
 };
 
-export async function getTotalEnergyUsage(tx?: Transaction): Promise<TotalEnergyUsageResult> {
-  const result = await (tx || db()).select({ total: sum(billingInfo.totalkWh) }).from(billingInfo);
+export async function getTotalEnergyUsage(): Promise<TotalEnergyUsageResult> {
+  const result = await db()
+    .select({ total: sum(billingInfo.totalkWh) })
+    .from(billingInfo);
 
   const total = Number(result[0]?.total ?? 0);
   const formatted = formatEnergy(total);
@@ -47,8 +46,7 @@ type BillingInfoQueryOptions = {
 };
 
 export async function addBillingInfo(
-  data: Omit<NewBillingInfo, "id">[],
-  tx?: Transaction
+  data: Omit<NewBillingInfo, "id">[]
 ): Promise<HelperResult<BillingInfo[]>> {
   if (data.length === 0) {
     return {
@@ -58,7 +56,7 @@ export async function addBillingInfo(
     };
   }
 
-  const insert_result = await (tx || db())
+  const insert_result = await db()
     .insert(billingInfo)
     .values(
       data.map((billing_info_data) => {
@@ -82,7 +80,7 @@ export async function updateBillingInfoBy(
   by: HelperParam<NewBillingInfo>,
   data: Partial<NewBillingInfo>
 ): Promise<HelperResult<BillingInfoWithPaymentAndSubMetersWithPayment[]>> {
-  const { query, options } = by;
+  const { query } = by;
   const billing_info_param = { ...by, options: { ...by.options, fields: undefined } };
   const billing_info_result = await getBillingInfoBy(billing_info_param);
 
@@ -108,7 +106,7 @@ export async function updateBillingInfoBy(
   }
 
   const whereSQL = buildWhereSQL(conditions);
-  const updateDBRequest = await (options?.tx || db())
+  const updateDBRequest = await db()
     .update(billingInfo)
     .set(changed_data)
     .returning()
@@ -167,7 +165,7 @@ export async function getBillingInfoBy(
       updatedAt: true,
     };
   }
-  const queryDBResult = await (options?.tx || db()).query.billingInfo.findMany(findManyOptions);
+  const queryDBResult = await db().query.billingInfo.findMany(findManyOptions);
 
   const is_valid = queryDBResult.length > 0;
   return {
@@ -204,10 +202,10 @@ export function mapNewBillingInfo_to_DTO(data: Partial<BillingInfo>[]): Partial<
 export async function getBillingInfoCountBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const { id, userId } = query;
   const conditions = generateQueryConditions<NewBillingInfo>(data);
-  const request_query = (options?.tx || db()).select({ count: count() }).from(billingInfo);
+  const request_query = db().select({ count: count() }).from(billingInfo);
 
   if (id || userId) {
     request_query.limit(1);
@@ -230,7 +228,7 @@ export async function getBillingInfoCountBy(
 export async function deleteBillingInfoBy(
   data: HelperParam<NewBillingInfo>
 ): Promise<HelperResult<number>> {
-  const { query, options } = data;
+  const { query } = data;
   const conditions = generateQueryConditions<NewBillingInfo>(data);
   const whereSQL = buildWhereSQL(conditions);
 
@@ -242,7 +240,7 @@ export async function deleteBillingInfoBy(
     };
   }
 
-  const deleteResult = await (options?.tx || db()).delete(billingInfo).where(whereSQL);
+  const deleteResult = await db().delete(billingInfo).where(whereSQL);
 
   const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
@@ -284,22 +282,19 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
  * createBillingInfoLogic
  *
  * - Recreates the logic previously in the billing-info remote layer.
- * - Uses the CRUD helpers (addPayment, addBillingInfo, addSubMeter) only.
- * - Accepts an optional `tx` so callers can run a whole import inside a
- *   single transaction (atomic batch imports).
+ * - Uses a single D1 batch to persist payments, billing info, and sub meters.
  */
 export async function createBillingInfoLogic(
   data: BillingCreateForm,
-  userId: string,
-  tx?: Transaction
+  userId: string
 ): Promise<BillingInfo> {
   const { date, totalkWh, balance, status, subMeters } = data;
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 
-  // Use tx in read operations if provided so we have consistent view inside a parent transaction
+  // Resolve latest billing info for sub-meter baseline comparisons
   const { value: billingInfoCount } = await getBillingInfoCountBy({
     query: { userId },
-    options: { limit: 1, ...(tx ? { tx } : {}) },
+    options: { limit: 1 },
   });
 
   const {
@@ -311,7 +306,6 @@ export async function createBillingInfoLogic(
       with_sub_meters: true,
       order: "desc",
       limit: 1,
-      ...(tx ? { tx } : {}),
     },
   });
 
@@ -364,222 +358,75 @@ export async function createBillingInfoLogic(
     throw error(400, "Invalid meter readings, computed kWh usage does not meet total kWh usage");
   }
 
-  const subMeterInserts: Omit<NewSubMeter, "id">[] = [];
+  const database = db();
+  const mainPaymentId = crypto.randomUUID();
+  const billingInfoId = crypto.randomUUID();
 
-  // If an outer transaction was provided, run all operations inside it (atomic with caller),
-  // otherwise use the original internal transaction and keep post-transaction sub-meter insertion behavior.
-  if (tx) {
-    const {
-      valid: validMainPayment,
-      value: [mainPayment],
-    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], tx);
+  const batchQueries: BatchQuery[] = [];
 
-    if (!validMainPayment) {
-      throw error(400, "Failed to add billing info, main payment not processed");
-    }
+  batchQueries.push(
+    database.insert(payment).values({
+      id: mainPaymentId,
+      amount: mainPaymentAmount,
+      date: new Date(),
+    })
+  );
 
-    const {
-      valid: validBillingInfo,
-      value: [createdBillingInfo],
-    } = await addBillingInfo(
-      [
-        {
-          userId,
-          date: new Date(date),
-          totalkWh,
-          balance,
-          status,
-          payPerkWh,
-          paymentId: mainPayment.id,
-        },
-      ],
-      tx
-    );
-
-    if (!validBillingInfo) {
-      throw error(400, "Failed to add billing info, billing info not processed");
-    }
-
-    // Create sub payments and prepare sub meter inserts inside same tx
-    for (const subData of subMetersData) {
-      const {
-        valid: validPayment,
-        value: [addedPayment],
-        message,
-      } = await addPayment(
-        [
-          {
-            amount: subData.paymentAmount,
-          },
-        ],
-        tx
-      );
-
-      if (!validPayment) {
-        throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
-      }
-
-      subMeterInserts.push({
-        billingInfoId: createdBillingInfo.id,
-        label: subData.label,
-        subkWh: subData.subkWh,
-        reading: subData.reading,
-        paymentId: addedPayment.id,
-        status: subData.status,
-      });
-    }
-
-    if (subMeterInserts.length > 0) {
-      const { valid: subMeterAdded, message } = await addSubMeter(subMeterInserts, tx);
-      if (!subMeterAdded) {
-        throw error(500, `Failed to insert sub meters: ${message || "Unknown reason"}`);
-      }
-    }
-
-    return createdBillingInfo;
-  }
-
-  // Backwards-compatible path: internal transaction for payments/billing and add sub meters afterwards
-  const runWithoutTransaction = async () => {
-    const {
-      valid: validMainPayment,
-      value: [mainPayment],
-    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }]);
-
-    if (!validMainPayment) {
-      throw error(400, "Failed to add billing info, main payment not processed");
-    }
-
-    const {
-      valid: validBillingInfo,
-      value: [billingResult],
-    } = await addBillingInfo([
-      {
+  const billingInfoResultIndex = batchQueries.length;
+  batchQueries.push(
+    database
+      .insert(billingInfo)
+      .values({
+        id: billingInfoId,
         userId,
         date: new Date(date),
         totalkWh,
         balance,
         status,
         payPerkWh,
-        paymentId: mainPayment.id,
-      },
-    ]);
+        paymentId: mainPaymentId,
+      })
+      .returning()
+  );
 
-    if (!validBillingInfo) {
-      throw error(400, "Failed to add billing info, billing info not processed");
-    }
+  for (const subData of subMetersData) {
+    const subPaymentId = crypto.randomUUID();
+    const subMeterId = crypto.randomUUID();
 
-    for (const subData of subMetersData) {
-      const {
-        valid: validPayment,
-        value: [addedPayment],
-        message,
-      } = await addPayment([
-        {
-          amount: subData.paymentAmount,
-        },
-      ]);
-      if (!validPayment) {
-        throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
-      }
-      subMeterInserts.push({
-        billingInfoId: billingResult.id,
+    batchQueries.push(
+      database.insert(payment).values({
+        id: subPaymentId,
+        amount: subData.paymentAmount,
+      })
+    );
+
+    batchQueries.push(
+      database.insert(subMeter).values({
+        id: subMeterId,
+        billingInfoId,
         label: subData.label,
         subkWh: subData.subkWh,
         reading: subData.reading,
-        paymentId: addedPayment.id,
+        paymentId: subPaymentId,
         status: subData.status,
-      });
-    }
-
-    return billingResult;
-  };
-
-  const runWithTransaction = async () =>
-    db().transaction(async (txInner) => {
-      let {
-        valid: validMainPayment,
-        value: [mainPayment],
-      } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], txInner);
-
-      if (!validMainPayment) {
-        txInner.rollback();
-        throw error(400, "Failed to add billing info, main payment not processed");
-      }
-
-      const {
-        valid: validBillingInfo,
-        value: [billingResult],
-      } = await addBillingInfo(
-        [
-          {
-            userId,
-            date: new Date(date),
-            totalkWh,
-            balance,
-            status,
-            payPerkWh,
-            paymentId: mainPayment.id,
-          },
-        ],
-        txInner
-      );
-
-      if (!validBillingInfo) {
-        txInner.rollback();
-        throw error(400, "Failed to add billing info, billing info not processed");
-      }
-
-      for (const subData of subMetersData) {
-        const {
-          valid: validPayment,
-          value: [addedPayment],
-          message,
-        } = await addPayment(
-          [
-            {
-              amount: subData.paymentAmount,
-            },
-          ],
-          txInner
-        );
-        if (!validPayment) {
-          txInner.rollback();
-          throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
-        }
-        subMeterInserts.push({
-          billingInfoId: billingResult.id,
-          label: subData.label,
-          subkWh: subData.subkWh,
-          reading: subData.reading,
-          paymentId: addedPayment.id,
-          status: subData.status,
-        });
-      }
-
-      return billingResult;
-    });
-
-  let result: BillingInfo;
-  try {
-    result = await runWithTransaction();
-  } catch (err) {
-    if (err instanceof Error && err.message.includes("Failed query: begin")) {
-      subMeterInserts.length = 0;
-      result = await runWithoutTransaction();
-    } else {
-      throw err;
-    }
+      })
+    );
   }
 
-  // Add sub meters after internal transaction (original behavior preserved)
-  if (subMeterInserts.length > 0) {
-    const { valid: subMeterAdded, message } = await addSubMeter(subMeterInserts);
-    if (!subMeterAdded)
-      throw error(500, `Failed to insert sub meters: ${message || "Unknown reason"}`);
+  const batchPayload = asNonEmptyBatch(batchQueries);
+  if (!batchPayload) {
+    throw error(400, "Failed to add billing info, no batch queries were generated");
+  }
+  const batchResults = await database.batch(batchPayload);
+  const createdBillingInfo = Array.isArray(batchResults[billingInfoResultIndex])
+    ? batchResults[billingInfoResultIndex][0]
+    : undefined;
+
+  if (!createdBillingInfo) {
+    throw error(400, "Failed to add billing info, billing info not processed");
   }
 
-  return result;
+  return createdBillingInfo;
 }
 
 export async function getTotalEnergyUsageLogic() {
