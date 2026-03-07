@@ -240,9 +240,12 @@ export async function deleteBillingInfoBy(
     };
   }
 
-  const deleteResult = await db().delete(billingInfo).where(whereSQL);
+  const deleteResult = await db()
+    .delete(billingInfo)
+    .where(whereSQL)
+    .returning({ deletedId: billingInfo.id });
 
-  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

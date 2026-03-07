@@ -193,9 +193,11 @@ export async function deletePaymentBy(
     };
   }
 
-  const deleteResult = await db().delete(payment).where(whereSQL);
+  const deleteResult = await db().delete(payment).where(whereSQL).returning({
+    deletedId: payment.id,
+  });
 
-  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

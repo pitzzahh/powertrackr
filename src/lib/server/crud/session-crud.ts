@@ -161,9 +161,11 @@ export async function deleteSessionBy(
     };
   }
 
-  const deleteResult = await db().delete(session).where(whereSQL);
+  const deleteResult = await db().delete(session).where(whereSQL).returning({
+    deletedId: session.id,
+  });
 
-  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

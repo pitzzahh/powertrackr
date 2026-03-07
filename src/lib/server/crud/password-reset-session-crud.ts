@@ -183,9 +183,11 @@ export async function deletePasswordResetSessionBy(
     };
   }
 
-  const deleteResult = await db().delete(passwordResetSession).where(whereSQL);
+  const deleteResult = await db().delete(passwordResetSession).where(whereSQL).returning({
+    deletedId: passwordResetSession.id,
+  });
 
-  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,
