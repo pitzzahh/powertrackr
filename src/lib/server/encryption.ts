@@ -8,7 +8,7 @@ import crypto from "node:crypto";
 import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
 import { dev } from "$app/environment";
-import { scrypt } from "@noble/hashes/scrypt";
+import { scrypt } from "@noble/hashes/scrypt.js";
 
 const SCRYPT_PREFIX = "scrypt";
 const SCRYPT_PARAMS = dev
