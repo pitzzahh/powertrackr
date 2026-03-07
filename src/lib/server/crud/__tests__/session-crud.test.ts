@@ -21,7 +21,6 @@ describe("Session CRUD Operations", () => {
 
   describe("addSession", () => {
     it("should successfully add a single session", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -56,7 +55,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should successfully add multiple sessions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -75,7 +73,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI === "true") return;
       const result = await addSession([]);
 
       expect(result.valid).toBe(true);
@@ -84,7 +81,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle session with twoFactorVerified flag", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -111,7 +107,6 @@ describe("Session CRUD Operations", () => {
 
   describe("getSessionBy", () => {
     it("should find session by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -141,7 +136,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by userId", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -167,7 +161,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by ipAddress", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -195,7 +188,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by userAgent", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -223,7 +215,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should find session by expiresAt (try both Date and numeric forms)", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -259,7 +250,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should return empty result when session not found", async () => {
-      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewSession> = {
         query: { id: "nonexistent-id" },
       };
@@ -272,7 +262,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -298,7 +287,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -324,7 +312,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -356,7 +343,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -388,7 +374,6 @@ describe("Session CRUD Operations", () => {
 
   describe("updateSessionBy", () => {
     it("should successfully update session by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -429,7 +414,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -458,7 +442,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent session update", async () => {
-      if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewSession> = {
         query: { id: "nonexistent-id" },
       };
@@ -470,7 +453,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should update expiresAt", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -503,7 +485,6 @@ describe("Session CRUD Operations", () => {
 
   describe("getSessionCountBy", () => {
     it("should return correct count for existing sessions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -529,7 +510,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should return zero count when no sessions match", async () => {
-      if (process.env.CI === "true") return;
       const countParam: HelperParam<NewSession> = {
         query: { userId: "not-found" },
       };
@@ -542,7 +522,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should count sessions with specific criteria", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -574,7 +553,6 @@ describe("Session CRUD Operations", () => {
 
   describe("getSessions & mapNewSession_to_DTO", () => {
     it("should return DTO format sessions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -608,13 +586,11 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should return empty array when no sessions found", async () => {
-      if (process.env.CI === "true") return;
       const result = await getSessions({ query: { userId: "no-user" }, options: {} });
       expect(result).toHaveLength(0);
     });
 
     it("mapNewSession_to_DTO should handle null/undefined values", async () => {
-      if (process.env.CI === "true") return;
       const input: Partial<NewSession>[] = [
         {
           id: undefined as unknown as string,
@@ -641,7 +617,6 @@ describe("Session CRUD Operations", () => {
 
   describe("deleteSessionBy", () => {
     it("should successfully delete session by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -676,7 +651,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should successfully delete multiple sessions by userId", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -710,7 +684,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle nonexistent session deletion", async () => {
-      if (process.env.CI === "true") return;
 
       const deleteParam: HelperParam<NewSession> = {
         query: { id: "non-existent-id" },
@@ -724,7 +697,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-      if (process.env.CI === "true") return;
 
       const deleteParam: HelperParam<NewSession> = {
         query: {},
@@ -738,7 +710,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should delete sessions with multiple conditions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -783,7 +754,6 @@ describe("Session CRUD Operations", () => {
 
   describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: { userId: "user-1" } as unknown as NewSession,
       };
@@ -794,7 +764,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: {
           id: "s-1",
@@ -815,7 +784,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: {} as unknown as NewSession,
         options: { exclude_id: "exclude-id" },
@@ -827,7 +795,6 @@ describe("Session CRUD Operations", () => {
     });
 
     it("should ignore undefined/null fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewSession> = {
         query: {
           id: undefined as unknown as string,

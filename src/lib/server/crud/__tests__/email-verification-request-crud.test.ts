@@ -21,7 +21,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("addEmailVerificationRequest", () => {
     it("should successfully add a single email verification request", async () => {
-      if (process.env.CI === "true") return;
       // First create a user to reference
       const {
         valid: validUser,
@@ -54,7 +53,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should successfully add multiple email verification requests", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -83,7 +81,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI === "true") return;
       const result = await addEmailVerificationRequest([]);
 
       expect(result.valid).toBe(true);
@@ -92,7 +89,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with far future expiration", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -120,7 +116,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with past expiration", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -148,7 +143,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with special characters in email", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -179,7 +173,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("getEmailVerificationRequestBy", () => {
     it("should find verification request by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -210,7 +203,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request by user ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -239,7 +231,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request by email", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -272,7 +263,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request by code", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -305,7 +295,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request by expiration time", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -335,7 +324,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should return empty result when verification request not found", async () => {
-      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "nonexistent-id" },
       };
@@ -348,7 +336,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -380,7 +367,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -412,7 +398,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -444,7 +429,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -478,7 +462,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request with user relationship", async () => {
-      if (process.env.CI === "true") return;
       const userData = [
         (() => {
           const { id: _, ...rest } = createUser();
@@ -511,7 +494,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("updateEmailVerificationRequestBy", () => {
     it("should successfully update verification request by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -540,7 +522,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -577,7 +558,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should perform update when update data is empty (sets existing non-nullish fields)", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -611,7 +591,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -645,7 +624,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle nonexistent verification request update", async () => {
-      if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "nonexistent-id" },
       };
@@ -658,7 +636,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should update expiration time", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -686,7 +663,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should update verification code", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -715,7 +691,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should update verification code to empty string", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -749,7 +724,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should update email address", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -780,7 +754,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("getEmailVerificationRequestCountBy", () => {
     it("should return correct count for existing verification requests", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -812,7 +785,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should return zero count when no verification requests match", async () => {
-      if (process.env.CI === "true") return;
       const countParam: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "nonexistent-user-id" },
       };
@@ -825,7 +797,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should count verification requests with specific criteria", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -855,7 +826,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should apply limit when searching by specific fields", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -886,7 +856,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("getEmailVerificationRequests", () => {
     it("should return DTO format verification requests", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -922,7 +891,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should return empty array when no verification requests found", async () => {
-      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "nonexistent-user-id" },
       };
@@ -935,7 +903,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("mapNewEmailVerificationRequest_to_DTO", () => {
     it("should correctly map verification request data to DTO format", async () => {
-      if (process.env.CI === "true") return;
       const expiresAtMs = Date.now() + 45 * 60 * 1000;
 
       const result = await mapNewEmailVerificationRequest_to_DTO([
@@ -955,7 +922,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with user relationship", async () => {
-      if (process.env.CI === "true") return;
       const userData = { id: "test-user", name: "Test User", email: "test@example.com" };
       const result = await mapNewEmailVerificationRequest_to_DTO([
         {
@@ -970,7 +936,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request with missing values", async () => {
-      if (process.env.CI === "true") return;
       const result = await mapNewEmailVerificationRequest_to_DTO([
         {
           id: undefined,
@@ -990,14 +955,12 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI === "true") return;
       const result = await mapNewEmailVerificationRequest_to_DTO([]);
 
       expect(result).toHaveLength(0);
     });
 
     it("should handle multiple verification requests", async () => {
-      if (process.env.CI === "true") return;
       const verificationData = [
         createEmailVerificationRequest({ email: "test1@example.com", code: "CODE1" }),
         createEmailVerificationRequest({ email: "test2@example.com", code: "CODE2" }),
@@ -1018,7 +981,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewEmailVerificationRequest> = {
         query: { userId: "test-user-id" },
       };
@@ -1029,7 +991,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewEmailVerificationRequest> = {
         query: {
           userId: "test-user-id",
@@ -1048,7 +1009,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI === "true") return;
       const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: { userId: "test-user-id" },
         options: { exclude_id: "exclude-this-id" },
@@ -1061,7 +1021,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle numeric expiresAt field", () => {
-      if (process.env.CI === "true") return;
       const expiresAt = Date.now() + 15 * 60 * 1000;
       const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
@@ -1075,7 +1034,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should ignore undefined fields", () => {
-      if (process.env.CI === "true") return;
       const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
           userId: "test-user-id",
@@ -1091,7 +1049,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle all available query fields", () => {
-      if (process.env.CI === "true") return;
       const expiresAt = Date.now() + 30 * 60 * 1000;
       const conditions = generateQueryConditions<NewEmailVerificationRequest>({
         query: {
@@ -1115,7 +1072,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("deleteEmailVerificationRequestBy", () => {
     it("should successfully delete verification request by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1151,7 +1107,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should successfully delete multiple verification requests by userId", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1194,7 +1149,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle nonexistent verification request deletion", async () => {
-      if (process.env.CI === "true") return;
 
       const deleteParam: HelperParam<NewEmailVerificationRequest> = {
         query: { id: "non-existent-id" },
@@ -1208,7 +1162,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-      if (process.env.CI === "true") return;
 
       const deleteParam: HelperParam<NewEmailVerificationRequest> = {
         query: {},
@@ -1222,7 +1175,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should delete verification requests with multiple conditions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1267,7 +1219,6 @@ describe("Email Verification Request CRUD Operations", () => {
 
   describe("Edge Cases and Error Handling", () => {
     it("should handle verification requests with very long codes", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1294,7 +1245,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification requests with special characters", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1323,7 +1273,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle simultaneous verification request operations", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1353,7 +1302,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should find verification request with user relationship", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1387,7 +1335,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle expired verification requests", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1411,7 +1358,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification request search with complex criteria", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1455,7 +1401,6 @@ describe("Email Verification Request CRUD Operations", () => {
     });
 
     it("should handle verification requests with international email addresses", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
