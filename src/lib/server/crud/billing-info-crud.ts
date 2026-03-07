@@ -244,7 +244,7 @@ export async function deleteBillingInfoBy(
 
   const deleteResult = await (options?.tx || db()).delete(billingInfo).where(whereSQL);
 
-  const deletedCount = deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,
@@ -440,37 +440,32 @@ export async function createBillingInfoLogic(
   }
 
   // Backwards-compatible path: internal transaction for payments/billing and add sub meters afterwards
-  const result = await db().transaction(async (txInner) => {
-    let {
+  const runWithoutTransaction = async () => {
+    const {
       valid: validMainPayment,
       value: [mainPayment],
-    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], txInner);
+    } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }]);
 
     if (!validMainPayment) {
-      txInner.rollback();
       throw error(400, "Failed to add billing info, main payment not processed");
     }
 
     const {
       valid: validBillingInfo,
       value: [billingResult],
-    } = await addBillingInfo(
-      [
-        {
-          userId,
-          date: new Date(date),
-          totalkWh,
-          balance,
-          status,
-          payPerkWh,
-          paymentId: mainPayment.id,
-        },
-      ],
-      txInner
-    );
+    } = await addBillingInfo([
+      {
+        userId,
+        date: new Date(date),
+        totalkWh,
+        balance,
+        status,
+        payPerkWh,
+        paymentId: mainPayment.id,
+      },
+    ]);
 
     if (!validBillingInfo) {
-      txInner.rollback();
       throw error(400, "Failed to add billing info, billing info not processed");
     }
 
@@ -479,16 +474,12 @@ export async function createBillingInfoLogic(
         valid: validPayment,
         value: [addedPayment],
         message,
-      } = await addPayment(
-        [
-          {
-            amount: subData.paymentAmount,
-          },
-        ],
-        txInner
-      );
+      } = await addPayment([
+        {
+          amount: subData.paymentAmount,
+        },
+      ]);
       if (!validPayment) {
-        txInner.rollback();
         throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
       }
       subMeterInserts.push({
@@ -502,7 +493,84 @@ export async function createBillingInfoLogic(
     }
 
     return billingResult;
-  });
+  };
+
+  const runWithTransaction = async () =>
+    db().transaction(async (txInner) => {
+      let {
+        valid: validMainPayment,
+        value: [mainPayment],
+      } = await addPayment([{ amount: mainPaymentAmount, date: new Date() }], txInner);
+
+      if (!validMainPayment) {
+        txInner.rollback();
+        throw error(400, "Failed to add billing info, main payment not processed");
+      }
+
+      const {
+        valid: validBillingInfo,
+        value: [billingResult],
+      } = await addBillingInfo(
+        [
+          {
+            userId,
+            date: new Date(date),
+            totalkWh,
+            balance,
+            status,
+            payPerkWh,
+            paymentId: mainPayment.id,
+          },
+        ],
+        txInner
+      );
+
+      if (!validBillingInfo) {
+        txInner.rollback();
+        throw error(400, "Failed to add billing info, billing info not processed");
+      }
+
+      for (const subData of subMetersData) {
+        const {
+          valid: validPayment,
+          value: [addedPayment],
+          message,
+        } = await addPayment(
+          [
+            {
+              amount: subData.paymentAmount,
+            },
+          ],
+          txInner
+        );
+        if (!validPayment) {
+          txInner.rollback();
+          throw error(500, `Failed to create sub payment: ${message || "Unknown reason"}`);
+        }
+        subMeterInserts.push({
+          billingInfoId: billingResult.id,
+          label: subData.label,
+          subkWh: subData.subkWh,
+          reading: subData.reading,
+          paymentId: addedPayment.id,
+          status: subData.status,
+        });
+      }
+
+      return billingResult;
+    });
+
+  let result: BillingInfo;
+  try {
+    result = await runWithTransaction();
+  } catch (err) {
+    if (err instanceof Error && err.message.includes("Failed query: begin")) {
+      subMeterInserts.length = 0;
+      result = await runWithoutTransaction();
+    } else {
+      throw err;
+    }
+  }
 
   // Add sub meters after internal transaction (original behavior preserved)
   if (subMeterInserts.length > 0) {
