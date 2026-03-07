@@ -14,7 +14,7 @@ import { randomBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 const PBKDF2_PREFIX = "pbkdf2";
 const PBKDF2_PARAMS = dev
   ? { iterations: 10_000, hash: "SHA-256" as const, dkLen: 32 }
-  : { iterations: 120_000, hash: "SHA-256" as const, dkLen: 32 };
+  : { iterations: 100_000, hash: "SHA-256" as const, dkLen: 32 };
 
 async function derivePbkdf2(password: string, salt: Uint8Array, iterations: number, dkLen: number) {
   return pbkdf2(sha256, utf8ToBytes(password), salt, { c: iterations, dkLen });
