@@ -15,7 +15,7 @@ const fallback = {
   paymentsAmount: { total: 0, formatted: formatEnergy(0) },
 };
 
-export function POST({ getClientAddress }) {
+export function POST() {
   return produce(async function start({ emit, lock }) {
     while (true) {
       let userCount = fallback.userCount;
@@ -54,7 +54,6 @@ export function POST({ getClientAddress }) {
         billingCount,
         paymentsAmount,
       };
-      console.log("Emitting data to [%s]:", getClientAddress(), data);
 
       const { error } = emit("stats", JSON.stringify(data));
 
