@@ -38,7 +38,7 @@ import {
   verifyPasswordHash,
 } from "$/server/encryption";
 import { verifyTOTP } from "@oslojs/otp";
-import { encodeBase32UpperCaseNoPadding } from "@oslojs/encoding";
+import { encodeBase32UpperCaseNoPadding, encodeBase64url, decodeBase64url } from "@oslojs/encoding";
 import crypto from "node:crypto";
 import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
@@ -309,7 +309,7 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   // Decrypt the TOTP key and verify the code
   let secretBytes: Uint8Array;
   try {
-    secretBytes = decrypt(userResult.totpKey);
+    secretBytes = decrypt(decodeBase64url(userResult.totpKey));
   } catch (e) {
     console.error("Failed to decrypt TOTP key for user", event.locals.session.userId, e);
     return invalid(issues.code("Unable to verify code at this time. Please try again later."));
@@ -506,9 +506,9 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
   }
 
   // Encrypt and store the secret
-  const encryptedSecret = Buffer.from(encrypt(secretBytes));
+  const encryptedSecret = encodeBase64url(encrypt(secretBytes));
   const recoveryCode = generateRandomRecoveryCode();
-  const encryptedRecoveryCode = Buffer.from(encryptString(recoveryCode));
+  const encryptedRecoveryCode = encodeBase64url(encryptString(recoveryCode));
 
   const updateResult = await updateUserBy(
     { query: { id: event.locals.session.userId }, options: { with_session: false } },
@@ -572,7 +572,7 @@ export const disable2FA = form(disable2FASchema, async (data, issues) => {
   }
 
   // Decrypt the TOTP key
-  const secretBytes = decrypt(userResult.totpKey);
+  const secretBytes = decrypt(decodeBase64url(userResult.totpKey));
 
   // Verify the TOTP code
   const isValid = verifyTOTP(secretBytes, 30, 6, code);
