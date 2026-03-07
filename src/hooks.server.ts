@@ -40,7 +40,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
   // Require authentication for other paths
   if (!event.locals.user || !event.locals.session) {
-    redirect(307, "/");
+    redirect(307, "/auth?act=login");
   }
 
   // Check additional auth requirements
