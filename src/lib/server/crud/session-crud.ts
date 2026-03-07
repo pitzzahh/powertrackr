@@ -171,7 +171,7 @@ export async function deleteSessionBy(
 
   const deleteResult = await (options?.tx || db()).delete(session).where(whereSQL);
 
-  const deletedCount = deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

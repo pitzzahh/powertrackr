@@ -200,7 +200,7 @@ export async function deletePaymentBy(
 
   const deleteResult = await (options?.tx || db()).delete(payment).where(whereSQL);
 
-  const deletedCount = deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,

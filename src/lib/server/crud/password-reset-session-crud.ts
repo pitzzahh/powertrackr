@@ -189,7 +189,7 @@ export async function deletePasswordResetSessionBy(
 
   const deleteResult = await (options?.tx || db()).delete(passwordResetSession).where(whereSQL);
 
-  const deletedCount = deleteResult.rowCount ?? 0;
+  const deletedCount = deleteResult.rowsAffected ?? deleteResult.rowCount ?? 0;
   const is_valid = deletedCount > 0;
   return {
     valid: is_valid,
