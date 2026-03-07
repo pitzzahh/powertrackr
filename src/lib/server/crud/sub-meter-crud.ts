@@ -245,7 +245,9 @@ export async function deleteSubMeterBy(
     };
   }
 
-  const deleteResult = await db().delete(subMeter).where(whereSQL);
+  const deleteResult = await db().delete(subMeter).where(whereSQL).returning({
+    deleteId: subMeter.id,
+  });
 
   const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
