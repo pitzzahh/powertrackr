@@ -16,10 +16,10 @@ const config = {
       mode: "auto",
       directives: {
         "default-src": ["self"],
-        "script-src": ["self"],
-        "style-src": ["self", "unsafe-inline"],
+        "script-src": ["self", "sha256-uQ+6xeJ5jfvD5SmN5W7ZFR4dF9DbDwscZWrWOLfV+RM="],
+        "style-src": ["self", "unsafe-inline", "https://fonts.googleapis.com"],
         "img-src": ["self", "data:"],
-        "font-src": ["self"],
+        "font-src": ["self", "https://fonts.gstatic.com"],
         "connect-src": ["self"],
       },
     },
