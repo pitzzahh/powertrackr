@@ -22,7 +22,13 @@ import type { NewEmailVerificationRequest } from "$/types/email-verification-req
 const PLUNK_BASE = env.PLUNK_BASE_URL ?? "https://api.plunk.com";
 const PLUNK_KEY = env.PLUNK_SECRET_KEY ?? undefined;
 
-import type { PlunkTemplate, PlunkContact } from "$/types/plunk";
+import type {
+  PlunkTemplate,
+  PlunkContact,
+  PlunkAPIResponse,
+  PlunkListData,
+  PlunkSendResponseData,
+} from "$/types/plunk";
 import { generateRandomOTP } from "./encryption";
 
 /** Whether the Plunk client is configured (secret key present) */
@@ -36,11 +42,14 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 /** Generic fetch wrapper for Plunk API */
-async function plunkRequest(path: string, options: RequestInit = {}) {
+async function plunkRequest<T>(
+  path: string,
+  options: RequestInit = {}
+): Promise<PlunkAPIResponse<T> | null> {
   const url = `${PLUNK_BASE}${path}`;
   const headers = { ...options.headers, ...getAuthHeaders() };
   const res = await fetch(url, { ...options, headers });
-  return res;
+  return (await res.json().catch(() => null)) as PlunkAPIResponse<T> | null;
 }
 
 /** Apply variables into simple templates. Handles common placeholder variants. */
@@ -75,16 +84,15 @@ export async function createContact(
   }
 
   try {
-    const resp = await plunkRequest("/contacts", {
+    const json = await plunkRequest<PlunkContact>("/contacts", {
       method: "POST",
       body: JSON.stringify({ email, subscribed: true, data: data ?? {} }),
     });
-    const json = await resp.json().catch(() => null);
     if (!json || json.success === false) {
       console.warn("Plunk create contact failed:", json?.error ?? json);
       return null;
     }
-    return json.data as PlunkContact;
+    return json.data;
   } catch (e) {
     console.warn("Failed to create Plunk contact:", e);
     return null;
@@ -113,13 +121,14 @@ export async function sendVerificationEmail(email: string, code: string, timeout
 
   // Try to fetch templates and find the one we want
   try {
-    const tplResp = await plunkRequest("/templates?limit=100", { method: "GET" });
-    const tplJson = await tplResp.json().catch(() => null);
+    const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
+      method: "GET",
+    });
     // Normalize different possible response shapes:
     // - { data: { items: [...] } }
     // - { data: [...] }
     // - direct array
-    const rawData = tplJson?.data ?? tplJson;
+    const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
     const items: PlunkTemplate[] = Array.isArray(rawData?.items)
       ? rawData.items
       : Array.isArray(rawData)
@@ -135,11 +144,10 @@ export async function sendVerificationEmail(email: string, code: string, timeout
       };
 
       try {
-        const sendResp = await plunkRequest("/v1/send", {
+        const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        const sendJson = await sendResp.json().catch(() => null);
 
         // If Plunk complains about a missing sender ('from') retry with the default sender
         if (
@@ -149,11 +157,10 @@ export async function sendVerificationEmail(email: string, code: string, timeout
           Array.isArray(sendJson.error?.errors) &&
           (sendJson.error.errors as any[]).some((e) => e.field === "from")
         ) {
-          const sendResp2 = await plunkRequest("/v1/send", {
+          const sendJson2 = await plunkRequest<PlunkSendResponseData>("/v1/send", {
             method: "POST",
             body: JSON.stringify({ ...payload, from: tpl.from }),
           });
-          const sendJson2 = await sendResp2.json().catch(() => null);
           if (sendJson2 && sendJson2.success) return sendJson2;
           console.warn("Plunk send (template + from retry) failed:", sendJson2?.error ?? sendJson2);
         }
@@ -172,11 +179,10 @@ export async function sendVerificationEmail(email: string, code: string, timeout
         ? applyTemplateVariables(raw, { code, timeout: `${timeoutMinutes} minutes` })
         : `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
 
-      const sendRespFallback = await plunkRequest("/v1/send", {
+      const sendJsonFallback = await plunkRequest<PlunkSendResponseData>("/v1/send", {
         method: "POST",
         body: JSON.stringify({ to: email, subject, body, from: tpl.from }),
       });
-      const sendJsonFallback = await sendRespFallback.json().catch(() => null);
       if (!sendJsonFallback || sendJsonFallback.success === false) {
         console.warn(
           "Plunk send (template fallback) failed:",
@@ -193,11 +199,10 @@ export async function sendVerificationEmail(email: string, code: string, timeout
   try {
     const subject = "Verify your email";
     const body = `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
-    const sendResp = await plunkRequest("/v1/send", {
+    const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
     });
-    const sendJson = await sendResp.json().catch(() => null);
     if (!sendJson || sendJson.success === false) {
       console.warn("Plunk send (fallback) failed:", sendJson?.error ?? sendJson);
     }
@@ -256,10 +261,11 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
 
   // Try to fetch templates and find the one we want
   try {
-    const tplResp = await plunkRequest("/templates?limit=100", { method: "GET" });
-    const tplJson = await tplResp.json().catch(() => null);
+    const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
+      method: "GET",
+    });
 
-    const rawData = tplJson?.data ?? tplJson;
+    const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
     const items: PlunkTemplate[] = Array.isArray(rawData?.items)
       ? rawData.items
       : Array.isArray(rawData)
@@ -279,11 +285,10 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
       };
 
       try {
-        const sendResp = await plunkRequest("/v1/send", {
+        const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
           method: "POST",
           body: JSON.stringify(payload),
         });
-        const sendJson = await sendResp.json().catch(() => null);
 
         // If Plunk complains about a missing sender ('from') retry with the default sender
         if (
@@ -293,11 +298,10 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
           Array.isArray(sendJson.error?.errors) &&
           (sendJson.error.errors as any[]).some((e) => e.field === "from")
         ) {
-          const sendResp2 = await plunkRequest("/v1/send", {
+          const sendJson2 = await plunkRequest<PlunkSendResponseData>("/v1/send", {
             method: "POST",
             body: JSON.stringify({ ...payload, from: tpl.from }),
           });
-          const sendJson2 = await sendResp2.json().catch(() => null);
           if (sendJson2 && sendJson2.success) return sendJson2;
           console.warn("Plunk send (template + from retry) failed:", sendJson2?.error ?? sendJson2);
         }
@@ -320,11 +324,10 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
           })
         : `<p>Your password reset code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
 
-      const sendRespFallback = await plunkRequest("/v1/send", {
+      const sendJsonFallback = await plunkRequest<PlunkSendResponseData>("/v1/send", {
         method: "POST",
         body: JSON.stringify({ to: email, subject, body, from: tpl.from }),
       });
-      const sendJsonFallback = await sendRespFallback.json().catch(() => null);
       if (!sendJsonFallback || sendJsonFallback.success === false) {
         console.warn(
           "Plunk send (template fallback) failed:",
@@ -341,11 +344,10 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
   try {
     const subject = "Reset your password";
     const body = `<p>Your password reset code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
-    const sendResp = await plunkRequest("/v1/send", {
+    const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
     });
-    const sendJson = await sendResp.json().catch(() => null);
     if (!sendJson || sendJson.success === false) {
       console.warn("Plunk send (fallback) failed:", sendJson?.error ?? sendJson);
     }
