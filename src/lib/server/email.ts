@@ -116,11 +116,10 @@ export async function sendVerificationEmail(email: string, code: string, timeout
     return null;
   }
 
-  // Ensure the contact exists (best-effort)
-  await createContact(email);
-
-  // Try to fetch templates and find the one we want
   try {
+    // Ensure the contact exists (best-effort)
+    await createContact(email);
+    // Try to fetch templates and find the one we want
     const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
       method: "GET",
     });
@@ -129,11 +128,13 @@ export async function sendVerificationEmail(email: string, code: string, timeout
     // - { data: [...] }
     // - direct array
     const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
-    const items: PlunkTemplate[] = Array.isArray(rawData?.items)
-      ? rawData.items
-      : Array.isArray(rawData)
-        ? (rawData as PlunkTemplate[])
-        : [];
+    const items: PlunkTemplate[] = Array.isArray(rawData?.data)
+      ? rawData.data
+      : Array.isArray(rawData?.items)
+        ? rawData.items
+        : Array.isArray(rawData)
+          ? (rawData as PlunkTemplate[])
+          : [];
     const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "email verification");
     if (tpl && tpl.id) {
       // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
@@ -266,11 +267,13 @@ export async function sendPasswordResetEmail(email: string, code: string, timeou
     });
 
     const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
-    const items: PlunkTemplate[] = Array.isArray(rawData?.items)
-      ? rawData.items
-      : Array.isArray(rawData)
-        ? (rawData as PlunkTemplate[])
-        : [];
+    const items: PlunkTemplate[] = Array.isArray(rawData?.data)
+      ? rawData.data
+      : Array.isArray(rawData?.items)
+        ? rawData.items
+        : Array.isArray(rawData)
+          ? (rawData as PlunkTemplate[])
+          : [];
     const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "password reset");
     if (tpl && tpl.id) {
       // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
