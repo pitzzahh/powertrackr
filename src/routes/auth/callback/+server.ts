@@ -37,9 +37,13 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const githubAccessToken = tokens.accessToken();
 
-  const userRequest = new Request("https://api.github.com/user");
-  userRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
-  const userResponse = await event.fetch(userRequest);
+  const userResponse = await fetch("https://api.github.com/user", {
+    headers: {
+      Authorization: `Bearer ${githubAccessToken}`,
+      "User-Agent": "PowerTrackr/1.0",
+      Accept: "application/vnd.github+json",
+    },
+  });
   const userParser = new ObjectParser(await userResponse.json());
 
   const githubUserId = userParser.getNumber("id");
@@ -68,7 +72,8 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const emailListRequest = new Request("https://api.github.com/user/emails");
   emailListRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
-  const emailListResponse = await fetch(emailListRequest);
+  emailListRequest.headers.set("Accept", "application/vnd.github+json");
+  const emailListResponse = await event.fetch(emailListRequest);
   const emailListResult: unknown = await emailListResponse.json();
   if (!Array.isArray(emailListResult) || emailListResult.length < 1) {
     return new Response("Please restart the process.", {
