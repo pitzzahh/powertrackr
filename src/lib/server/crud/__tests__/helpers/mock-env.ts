@@ -8,17 +8,15 @@ if (existsSync(envPath)) {
   config({ path: envPath, override: false });
 }
 
-// Export the values expected by `$env/static/private`. Prefer actual process.env values.
-export const TEST_DATABASE_URL: string | undefined = process.env.TEST_TEST_DATABASE_URL;
+// Export the values expected by `$env/static/private`.
+export const TEST_DATABASE_URL: string | undefined = process.env.TEST_DATABASE_URL;
 
-// Only throw error if TEST_DATABASE_URL is missing and we're not in CI (where tests are skipped)
+// Only throw error if TEST_DATABASE_URL is missing
 if (!TEST_DATABASE_URL) {
   throw new Error(
     "TEST_DATABASE_URL is not defined. For tests set TEST_DATABASE_URL or add it to .env."
   );
 }
-
-export const DATABASE_AUTH_TOKEN: string | undefined = process.env.DATABASE_AUTH_TOKEN;
 
 export const ENCRYPTION_KEY: string =
   process.env.ENCRYPTION_KEY ?? "00112233445566778899aabbccddeeff"; // fallback (not for production)

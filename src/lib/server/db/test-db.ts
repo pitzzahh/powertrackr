@@ -15,7 +15,6 @@ export function createTestDb(): TestDatabase {
   if (!client) {
     client = createClient({
       url,
-      authToken: process.env.DATABASE_AUTH_TOKEN,
     });
   }
 
