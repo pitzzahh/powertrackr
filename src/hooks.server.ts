@@ -83,4 +83,4 @@ export const handleHSTS: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleAuth, handleDevTools, log, handleHSTS);
+export const handle = sequence(handleHSTS, handleAuth, handleDevTools, log);
