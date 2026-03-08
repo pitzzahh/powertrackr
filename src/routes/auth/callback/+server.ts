@@ -114,31 +114,30 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
         Location: "/dashboard?oauth=github",
       },
     });
-  } else {
-    const {
-      value: [user],
-    } = await addUser([
-      {
-        githubId: githubUserId,
-        email,
-        name: name || username,
-        image: userParser.getString("avatar_url") || null,
-      },
-    ]);
-    const sessionToken = generateSessionToken();
-    const session = await createSession(sessionToken, user.id, {
-      twoFactorVerified: false,
-      ipAddress: event.getClientAddress(),
-      userAgent: event.request.headers.get("user-agent"),
-    });
-    setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/dashboard?oauth=github",
-      },
-    });
   }
+  const {
+    value: [user],
+  } = await addUser([
+    {
+      githubId: githubUserId,
+      email,
+      name: name || username,
+      image: userParser.getString("avatar_url") || null,
+    },
+  ]);
+  const sessionToken = generateSessionToken();
+  const session = await createSession(sessionToken, user.id, {
+    twoFactorVerified: false,
+    ipAddress: event.getClientAddress(),
+    userAgent: event.request.headers.get("user-agent"),
+  });
+  setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: "/dashboard?oauth=github",
+    },
+  });
 }
 
 export async function GET(event: RequestEvent): Promise<Response> {
