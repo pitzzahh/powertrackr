@@ -40,9 +40,9 @@ Powertrackr uses a simple per-kWh allocation model and does not include jurisdic
 
 Contributions are welcome. If you'd like to help, please open an issue or a pull request. A few guidelines to make the review process smoother:
 
-- Run the full test suite and ensure tests pass: `npm test` (see "Development" for environment requirements).
+- Run the full test suite and ensure tests pass: `pnpm test` (see "Development" for environment requirements).
 - Add tests for new features and bug fixes.
-- Run the formatter and linter before submitting: `npm run format` and `npm run lint`.
+- Run the formatter and linter before submitting: `pnpm run format` and `pnpm run lint`.
 
 ### Development
 
@@ -51,41 +51,40 @@ Development setup
 Prerequisites:
 
 - Node.js 20.x or later
-- PostgreSQL (local or via Docker)
-- Optional: Docker for running PostgreSQL containers
+- Cloudflare account
 
 Environment variables
 
-Copy `.env.example` to `.env` and update the values for your environment (do not commit `.env`). At minimum, make sure `DATABASE_URL` and `ENCRYPTION_KEY` are set. See `.env.example` for a full sample.
+Copy `.env.example` to `.env` and update the values for your environment (do not commit `.env`). At minimum, make sure `TEST_DATABASE_URL` and `ENCRYPTION_KEY` are set. See `.env.example` for a full sample.
 
-Local Postgres (Docker example)
+Local D1 setup
 
-- Start Postgres in Docker:
-  `docker run --rm --name powertrackr-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=powertrackr -p 5432:5432 -d postgres:15`
-- Set `DATABASE_URL` as shown above.
+- Ensure Wrangler is installed: `pnpm add -D wrangler@latest` (if not already in devDependencies)
+- Authenticate with Cloudflare: `pnpm dlx wrangler login`
+- Create a local D1 database: `pnpm dlx wrangler d1 create powertrackr-local` (or use an existing one)
 
 Install and run
 
-- Install dependencies: `npm ci`
-- Apply database migrations: `npm run db:push` (requires `DATABASE_URL`)
-- Start development server: `npm run dev` and open `http://localhost:5173`
-- Build and preview a production-like build: `npm run build` && `npm run preview`
+- Install dependencies: `pnpm install`
+- Apply database migrations: `pnpm run db:migrate` (requires `TEST_DATABASE_URL`)
+- Start development server: `pnpm dev` and open `http://localhost:5173`
+- Build and preview a production-like build: `pnpm run build` && `pnpm dlx wrangler preview`
 
 Database migrations
 
-- Migrations are managed with Drizzle; the `drizzle/` directory contains migrations and snapshots.
-- Create a migration with `npm run db:generate` and apply it with `npm run db:push`.
+- Migrations are managed with Drizzle; the `migrations/` directory contains migrations and snapshots.
+- Create a migration with `pnpm run db:generate` and apply it with `pnpm run db:migrate`.
 
 Testing
 
-- Run tests: `npm test` (use `npm run test:ui` for the Vitest UI)
-- Note: several tests require a running Postgres instance and will throw if `DATABASE_URL` is not set (unless running in CI). To run the full test suite locally, point `DATABASE_URL` to a test Postgres instance.
+- Run tests: `pnpm test` (use `pnpm run test:ui` for the Vitest UI)
+- Note: Tests use libsql for a SQLite-based testing environment, leveraging the same schema as Cloudflare D1. This allows easy testing on GitHub Actions and locally without requiring a full D1 setup.
 
 Formatting, linting and type checking
 
-- Format with Prettier: `npm run format`
-- Lint with oxlint: `npm run lint`
-- Type checking and Svelte diagnostics: `npm run check`
+- Format with Prettier: `pnpm run format`
+- Lint with oxlint: `pnpm run lint`
+- Type checking and Svelte diagnostics: `pnpm run check`
 
 ### License
 
