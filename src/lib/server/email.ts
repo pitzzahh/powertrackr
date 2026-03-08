@@ -222,7 +222,7 @@ export async function sendVerificationEmail(email: string, code: string, timeout
 export async function createAndSendEmailVerification(
   userId: string,
   email: string,
-  timeoutMinutes = Number(env.EMAIL_VERIFICATION_TIMEOUT_MINUTES ?? 15)
+  timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES ?? 15)
 ) {
   const code = generateRandomOTP();
   // Store expiration as a Date object.
