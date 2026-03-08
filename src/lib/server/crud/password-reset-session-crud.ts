@@ -147,7 +147,6 @@ export async function getPasswordResetSessionCountBy(
   const { query } = data;
   const { id, email } = query;
   const conditions = generateQueryConditions<NewPasswordResetSession>(data);
-  console.log({ conditions });
   const request_query = db().select({ count: count() }).from(passwordResetSession);
 
   if (id || email) {
