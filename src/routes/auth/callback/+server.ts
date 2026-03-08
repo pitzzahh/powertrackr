@@ -37,13 +37,11 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const githubAccessToken = tokens.accessToken();
 
-  const userResponse = await fetch("https://api.github.com/user", {
-    headers: {
-      Authorization: `Bearer ${githubAccessToken}`,
-      "User-Agent": "PowerTrackr/1.0",
-      Accept: "application/vnd.github+json",
-    },
-  });
+  const userRequest = new Request("https://api.github.com/user");
+  userRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
+  userRequest.headers.set("User-Agent", "PowerTrackr/1.0");
+  userRequest.headers.set("Accept", "application/vnd.github+json");
+  const userResponse = await event.fetch(userRequest);
   const userParser = new ObjectParser(await userResponse.json());
 
   const githubUserId = userParser.getNumber("id");
@@ -72,6 +70,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const emailListRequest = new Request("https://api.github.com/user/emails");
   emailListRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
+  emailListRequest.headers.set("User-Agent", "PowerTrackr/1.0");
   emailListRequest.headers.set("Accept", "application/vnd.github+json");
   const emailListResponse = await event.fetch(emailListRequest);
   const emailListResult: unknown = await emailListResponse.json();
