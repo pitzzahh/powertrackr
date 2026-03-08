@@ -37,6 +37,7 @@
     showSuccess,
     showWarning,
   } from "$/components/toast";
+  import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$env/static/public";
 
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
@@ -163,7 +164,8 @@
               showError("Failed to resend code. Please try again.");
             }
             if (res?.success && res.sent) {
-              cooldownTime = Date.now() + 60000; // 60 seconds
+              cooldownTime =
+                Date.now() + Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES) * 60 * 1000;
               document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=60;`;
               countdown = 60;
               timer = setInterval(() => {
