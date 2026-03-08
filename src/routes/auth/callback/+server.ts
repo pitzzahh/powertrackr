@@ -6,7 +6,8 @@ import type { OAuth2Tokens } from "arctic";
 import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "$/server/encryption";
 import { createGitHub } from "$/server/oauth";
-import { addUser } from "$/server/crud/user-crud";
+import { addUser, updateUserBy, getUserBy } from "$/server/crud/user-crud";
+import type { NewUser } from "$/types/user";
 
 async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;
@@ -89,29 +90,51 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
     });
   }
 
-  const {
-    value: [user],
-  } = await addUser([
-    {
-      githubId: githubUserId,
-      email,
-      name: name || username,
-      image: userParser.getString("avatar_url") || null,
-    },
-  ]);
-  const sessionToken = generateSessionToken();
-  const session = await createSession(sessionToken, user.id, {
-    twoFactorVerified: false,
-    ipAddress: event.getClientAddress(),
-    userAgent: event.request.headers.get("user-agent"),
+  const existingUserByEmailResult = await getUserBy({
+    query: { email },
+    options: { limit: 1 },
   });
-  setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: "/dashboard?oauth=github",
-    },
-  });
+  if (existingUserByEmailResult.valid && existingUserByEmailResult.value.length > 0) {
+    const existingUser = existingUserByEmailResult.value[0] as NewUser;
+    await updateUserBy({ query: { id: existingUser.id } }, { githubId: githubUserId });
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, existingUser.id, {
+      twoFactorVerified: false,
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    });
+    setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/dashboard?oauth=github",
+      },
+    });
+  } else {
+    const {
+      value: [user],
+    } = await addUser([
+      {
+        githubId: githubUserId,
+        email,
+        name: name || username,
+        image: userParser.getString("avatar_url") || null,
+      },
+    ]);
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, user.id, {
+      twoFactorVerified: false,
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    });
+    setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/dashboard?oauth=github",
+      },
+    });
+  }
 }
 
 export async function GET(event: RequestEvent): Promise<Response> {
