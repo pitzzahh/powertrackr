@@ -42,7 +42,7 @@ setTestDb(testDb as unknown as Database);
 
 /**
  * Helpers to expose the real DB to tests.
- * Tests will run against a fast libsql instance pointed to via DATABASE_URL.
+ * Tests will run against a fast libsql instance pointed to via TEST_DATABASE_URL.
  */
 export function getTestDb() {
   return testDb;
