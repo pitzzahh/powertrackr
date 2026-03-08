@@ -21,6 +21,7 @@ import { addUser } from "../user-crud";
 import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
 import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
 import { db } from "$/server/db";
+import { billingInfo, payment, subMeter } from "$/server/db/schema";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/server/types/helper";
 import type { Payment } from "$/types/payment";
@@ -34,7 +35,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("addBillingInfo", () => {
     it("should successfully add a single billing info", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -71,7 +71,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should successfully add multiple billing infos", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -102,7 +101,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI === "true") return;
       const result = await addBillingInfo([]);
 
       expect(result.valid).toBe(true);
@@ -111,7 +109,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with payment reference", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -144,7 +141,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should require paymentId and accept a valid payment reference", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -173,7 +169,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle different status types", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -217,7 +212,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfoBy", () => {
     it("should find billing info by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -255,7 +249,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by user ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -291,7 +284,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by date", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -331,7 +323,6 @@ describe("Billing Info CRUD Operations", () => {
 
     describe("Billing Info CRUD Integration (payments & sub-meters) - manual CRUD flow", () => {
       it("should create main and sub payments correctly with multiple sub-meters (manual CRUD flow)", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -432,7 +423,6 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("should create main payment equal to balance when zero sub-meters (manual CRUD flow)", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -482,7 +472,6 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("should update sub-meter and corresponding payment via CRUDs", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -580,7 +569,6 @@ describe("Billing Info CRUD Operations", () => {
       // ---- Update-function detection tests (do not test the update function directly) ----
 
       it("update-function detection: no-op when subMeters provided and unchanged and no top-level change", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -679,7 +667,6 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("update-function detection: top-level change with unchanged subMeters (only main updated)", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -763,7 +750,6 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("update-function detection: sub-meter change is detected when reading updated", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -867,7 +853,6 @@ describe("Billing Info CRUD Operations", () => {
       });
 
       it("update-function detection: missing subMeters and no top-level changes => no-op", async () => {
-        if (process.env.CI === "true") return;
         const {
           valid: validUser,
           value: [addedUser],
@@ -924,7 +909,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by status", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -964,7 +948,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by totalkWh", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1001,7 +984,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should find billing info by balance", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1038,7 +1020,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should return empty result when billing info not found", async () => {
-      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { id: "nonexistent-id" },
       };
@@ -1051,7 +1032,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should apply limit option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1088,7 +1068,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should apply offset option", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1125,7 +1104,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should apply fields selection", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1164,7 +1142,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should exclude specified ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1201,7 +1178,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("updateBillingInfoBy", () => {
     it("should successfully update billing info by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1250,7 +1226,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle no data changed scenario", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1288,7 +1263,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle nonexistent billing info update", async () => {
-      if (process.env.CI === "true") return;
       const updateParam: HelperParam<NewBillingInfo> = {
         query: { id: "nonexistent-id" },
       };
@@ -1302,7 +1276,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should update payment reference", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1341,7 +1314,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should update multiple fields at once", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1388,7 +1360,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfoCountBy", () => {
     it("should return correct count for existing billing infos", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1425,7 +1396,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should return zero count when no billing infos match", async () => {
-      if (process.env.CI === "true") return;
       const countParam: HelperParam<NewBillingInfo> = {
         query: { userId: "nonexistent-user-id" },
       };
@@ -1438,7 +1408,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should count billing infos with specific criteria", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1482,7 +1451,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should apply limit when searching by specific fields", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1519,7 +1487,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("getBillingInfos", () => {
     it("should return DTO format billing infos", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1571,7 +1538,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should return empty array when no billing infos found", async () => {
-      if (process.env.CI === "true") return;
       const searchParam: HelperParam<NewBillingInfo> = {
         query: { userId: "nonexistent-user-id" },
       };
@@ -1584,7 +1550,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("deleteBillingInfoBy", () => {
     it("should successfully delete billing info by ID", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1625,7 +1590,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should successfully delete multiple billing infos by userId", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1666,7 +1630,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle nonexistent billing info deletion", async () => {
-      if (process.env.CI === "true") return;
       const deleteParam = {
         query: { id: "non-existent-id" },
       };
@@ -1679,7 +1642,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle no conditions provided", async () => {
-      if (process.env.CI === "true") return;
       const deleteParam = {
         query: {},
       };
@@ -1692,7 +1654,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should delete billing infos with multiple conditions", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1737,7 +1698,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should cascade delete billing info with associated sub meters", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -1820,7 +1780,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("mapNewBillingInfo_to_DTO", () => {
     it("should correctly map billing info data to DTO format", async () => {
-      if (process.env.CI === "true") return;
       const billingData = createBillingInfo({
         userId: "test-user-id",
         totalkWh: 1800,
@@ -1842,7 +1801,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with undefined values", async () => {
-      if (process.env.CI === "true") return;
       const billingData = createBillingInfo({
         paymentId: undefined,
       });
@@ -1854,7 +1812,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with missing values", async () => {
-      if (process.env.CI === "true") return;
       const billingData = {
         id: undefined,
         userId: undefined,
@@ -1883,14 +1840,12 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle empty array input", async () => {
-      if (process.env.CI === "true") return;
       const result = mapNewBillingInfo_to_DTO([]);
 
       expect(result).toHaveLength(0);
     });
 
     it("should handle multiple billing infos", async () => {
-      if (process.env.CI === "true") return;
       const billingData = [
         createBillingInfo({ status: "Paid", totalkWh: 1000 }),
         createBillingInfo({ status: "Pending", totalkWh: 1500 }),
@@ -1911,7 +1866,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("generateQueryConditions", () => {
     it("should generate correct conditions for single field", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: { userId: "test-user-id" },
       };
@@ -1922,7 +1876,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should generate correct conditions for multiple fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: {
           userId: "test-user-id",
@@ -1941,7 +1894,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle exclude_id option", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: { userId: "test-user-id" },
         options: { exclude_id: "exclude-this-id" },
@@ -1956,7 +1908,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle numeric fields with zero values", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: {
           totalkWh: 0,
@@ -1975,7 +1926,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should ignore undefined fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: {
           userId: "test-user-id",
@@ -1993,7 +1943,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle all available query fields", () => {
-      if (process.env.CI === "true") return;
       const param: HelperParam<NewBillingInfo> = {
         query: {
           id: "test-id",
@@ -2024,7 +1973,6 @@ describe("Billing Info CRUD Operations", () => {
 
   describe("Edge Cases and Error Handling", () => {
     it("should handle billing info with very large numbers", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -2060,7 +2008,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with small decimal values", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -2094,7 +2041,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle special date formats", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -2128,7 +2074,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle simultaneous billing info operations", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -2156,7 +2101,6 @@ describe("Billing Info CRUD Operations", () => {
     });
 
     it("should handle billing info with foreign key relationships", async () => {
-      if (process.env.CI === "true") return;
       const {
         valid: validUser,
         value: [addedUser],
@@ -2194,103 +2138,72 @@ describe("Billing Info CRUD Operations", () => {
       expect(searchResult.value).toHaveLength(1);
     });
 
-    describe("Transactions and process mirroring billing-info.remote", () => {
-      it("commits when all steps succeed", async () => {
-        if (process.env.CI === "true") return;
+    describe("Batch operations mirroring billing-info.remote", () => {
+      it("inserts billing info and sub meters in a single batch", async () => {
         const {
           value: [addedUser],
         } = await addUser([createUser()]);
 
-        const result = await db().transaction(async (tx) => {
-          const {
-            valid: validMainPayment,
-            value: [mainPayment],
-          } = await addPayment([{ amount: 200, date: new Date() }], tx);
-          if (!validMainPayment) {
-            tx.rollback();
-            throw new Error("Main payment failed");
-          }
+        const database = db();
+        const mainPaymentId = crypto.randomUUID();
+        const billingInfoId = crypto.randomUUID();
+        const subPaymentId = crypto.randomUUID();
+        const subMeterId = crypto.randomUUID();
 
-          const {
-            valid: validBillingInfo,
-            value: [billingInfo],
-          } = await addBillingInfo(
-            [
-              {
+        const [mainPaymentResult, billingInfoResult, subPaymentResult, subMeterResult] =
+          await database.batch([
+            database
+              .insert(payment)
+              .values({ id: mainPaymentId, amount: 200, date: new Date() })
+              .returning(),
+            database
+              .insert(billingInfo)
+              .values({
+                id: billingInfoId,
                 userId: addedUser.id,
                 date: new Date(),
                 totalkWh: 100,
                 balance: 200,
                 status: "Pending",
                 payPerkWh: 2,
-                paymentId: mainPayment.id,
-              },
-            ],
-            tx
-          );
+                paymentId: mainPaymentId,
+              })
+              .returning(),
+            database
+              .insert(payment)
+              .values({ id: subPaymentId, amount: 50, date: new Date() })
+              .returning(),
+            database
+              .insert(subMeter)
+              .values({
+                id: subMeterId,
+                billingInfoId,
+                label: "A",
+                subkWh: 10,
+                reading: 110,
+                paymentId: subPaymentId,
+              })
+              .returning(),
+          ]);
 
-          if (!validBillingInfo) {
-            tx.rollback();
-            throw new Error("Billing info failed");
-          }
-
-          const subMeterInserts: Omit<any, "id">[] = [];
-
-          const {
-            valid: validSub1,
-            value: [subPayment1],
-          } = await addPayment([{ amount: 50, date: new Date() }], tx);
-          if (!validSub1) {
-            tx.rollback();
-            throw new Error("Sub payment 1 failed");
-          }
-          subMeterInserts.push({
-            billingInfoId: billingInfo.id,
-            label: "A",
-            subkWh: 10,
-            reading: 110,
-            paymentId: subPayment1.id,
-          });
-
-          const {
-            valid: validSub2,
-            value: [subPayment2],
-          } = await addPayment([{ amount: 25, date: new Date() }], tx);
-          if (!validSub2) {
-            tx.rollback();
-            throw new Error("Sub payment 2 failed");
-          }
-          subMeterInserts.push({
-            billingInfoId: billingInfo.id,
-            label: "B",
-            subkWh: 5,
-            reading: 105,
-            paymentId: subPayment2.id,
-          });
-
-          return { billingInfo, subMeterInserts, mainPayment };
-        });
-
-        const { billingInfo, subMeterInserts } = result;
-
-        const addSubResult = await addSubMeter(subMeterInserts);
-        expect(addSubResult.valid).toBe(true);
+        expect(mainPaymentResult).toHaveLength(1);
+        expect(billingInfoResult).toHaveLength(1);
+        expect(subPaymentResult).toHaveLength(1);
+        expect(subMeterResult).toHaveLength(1);
 
         const fetched = await getBillingInfoBy({
-          query: { id: billingInfo.id },
+          query: { id: billingInfoId },
           options: { with_payment: true, with_sub_meters_with_payment: true },
         });
 
         expect(fetched.valid).toBe(true);
         const [fetchedBilling] = fetched.value;
         const subMeters = (fetchedBilling.subMeters ?? []) as any[];
-        expect(subMeters).toHaveLength(2);
+        expect(subMeters).toHaveLength(1);
         expect(subMeters[0].payment?.amount).toBe(50);
-        expect(subMeters[1].payment?.amount).toBe(25);
       });
 
       it("does not bill new sub meters (initial readings) when creating billing info", async () => {
-        if (process.env.CI === "true") return;
         const {
           value: [addedUser],
         } = await addUser([createUser()]);
@@ -2361,145 +2274,23 @@ describe("Billing Info CRUD Operations", () => {
         expect(mainPay.amount).toBeCloseTo(balance, 2);
       });
 
-      it("rolls back entire transaction when addBillingInfo fails (first failure)", async () => {
-        if (process.env.CI === "true") return;
-        await addUser([createUser()]);
+      it("rejects batch when references are missing", async () => {
+        const database = db();
 
         await expect(
-          db().transaction(async (tx) => {
-            await addPayment([{ amount: 200, date: new Date() }], tx);
-            // Force billing info failure via invalid user id (foreign key)
-            await addBillingInfo(
-              [
-                {
-                  userId: "non-existent-user",
-                  date: new Date(),
-                  totalkWh: 100,
-                  balance: 200,
-                  status: "Pending",
-                  payPerkWh: 2,
-                  paymentId: crypto.randomUUID(),
-                },
-              ],
-              tx
-            );
-          })
+          database.batch([
+            database.insert(billingInfo).values({
+              id: crypto.randomUUID(),
+              userId: "non-existent-user",
+              date: new Date(),
+              totalkWh: 100,
+              balance: 200,
+              status: "Pending",
+              payPerkWh: 2,
+              paymentId: crypto.randomUUID(),
+            }),
+          ])
         ).rejects.toThrow();
-
-        const count = (await getBillingInfoCountBy({ query: {}, options: {} })).value;
-        expect(count).toBe(0);
-      });
-
-      it("rolls back entire transaction when a sub payment fails in the middle", async () => {
-        if (process.env.CI === "true") return;
-        const {
-          value: [addedUser],
-        } = await addUser([createUser()]);
-
-        await expect(
-          db().transaction(async (tx) => {
-            const {
-              value: [mainPayment],
-            } = await addPayment([{ amount: 200, date: new Date() }], tx);
-
-            await addBillingInfo(
-              [
-                {
-                  userId: addedUser.id,
-                  date: new Date(),
-                  totalkWh: 100,
-                  balance: 200,
-                  status: "Pending",
-                  payPerkWh: 2,
-                  paymentId: mainPayment.id,
-                },
-              ],
-              tx
-            );
-
-            await addPayment([{ amount: 50, date: new Date() }], tx);
-
-            // Simulate failure in the middle of processing
-            throw new Error("simulated failure in middle");
-          })
-        ).rejects.toThrow();
-
-        const biCount = (await getBillingInfoCountBy({ query: {}, options: {} })).value;
-        expect(biCount).toBe(0);
-      });
-
-      it("leaves billing info and payments committed when addSubMeter fails outside transaction (last failure)", async () => {
-        if (process.env.CI === "true") return;
-        const {
-          value: [addedUser],
-        } = await addUser([createUser()]);
-
-        const { billingInfo, subMeterInserts, mainPayment } = await db().transaction(async (tx) => {
-          const {
-            value: [mainPayment],
-          } = await addPayment([{ amount: 200, date: new Date() }], tx);
-
-          const {
-            value: [billingInfo],
-          } = await addBillingInfo(
-            [
-              {
-                userId: addedUser.id,
-                date: new Date(),
-                totalkWh: 100,
-                balance: 200,
-                status: "Pending",
-                payPerkWh: 2,
-                paymentId: mainPayment.id,
-              },
-            ],
-            tx
-          );
-
-          const {
-            value: [subPayment1],
-          } = await addPayment([{ amount: 50, date: new Date() }], tx);
-          await addPayment([{ amount: 25, date: new Date() }], tx);
-
-          const subMeterInserts = [
-            {
-              billingInfoId: billingInfo.id,
-              label: "A",
-              subkWh: 10,
-              reading: 110,
-              paymentId: subPayment1.id,
-            },
-            // Intentionally broken payment id to cause FK error when inserting sub meters outside tx
-            {
-              billingInfoId: billingInfo.id,
-              label: "B",
-              subkWh: 5,
-              reading: 105,
-              paymentId: "non-existent-payment-id",
-            },
-          ];
-
-          return { billingInfo, mainPayment, subMeterInserts };
-        });
-
-        // Attempt to insert sub meters; should fail but main billing info and payments should be committed
-        await expect(addSubMeter(subMeterInserts)).rejects.toThrow();
-
-        // Billing info should exist
-        const fetched = await getBillingInfoBy({ query: { id: billingInfo.id }, options: {} });
-        expect(fetched.valid).toBe(true);
-        expect(fetched.value[0].id).toBe(billingInfo.id);
-
-        // Payments should exist
-        const paymentCheck = await getPaymentBy({ query: { id: mainPayment.id }, options: {} });
-        expect(paymentCheck.valid).toBe(true);
-
-        // Sub meters should not have been inserted
-        const subCheck = await getSubMeterBy({
-          query: { billingInfoId: billingInfo.id },
-          options: {},
-        });
-        expect(subCheck.valid).toBe(false);
       });
     });
   });

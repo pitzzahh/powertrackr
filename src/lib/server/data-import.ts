@@ -1,8 +1,7 @@
-import { db } from "$/server/db";
-import type { Transaction } from "$/server/db";
-import { addPayment } from "$/server/crud/payment-crud";
-import { addBillingInfo, createBillingInfoLogic } from "$/server/crud/billing-info-crud";
-import { addSubMeter } from "$/server/crud/sub-meter-crud";
+import { db, asNonEmptyBatch } from "$/server/db";
+import type { BatchQuery } from "$/server/db";
+import { payment, billingInfo, subMeter } from "$/server/db/schema";
+import { createBillingInfoLogic } from "$/server/crud/billing-info-crud";
 
 import type { NewPayment } from "$/types/payment";
 import type { NewBillingInfo } from "$/types/billing-info";
@@ -144,7 +143,7 @@ function normalizeSubMeter(item: AnyRecord): Partial<NewSubMeter> {
  *
  * Behavior:
  * - Validates & normalizes payload.
- * - Inserts payments first, then billingInfos, then subMeters inside one transaction.
+ * - Inserts payments first, then billingInfos, then subMeters using a single batch.
  * - Skips items with existing ids, reports items with missing references in `errors`.
  */
 export async function importBillingData(payload: ImportPayload): Promise<ImportResult> {
@@ -170,147 +169,226 @@ export async function importBillingData(payload: ImportPayload): Promise<ImportR
   } = extractArrays(payload);
 
   try {
-    await db().transaction(async (tx) => {
-      // PAYMENTS
-      if (Array.isArray(rawPayments) && rawPayments.length > 0) {
-        const toInsert = rawPayments.map(normalizePayment);
-        const insertCandidates: Partial<NewPayment>[] = [];
+    const database = db();
+    const paymentIdsPlanned = new Set<string>();
+    const billingInfoIdsPlanned = new Set<string>();
+    const subMeterIdsPlanned = new Set<string>();
 
-        for (const item of toInsert) {
-          if (item.id) {
-            const exists = await tx.query.payment.findFirst({ where: { id: item.id as string } });
-            if (exists) {
-              report.payments.skipped.push({
-                item,
-                reason: `payment id ${item.id} already exists`,
-              });
-              continue;
-            }
-          }
+    const paymentCandidates: NewPayment[] = [];
+    const billingInfoCandidates: NewBillingInfo[] = [];
+    const subMeterCandidates: NewSubMeter[] = [];
 
-          if (item.amount === undefined || item.amount === null) {
-            report.payments.errors.push({ item, error: "Payment must include an amount" });
-            continue;
-          }
+    // PAYMENTS
+    if (Array.isArray(rawPayments) && rawPayments.length > 0) {
+      const toInsert = rawPayments.map(normalizePayment);
 
-          if (!item.date) item.date = new Date();
-          insertCandidates.push(item);
-        }
-
-        if (insertCandidates.length > 0) {
-          const added = await addPayment(insertCandidates as any[], tx);
-          if (!added.valid) throw new Error(`Failed to add payments: ${added.message}`);
-          report.payments.added.push(...(added.value ?? []));
-        }
-      }
-
-      // BILLING INFOS
-      if (Array.isArray(rawBillingInfos) && rawBillingInfos.length > 0) {
-        const toInsert = rawBillingInfos.map(normalizeBillingInfo);
-        const insertCandidates: Partial<NewBillingInfo>[] = [];
-
-        for (const item of toInsert) {
-          const missingRefs: string[] = [];
-
-          if (!item.userId) {
-            missingRefs.push("userId");
-          } else {
-            const u = await tx.query.user.findFirst({ where: { id: item.userId as string } });
-            if (!u) missingRefs.push(`user ${item.userId}`);
-          }
-
-          if (!item.paymentId) {
-            missingRefs.push("paymentId");
-          } else {
-            const p = await tx.query.payment.findFirst({ where: { id: item.paymentId as string } });
-            if (!p) missingRefs.push(`payment ${item.paymentId}`);
-          }
-
-          if (missingRefs.length > 0) {
-            report.billingInfos.errors.push({
+      for (const item of toInsert) {
+        if (item.id) {
+          if (paymentIdsPlanned.has(item.id as string)) {
+            report.payments.skipped.push({
               item,
-              error: `Missing/unknown references: ${missingRefs.join(", ")}`,
+              reason: `payment id ${item.id} already queued`,
             });
             continue;
           }
-
-          if (item.id) {
-            const exists = await tx.query.billingInfo.findFirst({
-              where: { id: item.id as string },
-            });
-            if (exists) {
-              report.billingInfos.skipped.push({
-                item,
-                reason: `billingInfo id ${item.id} already exists`,
-              });
-              continue;
-            }
-          }
-
-          if (!item.date) item.date = new Date();
-          insertCandidates.push(item);
-        }
-
-        if (insertCandidates.length > 0) {
-          const added = await addBillingInfo(insertCandidates as any[], tx);
-          if (!added.valid) throw new Error(`Failed to add billing infos: ${added.message}`);
-          report.billingInfos.added.push(...(added.value ?? []));
-        }
-      }
-
-      // SUB METERS
-      if (Array.isArray(rawSubMeters) && rawSubMeters.length > 0) {
-        const toInsert = rawSubMeters.map(normalizeSubMeter);
-        const insertCandidates: Partial<NewSubMeter>[] = [];
-
-        for (const item of toInsert) {
-          const missingRefs: string[] = [];
-
-          if (!item.billingInfoId) {
-            missingRefs.push("billingInfoId");
-          } else {
-            const b = await tx.query.billingInfo.findFirst({
-              where: { id: item.billingInfoId as string },
-            });
-            if (!b) missingRefs.push(`billingInfo ${item.billingInfoId}`);
-          }
-
-          if (!item.paymentId) {
-            missingRefs.push("paymentId");
-          } else {
-            const p = await tx.query.payment.findFirst({ where: { id: item.paymentId as string } });
-            if (!p) missingRefs.push(`payment ${item.paymentId}`);
-          }
-
-          if (missingRefs.length > 0) {
-            report.subMeters.errors.push({
+          const exists = await database.query.payment.findFirst({
+            where: { id: item.id as string },
+          });
+          if (exists) {
+            report.payments.skipped.push({
               item,
-              error: `Missing/unknown references: ${missingRefs.join(", ")}`,
+              reason: `payment id ${item.id} already exists`,
             });
             continue;
           }
-
-          if (item.id) {
-            const exists = await tx.query.subMeter.findFirst({ where: { id: item.id as string } });
-            if (exists) {
-              report.subMeters.skipped.push({
-                item,
-                reason: `subMeter id ${item.id} already exists`,
-              });
-              continue;
-            }
-          }
-
-          insertCandidates.push(item);
         }
 
-        if (insertCandidates.length > 0) {
-          const added = await addSubMeter(insertCandidates as any[], tx);
-          if (!added.valid) throw new Error(`Failed to add sub meters: ${added.message}`);
-          report.subMeters.added.push(...(added.value ?? []));
+        if (item.amount === undefined || item.amount === null) {
+          report.payments.errors.push({ item, error: "Payment must include an amount" });
+          continue;
         }
+
+        const id = (item.id as string | undefined) ?? crypto.randomUUID();
+        const candidate: NewPayment = {
+          ...(item as NewPayment),
+          id,
+          date: item.date ?? new Date(),
+        };
+
+        paymentIdsPlanned.add(id);
+        paymentCandidates.push(candidate);
       }
-    }); // end transaction
+    }
+
+    // BILLING INFOS
+    if (Array.isArray(rawBillingInfos) && rawBillingInfos.length > 0) {
+      const toInsert = rawBillingInfos.map(normalizeBillingInfo);
+
+      for (const item of toInsert) {
+        const missingRefs: string[] = [];
+
+        if (!item.userId) {
+          missingRefs.push("userId");
+        } else {
+          const u = await database.query.user.findFirst({
+            where: { id: item.userId as string },
+          });
+          if (!u) missingRefs.push(`user ${item.userId}`);
+        }
+
+        if (!item.paymentId) {
+          missingRefs.push("paymentId");
+        } else if (!paymentIdsPlanned.has(item.paymentId as string)) {
+          const p = await database.query.payment.findFirst({
+            where: { id: item.paymentId as string },
+          });
+          if (!p) missingRefs.push(`payment ${item.paymentId}`);
+        }
+
+        if (missingRefs.length > 0) {
+          report.billingInfos.errors.push({
+            item,
+            error: `Missing/unknown references: ${missingRefs.join(", ")}`,
+          });
+          continue;
+        }
+
+        if (item.id) {
+          if (billingInfoIdsPlanned.has(item.id as string)) {
+            report.billingInfos.skipped.push({
+              item,
+              reason: `billingInfo id ${item.id} already queued`,
+            });
+            continue;
+          }
+          const exists = await database.query.billingInfo.findFirst({
+            where: { id: item.id as string },
+          });
+          if (exists) {
+            report.billingInfos.skipped.push({
+              item,
+              reason: `billingInfo id ${item.id} already exists`,
+            });
+            continue;
+          }
+        }
+
+        const id = (item.id as string | undefined) ?? crypto.randomUUID();
+        const candidate: NewBillingInfo = {
+          ...(item as NewBillingInfo),
+          id,
+          date: item.date ?? new Date(),
+        };
+
+        billingInfoIdsPlanned.add(id);
+        billingInfoCandidates.push(candidate);
+      }
+    }
+
+    // SUB METERS
+    if (Array.isArray(rawSubMeters) && rawSubMeters.length > 0) {
+      const toInsert = rawSubMeters.map(normalizeSubMeter);
+
+      for (const item of toInsert) {
+        const missingRefs: string[] = [];
+
+        if (!item.billingInfoId) {
+          missingRefs.push("billingInfoId");
+        } else if (!billingInfoIdsPlanned.has(item.billingInfoId as string)) {
+          const b = await database.query.billingInfo.findFirst({
+            where: { id: item.billingInfoId as string },
+          });
+          if (!b) missingRefs.push(`billingInfo ${item.billingInfoId}`);
+        }
+
+        if (!item.paymentId) {
+          missingRefs.push("paymentId");
+        } else if (!paymentIdsPlanned.has(item.paymentId as string)) {
+          const p = await database.query.payment.findFirst({
+            where: { id: item.paymentId as string },
+          });
+          if (!p) missingRefs.push(`payment ${item.paymentId}`);
+        }
+
+        if (missingRefs.length > 0) {
+          report.subMeters.errors.push({
+            item,
+            error: `Missing/unknown references: ${missingRefs.join(", ")}`,
+          });
+          continue;
+        }
+
+        if (item.id) {
+          if (subMeterIdsPlanned.has(item.id as string)) {
+            report.subMeters.skipped.push({
+              item,
+              reason: `subMeter id ${item.id} already queued`,
+            });
+            continue;
+          }
+          const exists = await database.query.subMeter.findFirst({
+            where: { id: item.id as string },
+          });
+          if (exists) {
+            report.subMeters.skipped.push({
+              item,
+              reason: `subMeter id ${item.id} already exists`,
+            });
+            continue;
+          }
+        }
+
+        const id = (item.id as string | undefined) ?? crypto.randomUUID();
+        const candidate: NewSubMeter = {
+          ...(item as NewSubMeter),
+          id,
+        };
+
+        subMeterIdsPlanned.add(id);
+        subMeterCandidates.push(candidate);
+      }
+    }
+
+    const batchQueries: BatchQuery[] = [];
+    let paymentsResultIndex: number | null = null;
+    let billingInfosResultIndex: number | null = null;
+    let subMetersResultIndex: number | null = null;
+
+    if (paymentCandidates.length > 0) {
+      paymentsResultIndex = batchQueries.length;
+      batchQueries.push(database.insert(payment).values(paymentCandidates).returning());
+    }
+    if (billingInfoCandidates.length > 0) {
+      billingInfosResultIndex = batchQueries.length;
+      batchQueries.push(database.insert(billingInfo).values(billingInfoCandidates).returning());
+    }
+    if (subMeterCandidates.length > 0) {
+      subMetersResultIndex = batchQueries.length;
+      batchQueries.push(database.insert(subMeter).values(subMeterCandidates).returning());
+    }
+
+    let batchResults: Awaited<ReturnType<ReturnType<typeof db>["batch"]>> = [];
+    const batchPayload = asNonEmptyBatch(batchQueries);
+    if (batchPayload) {
+      batchResults = await database.batch(batchPayload);
+    }
+
+    const paymentResults =
+      paymentsResultIndex !== null && Array.isArray(batchResults[paymentsResultIndex])
+        ? (batchResults[paymentsResultIndex] as NewPayment[])
+        : paymentCandidates;
+    const billingInfoResults =
+      billingInfosResultIndex !== null && Array.isArray(batchResults[billingInfosResultIndex])
+        ? (batchResults[billingInfosResultIndex] as NewBillingInfo[])
+        : billingInfoCandidates;
+    const subMeterResults =
+      subMetersResultIndex !== null && Array.isArray(batchResults[subMetersResultIndex])
+        ? (batchResults[subMetersResultIndex] as NewSubMeter[])
+        : subMeterCandidates;
+
+    report.payments.added.push(...paymentResults);
+    report.billingInfos.added.push(...billingInfoResults);
+    report.subMeters.added.push(...subMeterResults);
 
     return {
       success: true,
@@ -333,7 +411,7 @@ export async function importBillingData(payload: ImportPayload): Promise<ImportR
     return {
       success: false,
       report,
-      message: "Import failed and transaction rolled back",
+      message: "Import failed",
       error: msg,
     };
   }
@@ -355,13 +433,10 @@ export function summarizeImportPayload(payload: ImportPayload) {
 /**
  * Handler that imports an array of billing form items for a user.
  * - Reuses `createBillingInfoLogic` to ensure consistent behavior.
- * - Runs all creations inside a single transaction when called without `tx`
- *   or uses the passed `tx` if provided (so callers can embed it in a larger transaction).
  */
 export async function importBillingHandler(
   items: Parameters<typeof createBillingInfoLogic>[0][],
-  userId: string,
-  tx?: Transaction
+  userId: string
 ): Promise<BillingInfo[]> {
   const created: BillingInfo[] = [];
 
@@ -377,21 +452,10 @@ export async function importBillingHandler(
     return na - nb;
   });
 
-  if (tx) {
-    // Already in a transaction provided by caller
-    for (const item of sortedItems) {
-      const ci = await createBillingInfoLogic(item, userId, tx);
-      created.push(ci);
-    }
-    return created;
+  for (const item of sortedItems) {
+    const ci = await createBillingInfoLogic(item, userId);
+    created.push(ci);
   }
 
-  // Create a transaction for the whole import
-  return await db().transaction(async (txLocal) => {
-    for (const item of sortedItems) {
-      const ci = await createBillingInfoLogic(item, userId, txLocal);
-      created.push(ci);
-    }
-    return created;
-  });
+  return created;
 }

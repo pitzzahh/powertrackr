@@ -7,8 +7,7 @@ on:
     branches: ["main", "dev"]
 
 env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+  TEST_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
   ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
   GITHUB_CLIENT_ID: ${{ secrets.CLIENT_ID }}
   GITHUB_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}

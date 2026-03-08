@@ -6,7 +6,8 @@ import type { OAuth2Tokens } from "arctic";
 import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "$/server/encryption";
 import { createGitHub } from "$/server/oauth";
-import { addUser } from "$/server/crud/user-crud";
+import { addUser, updateUserBy, getUserBy } from "$/server/crud/user-crud";
+import type { NewUser } from "$/types/user";
 
 async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;
@@ -38,6 +39,8 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const userRequest = new Request("https://api.github.com/user");
   userRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
+  userRequest.headers.set("User-Agent", "PowerTrackr/1.0");
+  userRequest.headers.set("Accept", "application/vnd.github+json");
   const userResponse = await event.fetch(userRequest);
   const userParser = new ObjectParser(await userResponse.json());
 
@@ -67,7 +70,9 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
 
   const emailListRequest = new Request("https://api.github.com/user/emails");
   emailListRequest.headers.set("Authorization", `Bearer ${githubAccessToken}`);
-  const emailListResponse = await fetch(emailListRequest);
+  emailListRequest.headers.set("User-Agent", "PowerTrackr/1.0");
+  emailListRequest.headers.set("Accept", "application/vnd.github+json");
+  const emailListResponse = await event.fetch(emailListRequest);
   const emailListResult: unknown = await emailListResponse.json();
   if (!Array.isArray(emailListResult) || emailListResult.length < 1) {
     return new Response("Please restart the process.", {
@@ -89,6 +94,27 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
     });
   }
 
+  const existingUserByEmailResult = await getUserBy({
+    query: { email },
+    options: { limit: 1 },
+  });
+  if (existingUserByEmailResult.valid && existingUserByEmailResult.value.length > 0) {
+    const existingUser = existingUserByEmailResult.value[0] as NewUser;
+    await updateUserBy({ query: { id: existingUser.id } }, { githubId: githubUserId });
+    const sessionToken = generateSessionToken();
+    const session = await createSession(sessionToken, existingUser.id, {
+      twoFactorVerified: false,
+      ipAddress: event.getClientAddress(),
+      userAgent: event.request.headers.get("user-agent"),
+    });
+    setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: "/dashboard?oauth=github",
+      },
+    });
+  }
   const {
     value: [user],
   } = await addUser([

@@ -1,0 +1,21 @@
+name = "powertrackr"
+main = ".svelte-kit/cloudflare/_worker.js"
+compatibility_date = "2025-03-01"
+compatibility_flags = ["nodejs_als", "nodejs_compat"]
+
+[assets]
+directory = ".svelte-kit/cloudflare"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "powertrackr-db"
+database_id = "f37e5712-bf91-425b-bb30-048600ceb0a8"
+
+[observability]
+[observability.logs]
+enabled = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false

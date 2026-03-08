@@ -1,16 +1,16 @@
-import { pgTable, index, foreignKey, text, integer, real, timestamp } from "drizzle-orm/pg-core";
+import { sqliteTable, index, foreignKey, text, integer, real } from "drizzle-orm/sqlite-core";
 import { payment } from "./payment";
 import { user } from "./user";
 import { timestamps } from ".";
 
-export const billingInfo = pgTable(
+export const billingInfo = sqliteTable(
   "billing_info",
   {
     id: text().primaryKey().notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    date: timestamp("date").notNull(), // Use native timestamp in Postgres
+    date: integer("date", { mode: "timestamp_ms" }).notNull(),
     totalkWh: integer("total_kWh").notNull(),
     balance: real().notNull(),
     status: text().notNull(),

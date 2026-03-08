@@ -39,7 +39,6 @@ afterEach(() => {
 
 describe("Plunk email helpers", () => {
   it("createContact should be no-op and return null when PLUNK key is missing", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     // Ensure env has no PLUNK configuration for this test
     for (const k of Object.keys(env)) delete env[k];
@@ -54,7 +53,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("createContact should POST to Plunk and return contact data when configured", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     env.PLUNK_SECRET_KEY = "KEY";
     env.PLUNK_BASE_URL = "https://api.plunk.test";
@@ -81,7 +79,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("sendVerificationEmail should be no-op and return null when PLUNK key is missing", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     // Ensure no PLUNK configuration for this test
     for (const k of Object.keys(env)) delete env[k];
@@ -97,7 +94,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("sendVerificationEmail should send by template id when template exists and return send response", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     env.PLUNK_SECRET_KEY = "KEY";
     env.PLUNK_BASE_URL = "https://plunk.test";
@@ -111,7 +107,8 @@ describe("Plunk email helpers", () => {
       }
       if (url.includes("/templates")) {
         return makeJsonResponse({
-          data: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }],
+          success: true,
+          data: { items: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }] },
         });
       }
       if (url.includes("/v1/send")) {
@@ -140,7 +137,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("sendVerificationEmail should retry template send with default 'from' on VALIDATION_ERROR and succeed", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     env.PLUNK_SECRET_KEY = "KEY";
     env.PLUNK_BASE_URL = "https://plunk.test";
@@ -152,7 +148,8 @@ describe("Plunk email helpers", () => {
       }
       if (url.includes("/templates")) {
         return makeJsonResponse({
-          data: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }],
+          success: true,
+          data: { items: [{ id: "tpl-1", name: "Email Verification", from: "no-reply@plunk" }] },
         });
       }
       if (url.includes("/v1/send")) {
@@ -179,7 +176,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("sendVerificationEmail should fallback to inline message when no templates found", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     env.PLUNK_SECRET_KEY = "KEY";
     env.PLUNK_BASE_URL = "https://plunk.test";
@@ -191,7 +187,7 @@ describe("Plunk email helpers", () => {
         return makeJsonResponse({ success: true });
       }
       if (url.includes("/templates")) {
-        return makeJsonResponse({ data: [] });
+        return makeJsonResponse({ success: true, data: { items: [] } });
       }
       if (url.includes("/v1/send")) {
         return makeJsonResponse({ success: true, inline: true });
@@ -214,7 +210,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("createAndSendEmailVerification should return null when DB insert fails", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     for (const k of Object.keys(env)) delete env[k];
     addEmailVerificationRequest.mockResolvedValue({ valid: false, message: "boom" });
@@ -228,7 +223,6 @@ describe("Plunk email helpers", () => {
   });
 
   it("createAndSendEmailVerification should add the request and attempt sending the email", async () => {
-    if (process.env.CI === "true") return;
     vi.resetModules();
     for (const k of Object.keys(env)) delete env[k];
 

@@ -1,39 +1,43 @@
-import { Pool } from "pg";
-import { drizzle } from "drizzle-orm/node-postgres";
-import { env } from "$env/dynamic/private";
+/// <reference types="../../../worker-configuration" />
+
+import { drizzle } from "drizzle-orm/d1";
+import { getRequestEvent } from "$app/server";
 import { relations } from "./relations";
 import * as schema from "./schema";
 
-if (!env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined in environment variables");
-}
-
 // Use a factory that constructs the database so TypeScript can infer the full,
 // correct return type from the concrete `schema` and `relations` we provide.
-function createDb() {
-  // Use the object form which matches the node-postgres overload and allows
-  // TypeScript to infer types from the provided `schema` & `relations`.
-  return drizzle({ client: pool(), schema, relations });
+function createDb(d1: D1Database) {
+  return drizzle(d1, { schema, relations });
 }
 
 // Export a Database type consumers can reference if needed.
 export type Database = ReturnType<typeof createDb>;
-// Transaction helper type representing the `tx` instance passed into a transaction callback.
-export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+// Batch helper types for D1 batch API.
+export type BatchQuery = Parameters<Database["batch"]>[0][number];
+export type BatchResult = Awaited<ReturnType<Database["batch"]>>[number];
+export type NonEmptyArray<T> = [T, ...T[]];
 
-let _db: Database | undefined;
-let _pool: Pool | undefined;
-
-export function db(): Database {
-  if (!_db) {
-    _db = createDb();
-  }
-  return _db;
+export function asNonEmptyBatch<T extends BatchQuery>(queries: T[]): NonEmptyArray<T> | null {
+  return queries.length > 0 ? (queries as NonEmptyArray<T>) : null;
 }
 
-export function pool() {
-  if (!_pool) {
-    _pool = new Pool({ connectionString: env.DATABASE_URL });
+let _testDb: Database | undefined;
+
+export function setTestDb(testDb: Database | undefined) {
+  _testDb = testDb;
+}
+
+export function db(): Database {
+  if (_testDb) {
+    return _testDb;
   }
-  return _pool;
+
+  const d1 = getRequestEvent()?.platform?.env?.DB;
+
+  if (!d1) {
+    throw new Error("D1 database binding 'DB' is not available on the current platform.");
+  }
+
+  return createDb(d1);
 }
