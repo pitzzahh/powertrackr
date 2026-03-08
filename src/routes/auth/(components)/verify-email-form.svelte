@@ -37,8 +37,7 @@
     showSuccess,
     showWarning,
   } from "$/components/toast";
-  import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$env/static/public";
-
+  import { env } from "$env/dynamic/public";
   let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
 
   let { status, countdown, cooldownTime, timer }: VerifyEmailFormState = $state({
@@ -165,7 +164,7 @@
             }
             if (res?.success && res.sent) {
               cooldownTime =
-                Date.now() + Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES) * 60 * 1000;
+                Date.now() + Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1) * 60 * 1000;
               document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=60;`;
               countdown = 60;
               timer = setInterval(() => {
