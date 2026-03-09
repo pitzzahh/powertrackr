@@ -44,7 +44,11 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   }
 
   // Check additional auth requirements
-  if (!event.locals.user.isOauthUser && !event.locals.user.emailVerified) {
+  if (
+    !event.locals.user.isOauthUser &&
+    !event.locals.user.emailVerified &&
+    !event.url.pathname.startsWith("/api/")
+  ) {
     redirect(303, "/auth?act=verify-email");
   }
   if (event.locals.user.registeredTwoFactor && !event.locals.session.twoFactorVerified) {
