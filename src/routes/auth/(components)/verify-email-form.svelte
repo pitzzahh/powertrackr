@@ -48,6 +48,7 @@
   });
 
   const id = $props.id();
+  const resendCooldownSeconds = Number(env.PUBLIC_RESEND_COOLDOWN_SECONDS ?? 60);
 
   $effect(() => {
     const cookies = document.cookie.split(";").map((c) => c.trim());
@@ -141,7 +142,9 @@
         variant="outline"
         disabled={status === "processing" || countdown > 0}
         aria-label="Resend verification code"
-        style="opacity: {countdown > 0 ? 0.3 + ((60 - countdown) / 60) * 0.7 : 1}"
+        style="opacity: {countdown > 0
+          ? 0.3 + ((resendCooldownSeconds - countdown) / resendCooldownSeconds) * 0.7
+          : 1}"
         onclick={async () => {
           if (countdown > 0) {
             showInspectorWarning();
@@ -163,10 +166,9 @@
               showError("Failed to resend code. Please try again.");
             }
             if (res?.success && res.sent) {
-              cooldownTime =
-                Date.now() + Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1) * 60 * 1000;
-              document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=60;`;
-              countdown = 60;
+              cooldownTime = Date.now() + resendCooldownSeconds * 1000;
+              document.cookie = `resend_cooldown=${cooldownTime}; path=/; max-age=${resendCooldownSeconds};`;
+              countdown = resendCooldownSeconds;
               timer = setInterval(() => {
                 if (cooldownTime) {
                   const now = Date.now();
