@@ -273,7 +273,7 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
 export async function createEmailVerification(
   userId: string,
   email: string,
-  timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES ?? 15)
+  timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
   // Store expiration as a Date object.
@@ -305,7 +305,7 @@ export async function createEmailVerification(
 export async function createPasswordReset(
   userId: string,
   email: string,
-  timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES ?? 15)
+  timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
   // Store expiration as a Date object.
