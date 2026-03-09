@@ -35,7 +35,6 @@ async function plunkRequest<T>(
   for (const [key, value] of Object.entries(getAuthHeaders())) {
     req.headers.set(key, value);
   }
-  console.log(req);
   const res = await event.fetch(req);
   return (await res.json().catch(() => null)) as PlunkAPIResponse<T> | null;
 }
