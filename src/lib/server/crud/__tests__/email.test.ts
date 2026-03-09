@@ -29,7 +29,6 @@ describe("server/email", () => {
       options: { limit: 1 },
     });
     expect(found.valid).toBe(true);
-    // the DB value should be a Date object (Postgres TIMESTAMPTZ)
     expect(found.value[0].expiresAt).toBeInstanceOf(Date);
     expect((found.value[0].expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
   });
