@@ -4,20 +4,9 @@ import { describe, it, expect, vi } from "vitest";
 // The mock is hoisted so it is in effect when the module under test is imported.
 vi.mock("$env/dynamic/private", () => ({ env: {} }));
 
-describe("server/email (Plunk) - no PLUNK key", () => {
-  it("createContact should be no-op and return null when PLUNK key is missing", async () => {
-    const { createContact } = await import("$/server/email");
-    await expect(createContact("user@example.com")).resolves.toBeNull();
-  });
-
-  it("sendVerificationEmail should be no-op and return null when PLUNK key is missing", async () => {
-    const { sendVerificationEmail } = await import("$/server/email");
-    await expect(sendVerificationEmail("user@example.com", "123456", 15)).resolves.toBeNull();
-  });
-
-  it("createAndSendEmailVerification should store expiresAt as an ISO string", async () => {
-    const mod = await import("$/server/email");
-    const spy = vi.spyOn(mod, "sendVerificationEmail").mockResolvedValue(null as any);
+describe("server/email", () => {
+  it("createEmailVerification should create a verification request with expiresAt as Date", async () => {
+    const { createEmailVerification } = await import("$/server/email");
 
     const { addUser } = await import("$/server/crud/user-crud");
     const { createUser } = await import("./helpers/factories");
@@ -29,9 +18,9 @@ describe("server/email (Plunk) - no PLUNK key", () => {
     expect(valid).toBe(true);
     expect(user).toBeDefined();
 
-    const verification = await mod.createAndSendEmailVerification(user.id, user.email);
+    const verification = await createEmailVerification(user.id, user.email);
     expect(verification).not.toBeNull();
-    // expiresAt should now be a native Date object (Postgres TIMESTAMPTZ)
+    // expiresAt should be a native Date object (Postgres TIMESTAMPTZ)
     expect(verification!.expiresAt).toBeInstanceOf(Date);
     expect((verification!.expiresAt as Date).getTime()).toBeGreaterThan(Date.now());
     // sanity check that numeric value is in milliseconds (greater than ~1e12)
@@ -47,7 +36,37 @@ describe("server/email (Plunk) - no PLUNK key", () => {
     // the DB value should be a Date object (Postgres TIMESTAMPTZ)
     expect(found.value[0].expiresAt).toBeInstanceOf(Date);
     expect((found.value[0].expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
+  });
 
-    spy.mockRestore();
+  it("createPasswordReset should create a password reset session with expiresAt as Date", async () => {
+    const { createPasswordReset } = await import("$/server/email");
+
+    const { addUser } = await import("$/server/crud/user-crud");
+    const { createUser } = await import("./helpers/factories");
+    const {
+      valid,
+      value: [user],
+    } = await addUser([createUser()]);
+
+    expect(valid).toBe(true);
+    expect(user).toBeDefined();
+
+    const reset = await createPasswordReset(user.id, user.email);
+    expect(reset).not.toBeNull();
+    // expiresAt should be a native Date object (Postgres TIMESTAMPTZ)
+    expect(reset!.expiresAt).toBeInstanceOf(Date);
+    expect((reset!.expiresAt as Date).getTime()).toBeGreaterThan(Date.now());
+    // sanity check that numeric value is in milliseconds (greater than ~1e12)
+    expect((reset!.expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
+
+    const { getPasswordResetSessionBy } = await import("$/server/crud/password-reset-session-crud");
+    const found = await getPasswordResetSessionBy({
+      query: { userId: user.id },
+      options: { limit: 1 },
+    });
+    expect(found.valid).toBe(true);
+    // the DB value should be a Date object (Postgres TIMESTAMPTZ)
+    expect(found.value[0].expiresAt).toBeInstanceOf(Date);
+    expect((found.value[0].expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
   });
 });
