@@ -2,7 +2,7 @@ import { redirect } from "@sveltejs/kit";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
 import type { AuthAction } from "$routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "$/types/email-verification-request";
-import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 
 export async function load({ url: { searchParams, pathname }, locals: { user, session }, fetch }) {
   const act = searchParams.get("act");
@@ -57,7 +57,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
           action: "resendVerification",
           userId: user.id,
           email: user.email,
-          timeoutMinutes: Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1),
+          timeoutMinutes: Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1),
         }),
       });
     } catch (e) {
