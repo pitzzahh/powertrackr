@@ -41,7 +41,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
   if (act === "verify-email" && user && !user.emailVerified) {
     const { valid, value } = await getEmailVerificationRequestBy({
       query: { userId: user.id },
-      options: { limit: 1, order: "asc" },
+      options: { limit: 1, order: "desc" },
     });
     try {
       const data = value as unknown as EmailVerificationRequest;
@@ -50,7 +50,7 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
         return {
           action: act as AuthAction,
         };
-      console.log("Sending initial email", isExpired);
+      console.log("Sending email verification", isExpired);
       void fetch("/api/email", {
         method: "POST",
         body: JSON.stringify({
