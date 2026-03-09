@@ -35,7 +35,7 @@ async function plunkRequest<T>(
   for (const [key, value] of Object.entries(getAuthHeaders())) {
     req.headers.set(key, value);
   }
-
+  console.log(req);
   const res = await event.fetch(req);
   return (await res.json().catch(() => null)) as PlunkAPIResponse<T> | null;
 }
@@ -305,7 +305,7 @@ export async function POST(event: RequestEvent) {
     }
     if (verification) {
       // Fire-and-forget send (do not block response)
-      void sendVerificationEmail(event, email, verification.code, timeoutMinutes ?? 15).catch(
+      await sendVerificationEmail(event, email, verification.code, timeoutMinutes ?? 15).catch(
         () => null
       );
     }
@@ -322,7 +322,7 @@ export async function POST(event: RequestEvent) {
     }
     if (reset) {
       // Fire-and-forget send (do not block response)
-      void sendPasswordResetEmail(event, email, reset.code, 15).catch(() => null);
+      await sendPasswordResetEmail(event, email, reset.code, 15).catch(() => null);
     }
     const response = reset ? { success: true, reset } : { success: false };
     return json(response);
