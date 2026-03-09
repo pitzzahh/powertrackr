@@ -26,6 +26,7 @@ import {
   getPasswordResetSessionBy,
   updatePasswordResetSessionBy,
 } from "$/server/crud/password-reset-session-crud";
+import { createPasswordReset } from "$lib/server/email";
 
 import {
   encrypt,
@@ -357,17 +358,8 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
     return { success: true };
   }
 
-  const event = getRequestEvent();
-  const cookie = event.request.headers.get("cookie");
   // Create password reset session and send email
-  await event.fetch("/api/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(cookie && { cookie }),
-    },
-    body: JSON.stringify({ action: "sendPasswordReset", userId: userResult.id!, email }),
-  });
+  await createPasswordReset(userResult.id!, email);
 
   return { success: true };
 });

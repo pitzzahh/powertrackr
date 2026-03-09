@@ -9,7 +9,7 @@
 
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import type { EmailVerificationRequest } from "$/types/email-verification-request";
+import { createEmailVerification } from "$lib/server/email";
 
 export const resendVerification = command(async () => {
   const event = getRequestEvent();
@@ -32,40 +32,12 @@ export const resendVerification = command(async () => {
   }
 
   try {
-    const cookie = event.request.headers.get("cookie");
-    const res = await event.fetch("/api/email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(cookie && { cookie }),
-      },
-      body: JSON.stringify({ action: "resendVerification", userId, email }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("API fetch failed:", res.status, res.statusText, text);
-      error(500, "Failed to send verification email");
-    }
-    let data;
-    try {
-      data = (await res.json()) as {
-        success: boolean;
-        verification?: EmailVerificationRequest;
-        error?: string;
-      };
-    } catch (e) {
-      console.error("Failed to parse API response as JSON:", e);
-      error(500, "Failed to send verification email");
-    }
-
-    if ("error" in data) {
-      console.error("API error:", data.error);
-      error(500, "Failed to send verification email");
-    } else if (data.success && data.verification) {
-      return { success: true, sent: true, requestId: data.verification.id ?? null };
+    const verification = await createEmailVerification(userId, email);
+    if (verification) {
+      return { success: true, sent: true, requestId: verification.id ?? null };
     } else {
       // Best-effort: the helper logs warnings on failure; surface a non-fatal response
-      console.warn("API call to resend verification did not succeed for user", userId);
+      console.warn("Failed to create and send verification for user", userId);
       return { success: false, sent: false };
     }
   } catch (e) {

@@ -1,10 +1,11 @@
 import { redirect } from "@sveltejs/kit";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
+import { createEmailVerification } from "$lib/server/email";
 import type { AuthAction } from "$routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "$/types/email-verification-request";
 import { env } from "$env/dynamic/public";
 
-export async function load({ url: { searchParams, pathname }, locals: { user, session }, fetch }) {
+export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
   const act = searchParams.get("act");
 
   // If trying to access 2FA setup or checkpoint, require authentication — otherwise send to login
@@ -50,16 +51,12 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
         return {
           action: act as AuthAction,
         };
-      console.log("Sending email verification", isExpired);
-      void fetch("/api/email", {
-        method: "POST",
-        body: JSON.stringify({
-          action: "resendVerification",
-          userId: user.id,
-          email: user.email,
-          timeoutMinutes: Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1),
-        }),
-      });
+      console.log("Sending initial email verification");
+      void createEmailVerification(
+        user.id,
+        user.email,
+        Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+      );
     } catch (e) {
       console.warn("Failed to send email verification on page load", e);
     }
