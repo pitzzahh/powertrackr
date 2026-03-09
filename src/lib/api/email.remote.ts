@@ -9,7 +9,7 @@
 
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { createAndSendEmailVerification } from "$/server/email";
+import { createEmailVerification } from "$lib/server/email";
 
 export const resendVerification = command(async () => {
   const event = getRequestEvent();
@@ -32,15 +32,14 @@ export const resendVerification = command(async () => {
   }
 
   try {
-    const verification = await createAndSendEmailVerification(userId, email);
-
-    if (!verification) {
+    const verification = await createEmailVerification(userId, email);
+    if (verification) {
+      return { success: true, sent: true, requestId: verification.id ?? null };
+    } else {
       // Best-effort: the helper logs warnings on failure; surface a non-fatal response
-      console.warn("createAndSendEmailVerification did not create a verification for user", userId);
+      console.warn("Failed to create and send verification for user", userId);
       return { success: false, sent: false };
     }
-
-    return { success: true, sent: true, requestId: verification.id ?? null };
   } catch (e) {
     console.error("Failed to resend verification email for user", userId, e);
     error(500, "Failed to send verification email");

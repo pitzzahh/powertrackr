@@ -26,7 +26,7 @@ import {
   getPasswordResetSessionBy,
   updatePasswordResetSessionBy,
 } from "$/server/crud/password-reset-session-crud";
-import { createAndSendPasswordReset } from "$/server/email";
+import { createPasswordReset } from "$lib/server/email";
 
 import {
   encrypt,
@@ -359,7 +359,7 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
   }
 
   // Create password reset session and send email
-  await createAndSendPasswordReset(userResult.id!, email);
+  await createPasswordReset(userResult.id!, email);
 
   return { success: true };
 });

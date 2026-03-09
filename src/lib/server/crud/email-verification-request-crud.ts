@@ -8,6 +8,7 @@ import type {
   NewEmailVerificationRequest,
   EmailVerificationRequestDTO,
   NewEmailVerificationRequestWithUser,
+  EmailVerificationRequest,
 } from "$/types/email-verification-request";
 import { mapNewUser_to_DTO } from "./user-crud";
 import type { UserDTO } from "$/types/user";
@@ -54,7 +55,7 @@ export async function addEmailVerificationRequest(
 export async function updateEmailVerificationRequestBy(
   by: HelperParam<NewEmailVerificationRequest>,
   data: Partial<NewEmailVerificationRequest>
-): Promise<HelperResult<NewEmailVerificationRequest[]>> {
+): Promise<HelperResult<EmailVerificationRequest[]>> {
   const { query } = by;
   const request_param = { ...by, options: { ...by.options, fields: undefined } };
   const request_result = await getEmailVerificationRequestBy(request_param);
@@ -96,7 +97,7 @@ export async function updateEmailVerificationRequestBy(
 
 export async function getEmailVerificationRequestBy(
   data: HelperParam<NewEmailVerificationRequest>
-): Promise<HelperResult<Partial<NewEmailVerificationRequest>[]>> {
+): Promise<HelperResult<Partial<EmailVerificationRequest>[]>> {
   const { options } = data;
   const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
   const queryOptions: EmailVerificationRequestQueryOptions = {
