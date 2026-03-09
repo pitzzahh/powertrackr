@@ -2,6 +2,8 @@ import { redirect } from "@sveltejs/kit";
 import { createAndSendEmailVerification } from "$/server/email";
 import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
 import type { AuthAction } from "$routes/auth/(components)/index.js";
+import type { EmailVerificationRequest } from "$/types/email-verification-request";
+import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$env/static/public";
 
 export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
   const act = searchParams.get("act");
@@ -40,14 +42,20 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
   if (act === "verify-email" && user && !user.emailVerified) {
     const { valid, value } = await getEmailVerificationRequestBy({
       query: { userId: user.id },
-      options: { limit: 1 },
+      options: { limit: 1, order: "asc" },
     });
-    if (!valid || !value || value.length === 0) {
-      try {
-        await createAndSendEmailVerification(user.id, user.email);
-      } catch (e) {
-        console.warn("Failed to send email verification on page load", e);
-      }
+    try {
+      const data = value as unknown as EmailVerificationRequest;
+      const isExpired = value && data?.expiresAt?.getTime() < Date.now();
+      if (valid && !isExpired) return;
+      console.log("Sending initial email", isExpired);
+      void createAndSendEmailVerification(
+        user.id,
+        user.email,
+        Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+      );
+    } catch (e) {
+      console.warn("Failed to send email verification on page load", e);
     }
   }
   if (
