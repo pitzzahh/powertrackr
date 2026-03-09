@@ -47,7 +47,10 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
     try {
       const data = value as unknown as EmailVerificationRequest;
       const isExpired = value && data?.expiresAt?.getTime() < Date.now();
-      if (valid && !isExpired) return;
+      if (valid && !isExpired)
+        return {
+          action: act as AuthAction,
+        };
       console.log("Sending initial email", isExpired);
       void createAndSendEmailVerification(
         user.id,
