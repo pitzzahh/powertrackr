@@ -20,7 +20,6 @@ const config = {
           "self",
           "sha256-uQ+6xeJ5jfvD5SmN5W7ZFR4dF9DbDwscZWrWOLfV+RM=",
           "sha256-94WxU203ItVdYeuHa4UBPQzWANAxvaHV/BgTnRrE/14=",
-          "nonce-RrxeVQDI4LnE62R05ozHjg==",
         ],
         "worker-src": ["self", "blob:"],
         "style-src": ["self", "unsafe-inline", "https://fonts.googleapis.com"],
