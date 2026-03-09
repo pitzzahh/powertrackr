@@ -1,8 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
-
-// Simulate an environment with no PLUNK key so the module behaves as a no-op.
-// The mock is hoisted so it is in effect when the module under test is imported.
-vi.mock("$env/dynamic/private", () => ({ env: {} }));
+import { describe, it, expect } from "vitest";
 
 describe("server/email", () => {
   it("createEmailVerification should create a verification request with expiresAt as Date", async () => {
