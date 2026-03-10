@@ -1,5 +1,6 @@
 <script lang="ts">
   import {
+    AnimatedBackground,
     BenefitsMarquee,
     Cta,
     Features,
@@ -17,7 +18,7 @@
 
 <div class="relative min-h-screen overflow-hidden bg-background">
   <LandingNav user={data.user} session={data.session} />
-
+  <AnimatedBackground />
   <!-- Hero Section with scroll indicator -->
   <div class="relative">
     <Hero user={data.user} session={data.session} />
