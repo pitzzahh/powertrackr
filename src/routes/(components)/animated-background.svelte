@@ -9,7 +9,6 @@
 
     const blobs = node.querySelectorAll(".blob");
     const particles = node.querySelectorAll(".particle");
-    const rings = node.querySelectorAll(".deco-ring");
 
     // Create parallax effect for blobs - they move at different speeds
     blobs.forEach((blob, index) => {
@@ -48,22 +47,6 @@
       });
     });
 
-    // Animate deco-rings with rotation on scroll
-    rings.forEach((ring, index) => {
-      const direction = index % 2 === 0 ? 1 : -1;
-
-      gsap.to(ring, {
-        rotation: direction * 180,
-        ease: "none",
-        scrollTrigger: {
-          trigger: document.body,
-          start: "top top",
-          end: "bottom bottom",
-          scrub: 3,
-        },
-      });
-    });
-
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
@@ -84,11 +67,6 @@
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
   <div class="blob blob-4"></div>
-
-  <!-- Decorative rings -->
-  <div class="deco-ring deco-ring-1"></div>
-  <div class="deco-ring deco-ring-2"></div>
-  <div class="deco-ring deco-ring-3"></div>
 
   <!-- Floating particles -->
   <div class="particle particle-1"></div>
@@ -201,39 +179,6 @@
     75% {
       transform: translate(30px, 20px) scale(1.05);
     }
-  }
-
-  /* Decorative rings */
-  .deco-ring {
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid color-mix(in oklch, var(--primary) 15%, transparent);
-    will-change: transform;
-  }
-
-  .deco-ring-1 {
-    top: 10%;
-    right: 10%;
-    width: 300px;
-    height: 300px;
-    animation: deco-ring-pulse 15s ease-in-out infinite;
-  }
-
-  .deco-ring-2 {
-    bottom: 20%;
-    left: 5%;
-    width: 400px;
-    height: 400px;
-    animation: deco-ring-pulse 20s ease-in-out infinite reverse;
-  }
-
-  .deco-ring-3 {
-    top: 60%;
-    right: 25%;
-    width: 200px;
-    height: 200px;
-    animation: deco-ring-pulse 12s ease-in-out infinite;
-    animation-delay: -5s;
   }
 
   @keyframes deco-ring-pulse {
