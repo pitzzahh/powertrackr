@@ -14,7 +14,8 @@
 
   let { data } = $props();
 </script>
- <div class="relative min-h-screen overflow-hidden bg-background">
+
+<div class="relative min-h-screen overflow-hidden bg-background">
   <LandingNav user={data.user} session={data.session} />
 
   <!-- Hero Section with scroll indicator -->
