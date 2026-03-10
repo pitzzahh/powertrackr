@@ -24,6 +24,7 @@
   import { dev } from "$app/environment";
   import { page } from "$app/state";
   import { IsMobile } from "$/hooks/is-mobile.svelte.js";
+  import SvelteSeo from "svelte-seo";
 
   const { children, data } = $props();
 
@@ -80,19 +81,31 @@
 
 <svelte:head>
   <link rel="icon" href={favicon} />
-  <title>{site.name}: {site.description}</title>
-  <meta name="author" content={site.author} />
-  <meta name="description" content={site.description} />
-  <meta name="keywords" content={site.keywords} />
-  <meta property="og:title" content={site.name} />
-  <meta property="og:description" content={site.description} />
-  <meta property="og:site_name" content={site.name} />
-  <meta property="og:image" content={site.ogImage} />
-  <meta property="og:url" content={site.url} />
-  <meta property="og:type" content="website" />
 </svelte:head>
 
 <svelte:window onclose={() => invalidateAll()} />
+
+<SvelteSeo
+  title="{site.name} | {site.description}"
+  description={site.description}
+  keywords={site.keywords}
+  canonical={site.url}
+  openGraph={{
+    title: site.name,
+    description: site.description,
+    url: site.url,
+    site_name: site.name,
+    images: [
+      {
+        url: site.ogImage,
+        width: 1200,
+        height: 630,
+        alt: site.name,
+      },
+    ],
+    type: "website",
+  }}
+/>
 
 <main>
   {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/" && page.url.searchParams.get("act") !== "2fa-setup"}
@@ -100,7 +113,7 @@
       <Header user={data.user} />
 
       <div class="no-scrollbar h-full overflow-y-auto">
-        <main class="flex min-h-full justify-between gap-4 px-4 pt-16">
+        <div class="flex min-h-full justify-between gap-4 px-4 pt-16">
           <aside
             in:scale={{ duration: 150 }}
             class={[
@@ -116,7 +129,7 @@
           <div class="flex min-w-0 flex-1 flex-col gap-4 py-1">
             {@render children()}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   {:else}
