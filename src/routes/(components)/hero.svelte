@@ -53,7 +53,7 @@
 
     <!-- Hero Title - above fold, play once -->
     <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
-      <h1 class="text-4xl font-bold tracking-tight whitespace-nowrap md:text-6xl lg:text-7xl">
+      <h1 class="flex-wrap text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
         <span>{currentText === "Payments" ? "Generate" : "Track"}</span>
         <span class="inline-flex justify-center align-baseline">
           <TextLoop class="text-primary" {texts} bind:currentIndex interval={2500} />

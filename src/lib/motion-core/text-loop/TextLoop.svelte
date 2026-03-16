@@ -87,7 +87,7 @@
 
 <span
   class={cn("font-inherit relative inline-block text-inherit", className)}
-  style="clip-path: inset(-100vh 0 -100vh 0); min-width: 200px;"
+  style="clip-path: inset(-100vh 0 -100vh 0); min-width: auto;"
 >
   <span class="font-inherit invisible inline-block w-0 text-inherit" aria-hidden="true">&nbsp;</span
   >{#key currentIndex}<span
