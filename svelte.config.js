@@ -13,7 +13,7 @@ const config = {
       remoteFunctions: true,
     },
     csp: {
-      mode: "auto"
+      mode: "auto",
     },
     adapter: adapter({
       fallback: "plaintext",
