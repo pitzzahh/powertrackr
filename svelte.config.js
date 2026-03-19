@@ -13,20 +13,7 @@ const config = {
       remoteFunctions: true,
     },
     csp: {
-      mode: "nonce",
-      directives: {
-        "default-src": ["self"],
-        "script-src": [
-          "self",
-          "sha256-uQ+6xeJ5jfvD5SmN5W7ZFR4dF9DbDwscZWrWOLfV+RM=",
-          "sha256-94WxU203ItVdYeuHa4UBPQzWANAxvaHV/BgTnRrE/14=",
-        ],
-        "worker-src": ["self", "blob:"],
-        "style-src": ["self", "unsafe-inline", "https://fonts.googleapis.com"],
-        "img-src": ["self", "data:"],
-        "font-src": ["self", "https://fonts.gstatic.com"],
-        "connect-src": ["self"],
-      },
+      mode: "auto"
     },
     adapter: adapter({
       fallback: "plaintext",
