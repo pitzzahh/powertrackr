@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "wrangler dev .svelte-kit/cloudflare/_worker.js --port 4173",
     "build:preview": "npm run build && npm run preview",
     "prepare": "svelte-kit sync || echo ''",
     "postinstall": "git config core.hooksPath .githooks 2>/dev/null || echo 'Git hooks setup skipped'",
