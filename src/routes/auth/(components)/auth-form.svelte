@@ -190,7 +190,7 @@
             action === "login" ? "Logging in with GitHub" : "Creating Account with GitHub"
           );
           try {
-            const redirect = await loginWithGithub().then(({ redirect }) => redirect);
+            const { redirect } = await loginWithGithub();
             if (redirect) {
               toast.dismiss(toastId);
               window.location.href = redirect;

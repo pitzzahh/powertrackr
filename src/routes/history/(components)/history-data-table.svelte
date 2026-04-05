@@ -43,8 +43,8 @@
         {table}
         entity_name="Billing Info"
         entity_name_plural="Billing Infos"
-        delete_fn={(rows, count) => {
-          return deleteBillingInfoBatch({
+        delete_fn={async (rows, count) => {
+          return await deleteBillingInfoBatch({
             ids: rows.map((r) => r.id),
             count,
           });

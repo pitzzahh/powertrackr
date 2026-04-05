@@ -6,7 +6,7 @@
     entity_name: string; // singular form of the entity name (e.g., "position", "audit log")
     entity_name_plural?: string; // plural form (e.g., "positions", "audit logs")
     description?: string; // Custom dialog description, optional,
-    delete_fn: (row: TData[], count: number | 1) => Promise<HelperResult<TData | number>>; // Custom delete function, optional
+    delete_fn: (row: TData[], count: number | 1) => Promise<HelperResult<number>>; // Custom delete function, optional
     callback?: (valid: boolean) => void; // Optional callback function to call after deletion
   }
 
