@@ -5,13 +5,14 @@
     user: App.Locals["user"];
   };
 
-  export type HeaderState = {
+  type HeaderState = {
     openMenu: boolean;
     quickActions: {
       visible: boolean;
       icon: typeof Icon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
+      data: () => BillingInfoDTOWithSubMeters | null;
       onclick?: (userId: string) => void;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
@@ -20,32 +21,30 @@
 
 <script lang="ts">
   import Logo from "$/components/logo.svelte";
-  import { Button, buttonVariants, type ButtonProps } from "$/components/ui/button";
+  import { Button, buttonVariants } from "$/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet/index.js";
   import { Menu, PhilippinePeso, Moon, Sun, Loader } from "$/assets/icons";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { cn } from "$/utils/style";
   import { toggleMode } from "mode-watcher";
   import { type BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
+  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
   import { showSuccess, showWarning } from "$/components/toast";
   import { useBillingStore } from "$lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
   import { ScrollArea } from "$/components/ui/scroll-area";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-  import { getLatestBillingInfo } from "$/api/billing-info.remote";
+  import { useLatestBillingStore } from "$/stores/latest-billing.svelte";
   import { Badge } from "$/components/ui/badge";
   import { BillingInfoForm } from "$routes/history/(components)";
   import { useSidebarStore } from "$/stores/sidebar.svelte";
+  import { watchOnce } from "runed";
 
   let { user }: HeaderProps = $props();
 
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
   const sidebarStore = useSidebarStore();
-
-  let { billingInfo } = $derived({
-    billingInfo: getLatestBillingInfo({ userId: user?.id || "" }),
-  });
+  const latestBillingStore = useLatestBillingStore();
 
   let { openMenu, quickActions }: HeaderState = $state({
     openMenu: false,
@@ -55,9 +54,8 @@
         icon: PhilippinePeso,
         label: "New Bill",
         open: false,
-        onclick: (userId: string) => {
-          billingInfo = getLatestBillingInfo({ userId });
-        },
+        data: () => latestBillingStore.latestBillingInfo,
+        onclick: () => latestBillingStore.refresh(),
         callback: (valid, _action, metaData) => {
           if (valid) {
             billingStore.refresh();
@@ -70,6 +68,16 @@
       },
     ],
   });
+
+  watchOnce(
+    () => user?.id,
+    () => {
+      if (user?.id) {
+        latestBillingStore.setUserId(user.id);
+        latestBillingStore.fetchData();
+      }
+    }
+  );
 </script>
 
 <Sheet.Root bind:open={openMenu}>
@@ -118,7 +126,7 @@
                         <Sheet.Title>Add new Bill</Sheet.Title>
                         <Sheet.Description>Enter billing info</Sheet.Description>
                       </div>
-                      {#if billingInfo.loading}
+                      {#if latestBillingStore.status === "fetching"}
                         <Badge
                           variant="secondary"
                           class="flex h-6 animate-pulse items-center text-sm font-medium"
@@ -129,22 +137,17 @@
                       {/if}
                     </Sheet.Header>
                     <ScrollArea class="min-h-0 flex-1">
-                      {#key billingInfo.current}
-                        {@const latestBillingInfo =
-                          (billingInfo.current?.value[0] as
-                            | BillingInfoDTOWithSubMeters
-                            | undefined) ?? undefined}
-                        <div class="space-y-4 p-4 pb-8">
-                          {#if quickAction.label === "New Bill"}
-                            <BillingInfoForm
-                              action="add"
-                              callback={quickAction.callback}
-                              billingInfo={latestBillingInfo}
-                              bind:open={quickAction.open}
-                            />
-                          {/if}
-                        </div>
-                      {/key}
+                      {@const latestBillingInfo = quickAction.data()}
+                      <div class="space-y-4 p-4 pb-8">
+                        {#if quickAction.label === "New Bill"}
+                          <BillingInfoForm
+                            action="add"
+                            callback={quickAction.callback}
+                            billingInfo={latestBillingInfo || undefined}
+                            bind:open={quickAction.open}
+                          />
+                        {/if}
+                      </div>
                     </ScrollArea>
                   </Sheet.Content>
                 </Sheet.Portal>

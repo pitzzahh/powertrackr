@@ -43,14 +43,15 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info.js";
   import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
   import { BillingInfoForm } from "../history/(components)/index.js";
+  import { useLatestBillingStore } from "$/stores/latest-billing.svelte.js";
 
   let { data } = $props();
 
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
+  const latestBillingStore = useLatestBillingStore();
 
   let openNewBill = $state(false);
 
@@ -98,29 +99,25 @@
                 <Sheet.Description>Enter billing info</Sheet.Description>
               </Sheet.Header>
               <ScrollArea class="min-h-0 flex-1">
-                {@const billingInfo = getLatestBillingInfo({ userId: data.user?.id || "" })}
-                {#key billingInfo.current}
-                  {@const latestBillingInfo =
-                    (billingInfo.current?.value[0] as BillingInfoDTOWithSubMeters | undefined) ??
-                    undefined}
-                  <div class="px-2 pb-2">
-                    <BillingInfoForm
-                      action="add"
-                      callback={(valid, _, metaData) => {
-                        openNewBill = false;
-                        if (valid) {
-                          billingStore.refresh();
-                          consumptionStore.refresh();
-                          showSuccess("Billing info created successfully!");
-                        } else {
-                          showWarning("Failed to create billing info", metaData?.error);
-                        }
-                      }}
-                      billingInfo={latestBillingInfo}
-                      bind:open={openNewBill}
-                    />
-                  </div>
-                {/key}
+                {@const latestBillingInfo = latestBillingStore.latestBillingInfo}
+                <div class="px-2 pb-2">
+                  <BillingInfoForm
+                    action="add"
+                    callback={(valid, _, metaData) => {
+                      openNewBill = false;
+                      if (valid) {
+                        billingStore.refresh();
+                        latestBillingStore.refresh();
+                        consumptionStore.refresh();
+                        showSuccess("Billing info created successfully!");
+                      } else {
+                        showWarning("Failed to create billing info", metaData?.error);
+                      }
+                    }}
+                    billingInfo={latestBillingInfo || undefined}
+                    bind:open={openNewBill}
+                  />
+                </div>
               </ScrollArea>
             </Sheet.Content>
           </Sheet.Portal>

@@ -16,6 +16,7 @@
   import { pendingFetchContext } from "$/context.js";
   import { setSidebarStore } from "$/stores/sidebar.svelte";
   import { setBillingStore } from "$/stores/billing.svelte";
+  import { setLatestBillingStore } from "$/stores/latest-billing.svelte";
   import { Toaster } from "svelte-sonner";
   import { untrack } from "svelte";
   import { invalidateAll, onNavigate } from "$app/navigation";
@@ -36,6 +37,7 @@
 
   // Initialize billing store context
   setBillingStore();
+  setLatestBillingStore();
   // Initialize consumption store context
   setConsumptionStore();
 
