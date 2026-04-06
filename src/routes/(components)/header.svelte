@@ -37,7 +37,7 @@
   import { Badge } from "$/components/ui/badge";
   import { BillingInfoForm } from "$routes/history/(components)";
   import { useSidebarStore } from "$/stores/sidebar.svelte";
-  import { watchOnce } from "runed";
+  import { watch } from "runed";
 
   let { user }: HeaderProps = $props();
 
@@ -69,7 +69,7 @@
     ],
   });
 
-  watchOnce(
+  watch(
     () => user?.id,
     () => {
       if (user?.id) {
