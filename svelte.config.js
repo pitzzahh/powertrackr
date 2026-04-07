@@ -18,9 +18,6 @@ const config = {
     adapter: adapter({
       fallback: "plaintext",
     }),
-    output: {
-      bundleStrategy: "single",
-    },
   },
   compilerOptions: {
     experimental: {
