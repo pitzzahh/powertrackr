@@ -1,5 +1,3 @@
-/// <reference types="../../../../worker-configuration" />
-
 import { drizzle } from "drizzle-orm/d1";
 import { getRequestEvent } from "$app/server";
 import { relations } from "./relations";
