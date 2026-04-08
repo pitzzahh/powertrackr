@@ -31,6 +31,13 @@ export const resendVerification = command(async () => {
     return { success: true, alreadyVerified: true };
   }
 
+  // Rate limit email resend attempts per email
+  const { success } = await event.platform!.env.EMAIL_RATE_LIMITER.limit({ key: email });
+  if (!success) {
+    // For security, don't reveal rate limit info
+    return { success: false, sent: false };
+  }
+
   try {
     const verification = await createEmailVerification(userId, email);
     if (verification) {

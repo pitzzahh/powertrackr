@@ -78,6 +78,13 @@ export const login = form(loginSchema, async (user, issues) => {
   if (email === "" || password === "") {
     error(400, "Please enter your email and password.");
   }
+
+  // Rate limit login attempts per email
+  const { success } = await event.platform!.env.LOGIN_RATE_LIMITER.limit({ key: email });
+  if (!success) {
+    return invalid(issues.email("Too many login attempts. Please try again later."));
+  }
+
   const {
     value: [userResult],
   } = (await getUserBy({
@@ -123,6 +130,12 @@ export const login = form(loginSchema, async (user, issues) => {
 export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
+
+  // Rate limit registration attempts per email
+  const { success } = await event.platform!.env.REGISTRATION_RATE_LIMITER.limit({ key: email });
+  if (!success) {
+    return invalid(issues.email("Too many registration attempts. Please try again later."));
+  }
 
   if (password !== confirmPassword) {
     invalid(issues.confirmPassword("Passwords do not match"));
@@ -336,10 +349,19 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
 });
 
 export const forgotPassword = form(forgotPasswordSchema, async (user) => {
+  const event = getRequestEvent();
   const { email } = user;
   if (typeof email !== "string") {
     error(400, "Invalid email");
   }
+
+  // Rate limit password reset requests per email
+  const { success } = await event.platform!.env.EMAIL_RATE_LIMITER.limit({ key: email });
+  if (!success) {
+    // For security, don't reveal rate limit info
+    return { success: true };
+  }
+
   // Check if user exists
   const {
     value: [userResult],

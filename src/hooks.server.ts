@@ -4,6 +4,19 @@ import { dev } from "$app/environment";
 import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 
+const handleRateLimit: Handle = async ({ event, resolve }) => {
+  // Use user ID for authenticated users, otherwise IP address
+  const key = event.locals.user?.id || event.request.headers.get("cf-connecting-ip") || "unknown";
+
+  const { success } = await event.platform!.env.API_RATE_LIMITER.limit({ key });
+
+  if (!success) {
+    return new Response("Too Many Requests - Rate limit exceeded", { status: 429 });
+  }
+
+  return resolve(event);
+};
+
 const handleAuth: Handle = async ({ event, resolve }) => {
   const sessionToken = event.cookies.get(auth.sessionCookieName);
 
@@ -83,4 +96,4 @@ export const handleHSTS: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle = sequence(handleHSTS, handleAuth, handleDevTools, log);
+export const handle = sequence(handleHSTS, handleAuth, handleRateLimit, handleDevTools, log);

@@ -276,7 +276,6 @@ export async function createEmailVerification(
   timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
-  // Store expiration as a Date object.
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
   // Add to DB
@@ -308,7 +307,6 @@ export async function createPasswordReset(
   timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
-  // Store expiration as a Date object.
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
 
   // Add to DB

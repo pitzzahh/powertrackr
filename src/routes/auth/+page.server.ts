@@ -5,7 +5,11 @@ import type { AuthAction } from "$routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "$/types/email-verification-request";
 import { env } from "$env/dynamic/public";
 
-export async function load({ url: { searchParams, pathname }, locals: { user, session } }) {
+export async function load({
+  url: { searchParams, pathname },
+  locals: { user, session },
+  platform,
+}) {
   const act = searchParams.get("act");
 
   // If trying to access 2FA setup or checkpoint, require authentication — otherwise send to login
@@ -52,11 +56,17 @@ export async function load({ url: { searchParams, pathname }, locals: { user, se
           action: act as AuthAction,
         };
       console.log("Sending initial email verification");
-      void createEmailVerification(
-        user.id,
-        user.email,
-        Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
-      );
+      // Rate limit initial email verification send
+      const { success } = await platform!.env.EMAIL_RATE_LIMITER.limit({ key: user.email });
+      if (success) {
+        void createEmailVerification(
+          user.id,
+          user.email,
+          Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+        );
+      } else {
+        console.warn("Email rate limit exceeded for initial verification:", user.email);
+      }
     } catch (e) {
       console.warn("Failed to send email verification on page load", e);
     }
