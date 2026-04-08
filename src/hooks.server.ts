@@ -6,7 +6,7 @@ import { redirect } from "@sveltejs/kit";
 
 const handleRateLimit: Handle = async ({ event, resolve }) => {
   // Use user ID for authenticated users, otherwise IP address
-  const key = event.locals.user?.id || event.request.headers.get("cf-connecting-ip") || "unknown";
+  const key = event.locals.user?.id || event.getClientAddress() || "unknown";
 
   const { success } = await event.platform!.env.API_RATE_LIMITER.limit({ key });
 
