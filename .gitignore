@@ -27,5 +27,3 @@ vite.config.ts.timestamp-*
 *.db
 coverage
 *.sqbpro
-
-worker-configuration.d.ts
