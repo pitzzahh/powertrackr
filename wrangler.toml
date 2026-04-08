@@ -14,6 +14,34 @@ database_name = "powertrackr-db"
 database_id = "f37e5712-bf91-425b-bb30-048600ceb0a8"
 preview_database_id = "7243f66d-17e3-4cf4-bd04-be75f543a4c3"
 
+[[ratelimits]]
+name = "API_RATE_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 100
+  period = 60
+
+[[ratelimits]]
+name = "EMAIL_RATE_LIMITER"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+[[ratelimits]]
+name = "REGISTRATION_RATE_LIMITER"
+namespace_id = "1003"
+  [ratelimits.simple]
+  limit = 3
+  period = 60
+
+[[ratelimits]]
+name = "LOGIN_RATE_LIMITER"
+namespace_id = "1004"
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
 [observability]
 [observability.logs]
 enabled = true
