@@ -42,7 +42,9 @@
     const toastId = showLoading("Sending password reset email...");
     try {
       await submit();
-      showSuccess("If an account with that email exists, we've sent you a password reset link.");
+      showSuccess(
+        "If an account with that email exists, we've sent you a password code and  reset link."
+      );
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });

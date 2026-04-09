@@ -87,11 +87,17 @@ async function createContact(
  *
  * This function is resilient: missing configuration or remote failures will log warnings but not throw.
  */
-async function sendVerificationEmail(email: string, code: string, timeoutMinutes: number) {
+async function sendVerificationEmail(
+  email: string,
+  code: string,
+  origin: string,
+  timeoutMinutes: number
+) {
   if (!PLUNK_KEY) {
     console.warn("PLUNK_SECRET_KEY not set. Skipping sending verification email.");
     return null;
   }
+  const verifyLink = `${env.BASE_URL ?? origin ?? "http://localhost:5173"}/auth?act=verify-email&code=${code}`;
 
   try {
     // Ensure the contact exists (best-effort)
@@ -118,7 +124,11 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
       const payload: Record<string, unknown> = {
         to: email,
         template: tpl.id,
-        data: { code, timeout: `${timeoutMinutes} minutes` },
+        data: {
+          code,
+          timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}`,
+          link: verifyLink,
+        },
       };
 
       try {
@@ -156,7 +166,7 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
   // Fallback: send a simple inline message
   try {
     const subject = "Verify your email";
-    const body = `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
+    const body = `<p>Your verification code is <strong>${code}</strong>, or use this link ${verifyLink} It expires in ${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}.</p>`;
     const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
@@ -182,12 +192,18 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
  *
  * This function is resilient: missing configuration or remote failures will log warnings but not throw.
  */
-async function sendPasswordResetEmail(email: string, code: string, timeoutMinutes: number) {
+async function sendPasswordResetEmail(
+  email: string,
+  code: string,
+  baseUrl: string,
+  timeoutMinutes: number
+) {
   if (!PLUNK_KEY) {
     console.warn("PLUNK_SECRET_KEY not set. Skipping sending password reset email.");
     return null;
   }
 
+  const resetLink = `${env.BASE_URL ?? baseUrl ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`;
   // Try to fetch templates and find the one we want
   try {
     const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
@@ -210,8 +226,8 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
         template: tpl.id,
         data: {
           code,
-          timeout: `${timeoutMinutes} minutes`,
-          link: `${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`,
+          timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}`,
+          link: resetLink,
         },
       };
 
@@ -250,7 +266,7 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
   // Fallback: send a simple inline message
   try {
     const subject = "Reset your password";
-    const body = `<p>Your password reset code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
+    const body = `<p>Your password reset code is <strong>${code}</strong>, or use this link ${resetLink}. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
     const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
@@ -273,6 +289,7 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
 export async function createEmailVerification(
   userId: string,
   email: string,
+  origin: string,
   timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
@@ -288,7 +305,7 @@ export async function createEmailVerification(
   const [verification] = added.value;
 
   if (verification) {
-    await sendVerificationEmail(email, verification.code, timeoutMinutes).catch((e) =>
+    await sendVerificationEmail(email, verification.code, origin, timeoutMinutes).catch((e) =>
       console.error("Failed to send verification email:", e)
     );
   }
@@ -304,6 +321,7 @@ export async function createEmailVerification(
 export async function createPasswordReset(
   userId: string,
   email: string,
+  baseUrl: string,
   timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
@@ -320,7 +338,7 @@ export async function createPasswordReset(
   }
 
   if (resetSession) {
-    await sendPasswordResetEmail(email, resetSession.code, timeoutMinutes).catch((e) =>
+    await sendPasswordResetEmail(email, resetSession.code, baseUrl, timeoutMinutes).catch((e) =>
       console.error("Failed to send password reset email:", e)
     );
   }

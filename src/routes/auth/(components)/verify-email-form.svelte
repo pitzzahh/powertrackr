@@ -3,7 +3,9 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
 
-  export type VerifyEmailFormProps = WithElementRef<HTMLFormAttributes>;
+  export type VerifyEmailFormProps = WithElementRef<HTMLFormAttributes> & {
+    code: string;
+  };
 
   type VerifyEmailFormState = {
     status: AsyncState;
@@ -38,7 +40,13 @@
     showWarning,
   } from "$/components/toast";
   import { env } from "$env/dynamic/public";
-  let { ref = $bindable(null), class: className, ...restProps }: VerifyEmailFormProps = $props();
+  import { watch } from "runed";
+  let {
+    code,
+    ref = $bindable(null),
+    class: className,
+    ...restProps
+  }: VerifyEmailFormProps = $props();
 
   let { status, countdown, cooldownTime, timer }: VerifyEmailFormState = $state({
     status: "idle",
@@ -78,6 +86,18 @@
       status = "idle";
     };
   });
+
+  watch(
+    () => code,
+    () => {
+      console.log({ code, field: verifyEmail.fields.code.value() });
+      if (code && code.length > 0 && status !== "processing") {
+        const toastId = showLoading("Verifying your email...");
+        (ref as HTMLFormElement)?.requestSubmit();
+        toast.dismiss(toastId);
+      }
+    }
+  );
 </script>
 
 <form
@@ -123,7 +143,7 @@
         class="text-center font-mono tracking-widest tabular-nums"
         spellcheck={false}
         oninput={(e) => verifyEmail.fields.code.set(e.currentTarget.value.toUpperCase())}
-        {...verifyEmail.fields.code.as("text")}
+        {...verifyEmail.fields.code.as("text", code)}
       />
       <FieldError errors={verifyEmail.fields.code.issues()} />
     </Field>

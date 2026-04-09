@@ -39,7 +39,7 @@ export const resendVerification = command(async () => {
   }
 
   try {
-    const verification = await createEmailVerification(userId, email);
+    const verification = await createEmailVerification(userId, email, event.url.origin);
     if (verification) {
       return { success: true, sent: true, requestId: verification.id ?? null };
     } else {

@@ -3,7 +3,9 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "$/index";
 
-  export type ResetPasswordFormProps = WithElementRef<HTMLFormAttributes>;
+  export type ResetPasswordFormProps = WithElementRef<HTMLFormAttributes> & {
+    code: string;
+  };
 
   type ResetPasswordFormState = {
     status: AsyncState;
@@ -20,7 +22,6 @@
   } from "$/components/ui/field/index.js";
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style.js";
   import Password from "$/components/password.svelte";
   import { Loader, Lock } from "$/assets/icons";
   import { resetPassword } from "$/api/auth.remote";
@@ -28,7 +29,12 @@
   import { isHttpError } from "@sveltejs/kit";
   import { showError, showLoading, showSuccess } from "$/components/toast";
 
-  let { ref = $bindable(null), class: className, ...restProps }: ResetPasswordFormProps = $props();
+  let {
+    code,
+    ref = $bindable(null),
+    class: className,
+    ...restProps
+  }: ResetPasswordFormProps = $props();
 
   let { status }: ResetPasswordFormState = $state({
     status: "idle",
@@ -53,7 +59,7 @@
       status = "idle";
     }
   })}
-  class={cn("flex flex-col gap-6", className)}
+  class={["flex flex-col gap-6", className]}
   bind:this={ref}
   {...restProps}
 >
@@ -74,7 +80,7 @@
         autocomplete="one-time-code"
         class="text-center font-mono tracking-widest tabular-nums"
         spellcheck={false}
-        {...resetPassword.fields.code.as("text")}
+        {...resetPassword.fields.code.as("text", code)}
       />
       <FieldError errors={resetPassword.fields.code.issues()} />
     </Field>
@@ -86,9 +92,9 @@
         autocomplete="new-password"
         showProgress={true}
         showRequirements={true}
-        {...resetPassword.fields.password.as("password")}
+        {...resetPassword.fields._password.as("password")}
       />
-      <FieldError errors={resetPassword.fields.password.issues()} />
+      <FieldError errors={resetPassword.fields._password.issues()} />
     </Field>
     <Field>
       <FieldLabel for="confirm-password-{id}">Confirm New Password</FieldLabel>
@@ -98,9 +104,9 @@
         autocomplete="new-password"
         showProgress={true}
         showRequirements={false}
-        {...resetPassword.fields.confirmPassword.as("password")}
+        {...resetPassword.fields._confirmPassword.as("password")}
       />
-      <FieldError errors={resetPassword.fields.confirmPassword.issues()} />
+      <FieldError errors={resetPassword.fields._confirmPassword.issues()} />
     </Field>
     <Field>
       <Button type="submit" disabled={status === "processing"} aria-label="Reset password">
