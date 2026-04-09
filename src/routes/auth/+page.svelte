@@ -35,7 +35,7 @@
         {#if ["login", "register"].includes(data.action)}
           <AuthForm action={data.action} />
         {:else if data.action === "verify-email"}
-          <VerifyEmailForm />
+          <VerifyEmailForm code={data.code || ""} />
         {:else if data.action === "2fa-setup"}
           <Setup2FAForm />
         {:else if data.action === "2fa-checkpoint"}
