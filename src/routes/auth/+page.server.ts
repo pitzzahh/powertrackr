@@ -5,13 +5,9 @@ import type { AuthAction } from "$routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "$/types/email-verification-request";
 import { env } from "$env/dynamic/public";
 
-export async function load({
-  url: { searchParams, pathname, origin },
-  locals: { user, session },
-  platform,
-}) {
+export async function load({ url: { searchParams, origin }, locals: { user, session }, platform }) {
   const act = searchParams.get("act");
-
+  const code = searchParams.get("code");
   // If trying to access 2FA setup or checkpoint, require authentication — otherwise send to login
   if ((act === "2fa-setup" || act === "2fa-checkpoint") && (session === null || user === null)) {
     // user not authenticated, redirect to login
@@ -32,15 +28,15 @@ export async function load({
     redirect(302, "/dashboard");
   }
 
-  const actions: AuthAction[] = [
-    "login",
-    "register",
-    "verify-email",
-    "2fa-setup",
-    "2fa-checkpoint",
-    "reset-password",
-    "forgot-password",
-  ];
+  // const actions: AuthAction[] = [
+  //   "login",
+  //   "register",
+  //   "verify-email",
+  //   "2fa-setup",
+  //   "2fa-checkpoint",
+  //   "reset-password",
+  //   "forgot-password",
+  // ];
 
   // Send email verification on first visit to verify-email page
   if (act === "verify-email" && user && !user.emailVerified) {
@@ -54,6 +50,7 @@ export async function load({
       if (valid && !isExpired)
         return {
           action: act as AuthAction,
+          code,
         };
       console.log("Sending initial email verification");
       // Rate limit initial email verification send
@@ -72,14 +69,16 @@ export async function load({
       console.warn("Failed to send email verification on page load", e);
     }
   }
-  if (
-    (!act || !actions.includes(act as AuthAction)) &&
-    !(pathname === "/auth" && actions.includes(act as AuthAction))
-  ) {
-    redirect(307, `/auth?act=${act || "login"}&code=${searchParams.get("code") || ""}`);
-  }
+
+  // might not need anymore, comment atm
+  // if (
+  //   (!act || !actions.includes(act as AuthAction)) &&
+  //   !(pathname === "/auth" && actions.includes(act as AuthAction))
+  // ) {
+  //   redirect(307, `/auth?act=${act || "login"}&code=${searchParams.get("code") || ""}`);
+  // }
   return {
     action: act as AuthAction,
-    code: searchParams.get("code"),
+    code,
   };
 }

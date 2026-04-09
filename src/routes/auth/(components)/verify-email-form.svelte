@@ -90,8 +90,11 @@
   watch(
     () => code,
     () => {
+      console.log({ code, field: verifyEmail.fields.code.value() });
       if (code && code.length > 0 && status !== "processing") {
+        const toastId = showLoading("Verifying your email...");
         (ref as HTMLFormElement)?.requestSubmit();
+        toast.dismiss(toastId);
       }
     }
   );
