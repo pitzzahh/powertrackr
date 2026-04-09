@@ -118,7 +118,7 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
       const payload: Record<string, unknown> = {
         to: email,
         template: tpl.id,
-        data: { code, timeout: `${timeoutMinutes} minutes` },
+        data: { code, timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}` },
       };
 
       try {
@@ -156,7 +156,7 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
   // Fallback: send a simple inline message
   try {
     const subject = "Verify your email";
-    const body = `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p>`;
+    const body = `<p>Your verification code is <strong>${code}</strong>. It expires in ${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}.</p>`;
     const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
@@ -216,7 +216,7 @@ async function sendPasswordResetEmail(
         template: tpl.id,
         data: {
           code,
-          timeout: `${timeoutMinutes} minutes`,
+          timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}`,
           link: resetLink,
         },
       };
