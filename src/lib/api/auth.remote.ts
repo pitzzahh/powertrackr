@@ -381,9 +381,9 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
   }
 
   // Create password reset session and send email
-  await createPasswordReset(userResult.id!, email);
+  await createPasswordReset(userResult.id!, email, event.url.origin);
 
-  return { success: true };
+  redirect(303, "/auth?act=reset-password");
 });
 
 export const resetPassword = form(resetPasswordSchema, async (data, issues) => {

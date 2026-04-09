@@ -182,12 +182,18 @@ async function sendVerificationEmail(email: string, code: string, timeoutMinutes
  *
  * This function is resilient: missing configuration or remote failures will log warnings but not throw.
  */
-async function sendPasswordResetEmail(email: string, code: string, timeoutMinutes: number) {
+async function sendPasswordResetEmail(
+  email: string,
+  code: string,
+  baseUrl: string,
+  timeoutMinutes: number
+) {
   if (!PLUNK_KEY) {
     console.warn("PLUNK_SECRET_KEY not set. Skipping sending password reset email.");
     return null;
   }
 
+  const resetLink = `${env.BASE_URL ?? baseUrl ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`;
   // Try to fetch templates and find the one we want
   try {
     const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
@@ -211,7 +217,7 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
         data: {
           code,
           timeout: `${timeoutMinutes} minutes`,
-          link: `${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`,
+          link: resetLink,
         },
       };
 
@@ -250,7 +256,7 @@ async function sendPasswordResetEmail(email: string, code: string, timeoutMinute
   // Fallback: send a simple inline message
   try {
     const subject = "Reset your password";
-    const body = `<p>Your password reset code is <strong>${code}</strong>. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
+    const body = `<p>Your password reset code is <strong>${code}</strong>, or use this link ${resetLink}. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
     const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
@@ -304,6 +310,7 @@ export async function createEmailVerification(
 export async function createPasswordReset(
   userId: string,
   email: string,
+  baseUrl: string,
   timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
@@ -320,7 +327,7 @@ export async function createPasswordReset(
   }
 
   if (resetSession) {
-    await sendPasswordResetEmail(email, resetSession.code, timeoutMinutes).catch((e) =>
+    await sendPasswordResetEmail(email, resetSession.code, baseUrl, timeoutMinutes).catch((e) =>
       console.error("Failed to send password reset email:", e)
     );
   }
