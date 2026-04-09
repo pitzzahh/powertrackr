@@ -387,10 +387,10 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
 });
 
 export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
-  const { code, _password, confirmPassword } = data;
+  const { code, _password, _confirmPassword } = data;
 
-  if (_password !== confirmPassword) {
-    invalid(issues.confirmPassword("Passwords do not match"));
+  if (_password !== _confirmPassword) {
+    invalid(issues._confirmPassword("Passwords do not match"));
   }
 
   // Validate code against DB

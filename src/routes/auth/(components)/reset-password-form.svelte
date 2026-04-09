@@ -104,9 +104,9 @@
         autocomplete="new-password"
         showProgress={true}
         showRequirements={false}
-        {...resetPassword.fields.confirmPassword.as("password")}
+        {...resetPassword.fields._confirmPassword.as("password")}
       />
-      <FieldError errors={resetPassword.fields.confirmPassword.issues()} />
+      <FieldError errors={resetPassword.fields._confirmPassword.issues()} />
     </Field>
     <Field>
       <Button type="submit" disabled={status === "processing"} aria-label="Reset password">
