@@ -387,9 +387,9 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
 });
 
 export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
-  const { code, password, confirmPassword } = data;
+  const { code, _password, confirmPassword } = data;
 
-  if (password !== confirmPassword) {
+  if (_password !== confirmPassword) {
     invalid(issues.confirmPassword("Passwords do not match"));
   }
 
@@ -412,7 +412,7 @@ export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
   }
 
   // Update password
-  const passwordHash = await hashPassword(password);
+  const passwordHash = await hashPassword(_password);
   const updateResult = await updateUserBy(
     { query: { id: userId }, options: { with_session: false } },
     { passwordHash }

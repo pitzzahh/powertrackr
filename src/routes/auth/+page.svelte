@@ -43,7 +43,7 @@
         {:else if data.action === "forgot-password"}
           <ForgotPasswordForm />
         {:else if data.action === "reset-password"}
-          <ResetPasswordForm />
+          <ResetPasswordForm code={data.code || ""} />
         {/if}
       </div>
     </div>

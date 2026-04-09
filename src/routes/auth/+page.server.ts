@@ -79,5 +79,6 @@ export async function load({
   }
   return {
     action: act as AuthAction,
+    code: searchParams.get("code"),
   };
 }

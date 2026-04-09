@@ -37,7 +37,7 @@ export const forgotPasswordSchema = v.object({
 
 export const resetPasswordSchema = v.object({
   code: v.pipe(v.string(), v.minLength(1)),
-  password: v.pipe(v.string(), v.minLength(8)),
+  _password: v.pipe(v.string(), v.minLength(8)),
   confirmPassword: v.pipe(v.string(), v.minLength(8)),
 });
 
