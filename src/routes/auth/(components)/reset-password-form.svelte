@@ -22,7 +22,6 @@
   } from "$/components/ui/field/index.js";
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style.js";
   import Password from "$/components/password.svelte";
   import { Loader, Lock } from "$/assets/icons";
   import { resetPassword } from "$/api/auth.remote";
@@ -60,7 +59,7 @@
       status = "idle";
     }
   })}
-  class={cn("flex flex-col gap-6", className)}
+  class={["flex flex-col gap-6", className]}
   bind:this={ref}
   {...restProps}
 >
