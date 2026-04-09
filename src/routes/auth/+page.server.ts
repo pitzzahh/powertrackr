@@ -76,7 +76,7 @@ export async function load({
     (!act || !actions.includes(act as AuthAction)) &&
     !(pathname === "/auth" && actions.includes(act as AuthAction))
   ) {
-    redirect(307, `/auth?act=${act || "login"}`);
+    redirect(307, `/auth?act=${act || "login"}&code=${searchParams.get("code") || ""}`);
   }
   return {
     action: act as AuthAction,
