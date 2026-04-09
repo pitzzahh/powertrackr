@@ -40,6 +40,7 @@
     showWarning,
   } from "$/components/toast";
   import { env } from "$env/dynamic/public";
+  import { watch } from "runed";
   let {
     code,
     ref = $bindable(null),
@@ -85,6 +86,15 @@
       status = "idle";
     };
   });
+
+  watch(
+    () => code,
+    () => {
+      if (code && code.length > 0 && status !== "processing") {
+        (ref as HTMLFormElement)?.requestSubmit();
+      }
+    }
+  );
 </script>
 
 <form
