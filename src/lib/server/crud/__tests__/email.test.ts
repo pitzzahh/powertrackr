@@ -46,13 +46,18 @@ describe("server/email", () => {
     expect(valid).toBe(true);
     expect(user).toBeDefined();
 
-    const reset = await createPasswordReset(user.id, user.email);
+    const reset = await createPasswordReset(
+      user.id,
+      user.email,
+      "https://powertrackr.peterjohnarao.com"
+    );
     expect(reset).not.toBeNull();
     // expiresAt should be a native Date object (Postgres TIMESTAMPTZ)
     expect(reset!.expiresAt).toBeInstanceOf(Date);
     expect((reset!.expiresAt as Date).getTime()).toBeGreaterThan(Date.now());
     // sanity check that numeric value is in milliseconds (greater than ~1e12)
     expect((reset!.expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
+    expect(reset!.code).toBeDefined();
 
     const { getPasswordResetSessionBy } = await import("$/server/crud/password-reset-session-crud");
     const found = await getPasswordResetSessionBy({
