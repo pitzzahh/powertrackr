@@ -6,7 +6,7 @@ import type { EmailVerificationRequest } from "$/types/email-verification-reques
 import { env } from "$env/dynamic/public";
 
 export async function load({
-  url: { searchParams, pathname },
+  url: { searchParams, pathname, origin },
   locals: { user, session },
   platform,
 }) {
@@ -62,6 +62,7 @@ export async function load({
         void createEmailVerification(
           user.id,
           user.email,
+          origin,
           Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
         );
       } else {

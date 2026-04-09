@@ -14,7 +14,11 @@ describe("server/email", () => {
     expect(valid).toBe(true);
     expect(user).toBeDefined();
 
-    const verification = await createEmailVerification(user.id, user.email);
+    const verification = await createEmailVerification(
+      user.id,
+      user.email,
+      "https://powertrackr.peterjohnarao.com"
+    );
     expect(verification).not.toBeNull();
     // expiresAt should be a native Date object (Postgres TIMESTAMPTZ)
     expect(verification!.expiresAt).toBeInstanceOf(Date);
