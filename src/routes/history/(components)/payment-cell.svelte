@@ -4,15 +4,15 @@
   import { getPayment } from "$/api/payment.remote";
   import { formatNumber } from "$/utils/format";
   import { Loader } from "$lib/assets/icons";
-  import { pendingFetchContext } from "$lib/context";
   import { watch } from "runed";
   import { Button } from "$/components/ui/button";
+  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
 
   let { paymentId }: { paymentId: string | null } = $props();
 
   let payment = $derived(paymentId ? getPayment(paymentId) : null);
 
-  const ctx = pendingFetchContext.get();
+  const pendingFetch = usePendingFetch();
 
   let wasLoading = false;
 
@@ -21,10 +21,10 @@
     (loading) =>
       untrack(() => {
         if (loading && !wasLoading) {
-          ctx.add();
+          pendingFetch.add();
           wasLoading = true;
         } else if (!loading && wasLoading) {
-          ctx.delete();
+          pendingFetch.delete();
           wasLoading = false;
         }
       })
@@ -32,7 +32,7 @@
 
   onDestroy(() => {
     if (wasLoading) {
-      ctx.delete();
+      pendingFetch.delete();
     }
   });
 </script>
