@@ -45,7 +45,6 @@
   import { cubicInOut } from "svelte/easing";
   import { ScrollArea } from "../ui/scroll-area";
   import type { AsyncState } from "$/types/state";
-  import { pendingFetchContext } from "$/context";
 
   let {
     columns,
@@ -114,7 +113,6 @@
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
-  const ctx = pendingFetchContext.get();
 </script>
 
 {#if floating_bar && table.getFilteredSelectedRowModel().rows.length > 0}

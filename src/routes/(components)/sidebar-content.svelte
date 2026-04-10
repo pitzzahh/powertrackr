@@ -21,7 +21,6 @@
   import SettingsDialog from "./settings-dialog.svelte";
   import { useSidebarStore } from "$/stores/sidebar.svelte";
   import { Separator } from "$/components/ui/separator";
-  import { pendingFetchContext } from "$/context";
   import { signout } from "$/api/auth.remote";
   import { Loader, PanelLeftClose, LogOut, BadgeCheck, Bell, ChevronsUpDown } from "$/assets/icons";
   import { page } from "$app/state";
@@ -33,6 +32,7 @@
   import { showLoading, showSuccess, toast } from "$/components/toast";
   import { goto } from "$app/navigation";
   import { AccountSettings } from ".";
+  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 
@@ -44,7 +44,7 @@
     openAccountSettings: false,
   });
 
-  const pendingFetches = pendingFetchContext.get();
+  const pendingFetch = usePendingFetch();
 
   const collapsed = $derived(sidebar.collapsed && !isMobileSheet);
 
@@ -71,7 +71,7 @@
     <Button
       onclick={() => {
         open = false;
-        pendingFetches.delete();
+        pendingFetch.delete();
         sidebar.navItems = sidebar.navItems.map((navItem) => ({
           ...navItem,
           active: navItem.label === item.label,

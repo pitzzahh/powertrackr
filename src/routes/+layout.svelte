@@ -1,9 +1,3 @@
-<script lang="ts" module>
-  type LayoutState = {
-    pendingCount: number;
-  };
-</script>
-
 <script lang="ts">
   import "./layout.css";
   import { mode, ModeWatcher, toggleMode } from "mode-watcher";
@@ -13,7 +7,6 @@
   import { site } from "$/site";
   import SidebarContent from "$routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
-  import { pendingFetchContext } from "$/context.js";
   import { setSidebarStore } from "$/stores/sidebar.svelte";
   import { setBillingStore } from "$/stores/billing.svelte";
   import { setLatestBillingStore } from "$/stores/latest-billing.svelte";
@@ -28,6 +21,7 @@
   import SvelteSeo from "svelte-seo";
   import { isEditableTarget } from "$/utils/index.js";
   import { isPublicRouteId } from "$lib/utils/constant";
+  import { setPendingFetch } from "$/hooks/use-pending-fetch.svelte.js";
 
   const { children, data } = $props();
 
@@ -53,26 +47,7 @@
   setLatestBillingStore();
   // Initialize consumption store context
   setConsumptionStore();
-
-  let { pendingCount }: LayoutState = $state({
-    pendingCount: 0,
-  });
-
-  const ctx = pendingFetchContext;
-  ctx.set({
-    get count() {
-      return pendingCount;
-    },
-    add() {
-      pendingCount++;
-    },
-    delete() {
-      pendingCount--;
-    },
-    reset() {
-      pendingCount = 0;
-    },
-  });
+  setPendingFetch();
 
   onNavigate((navigation) => {
     if (!document.startViewTransition) return;

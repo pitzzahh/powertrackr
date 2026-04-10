@@ -17,10 +17,10 @@
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
   import type { Icon } from "@lucide/svelte";
-  import { pendingFetchContext } from "$/context";
   import type { AsyncState } from "$/types/state";
+  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
 
-  const ctx = pendingFetchContext.get();
+  const pendingFetch = usePendingFetch();
 
   let { table, status = "idle", hide_show_row_count }: DataTablePaginationProps<TData> = $props();
 </script>
@@ -173,7 +173,7 @@
     size="icon"
     class="flex h-9 w-9 p-0 transition-all duration-200"
     onclick={() => {
-      ctx.reset();
+      pendingFetch.reset();
       onclick();
     }}
     {disabled}
