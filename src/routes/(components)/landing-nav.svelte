@@ -10,11 +10,13 @@
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
   let { user, session }: LandingNavProps = $props();
 
   let scrollY = $state(0);
   const isFloating = $derived(scrollY > 50);
+  const isMobile = new IsMobile();
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -32,21 +34,21 @@
   <header
     class="fixed inset-x-0 z-50 transition-all duration-300 ease-out"
     style:top={isFloating ? "0.75rem" : "0"}
-    style:padding-left={isFloating ? "1rem" : "0"}
-    style:padding-right={isFloating ? "1rem" : "0"}
+    style:padding-left={isFloating ? "0.4rem" : "0"}
+    style:padding-right={isFloating ? "0.4rem" : "0"}
   >
     <div
       class={[
         "relative mx-auto grid w-full items-center gap-4 border-border/50 bg-background/70 px-4 backdrop-blur-lg transition-all duration-300 ease-out md:grid-cols-[auto_1fr_auto]",
         isFloating ? "border shadow-lg shadow-black/10" : "border-b",
       ]}
-      style:max-width={isFloating ? "95%" : "100%"}
+      style:max-width={isFloating ? "96%" : "100%"}
       style:border-radius={isFloating ? "1rem" : "0"}
-      style:padding-top={isFloating ? "0.6rem" : "0.9rem"}
-      style:padding-bottom={isFloating ? "0.6rem" : "0.9rem"}
+      style:padding-top={isFloating ? "0.4rem" : "0.9rem"}
+      style:padding-bottom={isFloating ? "0.4rem" : "0.9rem"}
       style:box-shadow={isFloating ? "0 12px 28px -16px rgb(0 0 0 / 0.35)" : "none"}
     >
-      <div class="flex items-center gap-3">
+      <div class="flex w-full items-center justify-center gap-3 md:w-auto md:justify-start">
         <Logo variant="ghost" class="w-auto px-0 md:pl-0!" viewTransitionName="logo" />
         <span
           class="hidden items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-[10px] font-medium tracking-[0.3em] text-muted-foreground uppercase sm:inline-flex"
@@ -72,33 +74,28 @@
         </ul>
       </nav>
 
-      <div class="flex items-center justify-end gap-2">
-        {#if fullyAuthenticated}
-          <Button data-sveltekit-reload href={resolve("/dashboard")} class="hidden sm:inline-flex"
-            >Go to Dashboard</Button
-          >
-        {:else if needs2FA}
-          <Button
-            data-sveltekit-reload
-            href={resolve("/auth?act=2fa-checkpoint")}
-            class="hidden sm:inline-flex"
-          >
-            Verify Two-Factor Authentication
-          </Button>
-        {:else}
-          <Button
-            data-sveltekit-reload
-            variant="outline"
-            href={resolve("/auth?act=login")}
-            class="hidden sm:inline-flex">Sign In</Button
-          >
-          <Button
-            data-sveltekit-reload
-            href={resolve("/auth?act=register")}
-            class="hidden sm:inline-flex">Get Started</Button
-          >
-        {/if}
-      </div>
+      {#if !isMobile.current}
+        <div class="flex items-center justify-end gap-2">
+          {#if fullyAuthenticated}
+            <Button href={resolve("/dashboard")} class="hidden sm:inline-flex"
+              >Go to Dashboard</Button
+            >
+          {:else if needs2FA}
+            <Button href={resolve("/auth?act=2fa-checkpoint")} class="hidden sm:inline-flex">
+              Verify Two-Factor Authentication
+            </Button>
+          {:else}
+            <Button
+              variant="outline"
+              href={resolve("/auth?act=login")}
+              class="hidden sm:inline-flex">Sign In</Button
+            >
+            <Button href={resolve("/auth?act=register")} class="hidden sm:inline-flex"
+              >Get Started</Button
+            >
+          {/if}
+        </div>
+      {/if}
     </div>
   </header>
 </div>
