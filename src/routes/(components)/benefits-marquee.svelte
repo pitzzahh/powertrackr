@@ -35,7 +35,7 @@
         class="pointer-events-none absolute inset-y-0 right-0 w-20 bg-linear-to-l from-muted/80 to-transparent"
       ></div>
 
-      <Marquee class="py-5" gap={56} duration={28}>
+      <Marquee class="pt-5 pb-2" gap={56} duration={28}>
         {#each topRowBenefits as benefit (benefit.text)}
           <div
             class="flex items-center gap-3 rounded-full border border-border/60 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80"
@@ -47,7 +47,7 @@
           </div>
         {/each}
       </Marquee>
-      <Marquee class="py-5" gap={56} duration={32} reversed>
+      <Marquee class="pt-2 pb-5" gap={56} duration={32} reversed>
         {#each bottomRowBenefits as benefit (benefit.text)}
           <div
             class="flex items-center gap-3 rounded-full border border-border/60 bg-background/70 px-4 py-2 text-sm font-medium text-foreground/80"
