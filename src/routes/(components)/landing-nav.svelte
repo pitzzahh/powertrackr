@@ -14,9 +14,10 @@
 
   let { user, session }: LandingNavProps = $props();
 
-  let scrollY = $state(0);
-  const isFloating = $derived(scrollY > 50);
   const isMobile = new IsMobile();
+  let scrollY = $state(0);
+  let isOnline = $derived(true);
+  const isFloating = $derived(scrollY > 50);
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -28,7 +29,7 @@
   });
 </script>
 
-<svelte:window bind:scrollY />
+<svelte:window bind:scrollY bind:online={isOnline} />
 
 <div class="h-18">
   <header
@@ -53,8 +54,9 @@
         <span
           class="hidden items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-[10px] font-medium tracking-[0.3em] text-muted-foreground uppercase sm:inline-flex"
         >
-          <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-          System Online
+          <span class={["h-2 w-2 rounded-full", isOnline ? "bg-emerald-400" : "bg-rose-400"]}
+          ></span>
+          {isOnline ? "System Online" : "System Offline"}
         </span>
       </div>
 
