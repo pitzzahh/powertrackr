@@ -126,7 +126,6 @@ export const login = form(loginSchema, async (user, issues) => {
   }
   return redirect(301, "/dashboard");
 });
-
 export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
