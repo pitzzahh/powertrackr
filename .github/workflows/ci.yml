@@ -30,6 +30,7 @@ jobs:
           node-version: 24.x
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run cf:types
       - run: pnpm run check
 
   test:
@@ -48,6 +49,7 @@ jobs:
           node-version: 24.x
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run cf:types
       - run: pnpm run test
 
   build:
@@ -69,4 +71,5 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - run: pnpm run cf:types
       - run: pnpm run build
