@@ -33,6 +33,22 @@
   const sidebar = setSidebarStore();
   const isMoile = new IsMobile();
 
+  const isFullyAuthenticated = $derived(
+    !!data.session &&
+      !!data.user &&
+      (data.user.isOauthUser || data.user.emailVerified) &&
+      (!data.user.registeredTwoFactor || data.session.twoFactorVerified)
+  );
+
+  const isPublicRoute = $derived(
+    page.route.id === "/" ||
+      page.route.id?.startsWith("/auth") ||
+      page.route.id === "/privacy" ||
+      page.route.id === "/terms"
+  );
+
+  const showAppShell = $derived(isFullyAuthenticated && !isPublicRoute);
+
   // Initialize sidebar state from server data immediately
   untrack(() => sidebar.init(data.sidebarCollapsed));
 
@@ -123,7 +139,7 @@
 />
 
 <main>
-  {#if data.session && data.user && (data.user.isOauthUser || data.user.emailVerified) && (!data.user.registeredTwoFactor || data.session.twoFactorVerified) && page.url.pathname !== "/" && page.url.searchParams.get("act") !== "2fa-setup"}
+  {#if showAppShell}
     <div class="relative h-screen w-full overflow-hidden">
       <Header user={data.user} />
 

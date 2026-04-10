@@ -172,6 +172,22 @@
                 </a>
               </li>
             {/each}
+            <li>
+              <a
+                href={resolve("/privacy")}
+                class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a
+                href={resolve("/terms")}
+                class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Terms & Conditions
+              </a>
+            </li>
           </ul>
         </div>
       </div>

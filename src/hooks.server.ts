@@ -46,6 +46,8 @@ const handleAuth: Handle = async ({ event, resolve }) => {
   if (
     event.url.pathname.startsWith("/auth") ||
     event.url.pathname === "/" ||
+    event.url.pathname === "/privacy" ||
+    event.url.pathname === "/terms" ||
     event.url.pathname.startsWith("/events")
   ) {
     return resolve(event);
