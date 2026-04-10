@@ -10,7 +10,7 @@ declare global {
     interface Platform {
       env: {
         DB: D1Database;
-        API_RATE_LIMITER: RateLimit;
+        RATE_LIMITER: RateLimit;
         EMAIL_RATE_LIMITER: RateLimit;
         REGISTRATION_RATE_LIMITER: RateLimit;
         LOGIN_RATE_LIMITER: RateLimit;
