@@ -36,7 +36,6 @@
               <div class="mt-10 flex flex-col gap-4 sm:flex-row">
                 {#if user}
                   <Button
-                    data-sveltekit-reload
                     size="lg"
                     class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
                     href="/dashboard"
@@ -45,16 +44,13 @@
                   </Button>
                 {:else}
                   <Button
-                    data-sveltekit-reload
                     size="lg"
                     class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
                     href="/auth?act=register"
                   >
                     Get Started Free
                   </Button>
-                  <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
-                    >Sign In</Button
-                  >
+                  <Button size="lg" variant="outline" href="/auth?act=login">Sign In</Button>
                 {/if}
               </div>
             </ScrollReveal>
