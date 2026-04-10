@@ -6,7 +6,7 @@
 
 <script lang="ts">
   import "./layout.css";
-  import { mode, ModeWatcher } from "mode-watcher";
+  import { mode, ModeWatcher, toggleMode } from "mode-watcher";
   import favicon from "$/assets/favicon.svg";
   import FocusRing from "$/components/focus-ring.svelte";
   import Header from "$routes/(components)/header.svelte";
@@ -26,6 +26,7 @@
   import { page } from "$app/state";
   import { IsMobile } from "$/hooks/is-mobile.svelte.js";
   import SvelteSeo from "svelte-seo";
+  import { isEditableTarget } from "$/utils/index.js";
 
   const { children, data } = $props();
 
@@ -85,7 +86,19 @@
   <link rel="icon" href={favicon} />
 </svelte:head>
 
-<svelte:window onclose={() => invalidateAll()} />
+<svelte:window
+  onclose={() => invalidateAll()}
+  onkeydown={(e) => {
+    // Only consider the plain "d" key (no modifiers)
+    if (e.key !== "d") return;
+    if (e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+
+    // If focus is in an editable control, don't toggle
+    if (isEditableTarget(e.target)) return;
+
+    toggleMode();
+  }}
+/>
 
 <SvelteSeo
   title="{site.name} | {site.description}"
