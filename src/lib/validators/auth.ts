@@ -1,26 +1,48 @@
 import * as v from "valibot";
 
-const uuidRegex = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+// Spam keywords
+const spamKeywords = /spam|bot|fake|temp|dummy|test|noreply|no-reply|admin|support|info|marketing/i;
 
-const spamRegex = /spam|bot|fake|temp|dummy/i;
-
+// Common fake email patterns
 const digitsOnlyRegex = /^\d+$/;
-
 const shortRegex = /^.{1,2}$/;
-
 const hashRegex = /^[a-f0-9]{32,64}$/i;
+const longRandomRegex = /^[a-z0-9]{20,}$/i;
 
-const randomStringRegex = /^[a-z0-9]{8,}$/i; // Long random lowercase/digits
+// Common fake patterns
+const userNumberRegex = /^user-?\d{3,}/i;
+const nameNumberRegex = /^[a-z]+-?\d{4,}$/i;
+const numberNameRegex = /^\d{3,}-?[a-z]+$/i;
 
 function isSpamEmail(email: string): boolean {
-  const [localPart, domain] = email.split("@");
-  if (!domain) return false;
-  if (uuidRegex.test(localPart)) return true;
-  if (spamRegex.test(localPart)) return true;
-  if (digitsOnlyRegex.test(localPart)) return true;
-  if (shortRegex.test(localPart)) return true;
+  if (!email.includes("@")) return false;
+
+  const [localPart, domain] = email.toLowerCase().split("@");
+  if (!localPart || !domain) return false;
+
+  if (spamKeywords.test(localPart)) return true;
+  if (shortRegex.test(localPart) || digitsOnlyRegex.test(localPart)) return true;
   if (hashRegex.test(localPart)) return true;
-  if (randomStringRegex.test(localPart) && localPart.length > 20) return true;
+  if (longRandomRegex.test(localPart)) return true;
+  if (userNumberRegex.test(localPart)) return true;
+  if (nameNumberRegex.test(localPart)) return true;
+  if (numberNameRegex.test(localPart)) return true;
+  const localPartSchema = v.pipe(v.string(), v.uuid());
+  const uuidMatches = localPart.match(
+    /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi
+  );
+  if (uuidMatches) {
+    for (const match of uuidMatches) {
+      const result = v.safeParse(localPartSchema, match);
+      if (result.success) {
+        return true; // Found a valid UUID inside the local part
+      }
+    }
+  }
+  const disposableRegex =
+    /(tempmail|10minutemail|guerrillamail|throwaway|trashmail|mailinator|disposable|tmpmail|test|yopmail)/i;
+  if (disposableRegex.test(domain)) return true;
+
   return false;
 }
 
