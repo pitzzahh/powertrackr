@@ -33,144 +33,139 @@
   });
 </script>
 
-<section
-  class="relative z-10 flex min-h-[calc(100vh-73px)] flex-col items-center justify-center px-4 py-20 text-center"
->
-  <div class="container mx-auto w-full max-w-4xl">
-    <!-- Badge - above fold, play once -->
-    <div class="group relative mx-auto mb-6 inline-flex">
-      <!-- Animated glow border -->
-      <div
-        class="absolute -inset-0.5 animate-pulse rounded-full bg-linear-to-r from-primary/50 via-primary to-primary/50 opacity-50 blur-sm transition-opacity group-hover:opacity-75"
-      ></div>
-      <div
-        class="relative inline-flex items-center gap-2 rounded-full border border-primary/30 bg-background px-4 py-1.5 text-sm font-medium text-primary"
-      >
-        <Zap class="h-4 w-4 animate-pulse" />
-        <span>Electricity Billing Made Simple</span>
+<section class="relative z-10 h-fit overflow-hidden">
+  <div class="container mx-auto px-4 py-20 lg:py-28">
+    <div class="grid items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+      <div class="relative">
+        <div
+          class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs tracking-[0.3em] text-primary uppercase"
+        >
+          <Zap class="h-4 w-4" />
+          <span>Electricity Billing Made Simple</span>
+        </div>
+
+        <h1 class="mt-6 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
+          <span class="text-muted-foreground">
+            {currentText === "Payments" ? "Generate" : "Track"}
+          </span>
+          <span class="inline-flex align-baseline text-primary">
+            <TextLoop {texts} bind:currentIndex interval={2500} />
+          </span>
+          <span>with clarity</span>
+        </h1>
+
+        <p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+          Record, organize, and reconcile electricity usage and payments across your account and
+          sub-meters. Built for landlords, property managers, and multi-unit properties who need
+          practical billing and expense allocation.
+        </p>
+
+        <div class="mt-8 flex flex-col gap-4 sm:flex-row">
+          {#if fullyAuthenticated}
+            <Button
+              data-sveltekit-reload
+              size="lg"
+              class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+              href="/dashboard"
+            >
+              Go to Dashboard
+            </Button>
+          {:else if needs2FA}
+            <Button
+              data-sveltekit-reload
+              size="lg"
+              class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+              href="/auth?act=2fa-checkpoint"
+            >
+              Verify Two-Factor Authentication
+            </Button>
+          {:else}
+            <Button
+              data-sveltekit-reload
+              size="lg"
+              class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
+              href="/auth?act=register"
+            >
+              Get Started Free
+            </Button>
+            <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
+              >Sign In</Button
+            >
+          {/if}
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <span class="rounded-full border border-border/60 px-3 py-1">Multi-tenant</span>
+          <span class="rounded-full border border-border/60 px-3 py-1">Sub-metering</span>
+          <span class="rounded-full border border-border/60 px-3 py-1">2FA-ready</span>
+        </div>
       </div>
-    </div>
 
-    <!-- Hero Title - above fold, play once -->
-    <div class="flex min-h-25 flex-col items-center justify-center md:min-h-55 lg:min-h-52">
-      <h1 class="flex-wrap text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-        <span>{currentText === "Payments" ? "Generate" : "Track"}</span>
-        <span class="inline-flex justify-center align-baseline">
-          <TextLoop class="text-primary" {texts} bind:currentIndex interval={2500} />
-        </span>
-        Easily
-      </h1>
-      <p class="mt-2 text-3xl font-normal text-muted-foreground md:text-4xl lg:text-5xl">
-        for multi-tenant properties
-      </p>
-    </div>
-
-    <!-- Description - above fold, play once -->
-    <p class="mx-auto my-6 mb-8 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
-      Record, organize, and reconcile electricity usage and payments across your account and
-      sub-meters. Built for landlords, property managers, and multi-unit properties who need
-      practical billing and expense allocation.
-    </p>
-
-    <!-- Buttons - above fold, play once, no Magnetic -->
-    <div class="flex min-h-28 flex-col justify-center gap-4 sm:flex-row">
-      {#if fullyAuthenticated}
-        <Button
-          data-sveltekit-reload
-          size="lg"
-          class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-          href="/dashboard"
-        >
-          Go to Dashboard
-        </Button>
-      {:else if needs2FA}
-        <Button
-          data-sveltekit-reload
-          size="lg"
-          class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-          href="/auth?act=2fa-checkpoint"
-        >
-          Verify Two-Factor Authentication
-        </Button>
-      {:else}
-        <Button
-          data-sveltekit-reload
-          size="lg"
-          class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
-          href="/auth?act=register"
-        >
-          Get Started Free
-        </Button>
-        <Button data-sveltekit-reload size="lg" variant="outline" href="/auth?act=login"
-          >Sign In</Button
-        >
-      {/if}
-    </div>
-
-    <!-- Features Grid - can be below fold on smaller screens, allow reverse -->
-    <div class="mt-16 grid gap-6 md:grid-cols-3">
-      <Magnetic>
-        <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-        >
-          <div
-            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-          ></div>
-          <CardHeader class="relative">
-            <div
-              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+      <div class="relative">
+        <div class="absolute -inset-6 rounded-[2.5rem] bg-primary/10 blur-2xl"></div>
+        <div class="relative grid gap-4">
+          <Magnetic>
+            <Card
+              class="group relative overflow-hidden border-border/50 bg-background/60 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
             >
-              <Zap class="h-7 w-7 text-primary" />
-            </div>
-            <h2 class="text-lg leading-none font-semibold">Billing Records</h2>
-            <CardDescription>
-              Record periodic billing entries with total kWh and balances per billing cycle.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </Magnetic>
+              <CardHeader class="relative flex items-start gap-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+                >
+                  <Zap class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <h2 class="text-base font-semibold">Billing Records</h2>
+                  <CardDescription class="text-sm">
+                    Record periodic billing entries with total kWh and balances per billing cycle.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </Magnetic>
 
-      <Magnetic>
-        <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-        >
-          <div
-            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-          ></div>
-          <CardHeader class="relative">
-            <div
-              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+          <Magnetic>
+            <Card
+              class="group relative overflow-hidden border-border/50 bg-background/60 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 lg:translate-x-6"
             >
-              <PhilippinePeso class="h-7 w-7 text-primary" />
-            </div>
-            <h2 class="text-lg leading-none font-semibold">Sub-Meter Tracking</h2>
-            <CardDescription>
-              Support multiple sub-meters per billing period to track each unit's usage separately.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </Magnetic>
+              <CardHeader class="relative flex items-start gap-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+                >
+                  <PhilippinePeso class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <h2 class="text-base font-semibold">Sub-Meter Tracking</h2>
+                  <CardDescription class="text-sm">
+                    Support multiple sub-meters per billing period to track each unit's usage
+                    separately.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </Magnetic>
 
-      <Magnetic>
-        <Card
-          class="group relative overflow-hidden border-border/50 bg-background/50 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10"
-        >
-          <div
-            class="absolute inset-0 bg-linear-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-          ></div>
-          <CardHeader class="relative">
-            <div
-              class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+          <Magnetic>
+            <Card
+              class="group relative overflow-hidden border-border/50 bg-background/60 backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/10 lg:translate-x-12"
             >
-              <Banknote class="h-7 w-7 text-primary" />
-            </div>
-            <h2 class="text-lg leading-none font-semibold">Payment Reconciliation</h2>
-            <CardDescription>
-              Associate payments with billing and sub-meter records for clear reconciliation.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      </Magnetic>
+              <CardHeader class="relative flex items-start gap-4">
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/20"
+                >
+                  <Banknote class="h-6 w-6 text-primary" />
+                </div>
+                <div class="space-y-1">
+                  <h2 class="text-base font-semibold">Payment Reconciliation</h2>
+                  <CardDescription class="text-sm">
+                    Associate payments with billing and sub-meter records for clear reconciliation.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+            </Card>
+          </Magnetic>
+        </div>
+      </div>
     </div>
   </div>
 </section>

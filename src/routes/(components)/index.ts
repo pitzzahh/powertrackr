@@ -5,15 +5,16 @@ import type { TimeRangeOption } from "./types";
 
 // Landing page navigation
 export const LANDING_NAV_ITEMS = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "Features", href: "#features" },
-  { label: "Use Cases", href: "#use-cases" },
+  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Features", href: "/#features" },
+  { label: "Use Cases", href: "/#use-cases" },
 ] as const;
 
 export function handleLandingNavClick(event: MouseEvent, href: string) {
   event.preventDefault();
-  const targetId = href.replace("#", "");
-  const targetElement = document.getElementById(targetId);
+  const hash = href.split("#")[1];
+  if (!hash) return;
+  const targetElement = document.getElementById(hash);
 
   if (targetElement) {
     const headerOffset = 10;

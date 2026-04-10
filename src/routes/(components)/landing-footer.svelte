@@ -5,6 +5,7 @@
 </script>
 
 <script lang="ts">
+  import { resolve } from "$app/paths";
   import { gsap } from "gsap";
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
@@ -111,69 +112,86 @@
     );
   }
 
-  // ─── attach action ─────────────────────────────────────────────────────────
+  // ─── attach attachment ─────────────────────────────────────────────────────
   function footerAttach(footer: HTMLElement) {
     const canvas = footer.querySelector<HTMLCanvasElement>("canvas.grid-canvas")!;
     const cleanupCanvas = initCanvas(canvas);
     initAnimations(footer);
-    return { destroy: cleanupCanvas };
+    return () => {
+      cleanupCanvas();
+    };
   }
 </script>
 
-<footer use:footerAttach class="relative z-10 overflow-hidden border-t border-border bg-background">
+<footer
+  {@attach footerAttach}
+  class="relative z-10 overflow-hidden border-t border-border bg-background"
+>
   <!-- Electric grid canvas background -->
   <canvas class="grid-canvas pointer-events-none absolute inset-0 size-full" aria-hidden="true"
   ></canvas>
 
   <div class="relative z-10 container mx-auto px-4 py-16">
-    <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
-      <!-- Brand Column -->
-      <div class="footer-col flex flex-col gap-4">
+    <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr_1fr]">
+      <div class="footer-col flex flex-col gap-5">
         <Logo variant="ghost" class="px-0 md:pl-0!" viewTransitionName="logo-footer" />
         <p class="text-sm leading-relaxed text-muted-foreground">
           {site.fullDescription}
         </p>
+        <div class="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span class="rounded-full border border-border/60 px-3 py-1">Secure by design</span>
+          <span class="rounded-full border border-border/60 px-3 py-1">Audit-ready</span>
+          <span class="rounded-full border border-border/60 px-3 py-1">Fast setup</span>
+        </div>
       </div>
 
-      <!-- Features -->
       <div class="footer-col flex flex-col gap-4">
-        <h3 class="text-sm font-semibold">Features</h3>
-        <ul class="flex flex-col gap-0">
-          {#each [{ Icon: ChartLine, label: "Billing Summaries" }, { Icon: InvoiceIcon, label: "Sub‑Metering & Auto‑Billing" }, { Icon: Users, label: "User Accounts" }, { Icon: Shield, label: "Input Validation" }, { Icon: Download, label: "Import & Export" }] as { Icon, label }}
-            <li class="flex h-9 items-center gap-2 text-sm text-muted-foreground">
+        <h3 class="text-sm font-semibold">Product</h3>
+        <ul class="flex flex-col gap-2">
+          {#each [{ Icon: ChartLine, label: "Billing Summaries" }, { Icon: InvoiceIcon, label: "Sub‑Metering & Auto‑Billing" }, { Icon: Users, label: "User Accounts" }, { Icon: Download, label: "Import & Export" }] as { Icon, label } (label)}
+            <li class="flex items-center gap-2 text-sm text-muted-foreground">
               <Icon class="size-4 shrink-0" />
               <span>{label}</span>
             </li>
           {/each}
         </ul>
+
+        <div class="mt-4">
+          <h4 class="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+            Navigate
+          </h4>
+          <ul class="mt-2 flex flex-col gap-2">
+            {#each LANDING_NAV_ITEMS as item (item.href)}
+              <li>
+                <a
+                  href={resolve(item.href)}
+                  onclick={(e) => handleLandingNavClick(e, item.href)}
+                  class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {item.label}
+                </a>
+              </li>
+            {/each}
+          </ul>
+        </div>
       </div>
 
-      <!-- Navigation Links -->
-      <div class="footer-col flex flex-col gap-4">
-        <h3 class="text-sm font-semibold">Navigation</h3>
-        <ul class="flex flex-col gap-0">
-          {#each LANDING_NAV_ITEMS as item}
-            <li class="flex h-9 items-center">
-              <a
-                href={item.href}
-                onclick={(e) => handleLandingNavClick(e, item.href)}
-                class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {item.label}
-              </a>
-            </li>
-          {/each}
-        </ul>
-      </div>
-
-      <!-- Use Cases -->
       <div class="footer-col flex flex-col gap-4">
         <h3 class="text-sm font-semibold">Built For</h3>
-        <ul class="flex flex-col gap-0">
-          {#each ["Multi-Tenant Buildings", "Homeowners with Rentals", "Property Managers"] as item}
-            <li class="flex h-9 items-center text-sm text-muted-foreground">{item}</li>
+        <ul class="flex flex-col gap-2">
+          {#each ["Multi-Tenant Buildings", "Homeowners with Rentals", "Property Managers"] as item (item)}
+            <li class="text-sm text-muted-foreground">{item}</li>
           {/each}
         </ul>
+
+        <div
+          class="mt-2 rounded-2xl border border-border/60 bg-muted/30 p-4 text-xs text-muted-foreground"
+        >
+          <p class="font-medium text-foreground">Need a quick tour?</p>
+          <p class="mt-2">
+            Jump into the dashboard to see billing cycles, payments, and exports in context.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -190,7 +208,7 @@
         {#if user}
           <a
             data-sveltekit-reload
-            href="/dashboard"
+            href={resolve("/dashboard")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Dashboard
@@ -198,14 +216,14 @@
         {:else}
           <a
             data-sveltekit-reload
-            href="/auth?act=login"
+            href={resolve("/auth?act=login")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign In
           </a>
           <a
             data-sveltekit-reload
-            href="/auth?act=register"
+            href={resolve("/auth?act=register")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Get Started
