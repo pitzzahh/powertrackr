@@ -27,6 +27,7 @@
   import { IsMobile } from "$/hooks/is-mobile.svelte.js";
   import SvelteSeo from "svelte-seo";
   import { isEditableTarget } from "$/utils/index.js";
+  import { isPublicRouteId } from "$lib/utils/constant";
 
   const { children, data } = $props();
 
@@ -40,12 +41,7 @@
       (!data.user.registeredTwoFactor || data.session.twoFactorVerified)
   );
 
-  const isPublicRoute = $derived(
-    page.route.id === "/" ||
-      page.route.id?.startsWith("/auth") ||
-      page.route.id === "/privacy" ||
-      page.route.id === "/terms"
-  );
+  const isPublicRoute = $derived(isPublicRouteId(page.route.id));
 
   const showAppShell = $derived(isFullyAuthenticated && !isPublicRoute);
 

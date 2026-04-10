@@ -3,6 +3,7 @@ import { sequence } from "@sveltejs/kit/hooks";
 import { dev } from "$app/environment";
 import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
+import { isPublicPathname } from "$lib/utils/constant";
 
 const handleRateLimit: Handle = async ({ event, resolve }) => {
   // Use user ID for authenticated users, otherwise IP address
@@ -42,14 +43,8 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     }
   }
 
-  // Skip auth checks for auth-related paths and root landing page
-  if (
-    event.url.pathname.startsWith("/auth") ||
-    event.url.pathname === "/" ||
-    event.url.pathname === "/privacy" ||
-    event.url.pathname === "/terms" ||
-    event.url.pathname.startsWith("/events")
-  ) {
+  // Skip auth checks for public paths
+  if (isPublicPathname(event.url.pathname)) {
     return resolve(event);
   }
 
