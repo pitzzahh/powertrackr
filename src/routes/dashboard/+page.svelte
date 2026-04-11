@@ -43,7 +43,6 @@
   import { ScrollArea } from "$/components/ui/scroll-area";
   import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
   import { goto } from "$app/navigation";
-  import { getLatestBillingInfo } from "$/api/billing-info.remote.js";
   import { BillingInfoForm } from "../history/(components)/index.js";
   import { useLatestBillingStore } from "$/stores/latest-billing.svelte.js";
 

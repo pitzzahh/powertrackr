@@ -1,4 +1,4 @@
-import type { BarChartData } from "$routes/(components)/chart-bar.svelte";
+import type { BarChartData } from "$lib/types/chart";
 
 export type Total = {
   totalkWh: number;

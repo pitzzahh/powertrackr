@@ -1,10 +1,7 @@
 <script lang="ts" module>
-  export type BarChartData = {
-    date: Date;
-    totalkWh: number;
-    mainKWh: number;
-    subkWh: number;
-  };
+  import type { BarChartData } from "$lib/types/chart";
+
+  export type { BarChartData };
 
   export type BarChartInteractiveProps = {
     chartData: BarChartData[];
@@ -47,8 +44,8 @@
   import { getEnergyUnit, convertEnergy } from "$/utils/converter/energy";
   import { NumberTicker } from "$lib/components/number-ticker";
   import type { Format } from "@number-flow/svelte";
-  import { onDestroy } from "svelte";
   import { cn } from "$/utils/style";
+  import { onDestroy } from "svelte";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
 
@@ -123,7 +120,9 @@
   );
 
   if (browser) {
-    worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url));
+    worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url), {
+      type: "module",
+    });
 
     worker.onmessage = (e: MessageEvent<Total>) => {
       totalkWh = e.data.totalkWh;
