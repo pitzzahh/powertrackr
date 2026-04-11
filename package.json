@@ -70,7 +70,7 @@
     "prettier": "^3.8.2",
     "prettier-plugin-svelte": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "svelte": "^5.55.2",
+    "svelte": "^5.55.3",
     "svelte-check": "^4.4.6",
     "svelte-render-scan": "^1.1.0",
     "svelte-seo": "^2.0.0",
