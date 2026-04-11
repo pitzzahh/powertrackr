@@ -15,13 +15,14 @@
   import { invalidateAll, onNavigate } from "$app/navigation";
   import { setConsumptionStore } from "$/stores/consumption.svelte.js";
   import { RenderScan } from "svelte-render-scan";
-  import { dev } from "$app/environment";
+  import { dev, browser } from "$app/environment";
   import { page } from "$app/state";
   import { IsMobile } from "$/hooks/is-mobile.svelte.js";
   import SvelteSeo from "svelte-seo";
   import { isEditableTarget } from "$/utils/index.js";
   import { isPublicRouteId } from "$lib/utils/constant";
   import { setPendingFetch } from "$/hooks/use-pending-fetch.svelte.js";
+  import { Agentation } from "sv-agentation";
 
   const { children, data } = $props();
 
@@ -59,6 +60,10 @@
     });
   });
 </script>
+
+{#if browser && dev}
+  <Agentation toolbarPosition="bottom-left" workspaceRoot="~/development/powertrackr" />
+{/if}
 
 <ModeWatcher />
 {#if !isMoile.current}
