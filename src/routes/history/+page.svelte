@@ -31,8 +31,8 @@
           ? billingStore.extendedBillingInfos.reduce((sum, info) => sum + info.balance, 0) /
             totalBillingPeriods
           : 0,
-      paidBills: billingStore.extendedBillingInfos.filter((info) => info.status === "Paid").length,
-      pendingBills: billingStore.extendedBillingInfos.filter((info) => info.status === "Pending")
+      paidBills: billingStore.extendedBillingInfos.filter((info) => info.status === "paid").length,
+      pendingBills: billingStore.extendedBillingInfos.filter((info) => info.status === "pending")
         .length,
     });
 
