@@ -56,7 +56,7 @@ export async function load({ url: { searchParams, origin }, locals: { user, sess
       // Rate limit initial email verification send
       const { success } = await platform!.env.EMAIL_RATE_LIMITER.limit({ key: user.email });
       if (success) {
-        void createEmailVerification(
+        await createEmailVerification(
           user.id,
           user.email,
           origin,
