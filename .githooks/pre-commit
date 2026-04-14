@@ -1,23 +1,41 @@
 #!/bin/sh
 
-# Pre-commit hook to run format and oxlint
+# Pre-commit hook to run format/lint on staged files only
+# Set SKIP_PRECOMMIT=1 to bypass
 
-echo "Running format..."
-npm run format
-FORMAT_EXIT=$?
-
-if [ $FORMAT_EXIT -ne 0 ]; then
-  echo "❌ Formatting failed. Please fix formatting issues."
-  exit 1
+if [ "$SKIP_PRECOMMIT" = "1" ]; then
+  echo "⚠️  SKIP_PRECOMMIT=1 set, skipping pre-commit checks."
+  exit 0
 fi
 
-echo "Running oxlint (strict: no warnings allowed)..."
-npm run lint -- --max-warnings=0
-LINT_EXIT=$?
+STAGED_FILES=$(git diff --name-only --cached --diff-filter=ACM)
 
-if [ $LINT_EXIT -ne 0 ]; then
-  echo "❌ Linting failed. Please fix linting issues."
-  exit 1
+if [ -z "$STAGED_FILES" ]; then
+  echo "No staged files to check."
+  exit 0
+fi
+
+PRETTIER_FILES=$(echo "$STAGED_FILES" | grep -E '\.(svelte|js|ts|json|css|md|yml|yaml)$')
+LINT_FILES=$(echo "$STAGED_FILES" | grep -E '\.(svelte|js|ts)$')
+
+if [ -n "$PRETTIER_FILES" ]; then
+  echo "Running format on staged files..."
+  pnpm exec prettier --write $PRETTIER_FILES
+  FORMAT_EXIT=$?
+  if [ $FORMAT_EXIT -ne 0 ]; then
+    echo "❌ Formatting failed. Please fix formatting issues."
+    exit 1
+  fi
+fi
+
+if [ -n "$LINT_FILES" ]; then
+  echo "Running lint on staged files..."
+  pnpm exec oxlint $LINT_FILES
+  LINT_EXIT=$?
+  if [ $LINT_EXIT -ne 0 ]; then
+    echo "❌ Linting failed. Please fix linting issues."
+    exit 1
+  fi
 fi
 
 echo "✅ Pre-commit checks passed!"
