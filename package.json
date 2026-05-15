@@ -41,7 +41,9 @@
     "mode-watcher": "^1.1.0",
     "runed": "^0.37.1",
     "svelte-toolbelt": "^0.10.6",
-    "valibot": "^1.4.0"
+    "valibot": "^1.4.0",
+    "drizzle-orm": "^1.0.0-rc.1",
+    "@tanstack/table-core": "^8.21.3"
   },
   "devDependencies": {
     "@libsql/client": "^0.17.3",
@@ -55,7 +57,6 @@
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/typography": "^0.5.19",
     "@tailwindcss/vite": "^4.3.0",
-    "@tanstack/table-core": "^8.21.3",
     "@types/d3-scale": "^4.0.9",
     "@types/d3-shape": "^3.1.8",
     "@types/node": "^25.8.0",
@@ -64,7 +65,6 @@
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
     "drizzle-kit": "1.0.0-rc.1",
-    "drizzle-orm": "^1.0.0-rc.1",
     "layerchart": "2.0.0-next.46",
     "oxlint": "^1.64.0",
     "phosphor-svelte": "^3.1.0",
