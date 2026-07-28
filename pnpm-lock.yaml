@@ -5,7 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  cookie@<0.7.0: ^0.7.0
+  cookie@<0.7.0: '>=0.7.0'
+  picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
 
 importers:
 
@@ -49,7 +50,7 @@ importers:
         version: 17.4.2
       drizzle-orm:
         specifier: ^1.0.0-rc.1
-        version: 1.0.0-rc.2-e38a2ba(@libsql/client@0.17.3)(valibot@1.4.0(typescript@6.0.3))
+        version: 1.0.0-rc.2-e38a2ba(@libsql/client@0.17.3)(valibot@1.4.2(typescript@6.0.3))
       gsap:
         specifier: ^3.15.0
         version: 3.15.0
@@ -63,8 +64,8 @@ importers:
         specifier: ^0.10.6
         version: 0.10.6(@sveltejs/kit@2.60.1(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.55.7)(vite@8.0.13(@types/node@25.8.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.0)))(svelte@5.55.7)(typescript@6.0.3)(vite@8.0.13(@types/node@25.8.0)(esbuild@0.28.0)(jiti@2.6.1)(tsx@4.22.0)))(svelte@5.55.7)
       valibot:
-        specifier: ^1.4.0
-        version: 1.4.0(typescript@6.0.3)
+        specifier: ^1.4.2
+        version: 1.4.2(typescript@6.0.3)
     devDependencies:
       '@libsql/client':
         specifier: ^0.17.3
@@ -2075,7 +2076,7 @@ packages:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
-      picomatch: ^3 || ^4
+      picomatch: '>=4.0.4'
     peerDependenciesMeta:
       picomatch:
         optional: true
@@ -2664,8 +2665,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  valibot@1.4.0:
-    resolution: {integrity: sha512-iC/x7fVcSyOwlm/VSt7RlHnzNGLGvR9GnxdifUeWoCJo0q4ZZvrVkIHC6faTlkxG47I2Y4UrFquPuVHCrOnrLg==}
+  valibot@1.4.2:
+    resolution: {integrity: sha512-gjdCvJ6d3RyHAneqxMYMW9QMCwYMb3jpOO0IyHZV1bnRHFBHrX3VkIILt5XYR0WhwHiH7Mty8ovuPZ/O3gamrg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -4071,10 +4072,10 @@ snapshots:
       get-tsconfig: 4.13.7
       jiti: 2.6.1
 
-  drizzle-orm@1.0.0-rc.2-e38a2ba(@libsql/client@0.17.3)(valibot@1.4.0(typescript@6.0.3)):
+  drizzle-orm@1.0.0-rc.2-e38a2ba(@libsql/client@0.17.3)(valibot@1.4.2(typescript@6.0.3)):
     optionalDependencies:
       '@libsql/client': 0.17.3
-      valibot: 1.4.0(typescript@6.0.3)
+      valibot: 1.4.2(typescript@6.0.3)
 
   element-source@0.0.5(react@19.2.5):
     dependencies:
@@ -4769,7 +4770,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  valibot@1.4.0(typescript@6.0.3):
+  valibot@1.4.2(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
 
