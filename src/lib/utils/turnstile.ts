@@ -15,12 +15,6 @@ export interface TurnstileApi {
   remove(widgetId: string | HTMLElement): void;
 }
 
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
 const TURNSTILE_SCRIPT_URL =
   "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
 
