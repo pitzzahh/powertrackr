@@ -21,16 +21,15 @@ export const FALLBACK_STATS: Stats = {
  * batch (one round trip, one transaction) instead of four sequential queries.
  */
 export async function getGlobalStats(database: Database): Promise<Stats> {
-  const [userCountResult, energyResult, billingCountResult, paymentsResult] =
-    await database.batch([
-      database.select({ count: count() }).from(user),
-      database.select({ total: sum(billingInfo.totalkWh) }).from(billingInfo),
-      database.select({ count: count() }).from(billingInfo),
-      database
-        .select({ total: sum(payment.amount) })
-        .from(payment)
-        .innerJoin(billingInfo, eq(billingInfo.paymentId, payment.id)),
-    ]);
+  const [userCountResult, energyResult, billingCountResult, paymentsResult] = await database.batch([
+    database.select({ count: count() }).from(user),
+    database.select({ total: sum(billingInfo.totalkWh) }).from(billingInfo),
+    database.select({ count: count() }).from(billingInfo),
+    database
+      .select({ total: sum(payment.amount) })
+      .from(payment)
+      .innerJoin(billingInfo, eq(billingInfo.paymentId, payment.id)),
+  ]);
 
   const totalEnergy = Number(energyResult[0]?.total ?? 0);
   const paymentsTotal = Number(paymentsResult[0]?.total ?? 0);
