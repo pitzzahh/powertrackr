@@ -72,6 +72,11 @@
       sitekey: siteKey,
       action: "turnstile-spin-v2",
       theme: "auto",
+      // The widget would otherwise inject its own `<input name="cf-turnstile-response">`
+      // into the form — dashed keys crash SvelteKit remote-form preflight
+      // ("Invalid path ..."). The token flows via the callback into our own
+      // `turnstileToken` hidden input instead.
+      "response-field": false,
       callback: (value) => {
         token = value;
       },
@@ -91,13 +96,10 @@
 
   onMount(() => {
     if (!siteKey) return;
-    let disposed = false;
     void loadTurnstileScript().then(() => {
-      if (disposed) return;
       renderWidget();
     });
     return () => {
-      disposed = true;
       if (widgetId !== null) window.turnstile?.remove(widgetId);
     };
   });
@@ -115,7 +117,6 @@
       const issues = currentAction.fields.allIssues?.() || [];
       if (issues.length > 0) {
         showWarning(issues.map((i) => i.message).join(", "));
-        resetWidget();
       } else {
         element.reset();
         showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
@@ -123,7 +124,6 @@
     } catch (e) {
       const message = isHttpError(e) ? e.body.message : String(e);
       console.log({ e });
-      resetWidget();
       showError(
         message ||
           (action === "login"

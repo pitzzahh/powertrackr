@@ -2,6 +2,8 @@ export interface TurnstileRenderOptions {
   sitekey: string;
   action?: string;
   theme?: "auto" | "light" | "dark";
+  /** Prevent the widget from injecting its own `<input name="cf-turnstile-response">` into the form. */
+  "response-field"?: boolean;
   callback?: (token: string) => void;
   "expired-callback"?: () => void;
   "error-callback"?: () => void;
