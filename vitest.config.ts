@@ -25,6 +25,10 @@ export default defineConfig({
     },
   },
   resolve: {
+    // Tell Vitest to use the `browser` entry points in package.json files
+    // (e.g. Svelte's client build) so components can be mounted with `mount`.
+    // https://svelte.dev/docs/svelte/testing
+    ...(process.env.VITEST ? { conditions: ["browser"] } : {}),
     alias: {
       $: "/src/lib",
       "$env/static/private": "/src/lib/server/crud/__tests__/helpers/mock-env.ts",
