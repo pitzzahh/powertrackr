@@ -2,7 +2,7 @@ import { ObjectParser } from "@pilcrowjs/object-parser";
 import { getUserFromGitHubId } from "$/api/user.remote";
 import { createSession, setSessionTokenCookie } from "$/server/auth";
 
-import type { OAuth2Tokens } from "arctic";
+import type { OAuth2Tokens } from "$/server/oauth";
 import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "$/server/encryption";
 import { createGitHub } from "$/server/oauth";

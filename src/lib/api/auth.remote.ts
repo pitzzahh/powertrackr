@@ -37,14 +37,30 @@ import {
   hashPassword,
   verifyPasswordHash,
 } from "$/server/encryption";
-import { verifyTOTP } from "@oslojs/otp";
-import { encodeBase32UpperCaseNoPadding, encodeBase64url, decodeBase64url } from "@oslojs/encoding";
+import { Secret, TOTP } from "otpauth";
+import {
+  decodeBase32IgnorePadding,
+  encodeBase32UpperCaseNoPadding,
+  encodeBase64url,
+  decodeBase64url,
+} from "@oslojs/encoding";
 import crypto from "node:crypto";
 import type { HelperResult } from "$/server/types/helper";
 import type { NewUser } from "$/types/user";
 import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { requireAuth as requireAuthServer } from "$/server/auth";
+
+function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
+  return (
+    new TOTP({
+      secret: new Secret({ buffer: Uint8Array.from(secretBytes).buffer }),
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+    }).validate({ token: code, window: 0 }) !== null
+  );
+}
 
 export const getAuthUser = query(() => {
   try {
@@ -327,7 +343,7 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
     return invalid(issues.code("Unable to verify code at this time. Please try again later."));
   }
 
-  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+  const isValid = verifyTotpCode(secretBytes, code);
 
   if (!isValid) {
     return invalid(issues.code("Invalid verification code"));
@@ -484,9 +500,15 @@ export const generate2FASecret = form(generate2FASecretSchema, async () => {
   const secret = encodeBase32UpperCaseNoPadding(secretBytes);
 
   // Create the otpauth URL for QR code
-  const issuer = "PowerTrackr";
-  const accountName = encodeURIComponent(event.locals.user.email);
-  const otpauthUrl = `otpauth://totp/${issuer}:${accountName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+  const totp = new TOTP({
+    issuer: "PowerTrackr",
+    label: event.locals.user.email,
+    secret,
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+  });
+  const otpauthUrl = totp.toString();
 
   return { secret, otpauthUrl };
 });
@@ -500,27 +522,10 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
   const { code, secret } = data;
 
   // Decode the secret from base32
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  const secretBytes = new Uint8Array(
-    secret
-      .split("")
-      .map((c) => alphabet.indexOf(c))
-      .reduce((acc: number[], val, i, arr) => {
-        if (i % 8 === 0) {
-          const chunk = arr.slice(i, i + 8);
-          const bits = chunk.map((v) => v.toString(2).padStart(5, "0")).join("");
-          for (let j = 0; j < bits.length; j += 8) {
-            if (j + 8 <= bits.length) {
-              acc.push(parseInt(bits.slice(j, j + 8), 2));
-            }
-          }
-        }
-        return acc;
-      }, [])
-  );
+  const secretBytes = decodeBase32IgnorePadding(secret);
 
   // Verify the TOTP code (30 second window, 6 digits)
-  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+  const isValid = verifyTotpCode(secretBytes, code);
 
   if (!isValid) {
     invalid(issues.code("Invalid verification code"));
@@ -596,7 +601,7 @@ export const disable2FA = form(disable2FASchema, async (data, issues) => {
   const secretBytes = decrypt(decodeBase64url(userResult.totpKey));
 
   // Verify the TOTP code
-  const isValid = verifyTOTP(secretBytes, 30, 6, code);
+  const isValid = verifyTotpCode(secretBytes, code);
 
   if (!isValid) {
     invalid(issues.code("Invalid verification code"));

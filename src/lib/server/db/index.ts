@@ -1,12 +1,11 @@
 import { drizzle } from "drizzle-orm/d1";
 import { getRequestEvent } from "$app/server";
 import { relations } from "./relations";
-import * as schema from "./schema";
 
 // Use a factory that constructs the database so TypeScript can infer the full,
 // correct return type from the concrete `schema` and `relations` we provide.
 function createDb(d1: App.Platform["env"]["DB"]) {
-  return drizzle(d1, { schema, relations });
+  return drizzle(d1, { relations });
 }
 
 // Export a Database type consumers can reference if needed.

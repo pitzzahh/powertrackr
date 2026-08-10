@@ -1,3 +1,5 @@
+/// <reference types="../worker-configuration.d.ts" />
+
 declare global {
   namespace App {
     interface Locals {

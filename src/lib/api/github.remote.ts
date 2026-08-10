@@ -1,11 +1,11 @@
 import { getRequestEvent, command } from "$app/server";
 import { createGitHub } from "$/server/oauth";
-import { generateState } from "arctic";
+import { randomBytes } from "node:crypto";
 import { dev } from "$app/environment";
 
 export const loginWithGithub = command(async () => {
   const event = getRequestEvent();
-  const state = generateState();
+  const state = randomBytes(32).toString("base64url");
   const url = createGitHub(event.url).createAuthorizationURL(state, ["user:email"]);
 
   event.cookies.set("github_oauth_state", state, {

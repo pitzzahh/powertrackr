@@ -350,7 +350,7 @@
 
 <form
   id="{identity}-form"
-  {...currentAction.enhance(async ({ form, submit }) => {
+  {...currentAction.enhance(async ({ submit, element }) => {
     if ((action === "update" && Object.keys(CHANGED_DATA).length === 0) || !FORM_VALID) {
       showInspectorWarning();
       return;
@@ -368,7 +368,7 @@
         open = false;
         callback?.(true, action);
       }
-      form.reset();
+      element.reset();
     } catch (error) {
       callback?.(false, action, { error: (error as Error).message });
     } finally {

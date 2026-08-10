@@ -44,8 +44,8 @@ namespace_id = "1004"
 
 [observability]
 [observability.logs]
-enabled = true
-invocation_logs = true
+enabled = false
+invocation_logs = false
 
 [observability.traces]
 enabled = false

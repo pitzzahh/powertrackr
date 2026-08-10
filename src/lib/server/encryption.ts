@@ -5,7 +5,6 @@ import {
   encodeBase64url,
 } from "@oslojs/encoding";
 import crypto from "node:crypto";
-import { DynamicBuffer } from "@oslojs/binary";
 import { ENCRYPTION_KEY } from "$env/static/private";
 import { dev } from "$app/environment";
 import { pbkdf2, sha256 } from "@noble/hashes/webcrypto.js";
@@ -61,17 +60,23 @@ function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
   return diff === 0;
 }
 
+function concatBytes(...chunks: Uint8Array[]): Uint8Array {
+  const totalLength = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
+  const result = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    result.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return result;
+}
+
 const key = decodeHex(ENCRYPTION_KEY);
 
 export function encrypt(data: Uint8Array): Uint8Array {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv("aes-128-gcm", key, iv);
-  const encrypted = new DynamicBuffer(0);
-  encrypted.write(iv);
-  encrypted.write(cipher.update(data));
-  encrypted.write(cipher.final());
-  encrypted.write(cipher.getAuthTag());
-  return encrypted.bytes();
+  return concatBytes(iv, cipher.update(data), cipher.final(), cipher.getAuthTag());
 }
 
 export function encryptString(data: string): Uint8Array {
@@ -84,10 +89,10 @@ export function decrypt(encrypted: Uint8Array): Uint8Array {
   }
   const decipher = crypto.createDecipheriv("aes-128-gcm", key, encrypted.slice(0, 16));
   decipher.setAuthTag(encrypted.slice(encrypted.byteLength - 16));
-  const decrypted = new DynamicBuffer(0);
-  decrypted.write(decipher.update(encrypted.slice(16, encrypted.byteLength - 16)));
-  decrypted.write(decipher.final());
-  return decrypted.bytes();
+  return concatBytes(
+    decipher.update(encrypted.slice(16, encrypted.byteLength - 16)),
+    decipher.final()
+  );
 }
 
 export function decryptToString(data: Uint8Array): string {

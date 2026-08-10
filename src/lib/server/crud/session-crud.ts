@@ -179,7 +179,8 @@ function buildWhereSQL(where: Record<keyof Session, unknown>): SQL | undefined {
   for (const [key, value] of Object.entries(where)) {
     if (key === "NOT") {
       const notObj = value as { id: string };
-      conditions.push(not(eq(session.id, notObj.id)));
+      const notCondition = not(eq(session.id, notObj.id));
+      if (notCondition) conditions.push(notCondition);
     } else if (key === "id") {
       conditions.push(eq(session.id, value as string));
     } else if (key === "expiresAt") {

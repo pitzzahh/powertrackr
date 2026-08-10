@@ -491,58 +491,51 @@
   </div>
   <div class="w-full rounded-xl bg-muted/50 p-4">
     <form
-      {...importBillingFile.enhance(
-        async ({
-          submit,
-          form,
-        }: {
-          submit: (...args: any[]) => Promise<any>;
-          form: HTMLFormElement;
-        }) => {
-          if (!file) {
-            showInspectorWarning();
+      {...importBillingFile.enhance(async ({ submit, element }) => {
+        if (!file) {
+          showInspectorWarning();
+          return;
+        }
+        if (isImporting) return;
+        const toastId = showLoading("Importing data", "Please wait...");
+        isImporting = true;
+        importErrors = [];
+        importResult = null;
+        try {
+          if (!validatedItems) {
+            toast.dismiss(toastId);
+            importErrors = ["No valid data to import (fix validation errors)"];
             return;
           }
-          if (isImporting) return;
-          const toastId = showLoading("Importing data", "Please wait...");
-          isImporting = true;
-          importErrors = [];
-          importResult = null;
-          try {
-            if (!validatedItems) {
-              toast.dismiss(toastId);
-              importErrors = ["No valid data to import (fix validation errors)"];
-              return;
-            }
-            const res = await submit();
-            toast.dismiss(toastId);
-            // Try to extract returned value if available (shape may vary)
-            if (res && typeof res === "object" && "value" in res) {
-              importResult = (res as any).value;
-            } else {
-              importResult = res;
-            }
-            const issues = importBillingFile.fields?.allIssues?.() || [];
-            if (issues.length > 0) {
-              importErrors = issues.map((i: any) => i.message);
-            } else {
-              showSuccess("Import successful");
-              preview = null;
-              importJson = null;
-              importFile = null;
-              form.reset();
-              billingStore.refresh();
-              consumptionStore.refresh();
-            }
-          } catch (e) {
-            const message = isHttpError(e) ? e.body.message : String(e);
-            importErrors = [message || "Import failed"];
-          } finally {
-            toast.dismiss(toastId);
-            isImporting = false;
+          await submit();
+          const res = importBillingFile.result;
+          toast.dismiss(toastId);
+          // Try to extract returned value if available (shape may vary)
+          if (res && typeof res === "object" && "value" in res) {
+            importResult = (res as any).value;
+          } else {
+            importResult = res;
           }
+          const issues = importBillingFile.fields?.allIssues?.() || [];
+          if (issues.length > 0) {
+            importErrors = issues.map((i: any) => i.message);
+          } else {
+            showSuccess("Import successful");
+            preview = null;
+            importJson = null;
+            importFile = null;
+            element.reset();
+            billingStore.refresh();
+            consumptionStore.refresh();
+          }
+        } catch (e) {
+          const message = isHttpError(e) ? e.body.message : String(e);
+          importErrors = [message || "Import failed"];
+        } finally {
+          toast.dismiss(toastId);
+          isImporting = false;
         }
-      )}
+      })}
       enctype="multipart/form-data"
       bind:this={importForm}
       class="flex w-full flex-col gap-2"
