@@ -28,13 +28,28 @@
   import { deleteBillingInfo } from "$/api/billing-info.remote";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { billingInfoToDto } from "$/utils/mapper/billing-info";
+  import { billingInfoToDto, extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
+  import { findPreviousBillingInfo } from "$/utils/previous-reading";
   import { convertToNormalText } from "$/utils/text";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
+
+  // The billing record immediately before the row's record (by date), used by the
+  // edit form to display the true previous reading for each sub meter.
+  const previousBillingInfo = $derived(
+    billingStore.extendedBillingInfos.length > 0
+      ? (() => {
+          const previous = findPreviousBillingInfo(
+            billingStore.extendedBillingInfos,
+            row.original.date
+          );
+          return previous ? billingInfoToDto(extendedBillingInfoToTableView(previous)) : undefined;
+        })()
+      : undefined
+  );
 
   let { app_state, active_dialog_content, open_view, open_edit, delete_confirm_value } =
     $state<ComponentState>({
@@ -281,6 +296,7 @@
               }
             }}
             billingInfo={billingInfoToDto(row.original)}
+            {previousBillingInfo}
           />
         </div>
       </ScrollArea>
