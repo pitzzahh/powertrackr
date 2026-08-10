@@ -5,10 +5,6 @@ import { getEnergyUnit } from "$/utils/converter/energy";
 import type { Database } from "$/server/db";
 import type { Stats } from "$/types/stats";
 
-// Global aggregates change rarely; 5s keeps the stats "live" without
-// hammering D1 with 4 queries per second per connected client.
-export const POLL_INTERVAL_MS = 5_000;
-
 export const FALLBACK_STATS: Stats = {
   userCount: 0,
   energyUsed: { total: 0, energyUnit: "kWh", formatted: formatEnergy(0) },
