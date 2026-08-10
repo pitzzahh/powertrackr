@@ -21,7 +21,7 @@
     showWarning("Two Factor Authentication Required");
   }}
   class="flex w-full flex-col gap-6"
-  {...checkpoint2FA.enhance(async ({ submit, form }) => {
+  {...checkpoint2FA.enhance(async ({ submit, element }) => {
     if (status === "processing") return;
     status = "processing";
     const toastId = showLoading("Verifying two-factor authentication...");
@@ -31,7 +31,7 @@
       if (issues.length > 0) {
         showWarning(issues.map((i) => i.message).join(", "));
       } else {
-        form.reset();
+        element.reset();
         showSuccess("Two-factor authentication verified");
       }
     } catch (e) {

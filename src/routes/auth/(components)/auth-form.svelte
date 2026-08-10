@@ -52,7 +52,7 @@
 </script>
 
 <form
-  {...currentAction.enhance(async ({ submit, form }) => {
+  {...currentAction.enhance(async ({ submit, element }) => {
     if (statuses.email === "processing") return;
     statuses.email = "processing";
     const toastId = showLoading(
@@ -64,7 +64,7 @@
       if (issues.length > 0) {
         showWarning(issues.map((i) => i.message).join(", "));
       } else {
-        form.reset();
+        element.reset();
         showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
       }
     } catch (e) {

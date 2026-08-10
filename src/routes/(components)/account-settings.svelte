@@ -328,7 +328,7 @@
       <ScrollArea orientation="vertical" class="h-full">
         <div class="p-1 pr-3">
           <form
-            {...changePassword.enhance(async ({ submit, form }) => {
+            {...changePassword.enhance(async ({ submit, element }) => {
               if (passwordAsyncState === "processing") return;
               passwordAsyncState = "processing";
               const toastId = showLoading("Changing password...");
@@ -340,7 +340,7 @@
                     id: toastId,
                   });
                 } else {
-                  form.reset();
+                  element.reset();
                   showSuccess("Password changed successfully", undefined, undefined, {
                     id: toastId,
                   });
@@ -512,19 +512,19 @@
                 </p>
                 <form
                   class="mt-4"
-                  {...disable2FA.enhance(async ({ submit, form }) => {
+                  {...disable2FA.enhance(async (form) => {
                     if (securityAsyncState === "processing") return;
                     securityAsyncState = "processing";
                     const toastId = showLoading("Disabling 2FA...");
                     try {
-                      await submit();
+                      await form.submit();
                       const issues = disable2FA.fields.allIssues?.() || [];
                       if (issues.length > 0) {
                         showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
                           id: toastId,
                         });
                       } else {
-                        form.reset();
+                        form.element.reset();
                         showSuccess("2FA disabled successfully", undefined, undefined, {
                           id: toastId,
                         });

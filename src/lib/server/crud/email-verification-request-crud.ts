@@ -208,7 +208,8 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
   for (const [key, value] of Object.entries(where)) {
     if (key === "NOT") {
       const notObj = value as { id: string };
-      conditions.push(not(eq(emailVerificationRequest.id, notObj.id)));
+      const notCondition = not(eq(emailVerificationRequest.id, notObj.id));
+      if (notCondition) conditions.push(notCondition);
     } else if (key === "id") {
       conditions.push(eq(emailVerificationRequest.id, value as string));
     } else if (key === "userId") {

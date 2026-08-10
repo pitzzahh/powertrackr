@@ -1,7 +1,6 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import { relations } from "./relations";
-import * as schema from "./schema";
 
 let client: Client | undefined;
 let testDb: TestDatabase | undefined;
@@ -19,13 +18,13 @@ export function createTestDb(): TestDatabase {
   }
 
   if (!testDb) {
-    testDb = drizzle({ client, schema, relations });
+    testDb = drizzle({ client, relations });
   }
 
   return testDb;
 }
 
-export type TestDatabase = LibSQLDatabase<typeof schema, typeof relations>;
+export type TestDatabase = LibSQLDatabase<typeof relations>;
 
 export function getTestDb(): TestDatabase {
   if (!testDb) {
