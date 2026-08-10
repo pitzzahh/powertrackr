@@ -67,5 +67,21 @@ export type BillingCreateForm = {
   subMeters: { label: string; reading: number; status: Status }[];
 };
 
+export type BillingUpdateSubMeterForm = {
+  id?: string;
+  label: string;
+  reading: number;
+  status?: Status;
+};
+
+export type BillingUpdateForm = {
+  id: string;
+  date: string;
+  totalkWh: number;
+  balance: number;
+  status: string;
+  subMeters?: BillingUpdateSubMeterForm[];
+};
+
 export const STATUS_VALUES = ["paid", "pending", "due"] as const;
 export type Status = (typeof STATUS_VALUES)[number];

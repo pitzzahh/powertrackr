@@ -3,6 +3,11 @@
   export type BillingInfoWithSubMetersFormProps = {
     action: Action;
     billingInfo?: BillingInfoDTOWithSubMeters;
+    /**
+     * For update mode: the billing record immediately before the one being
+     * edited, used to display the true previous reading per sub meter.
+     */
+    previousBillingInfo?: BillingInfoDTOWithSubMeters;
     open?: boolean;
     /**
      * Callback to be called when the form is submitted.
@@ -57,6 +62,7 @@
   import * as Select from "$/components/ui/select";
   import { CalendarDate, today } from "@internationalized/date";
   import { getChangedData, omit } from "$/utils/mapper";
+  import { resolvePreviousReadings } from "$/utils/previous-reading";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
   import { Label } from "$/components/ui/label";
   import { ChevronDown, CirclePlus, Loader, Trash2 } from "$/assets/icons";
@@ -83,12 +89,21 @@
     action,
     open = $bindable(false),
     billingInfo,
+    previousBillingInfo,
     callback,
   }: BillingInfoWithSubMetersFormProps = $props();
 
   const identity = $props.id();
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
+
+  // Previous period readings per sub meter (by id), used in update mode to show
+  // the true baseline instead of the record's own stored reading.
+  const previousReadings = $derived(
+    action === "update" && previousBillingInfo
+      ? resolvePreviousReadings(subMeters, previousBillingInfo.subMeters)
+      : new Map<string, number>()
+  );
 
   let { dateValue, openDatePicker, asyncState } = $derived<Omit<BillingInfoFormState, "subMeters">>(
     {
@@ -583,14 +598,22 @@
                 <Input
                   id="{identity}-sub-meter-reading"
                   placeholder="Enter current reading"
-                  min={subMeter.reading}
+                  min={action === "update"
+                    ? (previousReadings.get(subMeter.id) ?? 0)
+                    : subMeter.reading}
                   step={1}
                   required
                   {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
                 />
-                <!-- TODO: Fix this, must get previous reading -->
                 <Field.Description>
-                  {#if subMeter.reading > 0}
+                  {#if action === "update"}
+                    {@const previousReading = previousReadings.get(subMeter.id) ?? 0}
+                    {#if previousReading > 0}
+                      Previous reading: [{previousReading}]
+                    {:else}
+                      Current sub-meter reading for calculation
+                    {/if}
+                  {:else if subMeter.reading > 0}
                     Previous reading: [{subMeter.reading}]
                   {:else}
                     Current sub-meter reading for calculation
@@ -630,7 +653,22 @@
                 <input hidden {...currentAction.fields.subMeters[subIndex]["status"].as("text")} />
               </Field.Field>
 
-              {#if subMeter?.reading != 0}
+              {#if action === "update"}
+                {@const previousReading = previousReadings.get(subMeter.id) ?? 0}
+                {#if previousReading > 0}
+                  <Separator />
+                  <div class="text-sm text-muted-foreground">
+                    Consumption:
+                    {#if Number.isFinite(Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()))}
+                      {formatEnergy(
+                        Number(
+                          currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()
+                        ) - previousReading
+                      )}
+                    {/if}
+                  </div>
+                {/if}
+              {:else if subMeter?.reading != 0}
                 <Separator />
                 <div class="text-sm text-muted-foreground">
                   Consumption:

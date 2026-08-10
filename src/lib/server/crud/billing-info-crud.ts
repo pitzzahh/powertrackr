@@ -1,16 +1,17 @@
 import { db, asNonEmptyBatch } from "$/server/db";
 import type { BatchQuery } from "$/server/db";
-import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
+import { and, count, eq, inArray, not, sum, type SQL } from "drizzle-orm";
 import { billingInfo, payment, subMeter } from "$/server/db/schema";
 import type { HelperParam, HelperResult } from "$/server/types/helper";
 import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
+import { getChangedData, omit } from "$/utils/mapper";
 import type {
   NewBillingInfo,
   BillingInfo,
   BillingInfoDTO,
   BillingInfoWithPaymentAndSubMetersWithPayment,
   BillingCreateForm,
+  BillingUpdateForm,
 } from "$/types/billing-info";
 import { calculatePayPerKwh } from "$lib";
 import { formatEnergy } from "$/utils/format";
@@ -334,8 +335,9 @@ export async function createBillingInfoLogic(
       if (sub.reading < 0) {
         throw error(400, `Invalid reading for sub meter "${sub.label}"`);
       }
-      // New sub meter: persist initial reading as baseline, do not bill it now
-      subkWh = sub.reading;
+      // New sub meter: persist initial reading as baseline, do not bill it now.
+      // Baseline meters carry 0 usage (`subkWh = 0`) and no payment.
+      subkWh = 0;
       paymentAmount = 0;
     }
 
@@ -431,6 +433,321 @@ export async function createBillingInfoLogic(
   }
 
   return createdBillingInfo;
+}
+
+/*
+ * updateBillingInfoLogic
+ *
+ * - Recreates the logic previously in the billing-info remote layer.
+ * - Recomputes sub-meter usage against the PREVIOUS billing period's readings
+ *   (matched by label), not the record's own stored readings, so editing a
+ *   record keeps the cumulative meter progression consistent.
+ * - Persists the recomputed `payPerkWh` on the billing info record.
+ * - Removes sub meters together with their linked payment rows so no
+ *   orphaned payments are left behind.
+ * - Uses a single D1 batch to persist all changes.
+ */
+export async function updateBillingInfoLogic(
+  data: BillingUpdateForm,
+  userId: string
+): Promise<BillingInfo> {
+  const { id: billingInfoId, subMeters, ...updateData } = data;
+
+  const {
+    valid: validBillingInfo,
+    value: [billingInfoWithSubMetersToUpdate],
+  } = await getBillingInfoBy({
+    query: { userId, id: billingInfoId },
+    options: {
+      fields: ["id", "date", "status", "balance", "totalkWh", "paymentId"],
+      with_payment: true,
+      with_sub_meters_with_payment: true,
+    },
+  });
+
+  if (!validBillingInfo) {
+    throw error(400, "Failed to update billing info");
+  }
+
+  const updatedData = {
+    ...updateData,
+    date: new Date(updateData.date),
+    ...(updateData.status && {
+      status: updateData.status as string,
+    }),
+  };
+
+  // Use the current billing info as-is for comparison.
+  // Overriding `balance` with the payment amount can cause false-positive
+  // change detection when the payment amount differs from the stored balance.
+  const changed_data = getChangedData(
+    omit(billingInfoWithSubMetersToUpdate, ["id", "createdAt", "updatedAt", "paymentId"]),
+    updatedData
+  );
+
+  // Determine whether provided subMeters actually differ from existing ones
+  // (cheap checks) so we can skip heavy work when they don't.
+  const existingSubMeters = billingInfoWithSubMetersToUpdate.subMeters ?? [];
+  let subMetersHaveChanges = false;
+  if (subMeters !== undefined && subMeters !== null) {
+    // If counts differ, there were additions/removals
+    if ((subMeters.length ?? 0) !== (existingSubMeters.length ?? 0)) {
+      subMetersHaveChanges = true;
+    }
+    // Quick scan: new items (no id) or any mismatch in id/label/reading
+    if (!subMetersHaveChanges) {
+      const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id);
+      for (const s of subMeters) {
+        if (!s.id) {
+          subMetersHaveChanges = true;
+          break;
+        }
+        const existing = existingSubMeters.find((m) => m.id === s.id);
+        if (!existing) {
+          subMetersHaveChanges = true;
+          break;
+        }
+        if (
+          existing.label !== s.label ||
+          existing.reading !== s.reading ||
+          existing.status !== s.status
+        ) {
+          subMetersHaveChanges = true;
+          break;
+        }
+      }
+      // Also detect deletions (an existing id not present in provided ids)
+      if (!subMetersHaveChanges) {
+        for (const existing of existingSubMeters) {
+          if (!providedIds.includes(existing.id)) {
+            subMetersHaveChanges = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (Object.keys(changed_data).length === 0 && !subMetersHaveChanges) {
+    return billingInfoWithSubMetersToUpdate as BillingInfo;
+  }
+
+  const database = db();
+
+  const recordDate = billingInfoWithSubMetersToUpdate.date;
+  if (!recordDate) {
+    throw error(400, "Failed to update billing info, missing record date");
+  }
+
+  // Previous billing period (strictly before this record's date) used as the
+  // baseline for sub-meter usage calculations, matching createBillingInfoLogic.
+  const previousBillingInfo = await database.query.billingInfo.findFirst({
+    where: {
+      userId,
+      date: { lt: recordDate },
+    },
+    orderBy: { date: "desc" },
+    with: { subMeters: true },
+  });
+
+  // Prepare sub meters data first (compute without DB calls)
+  const payPerkWh = calculatePayPerKwh(
+    updateData.balance ?? billingInfoWithSubMetersToUpdate.balance,
+    updateData.totalkWh ?? billingInfoWithSubMetersToUpdate.totalkWh
+  );
+  // Only compute the rich subMetersData if there are changes to process
+  type PreparedSubMeter = {
+    id?: string;
+    label: string;
+    reading: number;
+    subkWh: number;
+    status: string;
+    paymentAmount: number;
+    paymentId?: string;
+  };
+  const subMetersData: PreparedSubMeter[] =
+    subMeters?.map((sub) => {
+      if (sub.id) {
+        const currentMeter = billingInfoWithSubMetersToUpdate.subMeters?.find(
+          (m) => m.id === sub.id
+        );
+        if (!currentMeter) {
+          throw error(400, `Sub meter with id "${sub.id}" not found`);
+        }
+        // Baseline comes from the previous billing period (same label), not from
+        // this record's own stored reading.
+        const previousMeter = previousBillingInfo?.subMeters?.find((m) => m.label === sub.label);
+        const subkWh = previousMeter ? sub.reading - previousMeter.reading : 0;
+        if (subkWh < 0) {
+          throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+        }
+        const paymentAmount = Number((subkWh * payPerkWh).toFixed(2));
+        return {
+          id: sub.id,
+          label: sub.label,
+          reading: sub.reading,
+          subkWh,
+          status: sub.status ?? currentMeter.status,
+          paymentAmount,
+          paymentId: currentMeter.paymentId,
+        };
+      } else {
+        // new sub meter - persist initial reading as baseline (reading) but do NOT bill it
+        if (sub.reading < 0) {
+          throw error(400, `Invalid reading for sub meter "${sub.label}"`);
+        }
+        return {
+          label: sub.label,
+          reading: sub.reading,
+          subkWh: 0, // starting sub meter => 0 usage
+          paymentAmount: 0,
+          status: sub.status ?? "pending",
+        };
+      }
+    }) ?? [];
+
+  // Validate that total sub-meter kWh does not exceed total billing kWh (prevents negative main usage)
+  const totalSubkWh = subMetersData.reduce((sum, s) => sum + s.subkWh, 0);
+  const totalkWhForCheck = updateData.totalkWh ?? billingInfoWithSubMetersToUpdate.totalkWh ?? 0;
+  if (totalSubkWh > totalkWhForCheck) {
+    throw error(
+      400,
+      "Invalid meter readings, sub-meter kWh exceeds total kWh (main usage negative)"
+    );
+  }
+
+  // Perform all DB operations in a single D1 batch
+  const batchQueries: BatchQuery[] = [];
+  let billingInfoResultIndex: number | null = null;
+
+  if (Object.keys(changed_data).length > 0) {
+    billingInfoResultIndex = batchQueries.length;
+    batchQueries.push(
+      database
+        .update(billingInfo)
+        .set({
+          ...changed_data,
+          // Keep the stored rate in sync with the values used for payment math.
+          payPerkWh,
+        })
+        .where(eq(billingInfo.id, billingInfoId))
+        .returning()
+    );
+  }
+
+  // Handle sub meters update if provided and only if changes detected
+  if (subMeters && subMetersHaveChanges) {
+    const existingIds = billingInfoWithSubMetersToUpdate.subMeters?.map((s) => s.id) || [];
+    const providedIds = subMeters.filter((s) => s.id !== undefined).map((s) => s.id!);
+    const toDeleteIds = existingIds.filter((id) => !providedIds.includes(id));
+
+    if (toDeleteIds.length > 0) {
+      const toDeleteSubMeters = existingSubMeters.filter((s) => toDeleteIds.includes(s.id));
+      const toDeletePaymentIds = toDeleteSubMeters
+        .map((s) => s.paymentId)
+        .filter((id): id is string => !!id);
+
+      batchQueries.push(database.delete(subMeter).where(inArray(subMeter.id, toDeleteIds)));
+      // Remove linked payments too so no orphaned rows accumulate.
+      if (toDeletePaymentIds.length > 0) {
+        batchQueries.push(database.delete(payment).where(inArray(payment.id, toDeletePaymentIds)));
+      }
+    }
+
+    for (const subData of subMetersData) {
+      if (subData.id) {
+        if (!subData.paymentId) {
+          throw error(400, `Sub meter "${subData.label}" missing linked payment`);
+        }
+        // update existing
+        batchQueries.push(
+          database
+            .update(subMeter)
+            .set({
+              reading: subData.reading,
+              subkWh: subData.subkWh,
+              status: subData.status,
+            })
+            .where(eq(subMeter.id, subData.id))
+        );
+
+        batchQueries.push(
+          database
+            .update(payment)
+            .set({ amount: subData.paymentAmount })
+            .where(eq(payment.id, subData.paymentId))
+        );
+      } else {
+        // add new
+        const newPaymentId = crypto.randomUUID();
+        const newSubMeterId = crypto.randomUUID();
+
+        batchQueries.push(
+          database.insert(payment).values({
+            id: newPaymentId,
+            date: new Date(),
+            amount: subData.paymentAmount,
+          })
+        );
+
+        batchQueries.push(
+          database.insert(subMeter).values({
+            id: newSubMeterId,
+            label: subData.label,
+            billingInfoId,
+            reading: subData.reading,
+            subkWh: subData.subkWh,
+            paymentId: newPaymentId,
+            status: subData.status,
+          })
+        );
+      }
+    }
+  }
+
+  if (!billingInfoWithSubMetersToUpdate.paymentId) {
+    throw error(400, "Billing info missing payment ID");
+  }
+
+  const totalSubPayment = subMetersHaveChanges
+    ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
+    : (billingInfoWithSubMetersToUpdate.subMeters || []).reduce(
+        (sum, sub) => sum + (sub.payment?.amount ?? 0),
+        0
+      );
+
+  const updatedBalance = updateData.balance ?? billingInfoWithSubMetersToUpdate.balance ?? 0;
+  const mainPaymentAmount = updatedBalance - totalSubPayment;
+  if (mainPaymentAmount < 0) {
+    throw error(400, "Main payment amount cannot be negative");
+  }
+
+  batchQueries.push(
+    database
+      .update(payment)
+      .set({
+        amount: mainPaymentAmount,
+      })
+      .where(eq(payment.id, billingInfoWithSubMetersToUpdate.paymentId))
+  );
+
+  const batchPayload = asNonEmptyBatch(batchQueries);
+  if (!batchPayload) {
+    throw error(400, "Failed to update billing info, no batch queries were generated");
+  }
+  const batchResults = await database.batch(batchPayload);
+  const updatedBillingInfo =
+    billingInfoResultIndex !== null
+      ? Array.isArray(batchResults[billingInfoResultIndex])
+        ? batchResults[billingInfoResultIndex][0]
+        : undefined
+      : (billingInfoWithSubMetersToUpdate as BillingInfo);
+
+  if (billingInfoResultIndex !== null && !updatedBillingInfo) {
+    throw error(400, "Failed to update billing info");
+  }
+
+  return updatedBillingInfo;
 }
 
 export async function getTotalEnergyUsageLogic() {
