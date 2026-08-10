@@ -22,5 +22,4 @@ jobs:
         with:
           node-version: 24.x
           cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
       - run: pnpm dlx semantic-release
