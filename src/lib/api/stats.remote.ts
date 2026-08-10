@@ -14,9 +14,12 @@ import type { Stats } from "$/types/stats";
 export const getStats = query.live(async function* (): AsyncGenerator<Stats> {
   originCheck();
 
+  // Resolved once per connection; `db()` returns a cached per-isolate instance.
+  const database = db();
+
   while (true) {
     try {
-      yield await getGlobalStats(db());
+      yield await getGlobalStats(database);
     } catch (e) {
       console.warn("Failed to fetch global stats");
       console.warn(e);
