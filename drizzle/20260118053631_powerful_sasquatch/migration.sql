@@ -1,1 +1,0 @@
-ALTER TABLE "sub_meter" ADD COLUMN "label" text NOT NULL;

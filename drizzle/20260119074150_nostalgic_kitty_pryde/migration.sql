@@ -1,1 +1,0 @@
-ALTER TABLE "payment" ALTER COLUMN "amount" SET NOT NULL;
