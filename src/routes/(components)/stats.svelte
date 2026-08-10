@@ -84,44 +84,44 @@
       <div class="h-px flex-1 bg-linear-to-r from-primary/30 via-white/10 to-transparent"></div>
     </div>
 
-      <ScrollStagger
-        preset="slide-up"
-        stagger={0.1}
-        duration={0.6}
-        distance={30}
-        class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4"
-      >
-        {#each statsList as stat (stat.label)}
-          <div
-            class="relative overflow-hidden rounded-2xl border border-border/60 bg-background/60 p-6 backdrop-blur"
-          >
-            <div class="flex items-start justify-between gap-4">
-              <div class="text-xs tracking-[0.2em] text-muted-foreground uppercase">Metric</div>
-              <span
-                class="rounded-full border border-border/60 px-2 py-1 text-[10px] text-muted-foreground"
-              >
-                Updated on load
-              </span>
-            </div>
-            <div class="mt-4 text-3xl font-semibold text-primary md:text-4xl">
-              <NumberTicker
-                format={stat.format}
-                suffix={stat.suffix}
-                prefix={stat.prefix}
-                value={stat.value}
-                {...stat?.suffix != "+" && {
-                  class: "[&::part(suffix)]:ml-2",
-                }}
-              />
-            </div>
-            <div class="mt-2 text-sm text-muted-foreground">
-              {stat.label}
-            </div>
-            <div
-              class="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
-            ></div>
+    <ScrollStagger
+      preset="slide-up"
+      stagger={0.1}
+      duration={0.6}
+      distance={30}
+      class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4"
+    >
+      {#each statsList as stat (stat.label)}
+        <div
+          class="relative overflow-hidden rounded-2xl border border-border/60 bg-background/60 p-6 backdrop-blur"
+        >
+          <div class="flex items-start justify-between gap-4">
+            <div class="text-xs tracking-[0.2em] text-muted-foreground uppercase">Metric</div>
+            <span
+              class="rounded-full border border-border/60 px-2 py-1 text-[10px] text-muted-foreground"
+            >
+              Updated on load
+            </span>
           </div>
-        {/each}
-      </ScrollStagger>
-    </div>
-  </section>
+          <div class="mt-4 text-3xl font-semibold text-primary md:text-4xl">
+            <NumberTicker
+              format={stat.format}
+              suffix={stat.suffix}
+              prefix={stat.prefix}
+              value={stat.value}
+              {...stat?.suffix != "+" && {
+                class: "[&::part(suffix)]:ml-2",
+              }}
+            />
+          </div>
+          <div class="mt-2 text-sm text-muted-foreground">
+            {stat.label}
+          </div>
+          <div
+            class="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
+          ></div>
+        </div>
+      {/each}
+    </ScrollStagger>
+  </div>
+</section>
