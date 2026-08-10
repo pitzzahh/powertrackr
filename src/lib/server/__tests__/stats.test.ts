@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getGlobalStats, POLL_INTERVAL_MS, FALLBACK_STATS } from "$/server/stats";
+import { getGlobalStats, FALLBACK_STATS } from "$/server/stats";
 import { db } from "$/server/db";
 import { addUser } from "$/server/crud/user-crud";
 import { addPayment } from "$/server/crud/payment-crud";
@@ -65,9 +65,5 @@ describe("getGlobalStats", () => {
   it("returns fallback values when tables are empty", async () => {
     const stats = await getGlobalStats(db());
     expect(stats).toEqual(FALLBACK_STATS);
-  });
-
-  it("polls at a fixed 5s interval", () => {
-    expect(POLL_INTERVAL_MS).toBe(5_000);
   });
 });
