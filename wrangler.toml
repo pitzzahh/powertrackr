@@ -14,6 +14,12 @@ database_name = "powertrackr-db"
 database_id = "f37e5712-bf91-425b-bb30-048600ceb0a8"
 preview_database_id = "7243f66d-17e3-4cf4-bd04-be75f543a4c3"
 
+[vars]
+# Public Turnstile site key (client-side widget); the matching secret is a
+# platform secret (TURNSTILE_SECRET, `wrangler secret put`) and never lives in
+# this file or any other committed source.
+PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAAELwssik2qD1noZv"
+
 [[ratelimits]]
 name = "RATE_LIMITER"
 namespace_id = "1001"

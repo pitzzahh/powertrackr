@@ -80,5 +80,6 @@ export async function load({ url: { searchParams, origin }, locals: { user, sess
   return {
     action: act as AuthAction,
     code,
+    turnstileSiteKey: platform!.env.PUBLIC_TURNSTILE_SITE_KEY,
   };
 }

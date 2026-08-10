@@ -57,6 +57,15 @@ Environment variables
 
 Copy `.env.example` to `.env` and update the values for your environment (do not commit `.env`). At minimum, make sure `TEST_DATABASE_URL` and `ENCRYPTION_KEY` are set. See `.env.example` for a full sample.
 
+Cloudflare Turnstile
+
+Registration and login forms are protected by [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): the challenge widget renders on the auth page and every login/registration is gated on a server-side [siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/) call that must return `success: true`.
+
+- `PUBLIC_TURNSTILE_SITE_KEY` — public site key of the Turnstile widget, exposed to the browser. Set it as a variable on the deployed Worker (e.g. `[vars]` in `wrangler.toml` or the Cloudflare dashboard) and in `.env` for local development.
+- `TURNSTILE_SECRET` — server-only secret key. Never commit it. On Workers: `wrangler secret put TURNSTILE_SECRET`. In local dev it comes from `.env`.
+- The widget's allowed domains in the Cloudflare dashboard must include your production hostname and `localhost`/`127.0.0.1`, or verification fails.
+- Verification fails closed: if the token is missing, expired, replayed (tokens are single-use) or siteverify is unreachable, the request is rejected and the widget refreshes for a fresh token.
+
 Local D1 setup
 
 - Ensure Wrangler is installed: `pnpm add -D wrangler@latest` (if not already in devDependencies)

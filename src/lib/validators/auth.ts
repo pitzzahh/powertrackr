@@ -46,6 +46,12 @@ function isSpamEmail(email: string): boolean {
   return false;
 }
 
+// Turnstile token submitted by the widget's hidden input. Optional at the schema
+// level so a missing/blocked widget produces a friendly field error in the
+// handler instead of a generic "invalid type" message. Must be a plain
+// identifier: SvelteKit remote-form issue paths reject dashes.
+const turnstileTokenField = v.optional(v.string());
+
 export const registerSchema = v.object({
   email: v.pipe(
     v.string(),
@@ -55,11 +61,13 @@ export const registerSchema = v.object({
   name: v.pipe(v.string(), v.minLength(2)),
   password: v.pipe(v.string(), v.minLength(8)),
   confirmPassword: v.pipe(v.string(), v.minLength(8)),
+  turnstileToken: turnstileTokenField,
 });
 
 export const loginSchema = v.object({
   email: v.pipe(v.string(), v.email()),
   password: v.pipe(v.string(), v.minLength(8)),
+  turnstileToken: turnstileTokenField,
 });
 
 export const verifyEmailSchema = v.object({
