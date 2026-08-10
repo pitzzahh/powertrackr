@@ -4,10 +4,11 @@
 
 PowerTrackr is an application for recording, organizing, and reconciling electricity usage and payments across an account and its sub-meters. It is focused on practical billing and expense allocation rather than energy generation or investment modeling.
 
-### Primary use case
+### Primary use cases
 
 - Multi-tenant buildings: manage per-unit sub-meter readings and allocate payments derived from a single utility account.
 - Personal owner with an additional rental unit: track the rental unit’s consumption, expenses, and payments when it is sub-metered on the main account.
+- Property managers: concise per-period accounting for multiple units without complex energy-generation features.
 
 ### Key features
 
@@ -15,14 +16,8 @@ PowerTrackr is an application for recording, organizing, and reconciling electri
 - Support multiple sub-meters per billing period so each unit’s usage can be tracked separately.
 - Associate payments with billing and sub-meter records for clear reconciliation.
 - Provide straightforward billing summaries and per-unit charge calculations to support tenant billing and bookkeeping.
-- User account flows including verification and optional two-factor authentication.
+- User account flows including email verification, GitHub OAuth, and optional two-factor authentication.
 - Input validation and tests to help ensure consistency and correctness.
-
-### Typical scenarios
-
-- A landlord who needs to bill tenants by actual usage measured at sub-meters and reconcile those amounts against the main utility bill.
-- A homeowner who also rents a unit on the same service connection and wants to track and separate the rental unit’s expenses and payments.
-- Property managers who require concise per-period accounting for multiple units without complex energy-generation features.
 
 ### Localization and billing assumptions
 
@@ -46,11 +41,10 @@ Contributions are welcome. If you'd like to help, please open an issue or a pull
 
 ### Development
 
-Development setup
-
 Prerequisites:
 
-- Node.js 20.x or later
+- Node.js 22.x or later
+- pnpm
 - Cloudflare account
 
 Environment variables
@@ -61,28 +55,24 @@ Cloudflare Turnstile
 
 Registration and login forms are protected by [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/): the challenge widget renders on the auth page and every login/registration is gated on a server-side [siteverify](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/) call that must return `success: true`.
 
-- `PUBLIC_TURNSTILE_SITE_KEY` — public site key of the Turnstile widget, exposed to the browser. Set it as a variable on the deployed Worker (e.g. `[vars]` in `wrangler.toml` or the Cloudflare dashboard) and in `.env` for local development.
+- `PUBLIC_TURNSTILE_SITE_KEY` — public site key of the Turnstile widget, exposed to the browser. Configured in `[vars]` in `wrangler.toml`.
 - `TURNSTILE_SECRET` — server-only secret key. Never commit it. On Workers: `wrangler secret put TURNSTILE_SECRET`. In local dev it comes from `.env`.
 - The widget's allowed domains in the Cloudflare dashboard must include your production hostname and `localhost`/`127.0.0.1`, or verification fails.
 - Verification fails closed: if the token is missing, expired, replayed (tokens are single-use) or siteverify is unreachable, the request is rejected and the widget refreshes for a fresh token.
 
-Local D1 setup
-
-- Ensure Wrangler is installed: `pnpm add -D wrangler@latest` (if not already in devDependencies)
-- Authenticate with Cloudflare: `pnpm dlx wrangler login`
-- Create a local D1 database: `pnpm dlx wrangler d1 create powertrackr-local` (or use an existing one)
-
 Install and run
 
 - Install dependencies: `pnpm install`
+- Authenticate with Cloudflare: `wrangler login`
 - Apply database migrations: `pnpm run db:migrate` (requires `TEST_DATABASE_URL`)
 - Start development server: `pnpm dev` and open `http://localhost:5173`
-- Build and preview a production-like build: `pnpm run build` && `pnpm dlx wrangler preview`
+- Build and preview a production-like build: `pnpm run build:preview`
 
 Database migrations
 
-- Migrations are managed with Drizzle; the `migrations/` directory contains migrations and snapshots.
-- Create a migration with `pnpm run db:generate` and apply it with `pnpm run db:migrate`.
+- Migrations are managed with Drizzle and generated into `migrations/<timestamp>_<name>/` folders.
+- Create a migration with `pnpm run db:generate` and apply it with `pnpm run db:migrate`, which runs Drizzle against the local test database and then applies the generated SQL to D1 via Wrangler.
+- Wrangler picks up nested migration files through `migrations_pattern` in `wrangler.toml` (requires Wrangler 4.98+).
 
 Testing
 

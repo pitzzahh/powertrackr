@@ -13,6 +13,8 @@ binding = "DB"
 database_name = "powertrackr-db"
 database_id = "f37e5712-bf91-425b-bb30-048600ceb0a8"
 preview_database_id = "7243f66d-17e3-4cf4-bd04-be75f543a4c3"
+migrations_dir = "migrations"
+migrations_pattern = "migrations/*/migration.sql"
 
 [vars]
 # Public Turnstile site key (client-side widget); the matching secret is a
