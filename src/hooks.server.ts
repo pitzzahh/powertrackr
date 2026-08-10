@@ -72,7 +72,14 @@ export const handleDevTools: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
+// Per-request request logging is dev-only: the `toLocaleString()` call plus
+// `console.info` add measurable CPU on every production request (including
+// every `$app/server` RPC call), while observability logs are disabled in
+// wrangler.toml anyway. `dev` is a compile-time constant, so this block is
+// eliminated from production builds.
 export const log: Handle = async ({ event, resolve }) => {
+  if (!dev) return resolve(event);
+
   const {
     request: { method },
     url,

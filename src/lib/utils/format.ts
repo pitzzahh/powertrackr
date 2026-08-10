@@ -1,5 +1,33 @@
 import { convertEnergy, getEnergyUnit, type EnergyUnit } from "./converter/energy";
 
+// Constructing `Intl.NumberFormat`/`Intl.DateTimeFormat` is expensive (ICU
+// setup on every construction). These are immutable and safe to reuse, so cache
+// them per (locale, options) combo. The option sets used by the app are small
+// and bounded, so the cache stays tiny.
+const numberFormatters = new Map<string, Intl.NumberFormat>();
+
+function getNumberFormatter(locale: string, options: Intl.NumberFormatOptions) {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let formatter = numberFormatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, options);
+    numberFormatters.set(key, formatter);
+  }
+  return formatter;
+}
+
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function getDateFormatter(locale: string, options: Intl.DateTimeFormatOptions) {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  let formatter = dateFormatters.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, options);
+    dateFormatters.set(key, formatter);
+  }
+  return formatter;
+}
+
 export const formatNumber = (
   num: number,
   options: { currency?: string; locale?: string; style?: Intl.NumberFormatOptions["style"] } = {}
@@ -10,7 +38,7 @@ export const formatNumber = (
     style,
     ...(style === "currency" ? { currency } : {}),
   };
-  return new Intl.NumberFormat(locales, intlOptions).format(num);
+  return getNumberFormatter(locales[0], intlOptions).format(num);
 };
 
 export enum DateFormat {
@@ -86,7 +114,7 @@ export const formatDate = (
       intlOptions = { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" };
   }
 
-  return new Intl.DateTimeFormat(locale, intlOptions).format(date);
+  return getDateFormatter(locale, intlOptions).format(date);
 };
 
 /**
@@ -108,7 +136,7 @@ export const formatEnergy = (
 
   const computedDecimals = typeof decimals === "number" ? decimals : chosenUnit === "kWh" ? 0 : 2;
 
-  const formatter = new Intl.NumberFormat(locale, {
+  const formatter = getNumberFormatter(locale, {
     minimumFractionDigits: computedDecimals,
     maximumFractionDigits: computedDecimals,
   });
