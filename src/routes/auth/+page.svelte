@@ -33,7 +33,7 @@
     <div class="flex flex-1 items-center justify-center">
       <div class="w-full max-w-md">
         {#if ["login", "register"].includes(data.action)}
-          <AuthForm action={data.action} />
+          <AuthForm action={data.action} siteKey={data.turnstileSiteKey} />
         {:else if data.action === "verify-email"}
           <VerifyEmailForm code={data.code || ""} />
         {:else if data.action === "2fa-setup"}

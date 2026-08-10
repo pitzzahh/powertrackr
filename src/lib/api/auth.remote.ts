@@ -50,6 +50,8 @@ import type { NewUser } from "$/types/user";
 import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { requireAuth as requireAuthServer } from "$/server/auth";
+import { verifyTurnstileToken } from "$/server/turnstile";
+import { env } from "$env/dynamic/private";
 
 function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
   return (
@@ -93,6 +95,18 @@ export const login = form(loginSchema, async (user, issues) => {
   }
   if (email === "" || password === "") {
     error(400, "Please enter your email and password.");
+  }
+  console.log(user);
+
+  const valid = await verifyTurnstileToken(
+    user.turnstileToken,
+    env.TURNSTILE_SECRET!,
+    event.getClientAddress()
+  );
+
+  // Verify the Turnstile token before rate limiting / scrypt / D1 work.
+  if (!valid) {
+    return invalid(issues.turnstileToken("Security check failed. Please try again."));
   }
 
   // Rate limit login attempts per email
@@ -145,6 +159,17 @@ export const login = form(loginSchema, async (user, issues) => {
 export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
+
+  // Verify the Turnstile token before rate limiting / D1 work.
+  if (
+    !(await verifyTurnstileToken(
+      newUser.turnstileToken,
+      env.TURNSTILE_SECRET!,
+      event.getClientAddress()
+    ))
+  ) {
+    return invalid(issues.turnstileToken("Security check failed. Please try again."));
+  }
 
   // Rate limit registration attempts per email
   const { success } = await event.platform!.env.REGISTRATION_RATE_LIMITER.limit({ key: email });

@@ -5,6 +5,8 @@
   import type { WithElementRef } from "$/index";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
     action: AuthAction;
+    /** Turnstile site key, resolved server-side (PUBLIC_TURNSTILE_SITE_KEY). */
+    siteKey?: string;
   };
 
   type AuthFormState = {
@@ -16,6 +18,7 @@
 </script>
 
 <script lang="ts">
+  import { onMount } from "svelte";
   import {
     FieldGroup,
     Field,
@@ -27,6 +30,7 @@
   import { Input } from "$/components/ui/input/index.js";
   import { Button } from "$/components/ui/button/index.js";
   import { cn } from "$/utils/style.js";
+  import { loadTurnstileScript } from "$/utils/turnstile.js";
   import Password from "$/components/password.svelte";
   import { Github, Loader } from "$/assets/icons";
   import { login, register } from "$/api/auth.remote";
@@ -35,7 +39,13 @@
   import { loginWithGithub } from "$/api/github.remote";
   import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
 
-  let { action, ref = $bindable(null), class: className, ...restProps }: AuthFormProps = $props();
+  let {
+    action,
+    siteKey,
+    ref = $bindable(null),
+    class: className,
+    ...restProps
+  }: AuthFormProps = $props();
 
   const { currentAction } = $derived({
     currentAction: action === "login" ? login : register,
@@ -49,6 +59,50 @@
   });
 
   const id = $props.id();
+
+  // Site key comes from the auth page load (server-side env); the secret never
+  // leaves the server.
+  let token = $state("");
+  let widgetId = $state<string | null>(null);
+  let widgetContainer = $state<HTMLDivElement | null>(null);
+
+  function renderWidget() {
+    if (widgetId !== null || widgetContainer === null || !siteKey || !window.turnstile) return;
+    widgetId = window.turnstile.render(widgetContainer, {
+      sitekey: siteKey,
+      action: "turnstile-spin-v2",
+      theme: "auto",
+      // The widget would otherwise inject its own `<input name="cf-turnstile-response">`
+      // into the form — dashed keys crash SvelteKit remote-form preflight
+      // ("Invalid path ..."). The token flows via the callback into our own
+      // `turnstileToken` hidden input instead.
+      "response-field": false,
+      callback: (value) => {
+        token = value;
+      },
+      "expired-callback": () => resetWidget(),
+      "error-callback": () => {
+        token = "";
+      },
+    });
+  }
+
+  // Tokens are single-use: after any failed submit the widget must mint a
+  // fresh challenge, otherwise the retry is rejected as `timeout-or-duplicate`.
+  function resetWidget() {
+    token = "";
+    if (widgetId !== null) window.turnstile?.reset(widgetId);
+  }
+
+  onMount(() => {
+    if (!siteKey) return;
+    void loadTurnstileScript().then(() => {
+      renderWidget();
+    });
+    return () => {
+      if (widgetId !== null) window.turnstile?.remove(widgetId);
+    };
+  });
 </script>
 
 <form
@@ -165,6 +219,16 @@
         <FieldError errors={register.fields.confirmPassword.issues()} />
       </Field>
     {/if}
+    <input type="hidden" name="turnstileToken" value={token} />
+    <Field>
+      <div
+        class="cf-turnstile"
+        data-sitekey={siteKey}
+        data-action="turnstile-spin-v2"
+        bind:this={widgetContainer}
+      ></div>
+      <FieldError errors={currentAction.fields.turnstileToken.issues()} />
+    </Field>
     <Field>
       <Button
         type="submit"
