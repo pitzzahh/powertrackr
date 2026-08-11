@@ -1,4 +1,10 @@
-import { sqliteTable, uniqueIndex, text, integer } from "drizzle-orm/sqlite-core";
+import {
+  sqliteTable,
+  uniqueIndex,
+  text,
+  integer,
+  type AnySQLiteColumn,
+} from "drizzle-orm/sqlite-core";
 import { timestamps } from ".";
 
 export const user = sqliteTable(
@@ -16,6 +22,10 @@ export const user = sqliteTable(
       .notNull(),
     image: text(),
     passwordHash: text("password_hash"),
+    ownerId: text("owner_id").references((): AnySQLiteColumn => user.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
     ...timestamps,
   },
   (table) => [
