@@ -333,6 +333,7 @@
             }}
             billingInfo={billingInfoToDto(row.original)}
             {previousBillingInfo}
+            bind:open={open_edit}
           />
         </div>
       </ScrollArea>

@@ -59,6 +59,7 @@
         callback: (valid, _action, metaData) => {
           if (valid) {
             billingStore.refresh();
+            latestBillingStore.refresh();
             consumptionStore.refresh();
             showSuccess("Billing info created successfully!");
           } else {

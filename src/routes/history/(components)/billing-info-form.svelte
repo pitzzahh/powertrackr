@@ -364,8 +364,10 @@
     );
   }
 
-  // Initialize state from props
-  onMount(() => {
+  // Initialize state from props. Runs on mount AND whenever the form opens,
+  // so a reopen after a successful add prefills from the latest record instead
+  // of showing stale state from the previous submission.
+  function initialize() {
     if (action === "update" && billingInfo) {
       // Set date
       const date = new Date(billingInfo.date);
@@ -387,6 +389,7 @@
       currentAction.fields.status.set(billingInfo.status);
     } else {
       // Add mode - initialize with defaults
+      pending = false;
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
@@ -428,6 +431,14 @@
       .catch(() => {
         tenants = [];
       });
+  }
+
+  onMount(initialize);
+
+  $effect(() => {
+    if (open) {
+      initialize();
+    }
   });
 </script>
 
