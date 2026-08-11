@@ -13,6 +13,7 @@
   import { formatDate } from "$/utils/format";
   import { showSuccess, showWarning } from "$/components/toast";
   import { isHttpError } from "@sveltejs/kit";
+  import { watch } from "runed";
 
   // Queries drive the page reactively: `.loading`, `.error`, `.current`.
   // Submitting a reading refreshes them server-side (single-flight), so
@@ -39,29 +40,32 @@
   // for newly-appeared pending billings.
   let defaultsSynced = false;
 
-  $effect(() => {
-    if (defaultsSynced) return;
-    const meter = myMeterQuery.current;
-    if (meter) {
+  watch(
+    () => myMeterQuery.current,
+    (meter) => {
+      if (defaultsSynced || !meter) return;
       reading = meter.latestSubmission?.reading ?? meter.lastBilledReading ?? 0;
       editReading = meter.latestSubmission?.reading ?? 0;
       defaultsSynced = true;
     }
-  });
+  );
 
-  $effect(() => {
-    const merged = { ...readingByBilling };
-    let changed = false;
-    for (const p of pendingBillingsQuery.current ?? []) {
-      if (merged[p.billingInfoId] === undefined) {
-        merged[p.billingInfoId] = p.lastBilledReading ?? 0;
-        changed = true;
+  watch(
+    () => pendingBillingsQuery.current,
+    (pendings) => {
+      const merged = { ...readingByBilling };
+      let changed = false;
+      for (const p of pendings ?? []) {
+        if (merged[p.billingInfoId] === undefined) {
+          merged[p.billingInfoId] = p.lastBilledReading ?? 0;
+          changed = true;
+        }
+      }
+      if (changed) {
+        readingByBilling = merged;
       }
     }
-    if (changed) {
-      readingByBilling = merged;
-    }
-  });
+  );
 
   function startEdit() {
     editReading = myMeterQuery.current?.latestSubmission?.reading ?? 0;
