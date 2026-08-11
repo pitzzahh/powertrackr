@@ -3,14 +3,15 @@
   import { Button } from "$/components/ui/button";
   import { Input } from "$/components/ui/input";
   import * as Card from "$/components/ui/card";
-  import { Loader, Zap, Pencil } from "$/assets/icons";
+  import { Loader, Zap, Pencil, InvoiceIcon } from "$/assets/icons";
   import {
     getMyMeter,
     submitReading,
     updateSubmission,
     getPendingBillings,
+    getCurrentBilling,
   } from "$/api/tenant.remote";
-  import { formatDate } from "$/utils/format";
+  import { formatDate, formatEnergy, formatNumber } from "$/utils/format";
   import { showSuccess, showWarning } from "$/components/toast";
   import { isHttpError } from "@sveltejs/kit";
   import { watch } from "runed";
@@ -20,6 +21,7 @@
   // `current` updates without any manual re-fetch.
   const myMeterQuery = getMyMeter({});
   const pendingBillingsQuery = getPendingBillings({});
+  const currentBillingQuery = getCurrentBilling({});
 
   // Isolated remote-form instances: without `for()`, every form sharing
   // `submitReading` would attach to one `<form>` only (the second attach
@@ -74,6 +76,43 @@
   {:else if myMeterQuery.current}
     {@const meter = myMeterQuery.current}
     {@const pendings = pendingBillingsQuery.current ?? []}
+    {#if currentBillingQuery.error}
+      <div class="flex items-center justify-center text-muted-foreground">
+        Failed to load your billing
+      </div>
+    {:else if currentBillingQuery.current}
+      {@const billing = currentBillingQuery.current}
+      <Card.Root>
+        <Card.Header class="border-b">
+          <Card.Title class="flex items-center gap-2 text-sm">
+            <InvoiceIcon class="h-4 w-4 text-muted-foreground" />
+            Current billing
+          </Card.Title>
+          <Card.Description class="text-xs">
+            Your bill for the period of {formatDate(billing.date)}
+          </Card.Description>
+        </Card.Header>
+        <Card.Content class="space-y-2 pt-4">
+          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+            <span class="font-medium">Your reading</span>
+            <span class="text-muted-foreground">{billing.reading}</span>
+          </div>
+          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+            <span class="font-medium">Usage</span>
+            <span class="text-muted-foreground">{formatEnergy(billing.usageKwh)}</span>
+          </div>
+          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+            <span class="font-medium">Rate</span>
+            <span class="text-muted-foreground">{formatNumber(billing.payPerkWh)}/kWh</span>
+          </div>
+          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+            <span class="font-medium">Amount due</span>
+            <span class="font-semibold text-primary">{formatNumber(billing.amount)}</span>
+          </div>
+        </Card.Content>
+      </Card.Root>
+    {/if}
+
     <Card.Root>
       <Card.Header class="border-b">
         <Card.Title class="flex items-center gap-2 text-sm">

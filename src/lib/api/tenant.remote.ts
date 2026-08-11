@@ -18,7 +18,7 @@ import {
   submitReadingSchema,
   updateSubmissionSchema,
 } from "$/validators/tenant";
-import type { TenantWithMeters, MyMeter, PendingBilling } from "$/types/tenant";
+import type { TenantWithMeters, MyMeter, PendingBilling, ComputedBilling } from "$/types/tenant";
 import type { NewUser } from "$/types/user";
 
 // Form to create a tenant account (owner vouches for the credentials)
@@ -241,6 +241,7 @@ export const submitReading = form(
 
     void getMyMeter({}).refresh();
     void getPendingBillings({}).refresh();
+    void getCurrentBilling({}).refresh();
     return created;
   }
 );
@@ -270,6 +271,46 @@ export const getPendingBillings = query(v.object({}), async (): Promise<PendingB
         : null,
     }))
   );
+});
+
+// Query to get the tenant's most recent computed bill (reading submitted and
+// payment materialized). Returns null when no billing period has been billed
+// for this tenant yet.
+export const getCurrentBilling = query(v.object({}), async (): Promise<ComputedBilling | null> => {
+  const { user: authUser, session } = requireAuth();
+  if (!authUser.ownerId) error(403, "Only tenants can view their billing");
+  const ownerId = authUser.ownerId;
+
+  const [row] = await db()
+    .select({
+      billingInfoId: tenantReading.billingInfoId,
+      date: billingInfo.date,
+      reading: tenantReading.reading,
+      usageKwh: tenantReading.subkWh,
+      payPerkWh: billingInfo.payPerkWh,
+      amount: payment.amount,
+    })
+    .from(tenantReading)
+    .innerJoin(billingInfo, eq(billingInfo.id, tenantReading.billingInfoId))
+    .innerJoin(payment, eq(payment.id, tenantReading.paymentId))
+    .where(
+      and(
+        eq(tenantReading.tenantUserId, session.userId),
+        ownerId ? eq(billingInfo.userId, ownerId) : undefined
+      )
+    )
+    .orderBy(desc(billingInfo.date))
+    .limit(1);
+
+  if (!row || row.reading == null || row.usageKwh == null) return null;
+  return {
+    billingInfoId: row.billingInfoId,
+    date: row.date,
+    reading: row.reading,
+    usageKwh: row.usageKwh,
+    payPerkWh: row.payPerkWh,
+    amount: row.amount,
+  };
 });
 
 // Form to rename a tenant (owner vouches for the tenant)

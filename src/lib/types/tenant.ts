@@ -18,3 +18,14 @@ export type PendingBilling = {
   date: Date;
   lastBilledReading: number | null;
 };
+
+/** A billing period whose bill has been computed for this tenant (reading
+ * submitted and payment materialized). */
+export type ComputedBilling = {
+  billingInfoId: string;
+  date: Date;
+  reading: number;
+  usageKwh: number;
+  payPerkWh: number;
+  amount: number;
+};

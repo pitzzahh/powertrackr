@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import * as Field from "$/components/ui/field";
   import { Button } from "$/components/ui/button";
   import { Input } from "$/components/ui/input";
@@ -11,10 +10,10 @@
   import { formatDate } from "$/utils/format";
   import { showSuccess, showWarning } from "$/components/toast";
   import { isHttpError } from "@sveltejs/kit";
-  import type { AsyncState } from "$/types/state";
 
-  let tenants = $state<TenantWithMeters[]>([]);
-  let status = $state<AsyncState>("idle");
+  // The query drives the page reactively. Mutations refresh it server-side
+  // (single-flight), so `current` updates without any client-side re-fetch.
+  const tenantsQuery = getTenants({});
 
   let openAddTenant = $state(false);
   let creating = $state(false);
@@ -26,21 +25,6 @@
   let deleteTarget = $state<TenantWithMeters | null>(null);
   let openDelete = $state(false);
   let deleting = $state(false);
-
-  async function refresh() {
-    try {
-      tenants = (await getTenants({})) as TenantWithMeters[];
-      status = "success";
-    } catch (err) {
-      console.error(err);
-      status = "error";
-    }
-  }
-
-  onMount(() => {
-    status = "loading_data";
-    refresh();
-  });
 
   function openEditDialog(tenant: TenantWithMeters) {
     editTarget = tenant;
@@ -68,17 +52,17 @@
     </Button>
   </div>
 
-  {#if status === "loading_data"}
-    <div class="flex items-center justify-center text-muted-foreground">Loading tenants…</div>
-  {:else if status === "error"}
+  {#if tenantsQuery.error}
     <div class="flex items-center justify-center text-muted-foreground">Failed to load tenants</div>
-  {:else if tenants.length === 0}
+  {:else if tenantsQuery.current === undefined}
+    <div class="flex items-center justify-center text-muted-foreground">Loading tenants…</div>
+  {:else if tenantsQuery.current.length === 0}
     <div class="flex items-center justify-center text-muted-foreground">
       No tenants yet. Create one to start.
     </div>
   {:else}
     <div class="space-y-4">
-      {#each tenants as tenant (tenant.id)}
+      {#each tenantsQuery.current as tenant (tenant.id)}
         <Card.Root>
           <Card.Header class="border-b">
             <div class="flex items-center justify-between">
@@ -157,7 +141,6 @@
           } else {
             openAddTenant = false;
             showSuccess("Tenant created");
-            await refresh();
           }
         } catch (e) {
           const message = isHttpError(e) ? e.body.message : String(e);
@@ -232,7 +215,6 @@
             } else {
               openEdit = false;
               showSuccess("Tenant updated");
-              await refresh();
             }
           } catch (e) {
             const message = isHttpError(e) ? e.body.message : String(e);
@@ -297,7 +279,6 @@
                 await deleteTenant({ tenantUserId: deleteTarget.id });
                 openDelete = false;
                 showSuccess("Tenant deleted");
-                await refresh();
               } catch (e) {
                 const message = isHttpError(e) ? e.body.message : String(e);
                 showWarning(message || "Failed to delete tenant");
