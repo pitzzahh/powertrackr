@@ -6,10 +6,7 @@ import { and, count, desc, eq, inArray, isNull, max, ne } from "drizzle-orm";
 import { tenantReading, readingSubmission, billingInfo, user, payment } from "$/server/db/schema";
 import { getUserBy } from "$/server/crud/user-crud";
 import { addUser } from "$/server/crud/user-crud";
-import {
-  getLastTenantReading,
-  finalizeBillingInfoLogic,
-} from "$/server/crud/billing-info-crud";
+import { getLastTenantReading, finalizeBillingInfoLogic } from "$/server/crud/billing-info-crud";
 import { hashPassword } from "$/server/encryption";
 import { calculatePayPerKwh } from "$lib";
 import { error, invalid } from "@sveltejs/kit";
@@ -229,9 +226,7 @@ export const submitReading = form(
       const [{ pendingCount }] = await db()
         .select({ pendingCount: count() })
         .from(tenantReading)
-        .where(
-          and(eq(tenantReading.billingInfoId, billingInfoId), isNull(tenantReading.reading))
-        );
+        .where(and(eq(tenantReading.billingInfoId, billingInfoId), isNull(tenantReading.reading)));
       if ((pendingCount ?? 0) === 0) {
         try {
           await finalizeBillingInfoLogic(billingInfoId, billing.userId);

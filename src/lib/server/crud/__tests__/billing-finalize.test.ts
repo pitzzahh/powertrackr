@@ -259,9 +259,8 @@ describe("pending billings", () => {
     );
 
     const billingRows =
-      (
-        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
-      ).value[0].subMeters ?? [];
+      (await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } }))
+        .value[0].subMeters ?? [];
     const row = billingRows[0]!;
 
     // Owner sets the reading instead of waiting for the tenant

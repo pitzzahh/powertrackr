@@ -14,7 +14,13 @@ function billingInfo(overrides: Partial<ExtendedBillingInfo>): ExtendedBillingIn
     paymentId: "p1",
     createdAt: new Date(),
     updatedAt: new Date(),
-    payment: { id: "p1", amount: 480, date: new Date(), createdAt: new Date(), updatedAt: new Date() },
+    payment: {
+      id: "p1",
+      amount: 480,
+      date: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
     subMeters: [],
     ...overrides,
   };
@@ -36,7 +42,13 @@ describe("toAreaChartData", () => {
             paymentId: "p2",
             createdAt: new Date(),
             updatedAt: new Date(),
-            payment: { id: "p2", amount: 20, date: new Date(), createdAt: new Date(), updatedAt: new Date() },
+            payment: {
+              id: "p2",
+              amount: 20,
+              date: new Date(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
           },
         ],
       })
