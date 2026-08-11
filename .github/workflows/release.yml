@@ -23,3 +23,18 @@ jobs:
           node-version: 24.x
           cache: "pnpm"
       - run: pnpm dlx semantic-release
+      - name: Sync package.json version to released tag
+        run: |
+          version="$(git describe --tags --abbrev=0 --match 'v*')"
+          version="${version#v}"
+          current="$(node -p "require('./package.json').version")"
+          if [ "$current" = "$version" ]; then
+            echo "package.json already at ${version} — nothing to sync"
+            exit 0
+          fi
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.argv[1];fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')" "$version"
+          git add package.json
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "chore(release): sync package.json to v${version} [skip ci]"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main

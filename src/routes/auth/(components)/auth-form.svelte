@@ -120,6 +120,11 @@
       const issues = currentAction.fields.allIssues?.() || [];
       if (issues.length > 0) {
         showWarning(issues.map((i) => i.message).join(", "));
+        // Any failed submit consumed the single-use token — even one rejected
+        // for a different reason (wrong password, rate limit) leaves the widget
+        // holding a spent token. Mint a fresh challenge or the retry is
+        // rejected by siteverify as `timeout-or-duplicate`.
+        resetWidget();
       } else {
         element.reset();
         showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
@@ -133,6 +138,7 @@
             ? "Failed to log you in. Please try again."
             : "Failed to create your account. Please try again.")
       );
+      resetWidget();
     } finally {
       toast.dismiss(toastId);
       statuses.email = "idle";
