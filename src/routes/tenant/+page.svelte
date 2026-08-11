@@ -194,8 +194,8 @@
                     bind:value={editReading}
                   />
                   <Field.Description>
-                    Fix a typo or a reading you forgot. Cannot go below your last billed reading
-                    ({meter.lastBilledReading ?? 0}).
+                    Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
+                      0}).
                   </Field.Description>
                   <Field.Error errors={editSubmissionForm.fields.reading.issues()} />
                 </Field.Field>

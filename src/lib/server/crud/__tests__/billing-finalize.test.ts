@@ -329,9 +329,8 @@ describe("pending billings", () => {
 
     // Tenant A submits (simulated: reading + payment materialized on A's row only)
     const aRow = (
-      (
-        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
-      ).value[0].subMeters ?? []
+      (await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } }))
+        .value[0].subMeters ?? []
     ).find((s) => s.tenantUserId === tenant.id)!;
     await db()
       .update(tenantReading)
