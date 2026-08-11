@@ -73,7 +73,7 @@
       {#each tenantsQuery.current as tenant (tenant.id)}
         <Card.Root>
           <Card.Header class="border-b">
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex min-w-0 items-center justify-between gap-3">
               <div class="min-w-0 space-y-0.5">
                 <h2 class="truncate text-sm leading-none font-semibold tracking-tight">
                   {tenant.name}
