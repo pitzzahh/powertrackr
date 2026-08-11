@@ -29,33 +29,41 @@ describe("findPreviousBillingInfo", () => {
 });
 
 describe("resolvePreviousReadings", () => {
-  const subMeters = [
-    { id: "s1", label: "Kitchen", reading: 300 },
-    { id: "s2", label: "Garage", reading: 500 },
-    { id: "s3", label: "Shed", reading: 50 },
+  const entries = [
+    { id: "s1", tenantUserId: "t1", reading: 300 },
+    { id: "s2", tenantUserId: "t2", reading: 500 },
+    { id: "s3", tenantUserId: "t3", reading: 50 },
   ];
 
-  it("maps previous readings by label keyed by id", () => {
-    const readings = resolvePreviousReadings(subMeters, [
-      { label: "Kitchen", reading: 100 },
-      { label: "Garage", reading: 200 },
+  it("maps previous readings by tenantUserId keyed by id", () => {
+    const readings = resolvePreviousReadings(entries, [
+      { tenantUserId: "t1", reading: 100 },
+      { tenantUserId: "t2", reading: 200 },
     ]);
     expect(readings.get("s1")).toBe(100);
     expect(readings.get("s2")).toBe(200);
     expect(readings.get("s3")).toBe(0);
   });
 
+  it("matches only identical tenantUserIds", () => {
+    const readings = resolvePreviousReadings(
+      [{ id: "s1", tenantUserId: "t1", reading: 300 }],
+      [{ tenantUserId: "other", reading: 100 }]
+    );
+    expect(readings.get("s1")).toBe(0);
+  });
+
   it("resolves 0 when there is no previous period", () => {
-    const readings = resolvePreviousReadings(subMeters, []);
+    const readings = resolvePreviousReadings(entries, []);
     expect(readings.get("s1")).toBe(0);
     expect(readings.get("s2")).toBe(0);
     expect(readings.get("s3")).toBe(0);
   });
 
-  it("skips sub meters without an id", () => {
+  it("skips entries without an id", () => {
     const readings = resolvePreviousReadings(
-      [{ label: "New", reading: 10 }],
-      [{ label: "New", reading: 5 }]
+      [{ tenantUserId: "t9", reading: 10 }],
+      [{ tenantUserId: "t9", reading: 5 }]
     );
     expect(readings.size).toBe(0);
   });

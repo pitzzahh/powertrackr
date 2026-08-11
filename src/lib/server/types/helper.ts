@@ -29,6 +29,7 @@ export type HelperParamOptions<T> = {
   fields: (keyof T)[];
   with_payment: boolean;
   with_billing_info: boolean;
+  with_tenant: boolean;
   with_sub_meters: boolean;
   with_sub_meters_with_payment: boolean;
 };

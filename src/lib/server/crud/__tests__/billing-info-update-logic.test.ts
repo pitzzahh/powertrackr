@@ -4,10 +4,17 @@ import {
   getBillingInfoBy,
   updateBillingInfoLogic,
 } from "../billing-info-crud";
-import { createUser } from "./helpers/factories";
+import { createUser, createTenantUser } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import { getPaymentBy, getPaymentCountBy } from "../payment-crud";
-import { getSubMeterBy } from "../sub-meter-crud";
+import { getTenantReadingBy } from "../tenant-reading-crud";
+
+async function seedTenant(ownerId: string, name: string) {
+  const {
+    value: [tenant],
+  } = await addUser([createTenantUser(ownerId, { name })]);
+  return tenant;
+}
 
 describe("updateBillingInfoLogic", () => {
   it("recomputes subkWh against the previous period's reading, not the record's own reading", async () => {
@@ -15,6 +22,7 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
 
     // Period A: baseline period for sub meter "Kitchen" (reading 100, 0 usage)
     await createBillingInfoLogic(
@@ -23,7 +31,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 100, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 100, status: "pending" }],
       },
       userId
     );
@@ -35,14 +43,14 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 250, status: "pending" }],
       },
       userId
     );
 
     const {
       value: [subB],
-    } = await getSubMeterBy({ query: { billingInfoId: billingB.id }, options: {} });
+    } = await getTenantReadingBy({ query: { billingInfoId: billingB.id }, options: {} });
     expect(subB.subkWh).toBe(150);
 
     // Edit the LATEST record's reading to 300 -> usage must be 300 - 100 (previous period A) = 200,
@@ -54,7 +62,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "paid",
-        subMeters: [{ id: subB.id!, label: "Kitchen", reading: 300, status: "paid" }],
+        subMeters: [{ id: subB.id!, tenantUserId: kitchen.id, reading: 300, status: "paid" }],
       },
       userId
     );
@@ -78,6 +86,7 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
 
     const billingA = await createBillingInfoLogic(
       {
@@ -85,14 +94,14 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 100, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 100, status: "pending" }],
       },
       userId
     );
 
     const {
       value: [subA],
-    } = await getSubMeterBy({ query: { billingInfoId: billingA.id }, options: {} });
+    } = await getTenantReadingBy({ query: { billingInfoId: billingA.id }, options: {} });
     expect(subA.subkWh).toBe(0);
 
     await updateBillingInfoLogic(
@@ -102,7 +111,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ id: subA.id!, label: "Kitchen", reading: 150, status: "pending" }],
+        subMeters: [{ id: subA.id!, tenantUserId: kitchen.id, reading: 150, status: "pending" }],
       },
       userId
     );
@@ -126,6 +135,7 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
 
     await createBillingInfoLogic(
       {
@@ -133,7 +143,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 100, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 100, status: "pending" }],
       },
       userId
     );
@@ -144,14 +154,14 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 250, status: "pending" }],
       },
       userId
     );
 
     const {
       value: [subB],
-    } = await getSubMeterBy({ query: { billingInfoId: billingB.id }, options: {} });
+    } = await getTenantReadingBy({ query: { billingInfoId: billingB.id }, options: {} });
 
     // New rate: 600 / 1200 = 0.5; usage stays 300 - 100 = 200 => sub payment 100, main 600 - 100 = 500
     await updateBillingInfoLogic(
@@ -161,7 +171,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 600,
         status: "paid",
-        subMeters: [{ id: subB.id!, label: "Kitchen", reading: 300, status: "paid" }],
+        subMeters: [{ id: subB.id!, tenantUserId: kitchen.id, reading: 300, status: "paid" }],
       },
       userId
     );
@@ -184,6 +194,7 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
 
     await createBillingInfoLogic(
       {
@@ -191,7 +202,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 100, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 100, status: "pending" }],
       },
       userId
     );
@@ -202,14 +213,14 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 250, status: "pending" }],
       },
       userId
     );
 
     const {
       value: [subB],
-    } = await getSubMeterBy({ query: { billingInfoId: billingB.id }, options: {} });
+    } = await getTenantReadingBy({ query: { billingInfoId: billingB.id }, options: {} });
     const paymentCountBefore = (await getPaymentCountBy({ query: {} })).value;
 
     await updateBillingInfoLogic(
@@ -219,7 +230,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ id: subB.id!, label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [{ id: subB.id!, tenantUserId: kitchen.id, reading: 250, status: "pending" }],
       },
       userId
     );
@@ -243,6 +254,8 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
+    const garage = await seedTenant(userId, "Garage");
 
     await createBillingInfoLogic(
       {
@@ -251,8 +264,8 @@ describe("updateBillingInfoLogic", () => {
         balance: 1000,
         status: "pending",
         subMeters: [
-          { label: "Kitchen", reading: 100, status: "pending" },
-          { label: "Garage", reading: 200, status: "pending" },
+          { tenantUserId: kitchen.id, reading: 100, status: "pending" },
+          { tenantUserId: garage.id, reading: 200, status: "pending" },
         ],
       },
       userId
@@ -265,20 +278,20 @@ describe("updateBillingInfoLogic", () => {
         balance: 1200,
         status: "pending",
         subMeters: [
-          { label: "Kitchen", reading: 250, status: "pending" },
-          { label: "Garage", reading: 400, status: "pending" },
+          { tenantUserId: kitchen.id, reading: 250, status: "pending" },
+          { tenantUserId: garage.id, reading: 400, status: "pending" },
         ],
       },
       userId
     );
 
-    const { value: subs } = await getSubMeterBy({
+    const { value: subs } = await getTenantReadingBy({
       query: { billingInfoId: billingB.id },
-      options: {},
+      options: { with_tenant: true },
     });
-    const kitchen = subs.find((s) => s.label === "Kitchen")!;
-    const garage = subs.find((s) => s.label === "Garage")!;
-    const garagePaymentId = garage.paymentId!;
+    const kitchenReading = subs.find((s) => s.tenant?.name === "Kitchen")!;
+    const garageReading = subs.find((s) => s.tenant?.name === "Garage")!;
+    const garagePaymentId = garageReading.paymentId!;
 
     // Remove Garage from the billing period
     await updateBillingInfoLogic(
@@ -288,18 +301,20 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ id: kitchen.id!, label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [
+          { id: kitchenReading.id!, tenantUserId: kitchen.id, reading: 250, status: "pending" },
+        ],
       },
       userId
     );
 
-    const { valid: validRemaining, value: remainingSubs } = await getSubMeterBy({
+    const { valid: validRemaining, value: remainingSubs } = await getTenantReadingBy({
       query: { billingInfoId: billingB.id },
-      options: {},
+      options: { with_tenant: true },
     });
     expect(validRemaining).toBe(true);
     expect(remainingSubs).toHaveLength(1);
-    expect(remainingSubs[0].label).toBe("Kitchen");
+    expect(remainingSubs[0].tenant?.name).toBe("Kitchen");
 
     // The removed sub meter's payment row must be gone
     const garagePayment = await getPaymentBy({ query: { id: garagePaymentId }, options: {} });
@@ -320,6 +335,8 @@ describe("updateBillingInfoLogic", () => {
       value: [addedUser],
     } = await addUser([createUser()]);
     const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
+    const garage = await seedTenant(userId, "Garage");
 
     await createBillingInfoLogic(
       {
@@ -327,7 +344,7 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 100, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 100, status: "pending" }],
       },
       userId
     );
@@ -338,14 +355,14 @@ describe("updateBillingInfoLogic", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ label: "Kitchen", reading: 250, status: "pending" }],
+        subMeters: [{ tenantUserId: kitchen.id, reading: 250, status: "pending" }],
       },
       userId
     );
 
     const {
       value: [subB],
-    } = await getSubMeterBy({ query: { billingInfoId: billingB.id }, options: {} });
+    } = await getTenantReadingBy({ query: { billingInfoId: billingB.id }, options: {} });
 
     await updateBillingInfoLogic(
       {
@@ -355,8 +372,8 @@ describe("updateBillingInfoLogic", () => {
         balance: 1200,
         status: "pending",
         subMeters: [
-          { id: subB.id!, label: "Kitchen", reading: 300, status: "pending" },
-          { label: "Garage", reading: 500, status: "pending" },
+          { id: subB.id!, tenantUserId: kitchen.id, reading: 300, status: "pending" },
+          { tenantUserId: garage.id, reading: 500, status: "pending" },
         ],
       },
       userId
@@ -369,14 +386,14 @@ describe("updateBillingInfoLogic", () => {
       options: { with_payment: true, with_sub_meters_with_payment: true },
     });
 
-    const kitchen = updatedBilling.subMeters?.find((s) => s.label === "Kitchen");
-    const garage = updatedBilling.subMeters?.find((s) => s.label === "Garage");
+    const kitchenReading = updatedBilling.subMeters?.find((s) => s.tenantName === "Kitchen");
+    const garageReading = updatedBilling.subMeters?.find((s) => s.tenantName === "Garage");
 
-    expect(kitchen?.subkWh).toBe(200);
-    expect(kitchen?.payment?.amount).toBeCloseTo(200, 2);
-    expect(garage?.reading).toBe(500);
-    expect(garage?.subkWh).toBe(0);
-    expect(garage?.payment?.amount ?? 0).toBe(0);
+    expect(kitchenReading?.subkWh).toBe(200);
+    expect(kitchenReading?.payment?.amount).toBeCloseTo(200, 2);
+    expect(garageReading?.reading).toBe(500);
+    expect(garageReading?.subkWh).toBe(0);
+    expect(garageReading?.payment?.amount ?? 0).toBe(0);
     expect(updatedBilling.payment?.amount).toBeCloseTo(1200 - 200, 2);
   });
 });

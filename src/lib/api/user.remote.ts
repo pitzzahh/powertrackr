@@ -14,7 +14,7 @@ import {
   updateUserBy,
 } from "$/server/crud/user-crud";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { invalidateSession, deleteSessionTokenCookie } from "$/server/auth";
+import { invalidateSession, deleteSessionTokenCookie, requireAuth } from "$/server/auth";
 
 export const getTotalUserCount = query(getUserCountLogic);
 
@@ -57,16 +57,17 @@ export const createUser = form(createUserSchema, async (user) => {
   return addedUser;
 });
 
-// Form to update an existing user
+// Form to update the authenticated user's own profile
 export const updateUser = form(updateUserSchema, async (data) => {
-  const { id, ...updateData } = data;
+  const { user } = requireAuth();
+  const { id: _ignored, ...updateData } = data;
   const {
     valid,
     value: [updatedUser],
     message,
   } = await updateUserBy(
     {
-      query: { id },
+      query: { id: user.id },
     },
     updateData
   );

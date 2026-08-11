@@ -1,14 +1,16 @@
 import { STATUS_VALUES } from "$/types/billing-info";
 import * as v from "valibot";
 
-// Schema for individual sub meter entry
+// Schema for individual sub meter entry (sub-meters ARE tenants)
 export const subMeterSchema = v.object({
-  label: v.pipe(
+  tenantUserId: v.pipe(
     v.string(),
     v.check((val) => !!val, "is required")
   ),
   status: v.fallback(v.picklist(STATUS_VALUES), "pending"),
-  reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
+  // An absent reading means the tenant has not submitted yet (pending billing).
+  // Forms cannot transmit null, so pending entries simply omit the field.
+  reading: v.optional(v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater"))),
 });
 
 export const updateSubMeterSchema = v.intersect([subMeterSchema, v.object({ id: v.string() })]);
@@ -51,4 +53,8 @@ export const deleteBillingInfoSchema = v.object({ id: v.string(), count: v.numbe
 export const deleteBillingInfoSchemaBatch = v.object({
   ids: v.array(v.string()),
   count: v.number(),
+});
+
+export const finalizeBillingSchema = v.object({
+  billingInfoId: v.string(),
 });

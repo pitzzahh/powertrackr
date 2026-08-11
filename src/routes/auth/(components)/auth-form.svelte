@@ -72,6 +72,9 @@
       sitekey: siteKey,
       action: "turnstile-spin-v2",
       theme: "auto",
+      // Expand the widget to the full form width instead of the default
+      // centered 300px box.
+      size: "flexible",
       // The widget would otherwise inject its own `<input name="cf-turnstile-response">`
       // into the form — dashed keys crash SvelteKit remote-form preflight
       // ("Invalid path ..."). The token flows via the callback into our own

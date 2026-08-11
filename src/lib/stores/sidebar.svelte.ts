@@ -1,4 +1,4 @@
-import { House, Zap, Clock } from "$lib/assets/icons";
+import { House, Zap, Clock, Users } from "$lib/assets/icons";
 import { getContext, setContext } from "svelte";
 
 type NavItem = {
@@ -20,6 +20,8 @@ function createSidebarStore(): SidebarStore {
     { icon: House, label: "DASHBOARD", active: false, route: "/dashboard" },
     { icon: Zap, label: "CONSUMPTION", active: false, route: "/consumption" },
     { icon: Clock, label: "HISTORY", active: false, route: "/history" },
+    { icon: Users, label: "TENANTS", active: false, route: "/tenants" },
+    { icon: Zap, label: "MY METERS", active: false, route: "/tenant" },
   ]);
 
   let collapsed = $state(false);

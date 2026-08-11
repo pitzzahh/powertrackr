@@ -21,10 +21,10 @@
     ) => void;
   };
 
-  type SubMeterForm = {
+  export type SubMeterForm = {
     id: string;
-    label: string;
-    reading: number;
+    tenantUserId: string;
+    reading: number | null;
     status?: Status;
   };
 
@@ -64,7 +64,10 @@
   import { getChangedData, omit } from "$/utils/mapper";
   import { resolvePreviousReadings } from "$/utils/previous-reading";
   import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
+  import { getTenants } from "$/api/tenant.remote";
+  import type { TenantWithMeters } from "$/types/tenant";
   import { Label } from "$/components/ui/label";
+  import { Checkbox } from "$/components/ui/checkbox/index.js";
   import { ChevronDown, CirclePlus, Loader, Trash2 } from "$/assets/icons";
   import { Calendar } from "$/components/ui/calendar";
   import * as Card from "$/components/ui/card/index.js";
@@ -78,7 +81,7 @@
   import * as v from "valibot";
   import { billFormSchema } from "$/validators/billing-info";
   import { toast } from "svelte-sonner";
-  import { onMount } from "svelte";
+  import { watch } from "runed";
   import { showInspectorWarning, showLoading } from "$/components/toast";
   import Separator from "$/components/ui/separator/separator.svelte";
   import { sineInOut } from "svelte/easing";
@@ -96,6 +99,26 @@
   const identity = $props.id();
 
   let subMeters: BillingInfoFormState["subMeters"] = $state([]);
+  let tenants: TenantWithMeters[] = $state([]);
+  // Add mode only: create the billing as pending and let tenants submit
+  // readings for it before the owner finalizes.
+  let pending = $state(false);
+
+  function setPending(value: boolean) {
+    pending = value;
+    if (value) {
+      // Clear readings — tenants will submit them for this billing period
+      for (const s of subMeters) s.reading = null;
+      currentAction?.fields?.subMeters?.set?.(
+        subMeters.map((s) => ({
+          id: s.id,
+          tenantUserId: s.tenantUserId,
+          reading: s.reading ?? undefined,
+          status: s.status,
+        }))
+      );
+    }
+  }
 
   // Previous period readings per sub meter (by id), used in update mode to show
   // the true baseline instead of the record's own stored reading.
@@ -117,6 +140,10 @@
     currentAction: action === "add" ? createBillingInfo : updateBillingInfo,
   });
 
+  function tenantFor(entry: SubMeterForm): TenantWithMeters | undefined {
+    return entry.tenantUserId ? tenants.find((t) => t.id === entry.tenantUserId) : undefined;
+  }
+
   let { BILLING_NORMALIZED } = $derived.by(() => {
     const fv = currentAction?.fields?.value?.() ?? {};
     const out: NormalizedBillingData = {};
@@ -125,7 +152,7 @@
       if (key === "subMeters") {
         out.subMeters = billingInfo.subMeters.map((s) => ({
           id: s.id,
-          label: s.label,
+          tenantUserId: s.tenantUserId,
           reading: s.reading,
           status: s.status,
         }));
@@ -183,7 +210,7 @@
             break;
           }
           if (
-            ex.label !== s.label ||
+            ex.tenantUserId !== s.tenantUserId ||
             Number(ex.reading) !== Number(s.reading) ||
             ex.status !== s.status
           ) {
@@ -231,13 +258,11 @@
       totalkWh,
       status: statusVal,
       subMeters: subMeters.map((s: SubMeterForm) => {
-        const mapped: Omit<SubMeterForm, "id"> & {
-          id?: string;
-        } = {
-          label: s.label,
-          reading: Number(s.reading),
+        const mapped: Record<string, unknown> = {
+          tenantUserId: s.tenantUserId,
           status: s.status,
         };
+        if (s.reading != null) mapped.reading = Number(s.reading);
         // Only include `id` for update operations where an id is meaningful
         if (action === "update" && s.id) mapped.id = s.id;
         return mapped;
@@ -255,8 +280,8 @@
 
     subMeters.push({
       id: crypto.randomUUID(),
-      label: "",
-      reading: 0,
+      tenantUserId: "",
+      reading: pending ? null : 0,
       status: undefined,
     });
 
@@ -267,12 +292,17 @@
         if (currentFormValues[idx]) {
           return {
             id: s.id,
-            label: currentFormValues[idx].label ?? s.label,
-            reading: currentFormValues[idx].reading ?? s.reading,
+            tenantUserId: currentFormValues[idx].tenantUserId ?? s.tenantUserId,
+            reading: currentFormValues[idx].reading ?? s.reading ?? undefined,
             status: currentFormValues[idx].status ?? s.status,
           };
         }
-        return { id: s.id, label: s.label, reading: s.reading, status: s.status };
+        return {
+          id: s.id,
+          tenantUserId: s.tenantUserId,
+          reading: s.reading ?? undefined,
+          status: s.status,
+        };
       })
     );
   }
@@ -293,19 +323,51 @@
           if (currentFormValues[formIdx]) {
             return {
               id: s.id,
-              label: currentFormValues[formIdx].label ?? s.label,
-              reading: currentFormValues[formIdx].reading ?? s.reading,
+              tenantUserId: currentFormValues[formIdx].tenantUserId ?? s.tenantUserId,
+              reading: currentFormValues[formIdx].reading ?? s.reading ?? undefined,
               status: currentFormValues[formIdx].status ?? s.status,
             };
           }
-          return { id: s.id, label: s.label, reading: s.reading, status: s.status };
+          return {
+            id: s.id,
+            tenantUserId: s.tenantUserId,
+            reading: s.reading ?? undefined,
+            status: s.status,
+          };
         })
       );
     }
   }
 
-  // Initialize state from props
-  onMount(() => {
+  // Select an existing tenant for an entry (sub-meters ARE tenants)
+  function selectTenant(subIndex: number, tenantUserId: string) {
+    const entry = subMeters[subIndex];
+    if (!entry) return;
+    const tenant = tenants.find((t) => t.id === tenantUserId);
+    if (tenant) {
+      entry.tenantUserId = tenant.id;
+      if (!pending) {
+        const prefill =
+          tenant.latestSubmission?.reading ?? tenant.lastBilledReading ?? entry.reading;
+        entry.reading = prefill;
+      }
+    } else {
+      entry.tenantUserId = "";
+    }
+    currentAction?.fields?.subMeters?.set?.(
+      subMeters.map((s, idx) => ({
+        id: s.id,
+        tenantUserId: s.tenantUserId,
+        reading: s.reading ?? undefined,
+        status: s.status,
+      }))
+    );
+  }
+
+  // Initialize state from props. Runs on mount AND whenever the form opens,
+  // so a reopen after a successful add prefills from the latest record instead
+  // of showing stale state from the previous submission.
+  function initialize() {
     if (action === "update" && billingInfo) {
       // Set date
       const date = new Date(billingInfo.date);
@@ -327,6 +389,7 @@
       currentAction.fields.status.set(billingInfo.status);
     } else {
       // Add mode - initialize with defaults
+      pending = false;
       const latestDate = billingInfo && new Date(billingInfo?.date);
       dateValue = latestDate
         ? new CalendarDate(
@@ -347,7 +410,7 @@
     subMeters =
       billingInfo?.subMeters.map((sub) => ({
         id: sub.id,
-        label: sub.label,
+        tenantUserId: sub.tenantUserId,
         reading: sub.reading,
         status: sub.status,
       })) ?? [];
@@ -355,12 +418,32 @@
     currentAction.fields.subMeters.set(
       subMeters.map((s) => ({
         id: s.id,
-        label: s.label,
-        reading: s.reading,
+        tenantUserId: s.tenantUserId,
+        reading: s.reading ?? undefined,
         status: s.status,
       }))
     );
-  });
+
+    getTenants({})
+      .then((result) => {
+        tenants = (result as TenantWithMeters[]) ?? [];
+      })
+      .catch(() => {
+        tenants = [];
+      });
+  }
+
+  // Re-initialize whenever the form opens, so a reopen after a successful add
+  // prefills from the latest record instead of stale state. `watch` runs the
+  // callback untracked, so only `open` changes trigger it — one init per open.
+  watch(
+    () => open,
+    (isOpen) => {
+      if (isOpen) {
+        initialize();
+      }
+    }
+  );
 </script>
 
 <form
@@ -545,20 +628,31 @@
       <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
         Sub Meters ({subMeters.length})
       </h4>
-      <Button variant="outline" size="sm" onclick={addSubMeter}>
-        <CirclePlus class="mr-2 size-4" />
-        Add Sub Meter
-      </Button>
+      <div class="flex items-center gap-3">
+        {#if action === "add"}
+          <label class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+            <Checkbox checked={pending} onCheckedChange={(c) => setPending(!!c)} />
+            Create as pending (tenants submit readings)
+          </label>
+        {/if}
+        <Button type="button" variant="outline" size="sm" onclick={addSubMeter}>
+          <CirclePlus class="mr-2 size-4" />
+          Add Sub Meter
+        </Button>
+      </div>
     </div>
 
-    {#each subMeters as subMeter, subIndex (subMeter.id)}
-      <div in:scale={{ duration: 250, delay: subIndex * 100, easing: sineInOut }}>
+    {#snippet meterCard(entry: SubMeterForm)}
+      {@const subIndex = subMeters.indexOf(entry)}
+      {@const tenant = tenantFor(entry)}
+      <div>
         <Card.Root class="gap-4 border-dashed">
           <Card.Header class="border-b">
             <div class="flex items-center justify-between">
               <Card.Title class="text-sm">Sub Meter {subIndex + 1}</Card.Title>
               {#if subMeters.length >= 1}
                 <Button
+                  type="button"
                   variant="ghost"
                   size="sm"
                   onclick={() => removeSubMeter(subIndex)}
@@ -584,42 +678,99 @@
             {/if}
             <Field.Group class="py-4">
               <Field.Field>
-                <Field.Label for="{identity}-sub-meter-label">Label</Field.Label>
-                <Input
-                  id="{identity}-sub-meter-label"
-                  placeholder="Enter Sub meter label"
-                  required
-                  {...currentAction.fields.subMeters[subIndex]["label"].as("text")}
+                <Field.Label for="{identity}-sub-meter-tenant">Tenant</Field.Label>
+                <Select.Root
+                  type="single"
+                  onValueChange={(val) => selectTenant(subIndex, String(val ?? ""))}
+                >
+                  <Select.Trigger id="{identity}-sub-meter-tenant" class="w-full">
+                    {tenant ? tenant.name : "Select a tenant…"}
+                  </Select.Trigger>
+                  <Select.Content>
+                    <Select.Group>
+                      <Select.Label>Tenant (sub meter)</Select.Label>
+                      {#each tenants as tenantOption (tenantOption.id)}
+                        <Select.Item value={tenantOption.id} label={tenantOption.name}>
+                          {tenantOption.name}
+                        </Select.Item>
+                      {/each}
+                    </Select.Group>
+                  </Select.Content>
+                </Select.Root>
+                <input
+                  hidden
+                  {...currentAction.fields.subMeters[subIndex]["tenantUserId"].as("text")}
                 />
+                <Field.Description>Sub-meters are tenant accounts.</Field.Description>
               </Field.Field>
 
-              <Field.Field>
-                <Field.Label for="{identity}-sub-meter-reading">Current Reading</Field.Label>
-                <Input
-                  id="{identity}-sub-meter-reading"
-                  placeholder="Enter current reading"
-                  min={action === "update"
-                    ? (previousReadings.get(subMeter.id) ?? 0)
-                    : subMeter.reading}
-                  step={1}
-                  required
-                  {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
-                />
-                <Field.Description>
-                  {#if action === "update"}
-                    {@const previousReading = previousReadings.get(subMeter.id) ?? 0}
-                    {#if previousReading > 0}
-                      Previous reading: [{previousReading}]
+              {#if !pending}
+                <Field.Field>
+                  <Field.Label for="{identity}-sub-meter-reading">Current Reading</Field.Label>
+                  <Input
+                    id="{identity}-sub-meter-reading"
+                    placeholder="Enter current reading"
+                    min={action === "update"
+                      ? (previousReadings.get(entry.id) ?? 0)
+                      : (entry.reading ?? 0)}
+                    step={1}
+                    required
+                    {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
+                  />
+                  <Field.Description>
+                    {#if action === "update"}
+                      {@const previousReading = previousReadings.get(entry.id) ?? 0}
+                      {#if previousReading > 0}
+                        Previous reading: [{previousReading}]
+                      {:else}
+                        Current sub-meter reading for calculation
+                      {/if}
                     {:else}
-                      Current sub-meter reading for calculation
+                      {@const previousReading = entry.tenantUserId
+                        ? (billingInfo?.subMeters.find((s) => s.tenantUserId === entry.tenantUserId)
+                            ?.reading ?? 0)
+                        : 0}
+                      {#if previousReading > 0}
+                        Previous reading: [{previousReading}]
+                      {:else}
+                        Current sub-meter reading for calculation
+                      {/if}
                     {/if}
-                  {:else if subMeter.reading > 0}
-                    Previous reading: [{subMeter.reading}]
-                  {:else}
-                    Current sub-meter reading for calculation
-                  {/if}
-                </Field.Description>
-              </Field.Field>
+                  </Field.Description>
+                </Field.Field>
+              {:else}
+                <Field.Field>
+                  <Field.Label for="{identity}-sub-meter-reading">Current Reading</Field.Label>
+                  <Input disabled placeholder="Awaiting tenant submission" />
+                  <Field.Description>
+                    This tenant will submit their reading for this billing period.
+                  </Field.Description>
+                </Field.Field>
+              {/if}
+
+              {#if action === "add" && !pending && tenant?.latestSubmission && Number(entry.reading) !== tenant.latestSubmission.reading}
+                <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>
+                    Latest tenant reading: {tenant.latestSubmission.reading} ({formatDate(
+                      tenant.latestSubmission.createdAt
+                    )})
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={Number(entry.reading) === tenant.latestSubmission.reading}
+                    onclick={() => {
+                      entry.reading = tenant.latestSubmission!.reading;
+                      currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.set?.(
+                        tenant.latestSubmission!.reading
+                      );
+                    }}
+                  >
+                    Use
+                  </Button>
+                </div>
+              {/if}
 
               <Field.Field>
                 <Field.Label for="{identity}-sub-meter-status">Status</Field.Label>
@@ -654,7 +805,7 @@
               </Field.Field>
 
               {#if action === "update"}
-                {@const previousReading = previousReadings.get(subMeter.id) ?? 0}
+                {@const previousReading = previousReadings.get(entry.id) ?? 0}
                 {#if previousReading > 0}
                   <Separator />
                   <div class="text-sm text-muted-foreground">
@@ -668,22 +819,33 @@
                     {/if}
                   </div>
                 {/if}
-              {:else if subMeter?.reading != 0}
-                <Separator />
-                <div class="text-sm text-muted-foreground">
-                  Consumption:
-                  {#if Number.isFinite(Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()))}
-                    {formatEnergy(
-                      Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()) -
-                        Number(subMeter.reading)
-                    )}
-                  {/if}
-                </div>
+              {:else}
+                {@const previousReading = entry.tenantUserId
+                  ? (billingInfo?.subMeters.find((s) => s.tenantUserId === entry.tenantUserId)
+                      ?.reading ?? 0)
+                  : 0}
+                {#if Number(entry.reading) !== 0}
+                  <Separator />
+                  <div class="text-sm text-muted-foreground">
+                    Consumption:
+                    {#if Number.isFinite(Number(currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()))}
+                      {formatEnergy(
+                        Number(
+                          currentAction?.fields?.subMeters?.[subIndex]?.["reading"]?.value?.()
+                        ) - previousReading
+                      )}
+                    {/if}
+                  </div>
+                {/if}
               {/if}
             </Field.Group>
           </Card.Content>
         </Card.Root>
       </div>
+    {/snippet}
+
+    {#each subMeters as entry (entry.id)}
+      {@render meterCard(entry)}
     {/each}
   </div>
   <!-- Submit Button -->

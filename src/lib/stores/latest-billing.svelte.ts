@@ -6,12 +6,7 @@ import { getContext, setContext } from "svelte";
 class LatestBillingState {
   latestBillingInfo = $state<BillingInfoDTOWithSubMeters | null>(null);
   status = $state<AsyncState>("idle");
-  userId = $state<string>("");
-  query = $derived(getLatestBillingInfo({ userId: this.userId }));
-
-  setUserId(id: string) {
-    this.userId = id;
-  }
+  query = $derived(getLatestBillingInfo({}));
 
   setStatus(status: AsyncState) {
     this.status = status;

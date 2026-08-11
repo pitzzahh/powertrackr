@@ -3,7 +3,7 @@ import type { AsyncState } from "$/types/state.js";
 import { getExtendedBillingInfos } from "$/api/billing-info.remote";
 import { getContext, setContext } from "svelte";
 
-function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
+export function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   if (infos.length === 0) {
     return {
       current: 0,
@@ -76,12 +76,7 @@ class BillingState {
   extendedBillingInfos = $state<ExtendedBillingInfo[]>([]);
   status = $state<AsyncState>("idle");
   summary = $state<BillingSummary | null>(null);
-  userId = $state<string>("");
-  query = $derived(getExtendedBillingInfos({ userId: this.userId }));
-
-  setUserId(id: string) {
-    this.userId = id;
-  }
+  query = $derived(getExtendedBillingInfos({}));
 
   setStatus(status: AsyncState) {
     this.status = status;

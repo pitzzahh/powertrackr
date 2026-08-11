@@ -1,7 +1,8 @@
 import type { NewUser } from "$/types/user";
 import type { NewPayment } from "$/types/payment";
 import type { NewBillingInfo } from "$/types/billing-info";
-import type { NewSubMeter } from "$/types/sub-meter";
+import type { NewTenantReading } from "$/types/tenant-reading";
+import type { NewReadingSubmission } from "$/types/reading-submission";
 import type { NewSession } from "$/types/session";
 import type { NewEmailVerificationRequest } from "$/types/email-verification-request";
 import type { NewPasswordResetSession } from "$/types/password-reset-session";
@@ -34,11 +35,21 @@ export function createUser(overrides: FactoryOverrides<NewUser> = {}): NewUser {
     registeredTwoFactor: false,
     image: null,
     passwordHash: "hashed-password",
-    // Use ISO strings for timestamps in tests/factories
+    ownerId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
   };
+}
+
+/**
+ * A tenant account: a user owned by `ownerId`. Tenants ARE sub-meters.
+ */
+export function createTenantUser(
+  ownerId: string,
+  overrides: FactoryOverrides<NewUser> = {}
+): NewUser {
+  return createUser({ ownerId, ...overrides });
 }
 
 export function createPayment(overrides: FactoryOverrides<NewPayment> = {}): NewPayment {
@@ -47,7 +58,6 @@ export function createPayment(overrides: FactoryOverrides<NewPayment> = {}): New
     id: generateId(),
     amount: 100.5 + sequence,
     date: new Date(),
-    // Use ISO strings for timestamps in tests/factories
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -71,17 +81,32 @@ export function createBillingInfo(
   };
 }
 
-export function createSubMeter(overrides: FactoryOverrides<NewSubMeter> = {}): NewSubMeter {
+export function createTenantReading(
+  overrides: FactoryOverrides<NewTenantReading> = {}
+): NewTenantReading {
   const sequence = getSequence();
   return {
     id: generateId(),
+    tenantUserId: `tenant-${sequence}`,
     billingInfoId: `billing-${sequence}`,
     subkWh: 50 + sequence,
-    label: `Sub Meter ${sequence}`,
-    // Default `reading` should align with the latest reading when not provided
     reading: 1500 + sequence,
-    paymentId: "",
-    // Use ISO strings for timestamps in tests/factories
+    status: "",
+    paymentId: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    ...overrides,
+  };
+}
+
+export function createReadingSubmission(
+  overrides: FactoryOverrides<NewReadingSubmission> = {}
+): NewReadingSubmission {
+  const sequence = getSequence();
+  return {
+    id: generateId(),
+    tenantUserId: `tenant-${sequence}`,
+    reading: 1600 + sequence,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -149,6 +174,14 @@ export function createUsers(count: number, overrides: FactoryOverrides<NewUser> 
   return Array.from({ length: count }, () => createUser(overrides));
 }
 
+export function createTenantUsers(
+  count: number,
+  ownerId: string,
+  overrides: FactoryOverrides<NewUser> = {}
+): NewUser[] {
+  return Array.from({ length: count }, () => createTenantUser(ownerId, overrides));
+}
+
 export function createPayments(
   count: number,
   overrides: FactoryOverrides<NewPayment> = {}
@@ -163,11 +196,18 @@ export function createBillingInfos(
   return Array.from({ length: count }, () => createBillingInfo(overrides));
 }
 
-export function createSubMeters(
+export function createTenantReadings(
   count: number,
-  overrides: FactoryOverrides<NewSubMeter> = {}
-): NewSubMeter[] {
-  return Array.from({ length: count }, () => createSubMeter(overrides));
+  overrides: FactoryOverrides<NewTenantReading> = {}
+): NewTenantReading[] {
+  return Array.from({ length: count }, () => createTenantReading(overrides));
+}
+
+export function createReadingSubmissions(
+  count: number,
+  overrides: FactoryOverrides<NewReadingSubmission> = {}
+): NewReadingSubmission[] {
+  return Array.from({ length: count }, () => createReadingSubmission(overrides));
 }
 
 export function createSessions(
@@ -182,7 +222,8 @@ export interface RelatedDataOptions {
   userCount?: number;
   paymentsPerUser?: number;
   billingInfosPerUser?: number;
-  subMetersPerBilling?: number;
+  tenantsPerUser?: number;
+  readingsPerBilling?: number;
 }
 
 export function createRelatedTestData(options: RelatedDataOptions = {}) {
@@ -190,18 +231,24 @@ export function createRelatedTestData(options: RelatedDataOptions = {}) {
     userCount = 2,
     paymentsPerUser = 2,
     billingInfosPerUser = 2,
-    subMetersPerBilling = 2,
+    tenantsPerUser = 2,
+    readingsPerBilling = 2,
   } = options;
 
   const users = createUsers(userCount);
   const payments: NewPayment[] = [];
   const billingInfos: NewBillingInfo[] = [];
-  const subMeters: NewSubMeter[] = [];
+  const tenants: NewUser[] = [];
+  const tenantReadings: NewTenantReading[] = [];
 
   users.forEach((user) => {
     // Create payments for user
     const userPayments = createPayments(paymentsPerUser);
     payments.push(...userPayments);
+
+    // Create tenants for user (tenants ARE sub-meters)
+    const userTenants = createTenantUsers(tenantsPerUser, user.id);
+    tenants.push(...userTenants);
 
     // Create billing infos for user
     for (let i = 0; i < billingInfosPerUser; i++) {
@@ -211,12 +258,13 @@ export function createRelatedTestData(options: RelatedDataOptions = {}) {
       });
       billingInfos.push(billingInfo);
 
-      // Create sub meters for each billing info
-      const billingSubMeters = createSubMeters(subMetersPerBilling, {
+      // Create tenant readings for each billing info
+      const billingReadings = createTenantReadings(readingsPerBilling, {
         billingInfoId: billingInfo.id,
+        tenantUserId: userTenants[i % userTenants.length].id,
         paymentId: userPayments[i % userPayments.length].id,
       });
-      subMeters.push(...billingSubMeters);
+      tenantReadings.push(...billingReadings);
     }
   });
 
@@ -224,6 +272,7 @@ export function createRelatedTestData(options: RelatedDataOptions = {}) {
     users,
     payments,
     billingInfos,
-    subMeters,
+    tenants,
+    tenantReadings,
   };
 }

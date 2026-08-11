@@ -14,10 +14,9 @@
 
   onMount(() => {
     if (!data.user) {
-      console.warn("No user id available to fetch consumption data");
+      console.warn("No user available to fetch consumption data");
       return;
     }
-    consumptionStore.setUserId(data?.user?.id);
     consumptionStore.setStatus("loading_data");
     consumptionStore.fetchData();
   });
@@ -66,14 +65,14 @@
                 <div class="flex items-center gap-3">
                   <Zap class="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p class="font-medium">{subMeter.label}</p>
+                    <p class="font-medium">{subMeter.tenantName}</p>
                     <p class="text-sm text-muted-foreground">
-                      Reading: {formatNumber(subMeter.reading, { style: "decimal" })}
+                      Reading: {formatNumber(subMeter.reading ?? 0, { style: "decimal" })}
                     </p>
                   </div>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold">{formatEnergy(subMeter.subkWh)}</p>
+                  <p class="font-semibold">{formatEnergy(subMeter.subkWh ?? 0)}</p>
                 </div>
               </div>
             {/each}

@@ -29,7 +29,7 @@
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import * as v from "valibot";
-  import { billFormSchema } from "$/validators/billing-info";
+  import { importBillFormSchema } from "$/validators/import";
   import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
   import { ScrollArea } from "$/components/ui/scroll-area/index.js";
   import { toast } from "svelte-sonner";
@@ -125,8 +125,8 @@
         validatedItems = null;
       } else {
         try {
-          // Strict client-side validation using the shared schema
-          const validated = v.parse(v.array(billFormSchema), items);
+          // Strict client-side validation using the shared import schema
+          const validated = v.parse(v.array(importBillFormSchema), items);
 
           // Compute counts for preview
           const payments = validated.reduce(
@@ -293,7 +293,7 @@
               id: s.id,
               billingInfoId: s.billingInfoId ?? info.id,
               subkWh: s.subkWh ?? undefined,
-              label: s.label,
+              tenantName: s.tenantName,
               reading: s.reading,
               paymentId: s.payment?.id ?? null,
               createdAt: safeISOString(s.createdAt),

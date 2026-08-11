@@ -19,15 +19,27 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.id,
       to: r.passwordResetSession.userId,
     }),
+    readingSubmissions: r.many.readingSubmission({
+      from: r.user.id,
+      to: r.readingSubmission.tenantUserId,
+    }),
+    tenantReadings: r.many.tenantReading({
+      from: r.user.id,
+      to: r.tenantReading.tenantUserId,
+    }),
+    tenants: r.many.user({
+      from: r.user.id,
+      to: r.user.ownerId,
+    }),
   },
   billingInfo: {
     payment: r.one.payment({
       from: r.billingInfo.paymentId,
       to: r.payment.id,
     }),
-    subMeters: r.many.subMeter({
+    tenantReadings: r.many.tenantReading({
       from: r.billingInfo.id,
-      to: r.subMeter.billingInfoId,
+      to: r.tenantReading.billingInfoId,
     }),
     user: r.one.user({
       from: r.billingInfo.userId,
@@ -39,9 +51,9 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.payment.id,
       to: r.billingInfo.paymentId,
     }),
-    subMeters: r.many.subMeter({
+    tenantReadings: r.many.tenantReading({
       from: r.payment.id,
-      to: r.subMeter.paymentId,
+      to: r.tenantReading.paymentId,
     }),
   },
   session: {
@@ -62,14 +74,24 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.user.id,
     }),
   },
-  subMeter: {
+  tenantReading: {
+    tenant: r.one.user({
+      from: r.tenantReading.tenantUserId,
+      to: r.user.id,
+    }),
     billingInfo: r.one.billingInfo({
-      from: r.subMeter.billingInfoId,
+      from: r.tenantReading.billingInfoId,
       to: r.billingInfo.id,
     }),
     payment: r.one.payment({
-      from: r.subMeter.paymentId,
+      from: r.tenantReading.paymentId,
       to: r.payment.id,
+    }),
+  },
+  readingSubmission: {
+    tenant: r.one.user({
+      from: r.readingSubmission.tenantUserId,
+      to: r.user.id,
     }),
   },
 }));

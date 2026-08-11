@@ -1,13 +1,13 @@
 import type { billingInfo } from "$/server/db/schema/billing-info";
 import type { Payment } from "$/server/db/schema/payment";
-import type { SubMeterDTO, SubMeterWithPayment } from "$/types/sub-meter";
+import type { TenantReadingDTO } from "$/types/tenant-reading";
 
 export type BillingInfo = typeof billingInfo.$inferSelect;
 export type NewBillingInfo = Omit<typeof billingInfo.$inferInsert, "createdAt" | "updatedAt">;
 
 export type BillingInfoWithPaymentAndSubMetersWithPayment = BillingInfo & {
   payment?: Payment;
-  subMeters?: SubMeterWithPayment[];
+  subMeters?: TenantReadingDTO[];
 };
 
 export type BillingInfoDTO = {
@@ -24,7 +24,7 @@ export type BillingInfoDTO = {
 };
 
 export type BillingInfoDTOWithSubMeters = BillingInfoDTO & {
-  subMeters: SubMeterDTO[];
+  subMeters: TenantReadingDTO[];
 };
 
 export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
@@ -40,8 +40,9 @@ export type ExtendedBillingInfoTableView = ExtendedBillingInfo & {
 };
 
 export type ExtendedBillingInfo = BillingInfo & {
-  payment: Payment;
-  subMeters: SubMeterWithPayment[];
+  // null until the billing is finalized (pending billings await tenant readings)
+  payment: Payment | null;
+  subMeters: TenantReadingDTO[];
 };
 
 export type BillingSummary = {
@@ -59,19 +60,22 @@ export type BillingSummary = {
   averageMonthlyReturn: number;
 };
 
+// A sub-meter entry in a billing form. Sub-meters ARE tenants: the entry
+// references the tenant user id directly (the tenant's name is its label).
+// A null reading marks a pending billing waiting for the tenant's submission.
+export type BillingSubMeterForm = {
+  id?: string; // tenant_reading id, update mode only
+  tenantUserId: string;
+  reading?: number | null; // null/absent = pending billing awaiting tenant submission
+  status: Status;
+};
+
 export type BillingCreateForm = {
   date: string;
   totalkWh: number;
   balance: number;
   status: string;
-  subMeters: { label: string; reading: number; status: Status }[];
-};
-
-export type BillingUpdateSubMeterForm = {
-  id?: string;
-  label: string;
-  reading: number;
-  status?: Status;
+  subMeters: BillingSubMeterForm[];
 };
 
 export type BillingUpdateForm = {
@@ -80,7 +84,7 @@ export type BillingUpdateForm = {
   totalkWh: number;
   balance: number;
   status: string;
-  subMeters?: BillingUpdateSubMeterForm[];
+  subMeters?: BillingSubMeterForm[];
 };
 
 export const STATUS_VALUES = ["paid", "pending", "due"] as const;

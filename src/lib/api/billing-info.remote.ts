@@ -1,4 +1,5 @@
 import { query, form, command } from "$app/server";
+import * as v from "valibot";
 import {
   billFormSchema,
   updateBillingInfoSchema,
@@ -6,6 +7,7 @@ import {
   getBillingInfoSchema,
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
+  finalizeBillingSchema,
 } from "$/validators/billing-info";
 import type {
   BillingInfo,
@@ -19,13 +21,12 @@ import {
   deleteBillingInfoBy,
   createBillingInfoLogic,
   updateBillingInfoLogic,
+  finalizeBillingInfoLogic,
   getTotalEnergyUsageLogic,
   getTotalBillingInfoCountLogic,
 } from "$/server/crud/billing-info-crud";
-import { invalid } from "@sveltejs/kit";
+import { invalid, error } from "@sveltejs/kit";
 import type { HelperResult } from "$/server/types/helper";
-import { getTotalUserCount } from "./user.remote";
-import { getTotalPaymentsAmount } from "./payment.remote";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",
@@ -48,40 +49,52 @@ export const getTotalBillingInfoCount = query(() => {
   return getTotalBillingInfoCountLogic();
 });
 
-// Query to get all billing infos for a user
-export const getBillingInfoBy = query(getBillingInfosSchema, async ({ userId }) => {
+// Query to get all billing infos for the authenticated user
+export const getBillingInfoBy = query(v.object({}), async (): Promise<HelperResult<unknown>> => {
+  const { user, session } = requireAuth();
+  if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
   return await getBillingInfoByCrud({
-    query: { userId },
+    query: { userId: session.userId },
     options: {
       fields: COMMON_FIELDS,
     },
   });
 });
 
-export const getLatestBillingInfo = query(getBillingInfosSchema, async ({ userId }) => {
-  return await getBillingInfoByCrud({
-    query: { userId },
-    options: {
-      fields: COMMON_FIELDS,
-      with_sub_meters: true,
-      order: "desc",
-      limit: 1,
-    },
-  });
-});
+export const getLatestBillingInfo = query(
+  v.object({}),
+  async (): Promise<HelperResult<unknown>> => {
+    const { user, session } = requireAuth();
+    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+    return await getBillingInfoByCrud({
+      query: { userId: session.userId },
+      options: {
+        fields: COMMON_FIELDS,
+        with_sub_meters: true,
+        order: "desc",
+        limit: 1,
+      },
+    });
+  }
+);
 
-// Query to get extended billing infos with payments for a user
-export const getExtendedBillingInfos = query(getBillingInfosSchema, async ({ userId }) => {
-  return await getBillingInfoByCrud({
-    query: { userId },
-    options: {
-      fields: COMMON_FIELDS,
-      with_payment: true,
-      with_sub_meters_with_payment: true,
-      order: "desc",
-    },
-  });
-});
+// Query to get extended billing infos with payments for the authenticated user
+export const getExtendedBillingInfos = query(
+  v.object({}),
+  async (): Promise<HelperResult<unknown>> => {
+    const { user, session } = requireAuth();
+    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+    return await getBillingInfoByCrud({
+      query: { userId: session.userId },
+      options: {
+        fields: COMMON_FIELDS,
+        with_payment: true,
+        with_sub_meters_with_payment: true,
+        order: "desc",
+      },
+    });
+  }
+);
 
 // Query to get a single billing info by id
 export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
@@ -93,113 +106,103 @@ export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
   });
 });
 
-// Query to get billing summary for a user
-export const getBillingSummary = query(
-  getBillingInfosSchema,
-  async ({ userId }): Promise<BillingSummary> => {
-    const result = await getExtendedBillingInfos({ userId });
-    const extendedInfos = result.value as BillingInfoWithPaymentAndSubMetersWithPayment[];
+// Query to get billing summary for the authenticated user
+export const getBillingSummary = query(getBillingInfosSchema, async (): Promise<BillingSummary> => {
+  const result = await getExtendedBillingInfos({});
+  const extendedInfos = result.value as BillingInfoWithPaymentAndSubMetersWithPayment[];
 
-    if (extendedInfos.length === 0) {
-      return {
-        current: 0,
-        invested: 0,
-        totalReturns: 0,
-        netReturns: 0,
-        oneDayReturns: 0,
-        averageDailyReturn: 0,
-        averageMonthlyReturn: 0,
-        periodPaymentChange: 0,
-        periodPaymentChangePct: 0,
-      };
-    }
-
-    const latest = extendedInfos[0];
-    if (!latest) {
-      return {
-        current: 0,
-        invested: 0,
-        totalReturns: 0,
-        netReturns: 0,
-        oneDayReturns: 0,
-        averageDailyReturn: 0,
-        averageMonthlyReturn: 0,
-        periodPaymentChange: 0,
-        periodPaymentChangePct: 0,
-      };
-    }
-    const current = latest.balance ?? 0;
-    const invested = extendedInfos.reduce(
-      (sum, info) =>
-        sum +
-        ((info.payment?.amount ?? 0) +
-          (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
-      0
-    );
-    const totalReturns = extendedInfos.reduce(
-      (sum: number, info) =>
-        sum +
-        (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
-      0
-    );
-    const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
-    const oneDayReturns =
-      latest.subMeters?.reduce((sum, sub) => sum + (sub.payment?.amount ?? 0), 0) ?? 0;
-
-    const firstDate = extendedInfos[extendedInfos.length - 1].date;
-    const lastDate = latest.date;
-    const totalDays = Math.max(
-      1,
-      (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const averageDailyReturn = totalReturns / totalDays;
-    const totalMonths = totalDays / 30;
-    const averageMonthlyReturn = totalReturns / totalMonths;
-
-    // period change (previous_totalPayment - latest_totalPayment)
-    const totalPayment = (info: BillingInfoWithPaymentAndSubMetersWithPayment) =>
-      (info.payment?.amount ?? 0) +
-      (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0);
-    const latestTotalPayment = totalPayment(latest);
-    const prevTotalPayment = extendedInfos[1] ? totalPayment(extendedInfos[1]) : latestTotalPayment;
-    const periodPaymentChange = prevTotalPayment - latestTotalPayment;
-    const periodPaymentChangePct =
-      prevTotalPayment > 0 ? (periodPaymentChange / prevTotalPayment) * 100 : 0;
-
+  if (extendedInfos.length === 0) {
     return {
-      current,
-      invested,
-      totalReturns,
-      netReturns,
-      oneDayReturns,
-      averageDailyReturn,
-      averageMonthlyReturn,
-      periodPaymentChange,
-      periodPaymentChangePct,
+      current: 0,
+      invested: 0,
+      totalReturns: 0,
+      netReturns: 0,
+      oneDayReturns: 0,
+      averageDailyReturn: 0,
+      averageMonthlyReturn: 0,
+      periodPaymentChange: 0,
+      periodPaymentChangePct: 0,
     };
   }
-);
+
+  const latest = extendedInfos[0];
+  if (!latest) {
+    return {
+      current: 0,
+      invested: 0,
+      totalReturns: 0,
+      netReturns: 0,
+      oneDayReturns: 0,
+      averageDailyReturn: 0,
+      averageMonthlyReturn: 0,
+      periodPaymentChange: 0,
+      periodPaymentChangePct: 0,
+    };
+  }
+  const current = latest.balance ?? 0;
+  const invested = extendedInfos.reduce(
+    (sum, info) =>
+      sum +
+      ((info.payment?.amount ?? 0) +
+        (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0)),
+    0
+  );
+  const totalReturns = extendedInfos.reduce(
+    (sum: number, info) =>
+      sum + (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0),
+    0
+  );
+  const netReturns = invested > 0 ? (totalReturns / invested) * 100 : 0;
+  const oneDayReturns =
+    latest.subMeters?.reduce((sum, sub) => sum + (sub.payment?.amount ?? 0), 0) ?? 0;
+
+  const firstDate = extendedInfos[extendedInfos.length - 1].date;
+  const lastDate = latest.date;
+  const totalDays = Math.max(1, (lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+  const averageDailyReturn = totalReturns / totalDays;
+  const totalMonths = totalDays / 30;
+  const averageMonthlyReturn = totalReturns / totalMonths;
+
+  // period change (previous_totalPayment - latest_totalPayment)
+  const totalPayment = (info: BillingInfoWithPaymentAndSubMetersWithPayment) =>
+    (info.payment?.amount ?? 0) +
+    (info.subMeters ?? []).reduce((subSum, sub) => subSum + (sub.payment?.amount ?? 0), 0);
+  const latestTotalPayment = totalPayment(latest);
+  const prevTotalPayment = extendedInfos[1] ? totalPayment(extendedInfos[1]) : latestTotalPayment;
+  const periodPaymentChange = prevTotalPayment - latestTotalPayment;
+  const periodPaymentChangePct =
+    prevTotalPayment > 0 ? (periodPaymentChange / prevTotalPayment) * 100 : 0;
+
+  return {
+    current,
+    invested,
+    totalReturns,
+    netReturns,
+    oneDayReturns,
+    averageDailyReturn,
+    averageMonthlyReturn,
+    periodPaymentChange,
+    periodPaymentChangePct,
+  };
+});
+
+// Single-flight refresh of every query that reads billing, meter, or stats
+// data, so one mutation invalidates all cached copies in a single round-trip.
+// Lives in a plain module because `.remote.ts` files may only export remote
+// functions.
+import { refreshBillingData } from "./billing-refresh";
 
 // Form to create a new billing info with multiple sub meters
 export const createBillingInfo = form(
   billFormSchema,
   async (data, issues): Promise<BillingInfo> => {
-    const {
-      session: { userId },
-    } = requireAuth();
+    const { user, session } = requireAuth();
+    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+    const userId = session.userId;
 
     try {
       const result = await createBillingInfoLogic(data, userId);
-      getExtendedBillingInfos({
-        userId,
-      }).refresh();
-      getLatestBillingInfo({
-        userId,
-      }).refresh();
-      getTotalUserCount().refresh();
-      getTotalEnergyUsage().refresh();
-      getTotalBillingInfoCount().refresh();
-      getTotalPaymentsAmount().refresh();
+      refreshBillingData();
       return result;
     } catch (err) {
       if (err instanceof Error && err.message.includes("Invalid meter readings")) {
@@ -214,26 +217,25 @@ export const createBillingInfo = form(
 export const updateBillingInfo = form(
   updateBillingInfoSchema,
   async (data): Promise<BillingInfo> => {
-    const {
-      session: { userId },
-    } = requireAuth();
+    const { user, session } = requireAuth();
+    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+    const userId = session.userId;
 
     const result = await updateBillingInfoLogic(data, userId);
-    getExtendedBillingInfos({ userId }).refresh();
+    refreshBillingData();
     return result;
   }
 );
 
 // Command to delete a billing info
 export const deleteBillingInfo = command(deleteBillingInfoSchema, async ({ id }) => {
-  const {
-    session: { userId },
-  } = requireAuth();
+  const { user } = requireAuth();
+  if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
 
   const result = await deleteBillingInfoBy({ query: { id } });
 
   if (result.value === 1) {
-    getExtendedBillingInfos({ userId }).refresh();
+    refreshBillingData();
   }
 
   return result;
@@ -242,17 +244,15 @@ export const deleteBillingInfo = command(deleteBillingInfoSchema, async ({ id })
 export const deleteBillingInfoBatch = command(
   deleteBillingInfoSchemaBatch,
   async ({ ids, count }) => {
-    const {
-      session: { userId },
-    } = requireAuth();
+    const { user } = requireAuth();
+    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
 
     const validCount = (
       await Promise.all(ids.map((id) => deleteBillingInfoBy({ query: { id } })))
     ).filter((result) => result.valid).length;
 
     if (validCount === count) {
-      console.log("Refreshing data");
-      getExtendedBillingInfos({ userId }).refresh();
+      refreshBillingData();
     }
 
     return {
@@ -262,3 +262,13 @@ export const deleteBillingInfoBatch = command(
     } as HelperResult<number>;
   }
 );
+
+// Command to finalize a pending billing once tenants have submitted readings
+export const finalizeBilling = command(finalizeBillingSchema, async ({ billingInfoId }) => {
+  const { user, session } = requireAuth();
+  if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+
+  const result = await finalizeBillingInfoLogic(billingInfoId, session.userId);
+  refreshBillingData();
+  return result;
+});

@@ -15,12 +15,11 @@ export const billingInfo = sqliteTable(
     balance: real().notNull(),
     status: text().notNull(),
     payPerkWh: real("pay_per_kWh").notNull(),
-    paymentId: text("payment_id")
-      .notNull()
-      .references(() => payment.id, {
-        onDelete: "cascade",
-        onUpdate: "cascade",
-      }),
+    // NULL until the billing is finalized (pending billings await tenant readings).
+    paymentId: text("payment_id").references(() => payment.id, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    }),
     ...timestamps,
   },
   (table) => [

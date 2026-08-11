@@ -12,6 +12,7 @@ export type UserDTO = {
   emailVerified: boolean;
   registeredTwoFactor: boolean;
   image: string | null;
+  ownerId: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
