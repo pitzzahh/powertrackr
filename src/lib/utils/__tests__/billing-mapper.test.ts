@@ -117,6 +117,6 @@ describe("extendedBillingInfoToTableView", () => {
     expect(typeof view.createdAtFormatted).toBe("string");
     expect(typeof view.updatedAtFormatted).toBe("string");
     expect(view.subMeters).toHaveLength(1);
-    expect(view.payment.amount).toBe(500);
+    expect(view.payment?.amount).toBe(500);
   });
 });

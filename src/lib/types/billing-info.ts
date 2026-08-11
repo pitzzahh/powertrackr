@@ -40,7 +40,8 @@ export type ExtendedBillingInfoTableView = ExtendedBillingInfo & {
 };
 
 export type ExtendedBillingInfo = BillingInfo & {
-  payment: Payment;
+  // null until the billing is finalized (pending billings await tenant readings)
+  payment: Payment | null;
   subMeters: TenantReadingDTO[];
 };
 
