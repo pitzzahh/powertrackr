@@ -41,4 +41,10 @@ jobs:
           git -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
               commit -m "chore(release): sync package.json to v${version} [skip ci]"
+          # semantic-release tags the pre-bump commit, so the tag's tree would
+          # carry the stale manifest. Point the tag at the sync commit so a
+          # checkout of the tag sees the released version. (The GitHub Release
+          # keeps its original target commit — cosmetic only.)
+          git tag -f "v${version}" HEAD
           git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "refs/tags/v${version}"
