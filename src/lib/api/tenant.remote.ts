@@ -9,6 +9,7 @@ import { addUser } from "$/server/crud/user-crud";
 import { getLastTenantReading, finalizeBillingInfoLogic } from "$/server/crud/billing-info-crud";
 import { hashPassword } from "$/server/encryption";
 import { calculatePayPerKwh } from "$lib";
+import { refreshBillingData } from "./billing-refresh";
 import { error, invalid } from "@sveltejs/kit";
 import {
   createTenantSchema,
@@ -287,7 +288,9 @@ export const updateTenant = form(updateTenantSchema, async ({ tenantUserId, name
     .where(eq(user.id, tenantUserId))
     .returning();
 
-  void getTenants({}).refresh();
+  // The renamed tenant appears in the billing queries too (sub-meter rows),
+  // so refresh every query that reads tenant/billing/stats data.
+  refreshBillingData();
   return updated;
 });
 
@@ -303,7 +306,9 @@ export const deleteTenant = command(deleteTenantSchema, async ({ tenantUserId })
 
   await db().delete(user).where(eq(user.id, tenantUserId));
 
-  void getTenants({}).refresh();
+  // Deleting cascades into readings, submissions and payments — refresh every
+  // query that reads tenant/billing/stats data.
+  refreshBillingData();
   return { ok: true };
 });
 
