@@ -2,12 +2,16 @@ import { query, form, command } from "$app/server";
 import * as v from "valibot";
 import { requireAuth } from "$/server/auth";
 import { db } from "$/server/db";
-import { and, desc, eq, inArray, isNull, max, ne } from "drizzle-orm";
-import { tenantReading, readingSubmission, billingInfo, user } from "$/server/db/schema";
+import { and, count, desc, eq, inArray, isNull, max, ne } from "drizzle-orm";
+import { tenantReading, readingSubmission, billingInfo, user, payment } from "$/server/db/schema";
 import { getUserBy } from "$/server/crud/user-crud";
 import { addUser } from "$/server/crud/user-crud";
-import { getLastTenantReading } from "$/server/crud/billing-info-crud";
+import {
+  getLastTenantReading,
+  finalizeBillingInfoLogic,
+} from "$/server/crud/billing-info-crud";
 import { hashPassword } from "$/server/encryption";
+import { calculatePayPerKwh } from "$lib";
 import { error, invalid } from "@sveltejs/kit";
 import {
   createTenantSchema,
@@ -185,18 +189,58 @@ export const submitReading = form(
       })
       .returning();
 
-    // When submitting for a pending billing, fill the tenant's pending reading row
+    // When submitting for a pending billing, fill the tenant's pending reading
+    // row and materialize their usage + payment immediately (the rate is known
+    // from the billing). Once every tenant has submitted, finalize the billing
+    // so the main payment lands too.
     if (billingInfoId) {
-      await db()
-        .update(tenantReading)
-        .set({ reading })
+      const ownerId = authUser.ownerId;
+      const billing = await db().query.billingInfo.findFirst({
+        where: { id: billingInfoId, ...(ownerId ? { userId: ownerId } : {}) },
+      });
+      if (!billing) {
+        error(400, "Unknown billing");
+      }
+
+      const prev = await getLastTenantReading(billing.userId, session.userId, billing.date);
+      const payPerKwh = calculatePayPerKwh(billing.balance, billing.totalkWh);
+      const usage = prev === null ? 0 : reading - prev;
+      const amount = Number((usage * payPerKwh).toFixed(2));
+      const subPaymentId = crypto.randomUUID();
+
+      await db().batch([
+        db().insert(payment).values({
+          id: subPaymentId,
+          amount,
+          date: new Date(),
+        }),
+        db()
+          .update(tenantReading)
+          .set({ reading, subkWh: usage, paymentId: subPaymentId, status: "paid" })
+          .where(
+            and(
+              eq(tenantReading.billingInfoId, billingInfoId),
+              eq(tenantReading.tenantUserId, session.userId),
+              isNull(tenantReading.reading)
+            )
+          ),
+      ]);
+
+      const [{ pendingCount }] = await db()
+        .select({ pendingCount: count() })
+        .from(tenantReading)
         .where(
-          and(
-            eq(tenantReading.billingInfoId, billingInfoId),
-            eq(tenantReading.tenantUserId, session.userId),
-            isNull(tenantReading.reading)
-          )
+          and(eq(tenantReading.billingInfoId, billingInfoId), isNull(tenantReading.reading))
         );
+      if ((pendingCount ?? 0) === 0) {
+        try {
+          await finalizeBillingInfoLogic(billingInfoId, billing.userId);
+        } catch (err) {
+          // The reading is recorded; a finalize failure (e.g. implausible
+          // balance) stays visible to the owner to fix and finalize manually.
+          console.error("Auto-finalize failed for billing", billingInfoId, err);
+        }
+      }
     }
 
     void getMyMeter({}).refresh();

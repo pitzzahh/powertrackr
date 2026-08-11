@@ -5,7 +5,7 @@ import {
   getBillingInfoBy,
 } from "$/server/crud/billing-info-crud";
 import { db } from "$/server/db";
-import { tenantReading } from "$/server/db/schema";
+import { tenantReading, payment } from "$/server/db/schema";
 import { eq } from "drizzle-orm";
 import { getPaymentBy } from "$/server/crud/payment-crud";
 import { addUser } from "$/server/crud/user-crud";
@@ -149,6 +149,86 @@ describe("pending billings", () => {
     await expect(finalizeBillingInfoLogic(billing.id, owner.id)).rejects.toMatchObject({
       body: { message: expect.stringContaining("No tenant readings to finalize") as unknown },
     });
+  });
+
+  it("finalizes only pending rows when others were materialized at submission", async () => {
+    const { owner, tenant } = await seedOwnerWithTenant();
+    const {
+      value: [tenant2],
+    } = await addUser([createTenantUser(owner.id, { name: "Mia" })]);
+
+    // Period A: billed baseline 100 for Lola, 200 for Mia
+    await createBillingInfoLogic(
+      {
+        date: "2026-08-01",
+        totalkWh: 1000,
+        balance: 1000,
+        status: "pending",
+        subMeters: [
+          { tenantUserId: tenant.id, reading: 100, status: "pending" },
+          { tenantUserId: tenant2.id, reading: 200, status: "pending" },
+        ],
+      },
+      owner.id
+    );
+
+    // Period B pending; Lola's row already materialized (as if submitted:
+    // reading + payment set), Mia's still pending
+    const billingB = await createBillingInfoLogic(
+      {
+        date: "2026-09-01",
+        totalkWh: 2000,
+        balance: 2000,
+        status: "pending",
+        subMeters: [
+          { tenantUserId: tenant.id, reading: null, status: "pending" },
+          { tenantUserId: tenant2.id, reading: null, status: "pending" },
+        ],
+      },
+      owner.id
+    );
+
+    const billingRows =
+      (
+        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
+      ).value[0].subMeters ?? [];
+    const lolaRow = billingRows.find((s) => s.tenantUserId === tenant.id)!;
+    const lolaPaymentId = crypto.randomUUID();
+    await db().batch([
+      db().insert(payment).values({ id: lolaPaymentId, amount: 150, date: new Date() }),
+      db()
+        .update(tenantReading)
+        .set({ reading: 250, subkWh: 150, paymentId: lolaPaymentId, status: "paid" })
+        .where(eq(tenantReading.id, lolaRow.id)),
+    ]);
+
+    // Mia submits 350 -> usage 350 - 200 = 150 at rate 2000/2000 = 1.0
+    await db()
+      .update(tenantReading)
+      .set({ reading: 350 })
+      .where(eq(tenantReading.billingInfoId, billingB.id));
+
+    const finalized = await finalizeBillingInfoLogic(billingB.id, owner.id);
+
+    const {
+      value: [billing],
+    } = await getBillingInfoBy({
+      query: { id: billingB.id },
+      options: { with_payment: true, with_sub_meters_with_payment: true },
+    });
+    const subs = billing.subMeters ?? [];
+    const lola = subs.find((s) => s.tenantUserId === tenant.id)!;
+    const mia = subs.find((s) => s.tenantUserId === tenant2.id)!;
+
+    // Lola's payment was created at submission and left untouched
+    expect(lola.subkWh).toBe(150);
+    expect(lola.payment?.amount).toBeCloseTo(150, 2);
+    // Mia's row got materialized by finalize
+    expect(mia.subkWh).toBe(150);
+    expect(mia.payment?.amount).toBeCloseTo(150, 2);
+    // Main = balance - (150 + 150) = 1700
+    expect(billing.payment?.amount).toBeCloseTo(1700, 2);
+    expect(finalized.paymentId).not.toBeNull();
   });
 
   it("rejects finalizing an already finalized billing", async () => {

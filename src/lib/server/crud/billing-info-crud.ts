@@ -946,10 +946,16 @@ export async function finalizeBillingInfoLogic(
 
   const payPerkWh = calculatePayPerKwh(balance, totalkWh);
 
-  const rows = (billing.subMeters ?? []).filter(
-    (s): s is TenantReadingDTO & { reading: number } => s.reading != null
+  const allRows = billing.subMeters ?? [];
+
+  // Rows already materialized at submission carry their own payment; only
+  // pending rows (reading set, no payment yet) get payments created here.
+  const existingSubPayment = allRows.reduce((sum, s) => sum + (s.payment?.amount ?? 0), 0);
+  const rows = allRows.filter(
+    (s): s is TenantReadingDTO & { reading: number } =>
+      s.reading != null && s.paymentId == null
   );
-  if (rows.length === 0) {
+  if (rows.length === 0 && existingSubPayment === 0) {
     throw error(400, "No tenant readings to finalize");
   }
 
@@ -964,8 +970,11 @@ export async function finalizeBillingInfoLogic(
     payPerkWh
   );
 
-  const totalSubPayment = [...usages.values()].reduce((sum, u) => sum + u.payment, 0);
-  const totalSubkWh = [...usages.values()].reduce((sum, u) => sum + u.usage, 0);
+  const newSubPayment = [...usages.values()].reduce((sum, u) => sum + u.payment, 0);
+  const totalSubPayment = existingSubPayment + newSubPayment;
+  const existingSubkWh = allRows.reduce((sum, s) => sum + (s.subkWh ?? 0), 0);
+  const totalSubkWh =
+    existingSubkWh + [...usages.values()].reduce((sum, u) => sum + u.usage, 0);
 
   const mainUsage = totalkWh - totalSubkWh;
   const mainPaymentAmount = Number((balance - totalSubPayment).toFixed(2));
