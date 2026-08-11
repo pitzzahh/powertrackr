@@ -6,6 +6,7 @@
 
 <script lang="ts">
   import { Button } from "$/components/ui/button";
+  import { Banknote, Download, InvoiceIcon } from "$lib/assets/icons";
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
 
   let { user }: CtaProps = $props();
@@ -64,31 +65,30 @@
               <div
                 class="flex items-center justify-between text-xs tracking-[0.3em] text-muted-foreground uppercase"
               >
-                <span>Command board</span>
-                <span class="rounded-full border border-border/60 px-2 py-1 text-[10px]">Live</span>
+                <span>Quick Actions</span>
               </div>
               <div class="mt-6 space-y-3">
                 <div
                   class="flex items-center justify-between rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm"
                 >
                   <span>New billing cycle</span>
-                  <kbd class="rounded bg-muted px-2 py-1 text-xs">B</kbd>
+                  <InvoiceIcon class="size-4 text-muted-foreground" />
                 </div>
                 <div
                   class="flex items-center justify-between rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm"
                 >
                   <span>Record payment</span>
-                  <kbd class="rounded bg-muted px-2 py-1 text-xs">P</kbd>
+                  <Banknote class="size-4 text-muted-foreground" />
                 </div>
                 <div
                   class="flex items-center justify-between rounded-xl border border-border/60 bg-background/60 px-4 py-3 text-sm"
                 >
                   <span>Export summary</span>
-                  <kbd class="rounded bg-muted px-2 py-1 text-xs">E</kbd>
+                  <Download class="size-4 text-muted-foreground" />
                 </div>
               </div>
               <p class="mt-6 text-xs text-muted-foreground">
-                Automate routine billing work with quick, repeatable steps.
+                Start a billing cycle, log a payment, or export your data — all from the dashboard.
               </p>
             </div>
           </div>
