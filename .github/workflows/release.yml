@@ -13,7 +13,6 @@ jobs:
     permissions:
       contents: write
       issues: write
-      pull-requests: write
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,54 +25,3 @@ jobs:
           node-version: 24.x
           cache: "pnpm"
       - run: pnpm dlx semantic-release
-      - name: Sync package.json version to released tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-        run: |
-          version="$(git describe --tags --abbrev=0 --match 'v*')"
-          version="${version#v}"
-          # Compare against the COMMITTED manifest, not the workspace file:
-          # @semantic-release/npm's prepare already rewrote the workspace
-          # package.json to the new version (npm version --no-git-tag-version),
-          # so reading it would always look "in sync" and never commit the bump.
-          current="$(git show HEAD:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")"
-          if [ "$current" = "$version" ]; then
-            echo "package.json already at ${version} in HEAD — nothing to sync"
-            exit 0
-          fi
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.argv[1];fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')" "$version"
-          git add package.json
-          git commit -m "chore(release): sync package.json to v${version} [skip ci]"
-          # main is branch-protected (PR-only, no bot bypass) — sync through a
-          # squash-merged PR instead of pushing directly. The squashed commit
-          # keeps this title, whose [skip ci] prevents re-triggering this
-          # workflow. If a human merge lands between PR create and merge, the
-          # merge may conflict: the step fails and the PR stays open.
-          url="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          branch="release/sync-v${version}"
-          git push "${url}" "HEAD:refs/heads/${branch}"
-          pr_number="$(gh pr create --base main --head "${branch}" \
-            --title "chore(release): sync package.json to v${version} [skip ci]" \
-            --body "Automated manifest sync to the released ${version}." \
-            --json number -q .number)"
-          gh pr merge "${pr_number}" --squash --delete-branch
-          # semantic-release tags the pre-bump commit, so the tag's tree would
-          # carry the stale manifest. Point the tag at the merged sync commit
-          # so a checkout of the tag sees the released version.
-          merged_sha=""
-          for i in 1 2 3 4 5; do
-            merged_sha="$(gh pr view "${pr_number}" --json mergeCommit -q .mergeCommit.oid)"
-            [ -n "${merged_sha}" ] && break
-            sleep 3
-          done
-          if [ -n "${merged_sha}" ]; then
-            git fetch "${url}" main
-            git tag -f "v${version}" "${merged_sha}"
-            git push --force "${url}" "refs/tags/v${version}"
-          else
-            echo "warning: sync PR merged but mergeCommit not readable — tag repoint skipped"
-          fi
