@@ -809,27 +809,52 @@ export async function updateBillingInfoLogic(
 
     for (const subData of subMetersData) {
       if (subData.id) {
-        if (!subData.paymentId) {
-          throw error(400, `Sub meter "${subData.tenantName}" missing linked payment`);
-        }
-        // update existing
-        batchQueries.push(
-          database
-            .update(tenantReading)
-            .set({
-              reading: subData.reading,
-              subkWh: subData.subkWh,
-              status: subData.status,
-            })
-            .where(eq(tenantReading.id, subData.id))
-        );
+        const existing = existingSubMeters.find((m) => m.id === subData.id);
+        if (existing?.paymentId) {
+          // Already materialized (tenant submitted or a previous edit) — update
+          // the reading and its linked payment.
+          batchQueries.push(
+            database
+              .update(tenantReading)
+              .set({
+                reading: subData.reading,
+                subkWh: subData.subkWh,
+                status: subData.status,
+              })
+              .where(eq(tenantReading.id, subData.id))
+          );
 
-        batchQueries.push(
-          database
-            .update(payment)
-            .set({ amount: subData.paymentAmount })
-            .where(eq(payment.id, subData.paymentId))
-        );
+          batchQueries.push(
+            database
+              .update(payment)
+              .set({ amount: subData.paymentAmount })
+              .where(eq(payment.id, existing.paymentId))
+          );
+        } else {
+          // Pending row (tenant has not submitted yet) — the owner is setting
+          // the reading, so materialize the usage and payment now.
+          const newPaymentId = crypto.randomUUID();
+
+          batchQueries.push(
+            database.insert(payment).values({
+              id: newPaymentId,
+              date: new Date(),
+              amount: subData.paymentAmount,
+            })
+          );
+
+          batchQueries.push(
+            database
+              .update(tenantReading)
+              .set({
+                reading: subData.reading,
+                subkWh: subData.subkWh,
+                paymentId: newPaymentId,
+                status: subData.status,
+              })
+              .where(eq(tenantReading.id, subData.id))
+          );
+        }
       } else {
         // add new
         const newPaymentId = crypto.randomUUID();
@@ -857,9 +882,7 @@ export async function updateBillingInfoLogic(
     }
   }
 
-  if (!billingInfoWithSubMetersToUpdate.paymentId) {
-    throw error(400, "Billing info missing payment ID");
-  }
+  const existingMainPaymentId = billingInfoWithSubMetersToUpdate.paymentId;
 
   const totalSubPayment = subMetersHaveChanges
     ? subMetersData.reduce((sum, sub) => sum + sub.paymentAmount, 0)
@@ -868,20 +891,24 @@ export async function updateBillingInfoLogic(
         0
       );
 
-  const updatedBalance = updateData.balance ?? billingInfoWithSubMetersToUpdate.balance ?? 0;
-  const mainPaymentAmount = updatedBalance - totalSubPayment;
-  if (mainPaymentAmount < 0) {
-    throw error(400, "Main payment amount cannot be negative");
-  }
+  // Pending (unfinalized) billings have no main payment yet — leave it null
+  // and auto-finalize below once every tenant reading is in.
+  if (existingMainPaymentId) {
+    const updatedBalance = updateData.balance ?? billingInfoWithSubMetersToUpdate.balance ?? 0;
+    const mainPaymentAmount = updatedBalance - totalSubPayment;
+    if (mainPaymentAmount < 0) {
+      throw error(400, "Main payment amount cannot be negative");
+    }
 
-  batchQueries.push(
-    database
-      .update(payment)
-      .set({
-        amount: mainPaymentAmount,
-      })
-      .where(eq(payment.id, billingInfoWithSubMetersToUpdate.paymentId))
-  );
+    batchQueries.push(
+      database
+        .update(payment)
+        .set({
+          amount: mainPaymentAmount,
+        })
+        .where(eq(payment.id, existingMainPaymentId))
+    );
+  }
 
   const batchPayload = asNonEmptyBatch(batchQueries);
   if (!batchPayload) {
@@ -897,6 +924,12 @@ export async function updateBillingInfoLogic(
 
   if (billingInfoResultIndex !== null && !updatedBillingInfo) {
     throw error(400, "Failed to update billing info");
+  }
+
+  // A pending billing with all readings now filled (owner set them, or tenants
+  // submitted earlier) is complete — materialize the main payment + mark paid.
+  if (!existingMainPaymentId && subMeters && subMeters.length > 0) {
+    return finalizeBillingInfoLogic(billingInfoId, userId);
   }
 
   return updatedBillingInfo;
@@ -952,8 +985,7 @@ export async function finalizeBillingInfoLogic(
   // pending rows (reading set, no payment yet) get payments created here.
   const existingSubPayment = allRows.reduce((sum, s) => sum + (s.payment?.amount ?? 0), 0);
   const rows = allRows.filter(
-    (s): s is TenantReadingDTO & { reading: number } =>
-      s.reading != null && s.paymentId == null
+    (s): s is TenantReadingDTO & { reading: number } => s.reading != null && s.paymentId == null
   );
   if (rows.length === 0 && existingSubPayment === 0) {
     throw error(400, "No tenant readings to finalize");
@@ -973,8 +1005,7 @@ export async function finalizeBillingInfoLogic(
   const newSubPayment = [...usages.values()].reduce((sum, u) => sum + u.payment, 0);
   const totalSubPayment = existingSubPayment + newSubPayment;
   const existingSubkWh = allRows.reduce((sum, s) => sum + (s.subkWh ?? 0), 0);
-  const totalSubkWh =
-    existingSubkWh + [...usages.values()].reduce((sum, u) => sum + u.usage, 0);
+  const totalSubkWh = existingSubkWh + [...usages.values()].reduce((sum, u) => sum + u.usage, 0);
 
   const mainUsage = totalkWh - totalSubkWh;
   const mainPaymentAmount = Number((balance - totalSubPayment).toFixed(2));

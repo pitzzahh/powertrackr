@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   createBillingInfoLogic,
+  updateBillingInfoLogic,
   finalizeBillingInfoLogic,
   getBillingInfoBy,
 } from "$/server/crud/billing-info-crud";
@@ -189,9 +190,8 @@ describe("pending billings", () => {
     );
 
     const billingRows =
-      (
-        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
-      ).value[0].subMeters ?? [];
+      (await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } }))
+        .value[0].subMeters ?? [];
     const lolaRow = billingRows.find((s) => s.tenantUserId === tenant.id)!;
     const lolaPaymentId = crypto.randomUUID();
     await db().batch([
@@ -229,6 +229,68 @@ describe("pending billings", () => {
     // Main = balance - (150 + 150) = 1700
     expect(billing.payment?.amount).toBeCloseTo(1700, 2);
     expect(finalized.paymentId).not.toBeNull();
+  });
+
+  it("lets the owner fill pending readings via update and auto-finalizes", async () => {
+    const { owner, tenant } = await seedOwnerWithTenant();
+
+    // Period A: billed baseline 100
+    await createBillingInfoLogic(
+      {
+        date: "2026-08-01",
+        totalkWh: 1000,
+        balance: 1000,
+        status: "pending",
+        subMeters: [{ tenantUserId: tenant.id, reading: 100, status: "pending" }],
+      },
+      owner.id
+    );
+
+    // Period B: pending, waiting for the reading
+    const billingB = await createBillingInfoLogic(
+      {
+        date: "2026-09-01",
+        totalkWh: 1200,
+        balance: 1200,
+        status: "pending",
+        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+      },
+      owner.id
+    );
+
+    const billingRows =
+      (
+        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
+      ).value[0].subMeters ?? [];
+    const row = billingRows[0]!;
+
+    // Owner sets the reading instead of waiting for the tenant
+    const updated = await updateBillingInfoLogic(
+      {
+        id: billingB.id,
+        date: "2026-09-01",
+        totalkWh: 1200,
+        balance: 1200,
+        status: "pending",
+        subMeters: [{ id: row.id, tenantUserId: tenant.id, reading: 300, status: "pending" }],
+      },
+      owner.id
+    );
+
+    // All readings in -> auto-finalized: main payment created, marked paid
+    expect(updated.paymentId).not.toBeNull();
+    expect(updated.status).toBe("paid");
+
+    const {
+      value: [billing],
+    } = await getBillingInfoBy({
+      query: { id: billingB.id },
+      options: { with_payment: true, with_sub_meters_with_payment: true },
+    });
+    expect(billing.subMeters?.[0]?.reading).toBe(300);
+    expect(billing.subMeters?.[0]?.subkWh).toBe(200);
+    expect(billing.subMeters?.[0]?.payment?.amount).toBeCloseTo(200, 2);
+    expect(billing.payment?.amount).toBeCloseTo(1000, 2);
   });
 
   it("rejects finalizing an already finalized billing", async () => {

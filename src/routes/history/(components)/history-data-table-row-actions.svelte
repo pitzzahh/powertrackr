@@ -175,18 +175,17 @@
         <Check />
       {/if}
     </Button>
-  {:else}
-    <Button
-      size="icon"
-      variant="outline"
-      title="Edit Billing Info Details"
-      onclick={() => {
-        open_edit = true;
-      }}
-    >
-      <Pencil />
-    </Button>
   {/if}
+  <Button
+    size="icon"
+    variant="outline"
+    title="Edit Billing Info Details"
+    onclick={() => {
+      open_edit = true;
+    }}
+  >
+    <Pencil />
+  </Button>
 
   <Button
     size="icon"
