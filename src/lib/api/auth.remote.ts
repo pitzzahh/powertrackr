@@ -96,8 +96,6 @@ export const login = form(loginSchema, async (user, issues) => {
   if (email === "" || password === "") {
     error(400, "Please enter your email and password.");
   }
-  console.log(user);
-
   const valid = await verifyTurnstileToken(
     user.turnstileToken,
     env.TURNSTILE_SECRET!,
