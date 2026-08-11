@@ -61,7 +61,9 @@
   <div class="flex items-center justify-between">
     <div class="space-y-2">
       <h1 class="text-3xl font-bold tracking-tight">My Meter</h1>
-      <p class="text-muted-foreground">Submit your reading when the owner opens a billing period.</p>
+      <p class="text-muted-foreground">
+        Submit your reading when the owner opens a billing period.
+      </p>
     </div>
   </div>
 
@@ -136,8 +138,8 @@
                     bind:value={editReading}
                   />
                   <Field.Description>
-                    Fix a typo or a reading you forgot. Cannot go below your last billed reading
-                    ({meter.lastBilledReading ?? 0}).
+                    Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
+                      0}).
                   </Field.Description>
                   <Field.Error errors={editSubmissionForm.fields.reading.issues()} />
                 </Field.Field>
@@ -235,7 +237,9 @@
         </Card.Content>
       </Card.Root>
     {:else}
-      <div class="flex items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+      <div
+        class="flex items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground"
+      >
         No pending billing requests — you'll see submit options here when the owner opens a billing
         period for you.
       </div>
