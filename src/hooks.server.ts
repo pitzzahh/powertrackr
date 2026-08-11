@@ -61,6 +61,15 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     redirect(303, "/auth?act=2fa-checkpoint");
   }
 
+  // Tenant accounts only ever see the tenant area
+  if (
+    event.locals.user.ownerId &&
+    !event.url.pathname.startsWith("/tenant") &&
+    !isPublicPathname(event.url.pathname)
+  ) {
+    redirect(307, "/tenant");
+  }
+
   return resolve(event);
 };
 

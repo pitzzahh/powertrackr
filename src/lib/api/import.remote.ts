@@ -1,29 +1,26 @@
-import { query, form } from "$app/server";
+import { form } from "$app/server";
 import * as v from "valibot";
-import { billFormSchema } from "$/validators/billing-info";
+import { importBillFormSchema } from "$/validators/import";
 import { requireAuth } from "$/server/auth";
 import { error, invalid } from "@sveltejs/kit";
-import { createBillingInfoLogic } from "$/server/crud/billing-info-crud";
-import { importBillingHandler } from "$/server/data-import";
-import { getExtendedBillingInfos } from "./billing-info.remote";
+import { importBillingHandler, type ImportBillingItem } from "$/server/data-import";
+import { refreshBillingData } from "./billing-refresh";
 
 /**
  * Remote form that performs the billing import.
- * Accepts an array where each entry follows the `billFormSchema`.
+ * Accepts an array where each entry is a billing item with label-based sub-meters.
  */
-const importBillingSchema = v.object({ items: v.array(billFormSchema) });
+const importBillingSchema = v.object({ items: v.array(importBillFormSchema) });
 
 export const importBilling = form(importBillingSchema, async (payload) => {
   const {
     session: { userId },
   } = requireAuth();
 
-  const items = payload.items as Parameters<typeof createBillingInfoLogic>[0][];
-
   try {
-    const created = await importBillingHandler(items, userId);
-    getExtendedBillingInfos({ userId }).refresh();
-    return created;
+    const result = await importBillingHandler(payload.items as ImportBillingItem[], userId);
+    refreshBillingData();
+    return result;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     throw error(400, msg || "Failed to import billing data");
@@ -34,8 +31,7 @@ export const importBilling = form(importBillingSchema, async (payload) => {
  * Remote form that accepts a single file upload (multipart/form-data).
  * The uploaded file must be JSON containing an array of billing items (or an
  * object with an `items` array). The file is parsed and validated strictly
- * against `billFormSchema` before being imported atomically via
- * `importBillingHandler`.
+ * before being imported atomically via `importBillingHandler`.
  */
 const importBillingFileSchema = v.object({ file: v.file() });
 
@@ -53,12 +49,12 @@ export const importBillingFile = form(importBillingFileSchema, async (payload, i
 
   let text: string;
   try {
-    text = await (file as File).text();
+    text = await file.text();
   } catch {
     return invalid(issues.file("Failed to read uploaded file"));
   }
 
-  let parsed: any;
+  let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
@@ -66,11 +62,15 @@ export const importBillingFile = form(importBillingFileSchema, async (payload, i
   }
 
   // Accept either an array or an object with an `items` array
-  let items: any[] = [];
+  let items: unknown[] = [];
   if (Array.isArray(parsed)) {
     items = parsed;
-  } else if (parsed && Array.isArray(parsed.items)) {
-    items = parsed.items;
+  } else if (
+    parsed &&
+    typeof parsed === "object" &&
+    Array.isArray((parsed as { items?: unknown[] }).items)
+  ) {
+    items = (parsed as { items: unknown[] }).items;
   } else {
     return invalid(
       issues.file("JSON must be an array of billing items or an object with an `items` array")
@@ -78,21 +78,13 @@ export const importBillingFile = form(importBillingFileSchema, async (payload, i
   }
 
   try {
-    // Strict validation against the billing item schema
-    const validated = v.parse(v.array(billFormSchema), items);
-    const created = await importBillingHandler(validated, userId);
-    getExtendedBillingInfos({ userId }).refresh();
-    return created;
+    const validated = v.parse(v.array(importBillFormSchema), items);
+    const result = await importBillingHandler(validated as ImportBillingItem[], userId);
+    refreshBillingData();
+    return result;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     // Surface validation/domain errors as a file-level issue where possible
     return invalid(issues.file(msg || "Failed to import billing data"));
   }
-});
-
-/**
- * Lightweight preview endpoint that summarizes a batch import (just returns count).
- */
-export const summarizeImport = query(importBillingSchema, async (payload) => {
-  return { billingInfos: (payload.items ?? []).length };
 });

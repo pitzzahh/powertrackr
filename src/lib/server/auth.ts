@@ -66,6 +66,7 @@ export async function validateSessionToken(token: string) {
         emailVerified: user.emailVerified,
         registeredTwoFactor: user.registeredTwoFactor,
         githubId: user.githubId,
+        ownerId: user.ownerId,
       },
       session: session,
     })
