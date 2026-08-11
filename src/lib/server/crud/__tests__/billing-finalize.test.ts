@@ -3,6 +3,7 @@ import {
   createBillingInfoLogic,
   updateBillingInfoLogic,
   finalizeBillingInfoLogic,
+  getLastTenantReading,
   getBillingInfoBy,
 } from "$/server/crud/billing-info-crud";
 import { db } from "$/server/db";
@@ -290,6 +291,66 @@ describe("pending billings", () => {
     expect(billing.subMeters?.[0]?.subkWh).toBe(200);
     expect(billing.subMeters?.[0]?.payment?.amount).toBeCloseTo(200, 2);
     expect(billing.payment?.amount).toBeCloseTo(1000, 2);
+  });
+
+  it("does not finalize a shared pending billing until every tenant submits", async () => {
+    const { owner, tenant } = await seedOwnerWithTenant();
+    const {
+      value: [tenant2],
+    } = await addUser([createTenantUser(owner.id, { name: "Mia" })]);
+
+    await createBillingInfoLogic(
+      {
+        date: "2026-08-01",
+        totalkWh: 1000,
+        balance: 1000,
+        status: "pending",
+        subMeters: [
+          { tenantUserId: tenant.id, reading: 100, status: "pending" },
+          { tenantUserId: tenant2.id, reading: 200, status: "pending" },
+        ],
+      },
+      owner.id
+    );
+
+    const billingB = await createBillingInfoLogic(
+      {
+        date: "2026-09-01",
+        totalkWh: 2000,
+        balance: 2000,
+        status: "pending",
+        subMeters: [
+          { tenantUserId: tenant.id, reading: null, status: "pending" },
+          { tenantUserId: tenant2.id, reading: null, status: "pending" },
+        ],
+      },
+      owner.id
+    );
+
+    // Tenant A submits (simulated: reading + payment materialized on A's row only)
+    const aRow = (
+      (
+        await getBillingInfoBy({ query: { id: billingB.id }, options: { with_sub_meters: true } })
+      ).value[0].subMeters ?? []
+    ).find((s) => s.tenantUserId === tenant.id)!;
+    await db()
+      .update(tenantReading)
+      .set({ reading: 250, subkWh: 150 })
+      .where(eq(tenantReading.id, aRow.id));
+
+    // A's submission must NOT touch B's row, B's baseline, or finalize the billing
+    const {
+      value: [afterA],
+    } = await getBillingInfoBy({
+      query: { id: billingB.id },
+      options: { with_sub_meters: true },
+    });
+    const bRow = afterA.subMeters?.find((s) => s.tenantUserId === tenant2.id);
+    expect(bRow?.reading).toBeNull();
+    expect(bRow?.subkWh).toBeNull();
+    expect(afterA.paymentId).toBeNull();
+    // B's baseline is still the period-A reading
+    expect(await getLastTenantReading(owner.id, tenant2.id, new Date("2026-10-01"))).toBe(200);
   });
 
   it("rejects finalizing an already finalized billing", async () => {

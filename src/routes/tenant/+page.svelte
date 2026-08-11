@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import * as Field from "$/components/ui/field";
   import { Button } from "$/components/ui/button";
   import { Input } from "$/components/ui/input";
@@ -11,15 +10,22 @@
     updateSubmission,
     getPendingBillings,
   } from "$/api/tenant.remote";
-  import type { MyMeter, PendingBilling } from "$/types/tenant";
   import { formatDate } from "$/utils/format";
   import { showSuccess, showWarning } from "$/components/toast";
   import { isHttpError } from "@sveltejs/kit";
-  import type { AsyncState } from "$/types/state";
 
-  let meter = $state<MyMeter | null>(null);
-  let pendingBillings = $state<PendingBilling[]>([]);
-  let status = $state<AsyncState>("idle");
+  // Queries drive the page reactively: `.loading`, `.error`, `.current`.
+  // Submitting a reading refreshes them server-side (single-flight), so
+  // `current` updates without any manual re-fetch.
+  const myMeterQuery = getMyMeter({});
+  const pendingBillingsQuery = getPendingBillings({});
+
+  // Isolated remote-form instances: without `for()`, every form sharing
+  // `submitReading` would attach to one `<form>` only (the second attach
+  // throws) and read/write a shared field/issue state.
+  const mainSubmitForm = submitReading.for("tenant-main");
+  const editSubmissionForm = updateSubmission.for("tenant-edit");
+
   let reading = $state(0);
   let submitting = $state(false);
   let readingByBilling = $state<Record<string, number>>({});
@@ -28,35 +34,37 @@
   let editReading = $state(0);
   let saving = $state(false);
 
-  async function refresh() {
-    try {
-      const [meterResult, pendingResult] = await Promise.all([
-        getMyMeter({}),
-        getPendingBillings({}),
-      ]);
-      meter = meterResult as MyMeter;
-      pendingBillings = (pendingResult as PendingBilling[]) ?? [];
-      reading = meter?.latestSubmission?.reading ?? meter?.lastBilledReading ?? 0;
-      editReading = meter?.latestSubmission?.reading ?? 0;
-      const defaults: Record<string, number> = {};
-      for (const p of pendingBillings) {
-        defaults[p.billingInfoId] = p.lastBilledReading ?? 0;
-      }
-      readingByBilling = defaults;
-      status = "success";
-    } catch (err) {
-      console.error(err);
-      status = "error";
-    }
-  }
+  // Keep input defaults in sync with the latest data. Sync once on first load
+  // (never clobber what the user typed after a refresh) and only add defaults
+  // for newly-appeared pending billings.
+  let defaultsSynced = false;
 
-  onMount(() => {
-    status = "loading_data";
-    refresh();
+  $effect(() => {
+    if (defaultsSynced) return;
+    const meter = myMeterQuery.current;
+    if (meter) {
+      reading = meter.latestSubmission?.reading ?? meter.lastBilledReading ?? 0;
+      editReading = meter.latestSubmission?.reading ?? 0;
+      defaultsSynced = true;
+    }
+  });
+
+  $effect(() => {
+    const merged = { ...readingByBilling };
+    let changed = false;
+    for (const p of pendingBillingsQuery.current ?? []) {
+      if (merged[p.billingInfoId] === undefined) {
+        merged[p.billingInfoId] = p.lastBilledReading ?? 0;
+        changed = true;
+      }
+    }
+    if (changed) {
+      readingByBilling = merged;
+    }
   });
 
   function startEdit() {
-    editReading = meter?.latestSubmission?.reading ?? 0;
+    editReading = myMeterQuery.current?.latestSubmission?.reading ?? 0;
     editing = true;
   }
 </script>
@@ -69,13 +77,12 @@
     </div>
   </div>
 
-  {#if status === "loading_data"}
-    <div class="flex items-center justify-center text-muted-foreground">Loading…</div>
-  {:else if status === "error"}
+  {#if myMeterQuery.error}
     <div class="flex items-center justify-center text-muted-foreground">
       Failed to load your meter
     </div>
-  {:else if meter}
+  {:else if myMeterQuery.current}
+    {@const meter = myMeterQuery.current}
     <Card.Root>
       <Card.Header class="border-b">
         <Card.Title class="flex items-center gap-2 text-sm">
@@ -85,17 +92,16 @@
       </Card.Header>
       <Card.Content class="space-y-6 pt-4">
         <form
-          {...submitReading.enhance(async ({ submit }) => {
+          {...mainSubmitForm.enhance(async ({ submit, fields }) => {
             if (submitting) return;
             submitting = true;
             try {
               await submit();
-              const issues = submitReading.fields.allIssues?.() || [];
+              const issues = fields.allIssues?.() || [];
               if (issues.length > 0) {
                 showWarning(issues.map((i) => i.message).join(", "));
               } else {
                 showSuccess("Reading submitted");
-                await refresh();
               }
             } catch (e) {
               const message = isHttpError(e) ? e.body.message : String(e);
@@ -113,7 +119,7 @@
               min={meter.lastBilledReading ?? 0}
               step={1}
               required
-              {...submitReading.fields.reading.as("number")}
+              {...mainSubmitForm.fields.reading.as("number")}
               bind:value={reading}
             />
             <Field.Description>
@@ -123,7 +129,7 @@
                 {formatDate(meter.latestSubmission.createdAt)})
               {/if}
             </Field.Description>
-            <Field.Error errors={submitReading.fields.reading.issues()} />
+            <Field.Error errors={mainSubmitForm.fields.reading.issues()} />
           </Field.Field>
           <div class="flex justify-end">
             <Button type="submit" disabled={submitting}>
@@ -156,18 +162,17 @@
 
             {#if editing}
               <form
-                {...updateSubmission.enhance(async ({ submit }) => {
+                {...editSubmissionForm.enhance(async ({ submit, fields }) => {
                   if (saving) return;
                   saving = true;
                   try {
                     await submit();
-                    const issues = updateSubmission.fields.allIssues?.() || [];
+                    const issues = fields.allIssues?.() || [];
                     if (issues.length > 0) {
                       showWarning(issues.map((i) => i.message).join(", "));
                     } else {
                       editing = false;
                       showSuccess("Submission updated");
-                      await refresh();
                     }
                   } catch (e) {
                     const message = isHttpError(e) ? e.body.message : String(e);
@@ -185,14 +190,14 @@
                     min={meter.lastBilledReading ?? 0}
                     step={1}
                     required
-                    {...updateSubmission.fields.reading.as("number")}
+                    {...editSubmissionForm.fields.reading.as("number")}
                     bind:value={editReading}
                   />
                   <Field.Description>
-                    Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
-                      0}).
+                    Fix a typo or a reading you forgot. Cannot go below your last billed reading
+                    ({meter.lastBilledReading ?? 0}).
                   </Field.Description>
-                  <Field.Error errors={updateSubmission.fields.reading.issues()} />
+                  <Field.Error errors={editSubmissionForm.fields.reading.issues()} />
                 </Field.Field>
                 <div class="flex justify-end gap-2">
                   <Button
@@ -219,7 +224,7 @@
       </Card.Content>
     </Card.Root>
 
-    {#if pendingBillings.length > 0}
+    {#if (pendingBillingsQuery.current ?? []).length > 0}
       <Card.Root>
         <Card.Header class="border-b">
           <Card.Title class="text-sm">Billings awaiting your reading</Card.Title>
@@ -229,24 +234,24 @@
           </Card.Description>
         </Card.Header>
         <Card.Content class="space-y-4 pt-4">
-          {#each pendingBillings as pb (pb.billingInfoId)}
+          {#each pendingBillingsQuery.current ?? [] as pb (pb.billingInfoId)}
+            {@const pendingForm = submitReading.for("tenant-pending-" + pb.billingInfoId)}
             <div class="rounded-lg border p-4">
               <p class="text-sm font-medium">Billing period: {formatDate(pb.date)}</p>
               <p class="text-xs text-muted-foreground">
                 Last billed reading: {pb.lastBilledReading ?? "—"}
               </p>
               <form
-                {...submitReading.enhance(async ({ submit }) => {
+                {...pendingForm.enhance(async ({ submit, fields }) => {
                   if (submittingBilling[pb.billingInfoId]) return;
                   submittingBilling = { ...submittingBilling, [pb.billingInfoId]: true };
                   try {
                     await submit();
-                    const issues = submitReading.fields.allIssues?.() || [];
+                    const issues = fields.allIssues?.() || [];
                     if (issues.length > 0) {
                       showWarning(issues.map((i) => i.message).join(", "));
                     } else {
                       showSuccess("Reading submitted for this billing");
-                      await refresh();
                     }
                   } catch (e) {
                     const message = isHttpError(e) ? e.body.message : String(e);
@@ -259,7 +264,7 @@
               >
                 <input
                   type="hidden"
-                  {...submitReading.fields.billingInfoId.as("text")}
+                  {...pendingForm.fields.billingInfoId.as("text")}
                   value={pb.billingInfoId}
                 />
                 <Field.Field>
@@ -267,10 +272,10 @@
                     min={pb.lastBilledReading ?? 0}
                     step={1}
                     required
-                    {...submitReading.fields.reading.as("number")}
+                    {...pendingForm.fields.reading.as("number")}
                     bind:value={readingByBilling[pb.billingInfoId]}
                   />
-                  <Field.Error errors={submitReading.fields.reading.issues()} />
+                  <Field.Error errors={pendingForm.fields.reading.issues()} />
                 </Field.Field>
                 <div class="flex justify-end">
                   <Button type="submit" size="sm" disabled={submittingBilling[pb.billingInfoId]}>
@@ -288,5 +293,7 @@
         </Card.Content>
       </Card.Root>
     {/if}
+  {:else}
+    <div class="flex items-center justify-center text-muted-foreground">Loading…</div>
   {/if}
 </div>
