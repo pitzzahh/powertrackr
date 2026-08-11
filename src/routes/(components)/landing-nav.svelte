@@ -15,9 +15,7 @@
   let { user, session }: LandingNavProps = $props();
 
   const isMobile = new IsMobile();
-  let scrollY = $state(0);
   let isOnline = $derived(true);
-  const isFloating = $derived(scrollY > 50);
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -29,25 +27,12 @@
   });
 </script>
 
-<svelte:window bind:scrollY bind:online={isOnline} />
+<svelte:window bind:online={isOnline} />
 
 <div class="h-18">
-  <header
-    class="fixed inset-x-0 z-50 transition-all duration-300 ease-out"
-    style:top={isFloating ? "0.75rem" : "0"}
-    style:padding-left={isFloating ? "0.4rem" : "0"}
-    style:padding-right={isFloating ? "0.4rem" : "0"}
-  >
+  <header class="fixed inset-x-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-lg">
     <div
-      class={[
-        "relative mx-auto grid w-full items-center gap-4 border-border/50 bg-background/70 px-4 backdrop-blur-lg transition-all duration-300 ease-out md:grid-cols-[auto_1fr_auto]",
-        isFloating ? "border shadow-lg shadow-black/10" : "border-b",
-      ]}
-      style:max-width={isFloating ? "96%" : "100%"}
-      style:border-radius={isFloating ? "1rem" : "0"}
-      style:padding-top={isFloating ? "0.4rem" : "0.9rem"}
-      style:padding-bottom={isFloating ? "0.4rem" : "0.9rem"}
-      style:box-shadow={isFloating ? "0 12px 28px -16px rgb(0 0 0 / 0.35)" : "none"}
+      class="relative mx-auto grid w-full items-center gap-4 px-4 py-3.5 md:grid-cols-[auto_1fr_auto]"
     >
       <div class="flex w-full items-center justify-center gap-3 md:w-auto md:justify-start">
         <Logo variant="ghost" class="w-auto px-0 md:pl-0!" viewTransitionName="logo" />
