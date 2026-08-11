@@ -27,9 +27,13 @@ jobs:
         run: |
           version="$(git describe --tags --abbrev=0 --match 'v*')"
           version="${version#v}"
-          current="$(node -p "require('./package.json').version")"
+          # Compare against the COMMITTED manifest, not the workspace file:
+          # @semantic-release/npm's prepare already rewrote the workspace
+          # package.json to the new version (npm version --no-git-tag-version),
+          # so reading it would always look "in sync" and never commit the bump.
+          current="$(git show HEAD:package.json | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")"
           if [ "$current" = "$version" ]; then
-            echo "package.json already at ${version} — nothing to sync"
+            echo "package.json already at ${version} in HEAD — nothing to sync"
             exit 0
           fi
           node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.argv[1];fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')" "$version"
