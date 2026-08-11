@@ -13,7 +13,7 @@
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
       data: () => BillingInfoDTOWithSubMeters | null;
-      onclick?: (userId: string) => void;
+      onclick?: (userId: string) => void | Promise<void>;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
   };
@@ -105,12 +105,17 @@
             {#if quickAction.visible}
               {@const Icon = quickAction.icon}
               <Sheet.Root bind:open={quickAction.open}>
-                <Sheet.Trigger
+                <Button
                   class={buttonVariants()}
-                  onclick={() => {
+                  aria-haspopup="dialog"
+                  aria-expanded={quickAction.open}
+                  onclick={async () => {
+                    // Refresh the prefill data first so the form initializes
+                    // from the latest record in a single pass (no stale flash).
                     if (quickAction.onclick) {
-                      quickAction.onclick(user?.id || "");
+                      await quickAction.onclick(user?.id || "");
                     }
+                    quickAction.open = true;
                   }}
                 >
                   <Icon class="size-4" />
@@ -118,7 +123,7 @@
                   <span class="sr-only">
                     {quickAction.label}
                   </span>
-                </Sheet.Trigger>
+                </Button>
                 <Sheet.Portal>
                   <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
                     <Sheet.Header class="flex flex-row items-center justify-between border-b pr-10">

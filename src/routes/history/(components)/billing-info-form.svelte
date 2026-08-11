@@ -81,7 +81,7 @@
   import * as v from "valibot";
   import { billFormSchema } from "$/validators/billing-info";
   import { toast } from "svelte-sonner";
-  import { onMount } from "svelte";
+  import { watch } from "runed";
   import { showInspectorWarning, showLoading } from "$/components/toast";
   import Separator from "$/components/ui/separator/separator.svelte";
   import { sineInOut } from "svelte/easing";
@@ -433,10 +433,11 @@
       });
   }
 
-  onMount(initialize);
-
-  $effect(() => {
-    if (open) {
+  // Re-initialize whenever the form opens, so a reopen after a successful add
+  // prefills from the latest record instead of stale state. `watch` runs the
+  // callback untracked, so only `open` changes trigger it — one init per open.
+  watch(() => open, (isOpen) => {
+    if (isOpen) {
       initialize();
     }
   });
