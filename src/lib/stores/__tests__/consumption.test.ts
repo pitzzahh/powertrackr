@@ -30,14 +30,14 @@ describe("computeConsumptionSummary", () => {
         date: "2024-02-10",
         totalkWh: 50,
         subMeters: [
-          { id: "a", label: "A", subkWh: 10, reading: 110 },
-          { id: "b", label: "B", subkWh: 15, reading: 105 },
+          { id: "a", tenantName: "A", subkWh: 10, reading: 110 },
+          { id: "b", tenantName: "B", subkWh: 15, reading: 105 },
         ],
       },
       {
         date: "2024-01-10",
         totalkWh: 40,
-        subMeters: [{ id: "a", label: "A", subkWh: 12, reading: 100 }],
+        subMeters: [{ id: "a", tenantName: "A", subkWh: 12, reading: 100 }],
       },
     ] as any;
 
@@ -49,17 +49,17 @@ describe("computeConsumptionSummary", () => {
     expect(summary.latestReading).toBe(50);
   });
 
-  it("counts unique sub-meters across entries (dedupes by id/label)", () => {
+  it("counts unique sub-meters across entries (dedupes by id/tenantName)", () => {
     const infos = [
       {
         date: "2024-02-10",
         totalkWh: 10,
-        subMeters: [{ id: "a", label: "A" }],
+        subMeters: [{ id: "a", tenantName: "A" }],
       },
       {
         date: "2024-01-10",
         totalkWh: 5,
-        subMeters: [{ id: "a", label: "A" }],
+        subMeters: [{ id: "a", tenantName: "A" }],
       },
     ] as any;
 

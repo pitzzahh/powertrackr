@@ -6,7 +6,8 @@ import {
   passwordResetSession,
   payment,
   session,
-  subMeter,
+  tenantReading,
+  readingSubmission,
   user,
 } from "$/server/db/schema";
 import { afterEach, afterAll } from "vitest";
@@ -52,10 +53,11 @@ export async function cleanupTestDatabase() {
   const db = getTestDb();
 
   // Clean up all tables in reverse order of dependencies
+  await db.delete(readingSubmission);
   await db.delete(passwordResetSession);
   await db.delete(emailVerificationRequest);
   await db.delete(session);
-  await db.delete(subMeter);
+  await db.delete(tenantReading);
   await db.delete(billingInfo);
   await db.delete(payment);
   await db.delete(user);

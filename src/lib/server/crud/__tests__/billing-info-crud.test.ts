@@ -12,20 +12,23 @@ import {
   createBillingInfo,
   createBillingInfos,
   createUser,
+  createTenantUser,
   createPayment,
   resetSequence,
-  createSubMeter,
 } from "./helpers/factories";
 import { calculatePayPerKwh } from "$lib";
 import { addUser } from "../user-crud";
 import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
-import { addSubMeter, getSubMeterBy, updateSubMeterBy } from "../sub-meter-crud";
+import {
+  addTenantReading,
+  getTenantReadingBy,
+  updateTenantReadingBy,
+} from "../tenant-reading-crud";
 import { db } from "$/server/db";
-import { billingInfo, payment, subMeter } from "$/server/db/schema";
+import { billingInfo, payment, tenantReading, user } from "$/server/db/schema";
 import type { NewBillingInfo } from "$/types/billing-info";
 import type { HelperParam } from "$/server/types/helper";
-import type { Payment } from "$/types/payment";
-import type { SubMeter } from "$/types/sub-meter";
+import type { NewUser } from "$/types/user";
 import { generateQueryConditions } from "$/server/mapper";
 
 describe("Billing Info CRUD Operations", () => {
@@ -381,15 +384,24 @@ describe("Billing Info CRUD Operations", () => {
         expect(validBilling).toBe(true);
         const billingId = addedBilling.id;
 
-        // Insert sub meters
-        const subMeterData = subMeters.map((s, idx) => ({
+        // Insert tenants + readings (tenants ARE sub-meters)
+        const addedTenants: NewUser[] = [];
+        for (let idx = 0; idx < subMeters.length; idx++) {
+          const {
+            valid,
+            value: [added],
+          } = await addUser([createTenantUser(addedUser.id, { name: `Sub-${idx + 1}` })]);
+          expect(valid).toBe(true);
+          addedTenants.push(added);
+        }
+        const tenantReadingData = subMeters.map((s, idx) => ({
           billingInfoId: billingId,
+          tenantUserId: addedTenants[idx].id,
           subkWh: s.subReadingLatest - s.subReadingOld,
-          label: `Sub-${idx + 1}`,
           reading: s.subReadingLatest,
           paymentId: subPaymentIds[idx],
         }));
-        await addSubMeter(subMeterData);
+        await addTenantReading(tenantReadingData);
 
         // Assertions
         expect(addedUser).toBeDefined();
@@ -403,7 +415,7 @@ describe("Billing Info CRUD Operations", () => {
           .value[0];
         expect(mainPay.amount).toBeCloseTo(expectedMain, 2);
 
-        const subs = await getSubMeterBy({
+        const subs = await getTenantReadingBy({
           query: { billingInfoId: billingId },
           options: { with_payment: true },
         });
@@ -411,13 +423,11 @@ describe("Billing Info CRUD Operations", () => {
         expect(subs.value).toHaveLength(subMeters.length);
 
         for (let i = 0; i < subs.value.length; i++) {
-          const s = subs.value[i] as Partial<SubMeter> & {
-            payment: Record<keyof Payment, unknown>;
-          };
+          const s = subs.value[i];
           if (expectedSubAmounts[i] > 0) {
-            expect(s.payment.amount).toBeCloseTo(expectedSubAmounts[i], 2);
+            expect(s.payment?.amount).toBeCloseTo(expectedSubAmounts[i], 2);
           } else {
-            expect(s.payment).toBeNull();
+            expect(s.payment).toBeUndefined();
           }
         }
       });
@@ -462,7 +472,7 @@ describe("Billing Info CRUD Operations", () => {
         expect(addedBilling).toBeDefined();
         expect(addedMainPayment).toBeDefined();
 
-        const subs = await getSubMeterBy({ query: { billingInfoId: billingId }, options: {} });
+        const subs = await getTenantReadingBy({ query: { billingInfoId: billingId }, options: {} });
         expect(subs.valid).toBe(false);
         expect(subs.value).toHaveLength(0);
 
@@ -519,12 +529,18 @@ describe("Billing Info CRUD Operations", () => {
         expect(addedSubPayment).toBeDefined();
         expect(addedMainPayment).toBeDefined();
 
-        // create sub meter referencing the sub payment
-        const addSub = await addSubMeter([
+        // create tenant + reading referencing the sub payment
+        const {
+          valid: validMeter,
+          value: [addedMeter],
+        } = await addUser([createTenantUser(addedUser.id, { name: "Initial Sub" })]);
+        expect(validMeter).toBe(true);
+
+        const addSub = await addTenantReading([
           {
             billingInfoId: billingId,
+            tenantUserId: addedMeter.id,
             subkWh: initialSubKwh,
-            label: "Initial Sub",
             reading: 1500,
             paymentId: subPaymentId,
           },
@@ -540,7 +556,7 @@ describe("Billing Info CRUD Operations", () => {
           query: { id: subId },
           options: {},
         };
-        const updatedSub = await updateSubMeterBy(updateSubParam, {
+        const updatedSub = await updateTenantReadingBy(updateSubParam, {
           subkWh: newSubKwh,
           reading: 1520,
         });
@@ -556,7 +572,7 @@ describe("Billing Info CRUD Operations", () => {
         expect((updatedPayment.value[0] as any).amount).toBeCloseTo(newAmount, 2);
 
         // Fetch sub with payment and verify
-        const fetched = await getSubMeterBy({
+        const fetched = await getTenantReadingBy({
           query: { id: subId },
           options: { with_payment: true },
         });
@@ -601,15 +617,20 @@ describe("Billing Info CRUD Operations", () => {
         expect(validBilling).toBe(true);
         const billingId = addedBilling.id;
 
-        // create sub payment and sub meter
+        // create sub payment, meter and reading
         const {
           value: [addedSubPayment],
         } = await addPayment([{ amount: Number((10 * payPer).toFixed(2)), date: new Date() }]);
-        const addSub = await addSubMeter([
+        const {
+          valid: validMeter,
+          value: [addedMeter],
+        } = await addUser([createTenantUser(addedUser.id, { name: "Imitate Sub" })]);
+        expect(validMeter).toBe(true);
+        const addSub = await addTenantReading([
           {
             billingInfoId: billingId,
+            tenantUserId: addedMeter.id,
             subkWh: 10,
-            label: "Imitate Sub",
             reading: 1500,
             paymentId: addedSubPayment.id,
           },
@@ -629,7 +650,7 @@ describe("Billing Info CRUD Operations", () => {
         const updateData: Partial<typeof fetchedBilling> = {};
         const providedSubs = existingSubs.map((s) => ({
           id: s.id,
-          label: s.label,
+          tenantUserId: s.tenantUserId,
           reading: s.reading,
         }));
 
@@ -652,7 +673,7 @@ describe("Billing Info CRUD Operations", () => {
             if (!s.id) return true;
             const ex = existing.find((m) => m.id === s.id);
             if (!ex) return true;
-            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+            if (ex.tenantUserId !== s.tenantUserId || ex.reading !== s.reading) return true;
           }
           for (const ex of existing) {
             if (!providedIds.includes(ex.id)) return true;
@@ -709,7 +730,7 @@ describe("Billing Info CRUD Operations", () => {
         const existingSubs = fetchedBilling.subMeters ?? [];
         const providedSubs = existingSubs.map((s) => ({
           id: s.id,
-          label: s.label,
+          tenantUserId: s.tenantUserId,
           reading: s.reading,
         }));
 
@@ -736,7 +757,7 @@ describe("Billing Info CRUD Operations", () => {
             if (!s.id) return true;
             const ex = existing.find((m) => m.id === s.id);
             if (!ex) return true;
-            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+            if (ex.tenantUserId !== s.tenantUserId || ex.reading !== s.reading) return true;
           }
           for (const ex of existing) {
             if (!providedIds.includes(ex.id)) return true;
@@ -791,15 +812,20 @@ describe("Billing Info CRUD Operations", () => {
         });
         expect(fetchedBilling).toBeTruthy();
 
-        // create sub payment and sub meter
+        // create sub payment, meter and reading
         const {
           value: [addedSubPayment],
         } = await addPayment([{ amount: Number((10 * payPer).toFixed(2)), date: new Date() }]);
-        const addSub = await addSubMeter([
+        const {
+          valid: validMeter,
+          value: [addedMeter],
+        } = await addUser([createTenantUser(addedUser.id, { name: "Imitate Sub 2" })]);
+        expect(validMeter).toBe(true);
+        const addSub = await addTenantReading([
           {
             billingInfoId: billingId,
+            tenantUserId: addedMeter.id,
             subkWh: 10,
-            label: "Imitate Sub 2",
             reading: 1500,
             paymentId: addedSubPayment.id,
           },
@@ -815,8 +841,9 @@ describe("Billing Info CRUD Operations", () => {
         const existingSubs = fetchedBillingAfterSub.subMeters ?? [];
         // Modify the first sub-meter reading
         const providedSubs = existingSubs.map((s, idx) => {
-          if (idx === 0) return { id: s.id, label: s.label, reading: s.reading + 10 };
-          return { id: s.id, label: s.label, reading: s.reading };
+          if (idx === 0)
+            return { id: s.id, tenantUserId: s.tenantUserId, reading: (s.reading ?? 0) + 10 };
+          return { id: s.id, tenantUserId: s.tenantUserId, reading: s.reading ?? 0 };
         });
 
         const updateData: Partial<typeof fetchedBillingAfterSub> = {};
@@ -839,7 +866,7 @@ describe("Billing Info CRUD Operations", () => {
             if (!s.id) return true;
             const ex = existing.find((m) => m.id === s.id);
             if (!ex) return true;
-            if (ex.label !== s.label || ex.reading !== s.reading) return true;
+            if (ex.tenantUserId !== s.tenantUserId || ex.reading !== s.reading) return true;
           }
           for (const ex of existing) {
             if (!providedIds.includes(ex.id)) return true;
@@ -1717,28 +1744,26 @@ describe("Billing Info CRUD Operations", () => {
         }),
       ]);
 
-      // Create sub meters for this billing info
-      const subMeterData = [
-        createSubMeter({
-          billingInfoId: addedBilling.id,
-          paymentId: addedPayment.id,
-          subkWh: 25,
-          reading: 1250,
-          label: "Sub Meter A",
-        }),
-        createSubMeter({
-          billingInfoId: addedBilling.id,
-          paymentId: addedPayment.id,
-          subkWh: 30,
-          reading: 1300,
-          label: "Sub Meter B",
-        }),
-      ].map((s) => {
-        const { id: _, ...rest } = s;
-        return rest;
-      });
+      // Create tenants + readings for this billing info (tenants ARE sub-meters)
+      const addedTenants = [];
+      for (const name of ["Sub Meter A", "Sub Meter B"]) {
+        const {
+          valid,
+          value: [added],
+        } = await addUser([createTenantUser(addedUser.id, { name })]);
+        expect(valid).toBe(true);
+        addedTenants.push(added);
+      }
 
-      const { valid: validSubMeters, value: addedSubMeters } = await addSubMeter(subMeterData);
+      const subMeterData = addedTenants.map((m, idx) => ({
+        billingInfoId: addedBilling.id,
+        tenantUserId: m.id,
+        paymentId: addedPayment.id,
+        subkWh: idx === 0 ? 25 : 30,
+        reading: idx === 0 ? 1250 : 1300,
+      }));
+
+      const { valid: validSubMeters, value: addedSubMeters } = await addTenantReading(subMeterData);
 
       expect(validUser).toBe(true);
       expect(validBilling).toBe(true);
@@ -1746,7 +1771,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(addedSubMeters).toHaveLength(2);
 
       // Verify sub meters exist
-      const subMeterCheckBefore = await getSubMeterBy({
+      const subMeterCheckBefore = await getTenantReadingBy({
         query: { billingInfoId: addedBilling.id },
       });
       expect(subMeterCheckBefore.valid).toBe(true);
@@ -1770,7 +1795,7 @@ describe("Billing Info CRUD Operations", () => {
       expect(billingFetchResult.valid).toBe(false);
 
       // Verify sub meters are cascade deleted
-      const subMeterCheckAfter = await getSubMeterBy({
+      const subMeterCheckAfter = await getTenantReadingBy({
         query: { billingInfoId: addedBilling.id },
       });
       expect(subMeterCheckAfter.valid).toBe(false);
@@ -2148,47 +2173,65 @@ describe("Billing Info CRUD Operations", () => {
         const mainPaymentId = crypto.randomUUID();
         const billingInfoId = crypto.randomUUID();
         const subPaymentId = crypto.randomUUID();
+        const tenantId = crypto.randomUUID();
         const subMeterId = crypto.randomUUID();
 
-        const [mainPaymentResult, billingInfoResult, subPaymentResult, subMeterResult] =
-          await database.batch([
-            database
-              .insert(payment)
-              .values({ id: mainPaymentId, amount: 200, date: new Date() })
-              .returning(),
-            database
-              .insert(billingInfo)
-              .values({
-                id: billingInfoId,
-                userId: addedUser.id,
-                date: new Date(),
-                totalkWh: 100,
-                balance: 200,
-                status: "Pending",
-                payPerkWh: 2,
-                paymentId: mainPaymentId,
-              })
-              .returning(),
-            database
-              .insert(payment)
-              .values({ id: subPaymentId, amount: 50, date: new Date() })
-              .returning(),
-            database
-              .insert(subMeter)
-              .values({
-                id: subMeterId,
-                billingInfoId,
-                label: "A",
-                subkWh: 10,
-                reading: 110,
-                paymentId: subPaymentId,
-              })
-              .returning(),
-          ]);
+        const [
+          mainPaymentResult,
+          billingInfoResult,
+          subPaymentResult,
+          tenantResult,
+          subMeterResult,
+        ] = await database.batch([
+          database
+            .insert(payment)
+            .values({ id: mainPaymentId, amount: 200, date: new Date() })
+            .returning(),
+          database
+            .insert(billingInfo)
+            .values({
+              id: billingInfoId,
+              userId: addedUser.id,
+              date: new Date(),
+              totalkWh: 100,
+              balance: 200,
+              status: "Pending",
+              payPerkWh: 2,
+              paymentId: mainPaymentId,
+            })
+            .returning(),
+          database
+            .insert(payment)
+            .values({ id: subPaymentId, amount: 50, date: new Date() })
+            .returning(),
+          database
+            .insert(user)
+            .values({
+              id: tenantId,
+              name: "A",
+              email: `tenant-${tenantId}@test.com`,
+              emailVerified: true,
+              registeredTwoFactor: false,
+              ownerId: addedUser.id,
+            })
+            .returning(),
+          database
+            .insert(tenantReading)
+            .values({
+              id: subMeterId,
+              tenantUserId: tenantId,
+              billingInfoId,
+              subkWh: 10,
+              reading: 110,
+              paymentId: subPaymentId,
+            })
+            .returning(),
+        ]);
 
         expect(mainPaymentResult).toHaveLength(1);
         expect(billingInfoResult).toHaveLength(1);
         expect(subPaymentResult).toHaveLength(1);
+        expect(tenantResult).toHaveLength(1);
         expect(subMeterResult).toHaveLength(1);
 
         const fetched = await getBillingInfoBy({
@@ -2198,7 +2241,7 @@ describe("Billing Info CRUD Operations", () => {
 
         expect(fetched.valid).toBe(true);
         const [fetchedBilling] = fetched.value;
-        const subMeters = (fetchedBilling.subMeters ?? []) as any[];
+        const subMeters = fetchedBilling.subMeters ?? [];
         expect(subMeters).toHaveLength(1);
         expect(subMeters[0].payment?.amount).toBe(50);
       });
@@ -2235,16 +2278,22 @@ describe("Billing Info CRUD Operations", () => {
         ]);
         expect(validBillingInfo).toBe(true);
 
-        // Add sub payment with zero amount (initial reading should NOT be billed, but baseline reading should be persisted)
+        // Add meter + reading with zero amount (initial reading should NOT be billed, but baseline reading should be persisted)
         const initialReading = 64370;
         const {
           value: [subPayment],
         } = await addPayment([{ amount: 0, date: new Date() }]);
 
-        const addSubResult = await addSubMeter([
+        const {
+          valid: validMeter,
+          value: [addedMeter],
+        } = await addUser([createTenantUser(addedUser.id, { name: "New Sub" })]);
+        expect(validMeter).toBe(true);
+
+        const addSubResult = await addTenantReading([
           {
             billingInfoId: billingInfo.id,
-            label: "New Sub",
+            tenantUserId: addedMeter.id,
             subkWh: 0,
             reading: initialReading,
             paymentId: subPayment.id,
@@ -2268,7 +2317,7 @@ describe("Billing Info CRUD Operations", () => {
         expect(subs[0].subkWh).toBe(0);
 
         const mainPay = (
-          await getPaymentBy({ query: { id: fetchedBilling.paymentId }, options: {} })
+          await getPaymentBy({ query: { id: fetchedBilling.paymentId ?? "" }, options: {} })
         ).value[0];
         // Main payment should remain the billing balance (unchanged)
         expect(mainPay.amount).toBeCloseTo(balance, 2);
