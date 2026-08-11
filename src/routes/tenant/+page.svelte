@@ -60,9 +60,9 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex items-center justify-between">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">My Meter</h1>
+      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">My Meter</h1>
       <p class="text-muted-foreground">
         Submit your reading when the owner opens a billing period.
       </p>
@@ -70,44 +70,60 @@
   </div>
 
   {#if myMeterQuery.error}
-    <div class="flex items-center justify-center text-muted-foreground">
+    <div class="flex items-center justify-center py-8 text-muted-foreground">
       Failed to load your meter
     </div>
   {:else if myMeterQuery.current}
     {@const meter = myMeterQuery.current}
-    {@const pendings = pendingBillingsQuery.current ?? []}
+    {@const pendings = pendingBillingsQuery.current}
     {#if currentBillingQuery.error}
-      <div class="flex items-center justify-center text-muted-foreground">
+      <div class="flex items-center justify-center py-8 text-muted-foreground">
         Failed to load your billing
       </div>
     {:else if currentBillingQuery.current}
       {@const billing = currentBillingQuery.current}
       <Card.Root>
         <Card.Header class="border-b">
-          <Card.Title class="flex items-center gap-2 text-sm">
+          <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
             <InvoiceIcon class="h-4 w-4 text-muted-foreground" />
             Current billing
-          </Card.Title>
+          </h2>
           <Card.Description class="text-xs">
             Your bill for the period of {formatDate(billing.date)}
           </Card.Description>
         </Card.Header>
-        <Card.Content class="space-y-2 pt-4">
-          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+        <Card.Content class="space-y-2">
+          <div
+            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
+          >
             <span class="font-medium">Your reading</span>
-            <span class="text-muted-foreground">{billing.reading}</span>
+            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
+              >{billing.reading}</span
+            >
           </div>
-          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+          <div
+            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
+          >
             <span class="font-medium">Usage</span>
-            <span class="text-muted-foreground">{formatEnergy(billing.usageKwh)}</span>
+            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
+              >{formatEnergy(billing.usageKwh)}</span
+            >
           </div>
-          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+          <div
+            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
+          >
             <span class="font-medium">Rate</span>
-            <span class="text-muted-foreground">{formatNumber(billing.payPerkWh)}/kWh</span>
+            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
+              >{formatNumber(billing.payPerkWh)}/kWh</span
+            >
           </div>
-          <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+          <div
+            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
+          >
             <span class="font-medium">Amount due</span>
-            <span class="font-semibold text-primary">{formatNumber(billing.amount)}</span>
+            <span class="min-w-0 text-right font-semibold text-primary tabular-nums"
+              >{formatNumber(billing.amount)}</span
+            >
           </div>
         </Card.Content>
       </Card.Root>
@@ -115,29 +131,33 @@
 
     <Card.Root>
       <Card.Header class="border-b">
-        <Card.Title class="flex items-center gap-2 text-sm">
+        <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
           <Zap class="h-4 w-4 text-muted-foreground" />
           {meter.name}
-        </Card.Title>
+        </h2>
       </Card.Header>
-      <Card.Content class="space-y-6 pt-4">
-        <div class="flex items-center justify-between rounded-lg border p-4 text-sm">
+      <Card.Content class="space-y-6">
+        <div
+          class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
+        >
           <span class="font-medium">Last billed reading</span>
-          <span class="text-muted-foreground">{meter.lastBilledReading ?? "—"}</span>
+          <span class="min-w-0 text-right text-muted-foreground tabular-nums"
+            >{meter.lastBilledReading ?? "—"}</span
+          >
         </div>
 
         {#if meter.latestSubmission}
           <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="text-sm font-medium">Last submission</h3>
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <h2 class="text-sm font-medium">Last submission</h2>
                 <p class="text-sm text-muted-foreground">
                   {meter.latestSubmission.reading} ({formatDate(meter.latestSubmission.createdAt)})
                 </p>
               </div>
               {#if !editing}
                 <Button type="button" variant="outline" size="sm" onclick={startEdit}>
-                  <Pencil class="mr-1 size-3.5" />
+                  <Pencil class="size-3.5" />
                   Edit
                 </Button>
               {/if}
@@ -173,14 +193,18 @@
                     min={meter.lastBilledReading ?? 0}
                     step={1}
                     required
+                    aria-describedby="tenant-reading-edit-help tenant-reading-edit-error"
                     {...editSubmissionForm.fields.reading.as("number")}
                     bind:value={editReading}
                   />
-                  <Field.Description>
+                  <Field.Description id="tenant-reading-edit-help">
                     Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
                       0}).
                   </Field.Description>
-                  <Field.Error errors={editSubmissionForm.fields.reading.issues()} />
+                  <Field.Error
+                    id="tenant-reading-edit-error"
+                    errors={editSubmissionForm.fields.reading.issues()}
+                  />
                 </Field.Field>
                 <div class="flex justify-end gap-2">
                   <Button
@@ -207,16 +231,19 @@
       </Card.Content>
     </Card.Root>
 
-    {#if pendings.length > 0}
+    {#if pendings?.length}
       <Card.Root>
         <Card.Header class="border-b">
-          <Card.Title class="text-sm">Billings awaiting your reading</Card.Title>
+          <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
+            <InvoiceIcon class="h-4 w-4 text-muted-foreground" />
+            Billings awaiting your reading
+          </h2>
           <Card.Description class="text-xs">
             The owner opened these billing periods — submit your reading for each so they can
             finalize the bill.
           </Card.Description>
         </Card.Header>
-        <Card.Content class="space-y-4 pt-4">
+        <Card.Content class="space-y-4">
           {#each pendings as pb (pb.billingInfoId)}
             {@const pendingForm = submitReading.for("tenant-pending-" + pb.billingInfoId)}
             <div class="rounded-lg border p-4">
@@ -251,17 +278,29 @@
                   value={pb.billingInfoId}
                 />
                 <Field.Field>
+                  <Field.Label for={`pending-reading-${pb.billingInfoId}`} class="sr-only">
+                    Reading for billing period {formatDate(pb.date)}
+                  </Field.Label>
                   <Input
+                    id={`pending-reading-${pb.billingInfoId}`}
                     min={pb.lastBilledReading ?? 0}
                     step={1}
                     required
+                    aria-describedby={`pending-reading-${pb.billingInfoId}-error`}
                     {...pendingForm.fields.reading.as("number")}
                     bind:value={readingByBilling[pb.billingInfoId]}
                   />
-                  <Field.Error errors={pendingForm.fields.reading.issues()} />
+                  <Field.Error
+                    id={`pending-reading-${pb.billingInfoId}-error`}
+                    errors={pendingForm.fields.reading.issues()}
+                  />
                 </Field.Field>
                 <div class="flex justify-end">
-                  <Button type="submit" size="sm" disabled={submittingBilling[pb.billingInfoId]}>
+                  <Button
+                    type="submit"
+                    class="w-full justify-center sm:w-auto"
+                    disabled={submittingBilling[pb.billingInfoId]}
+                  >
                     {#if submittingBilling[pb.billingInfoId]}
                       <Loader class="size-4 animate-spin" />
                       Submitting…
@@ -275,6 +314,10 @@
           {/each}
         </Card.Content>
       </Card.Root>
+    {:else if pendings === undefined}
+      <div class="flex items-center justify-center py-8 text-muted-foreground">
+        Loading billings…
+      </div>
     {:else}
       <div
         class="flex items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground"
@@ -284,6 +327,8 @@
       </div>
     {/if}
   {:else}
-    <div class="flex items-center justify-center text-muted-foreground">Loading…</div>
+    <div class="flex items-center justify-center py-8 text-muted-foreground">
+      Loading your meter…
+    </div>
   {/if}
 </div>
