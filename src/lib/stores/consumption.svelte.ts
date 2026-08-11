@@ -27,7 +27,7 @@ export function computeConsumptionSummary(infos: ExtendedBillingInfo[]): Consump
 
   // Collect all sub-meters (if any) and count unique ones.
   const allSubMeters = infos.flatMap((info) => info.subMeters || []);
-  const totalSubMeters = new Set(allSubMeters.map((sub) => sub.id ?? sub.label)).size;
+  const totalSubMeters = new Set(allSubMeters.map((sub) => sub.id ?? sub.tenantName)).size;
 
   const firstDate = new Date(infos[infos.length - 1].date);
   const lastDate = new Date(infos[0].date);
@@ -51,11 +51,6 @@ class ConsumptionState {
   extendedBillingInfos = $state<ExtendedBillingInfo[]>([]);
   status = $state<AsyncState>("idle");
   summary = $state<ConsumptionSummary | null>(null);
-  userId = $state<string | null>(null);
-
-  setUserId(id: string) {
-    this.userId = id;
-  }
 
   setStatus(status: AsyncState) {
     this.status = status;
@@ -67,9 +62,8 @@ class ConsumptionState {
   }
 
   async fetchData() {
-    if (!this.userId) return;
     try {
-      const { value } = await getExtendedBillingInfos({ userId: this.userId });
+      const { value } = await getExtendedBillingInfos({});
       this.extendedBillingInfos = value as ExtendedBillingInfo[];
       this.summary = computeConsumptionSummary(this.extendedBillingInfos);
       this.status = "success";

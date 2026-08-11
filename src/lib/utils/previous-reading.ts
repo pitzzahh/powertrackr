@@ -1,12 +1,12 @@
-export type SubMeterReadingLike = {
+export type TenantReadingLike = {
   id?: string;
-  label: string;
-  reading: number;
+  tenantUserId?: string;
+  reading?: number | null;
 };
 
 export type BillingInfoLike = {
   date: Date | string;
-  subMeters?: SubMeterReadingLike[];
+  subMeters?: TenantReadingLike[];
 };
 
 /**
@@ -29,19 +29,19 @@ export function findPreviousBillingInfo<T extends BillingInfoLike>(
 }
 
 /**
- * Resolves the previous period's reading for each sub meter (matched by label),
- * keyed by sub meter id. Meters with no matching label in the previous period
- * (or without an id) resolve to 0 (baseline).
+ * Resolves the previous period's reading for each tenant (matched by
+ * tenantUserId), keyed by entry id. Tenants with no matching tenantUserId in
+ * the previous period (or without an id) resolve to 0 (baseline).
  */
 export function resolvePreviousReadings(
-  subMeters: SubMeterReadingLike[],
-  previousSubMeters: SubMeterReadingLike[]
+  entries: TenantReadingLike[],
+  previousMeters: TenantReadingLike[]
 ): Map<string, number> {
   const readings = new Map<string, number>();
-  for (const sub of subMeters) {
-    if (!sub.id) continue;
-    const previous = previousSubMeters.find((p) => p.label === sub.label);
-    readings.set(sub.id, previous?.reading ?? 0);
+  for (const entry of entries) {
+    if (!entry.id) continue;
+    const previous = previousMeters.find((p) => p.tenantUserId === entry.tenantUserId);
+    readings.set(entry.id, previous?.reading ?? 0);
   }
   return readings;
 }

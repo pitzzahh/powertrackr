@@ -80,7 +80,7 @@ export function toAreaChartData(original: ExtendedBillingInfo): ChartData {
     balance: original.balance,
     payment: original.payment.amount,
     subPayments: Object.fromEntries(
-      original.subMeters.map((sub) => [sub.label, sub.payment?.amount || 0])
+      original.subMeters.map((sub) => [sub.tenantName, sub.payment?.amount || 0])
     ),
   };
 }

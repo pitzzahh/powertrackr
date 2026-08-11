@@ -26,6 +26,8 @@ export function billingInfoToDto(
     subMeters: original.subMeters.map((s) => ({
       ...omit(s, ["payment"]),
       status: s.status as Status,
+      tenantUserId: s.tenantUserId,
+      tenantName: s.tenantName,
     })),
   };
 }

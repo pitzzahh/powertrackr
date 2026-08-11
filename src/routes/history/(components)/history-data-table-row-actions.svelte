@@ -12,7 +12,7 @@
 </script>
 
 <script lang="ts">
-  import { Loader, Trash2, View, Pencil, Ticket } from "$/assets/icons";
+  import { Loader, Trash2, View, Pencil, Ticket, Check } from "$/assets/icons";
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import { BillingInfoForm, SubPaymentsButton } from ".";
   import { formatDate, formatNumber } from "$/utils/format";
@@ -25,9 +25,11 @@
   import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
   import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
   import { Input } from "$/components/ui/input";
-  import { deleteBillingInfo } from "$/api/billing-info.remote";
+  import { deleteBillingInfo, finalizeBilling } from "$/api/billing-info.remote";
+  import { isHttpError } from "@sveltejs/kit";
   import { useBillingStore } from "$/stores/billing.svelte";
   import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import { page } from "$app/state";
   import { billingInfoToDto, extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
   import { findPreviousBillingInfo } from "$/utils/previous-reading";
   import { convertToNormalText } from "$/utils/text";
@@ -127,6 +129,24 @@
     billingStore.refresh();
     return showSuccess(`Billing info${value > 1 ? "s" : ""} deleted successfully`, message);
   }
+
+  let finalizing = $state(false);
+
+  async function handle_finalize_billing() {
+    if (finalizing) return;
+    finalizing = true;
+    try {
+      await finalizeBilling({ billingInfoId: row.original.id });
+      billingStore.refresh();
+      consumptionStore.refresh();
+      showSuccess("Billing finalized");
+    } catch (e) {
+      const message = isHttpError(e) ? e.body.message : String(e);
+      showWarning(message || "Failed to finalize billing");
+    } finally {
+      finalizing = false;
+    }
+  }
 </script>
 
 <div class="flex items-center justify-center gap-2">
@@ -141,16 +161,32 @@
   >
     <View />
   </Button>
-  <Button
-    size="icon"
-    variant="outline"
-    title="Edit Billing Info Details"
-    onclick={() => {
-      open_edit = true;
-    }}
-  >
-    <Pencil />
-  </Button>
+  {#if row.original.paymentId == null}
+    <Button
+      size="icon"
+      variant="outline"
+      title="Finalize pending billing (materialize tenant readings and payments)"
+      disabled={finalizing}
+      onclick={handle_finalize_billing}
+    >
+      {#if finalizing}
+        <Loader class="size-4 animate-spin" />
+      {:else}
+        <Check />
+      {/if}
+    </Button>
+  {:else}
+    <Button
+      size="icon"
+      variant="outline"
+      title="Edit Billing Info Details"
+      onclick={() => {
+        open_edit = true;
+      }}
+    >
+      <Pencil />
+    </Button>
+  {/if}
 
   <Button
     size="icon"
@@ -190,7 +226,7 @@
         <div class="max-w-full overflow-x-auto rounded-md border bg-background">
           <Table class="w-full">
             <TableBody>
-              {#each BILLING_DETAILS as item}
+              {#each BILLING_DETAILS as item (item.label)}
                 <TableRow
                   class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
                 >

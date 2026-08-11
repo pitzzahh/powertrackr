@@ -73,7 +73,6 @@
     () => user?.id,
     () => {
       if (user?.id) {
-        latestBillingStore.setUserId(user.id);
         latestBillingStore.fetchData();
       }
     }

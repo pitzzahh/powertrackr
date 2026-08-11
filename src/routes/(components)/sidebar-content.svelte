@@ -65,7 +65,7 @@
     },
   ]}
 >
-  {#each sidebar.navItems as item (item.label)}
+  {#each sidebar.navItems.filter( (item) => (user?.ownerId ? item.route === "/tenant" : item.route !== "/tenant") ) as item (item.label)}
     {@const Icon = item.icon}
     {@const isActive = item.active || page.url.pathname === item.route}
     <Button
