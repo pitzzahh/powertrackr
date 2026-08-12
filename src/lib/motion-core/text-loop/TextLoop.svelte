@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { gsap } from "gsap";
+  import { fly, fade } from "svelte/transition";
   import { cn } from "../utils/cn";
   import { shouldDisableAnimations } from "../utils/reduced-motion";
 
@@ -23,56 +23,38 @@
 
   let { texts, interval = 2000, class: className, currentIndex = $bindable(0) }: Props = $props();
   let isFirst = $state(true);
+  let wordWidths = $state<number[]>([]);
+  // Invisible spacer word — reserves width/baseline before measurement.
+  let widest = $state("");
 
-  function gsapTransition(node: HTMLElement, { direction }: { direction: "in" | "out" }) {
-    gsap.killTweensOf(node);
-    const parent = node.parentElement;
+  function measureWidth(node: HTMLElement) {
+    const probe = document.createElement("span");
+    probe.style.cssText =
+      "position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0;pointer-events:none;";
+    probe.style.font = getComputedStyle(node).font;
+    document.body.appendChild(probe);
 
-    if (direction === "in") {
-      if (isFirst) {
-        gsap.set(node, { yPercent: 0, opacity: 1, filter: "blur(0px)" });
-        return { duration: 0, tick: () => {} };
-      }
-
-      if (parent) {
-        gsap.fromTo(
-          parent,
-          { width: parent.offsetWidth },
-          { width: node.offsetWidth, duration: 0.35, ease: "power2.inOut" }
-        );
-      }
-
-      gsap.fromTo(
-        node,
-        { yPercent: 50, opacity: 0, filter: "blur(8px)" },
-        {
-          yPercent: 0,
-          opacity: 1,
-          filter: "blur(0px)",
-          duration: 0.3,
-          delay: 0.25,
-          ease: "back.out(1.2)",
-        }
-      );
-      return { duration: 900, tick: () => {} };
+    function measure() {
+      const widths = texts.map((text) => {
+        probe.textContent = text;
+        return probe.offsetWidth;
+      });
+      wordWidths = widths;
+      const max = Math.max(...widths, 0);
+      widest = widths.indexOf(max) >= 0 ? texts[widths.indexOf(max)] : "";
     }
 
-    if (parent) parent.style.width = `${parent.offsetWidth}px`;
-    Object.assign(node.style, {
-      position: "absolute",
-      top: "0",
-      left: "0",
-      width: "100%",
-    });
-    gsap.to(node, {
-      yPercent: -50,
-      opacity: 0,
-      filter: "blur(6px)",
-      duration: 0.2,
-      ease: "power2.in",
-    });
-    return { duration: 300, tick: () => {} };
+    measure();
+    // Fonts may not be loaded yet — re-measure once they are.
+    document.fonts?.ready?.then(measure).catch(() => {});
+    return () => {
+      document.body.removeChild(probe);
+    };
   }
+
+  // The box animates between the current word's width and the next, so the
+  // headline never jumps and short words don't leave a large gap.
+  const boxWidth = $derived(wordWidths[currentIndex] ?? wordWidths[0] ?? 0);
 
   onMount(() => {
     if (shouldDisableAnimations()) return;
@@ -88,16 +70,27 @@
 <span
   class={cn("font-inherit relative inline-block text-inherit", className)}
   style="clip-path: inset(-100vh 0 -100vh 0); min-width: auto;"
+  {@attach measureWidth}
 >
-  <span class="font-inherit invisible inline-block w-0 text-inherit" aria-hidden="true">&nbsp;</span
-  >{#key currentIndex}<span
+  <span
+    class="font-inherit invisible inline-block text-inherit"
+    style={`${boxWidth ? `width: ${boxWidth}px;` : ""} transition: width 0.3s ease;`}
+    aria-hidden="true">{widest || texts[0]}</span
+  >
+  {#key currentIndex}
+    <span
       class={cn(
-        "font-inherit whitespace-nowrap text-inherit",
-        isFirst ? "relative inline-block" : "absolute top-0 left-0"
+        "font-inherit absolute inset-0 flex items-center justify-center whitespace-nowrap text-inherit"
       )}
-      in:gsapTransition={{ direction: "in" }}
-      out:gsapTransition={{ direction: "out" }}
+      in:fly={{
+        y: isFirst ? 0 : 40,
+        opacity: isFirst ? 1 : 0,
+        duration: isFirst ? 0 : 280,
+        delay: isFirst ? 0 : 100,
+      }}
+      out:fade={{ duration: 120 }}
     >
       {texts[currentIndex]}
-    </span>{/key}
+    </span>
+  {/key}
 </span>

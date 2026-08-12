@@ -1,7 +1,8 @@
 <script module lang="ts">
   import type { HelperResult } from "$/server/types/helper";
+  import type { RowData } from "@tanstack/table-core";
 
-  export interface DataTableFloatingBarProps<TData extends object> {
+  export interface DataTableFloatingBarProps<TData extends RowData> {
     table: Table<TData>;
     entity_name: string; // singular form of the entity name (e.g., "position", "audit log")
     entity_name_plural?: string; // plural form (e.g., "positions", "audit logs")
@@ -17,8 +18,8 @@
   };
 </script>
 
-<script lang="ts" generics="TData extends object">
-  import type { Table } from "@tanstack/table-core";
+<script lang="ts" generics="TData extends RowData">
+  import type { SvelteTable as Table } from "$/components/ui/data-table";
   import { Separator } from "$/components/ui/separator";
   import * as Tooltip from "$/components/ui/tooltip/index.js";
   import { Trash2, X, RefreshCw } from "$/assets/icons";

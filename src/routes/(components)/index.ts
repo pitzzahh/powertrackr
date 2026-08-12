@@ -112,7 +112,6 @@ export { default as ErrorBackground } from "./error-background.svelte";
 export { default as AccountSettings } from "./account-settings.svelte";
 
 // Landing page components
-export { default as AnimatedBackground } from "./animated-background.svelte";
 export { default as BenefitsMarquee } from "./benefits-marquee.svelte";
 export { default as Cta } from "./cta.svelte";
 export { default as Features } from "./features.svelte";

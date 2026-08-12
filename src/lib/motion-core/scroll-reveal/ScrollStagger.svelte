@@ -1,20 +1,10 @@
 <script lang="ts">
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
-  import { CustomEase } from "gsap/CustomEase";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
   import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   type AnimationPreset =
-    | "fade"
-    | "slide-up"
-    | "slide-down"
-    | "slide-left"
-    | "slide-right"
-    | "scale"
-    | "rotate"
-    | "blur";
+    "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "scale" | "rotate" | "blur";
 
   interface ComponentProps {
     /**
@@ -71,45 +61,15 @@
      */
     blur?: number;
     /**
-     * ScrollTrigger start position.
-     * @default "top 85%"
-     */
-    start?: string;
-    /**
-     * ScrollTrigger end position (for scrub animations).
-     */
-    end?: string;
-    /**
-     * Whether to scrub the animation to scroll position.
-     * @default false
-     */
-    scrub?: boolean | number;
-    /**
-     * Toggle actions for ScrollTrigger.
-     * Format: "onEnter onLeave onEnterBack onLeaveBack"
-     * @default "play reverse play reverse"
-     */
-    toggleActions?: string;
-    /**
      * Whether the animation should only play once (no reverse on scroll back).
      * @default false
      */
     once?: boolean;
     /**
-     * Custom GSAP easing function.
-     * @default "motion-core-ease"
-     */
-    ease?: string;
-    /**
      * The HTML tag to use for the wrapper.
      * @default "div"
      */
     as?: keyof HTMLElementTagNameMap;
-    /**
-     * Enable debug markers for ScrollTrigger.
-     * @default false
-     */
-    markers?: boolean;
     /**
      * Stagger from position: start, center, end, edges, or random.
      * @default "start"
@@ -130,142 +90,96 @@
     scale: scaleValue = 0.9,
     rotation = 10,
     blur: blurValue = 8,
-    start = "top 85%",
-    end,
-    scrub = false,
-    toggleActions = "play reverse play reverse",
     once = false,
-    ease = "motion-core-ease",
     as = "div" as keyof HTMLElementTagNameMap,
-    markers = false,
     from = "start",
     ...restProps
   }: ComponentProps = $props();
 
-  function getInitialState(preset: AnimationPreset): gsap.TweenVars {
+  const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+  function getInitialStyle(preset: AnimationPreset): string {
     switch (preset) {
-      case "fade":
-        return { opacity: 0 };
       case "slide-up":
-        return { opacity: 0, y: distance };
+        return `opacity: 0; transform: translateY(${distance}px);`;
       case "slide-down":
-        return { opacity: 0, y: -distance };
+        return `opacity: 0; transform: translateY(${-distance}px);`;
       case "slide-left":
-        return { opacity: 0, x: distance };
+        return `opacity: 0; transform: translateX(${distance}px);`;
       case "slide-right":
-        return { opacity: 0, x: -distance };
+        return `opacity: 0; transform: translateX(${-distance}px);`;
       case "scale":
-        return { opacity: 0, scale: scaleValue };
+        return `opacity: 0; transform: scale(${scaleValue});`;
       case "rotate":
-        return { opacity: 0, rotation: rotation, transformOrigin: "center center" };
+        return `opacity: 0; transform: rotate(${rotation}deg); transform-origin: center;`;
       case "blur":
-        return { opacity: 0, filter: `blur(${blurValue}px)` };
+        return `opacity: 0; filter: blur(${blurValue}px);`;
       default:
-        return { opacity: 0 };
+        return "opacity: 0;";
     }
   }
 
-  function getFinalState(preset: AnimationPreset): gsap.TweenVars {
-    switch (preset) {
-      case "fade":
-        return { opacity: 1 };
-      case "slide-up":
-      case "slide-down":
-        return { opacity: 1, y: 0 };
-      case "slide-left":
-      case "slide-right":
-        return { opacity: 1, x: 0 };
-      case "scale":
-        return { opacity: 1, scale: 1 };
-      case "rotate":
-        return { opacity: 1, rotation: 0 };
-      case "blur":
-        return { opacity: 1, filter: "blur(0px)" };
+  function staggerOrder(index: number, count: number, from: string): number {
+    switch (from) {
+      case "end":
+        return count - 1 - index;
+      case "center":
+        return Math.abs(index - (count - 1) / 2);
+      case "edges":
+        return Math.min(index, count - 1 - index);
+      case "random":
+        return Math.random();
       default:
-        return { opacity: 1 };
+        return index;
     }
   }
+
+  let revealed = $state(false);
 
   function initScrollStagger(node: HTMLElement) {
-    if (shouldDisableAnimations()) return () => {};
-    gsap.registerPlugin(ScrollTrigger, CustomEase);
-    CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
-
-    const childElements = node.querySelectorAll(selector);
-
-    if (!childElements.length) {
+    if (shouldDisableAnimations()) {
+      revealed = true;
       return () => {};
     }
 
-    const initialState = getInitialState(preset);
-    const finalState = getFinalState(preset);
-
-    // Create a timeline for proper control
-    const tl = gsap.timeline({
-      paused: true,
-      defaults: {
-        ease: ease,
-      },
+    const childElements = [...node.querySelectorAll(selector)] as HTMLElement[];
+    const hiddenStyles = childElements.map((el, i) => {
+      const order = staggerOrder(i, childElements.length, from);
+      const delayS = delay + order * staggerDelay;
+      return [
+        getInitialStyle(preset),
+        `transition: opacity ${duration}s ${EASE} ${delayS}s, transform ${duration}s ${EASE} ${delayS}s, filter ${duration}s ${EASE} ${delayS}s;`,
+      ].join(" ");
     });
 
-    // Add the staggered animation to timeline
-    tl.fromTo(
-      childElements,
-      { ...initialState, immediateRender: false },
-      {
-        ...finalState,
-        duration: duration,
-        delay: delay,
-        stagger: {
-          each: staggerDelay,
-          from: from,
-        },
-      }
+    childElements.forEach((el, i) => {
+      el.style.cssText = hiddenStyles[i];
+    });
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            revealed = true;
+            for (const el of childElements) {
+              el.style.opacity = "1";
+              el.style.transform = "none";
+              el.style.filter = "none";
+            }
+            if (once) io.disconnect();
+          } else if (!once) {
+            revealed = false;
+            childElements.forEach((el, i) => {
+              el.style.cssText = hiddenStyles[i];
+            });
+          }
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
     );
 
-    // Create ScrollTrigger
-    const trigger = ScrollTrigger.create({
-      trigger: node,
-      start: start,
-      end: end || (scrub ? "bottom top" : undefined),
-      scrub: scrub,
-      markers: markers,
-      toggleActions: once ? "play none none none" : toggleActions,
-      onEnter: () => {
-        if (!scrub) tl.play();
-      },
-      onLeave: () => {
-        if (!scrub && !once) tl.reverse();
-      },
-      onEnterBack: () => {
-        if (!scrub && !once) tl.play();
-      },
-      onLeaveBack: () => {
-        if (!scrub && !once) tl.reverse();
-      },
-      onUpdate: (self) => {
-        // For scrub mode, sync timeline progress with scroll
-        if (scrub) {
-          tl.progress(self.progress);
-        }
-      },
-      onRefresh: (self) => {
-        // If element is already past the start point on page load, play immediately
-        if (self.progress > 0) {
-          tl.progress(scrub ? self.progress : 1);
-        }
-      },
-    });
-
-    // Refresh ScrollTrigger after a short delay to account for layout shifts
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
-    });
-
-    return () => {
-      trigger.kill();
-      tl.kill();
-    };
+    io.observe(node);
+    return () => io.disconnect();
   }
 </script>
 

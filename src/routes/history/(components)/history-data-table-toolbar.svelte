@@ -1,9 +1,10 @@
 <script module lang="ts">
   import type { DataTableViewOptionsProps } from "$/components/data-table/data-table-view-options.svelte";
-  import type { Table } from "@tanstack/table-core";
+  import type { RowData } from "@tanstack/table-core";
+  import type { SvelteTable as Table } from "$/components/ui/data-table";
   import type { FilterOption } from "$/types/filter";
 
-  export interface BillingInfosDataTableToolbarProps<TData> {
+  export interface BillingInfosDataTableToolbarProps<TData extends RowData> {
     table: Table<TData>;
     statuses: FilterOption<string>[];
     default_hidden_columns?: DataTableViewOptionsProps<TData>["default_hidden_columns"];
@@ -38,7 +39,7 @@
     where_to_search: "date",
   });
   const { is_filtered, status_column } = $derived({
-    is_filtered: table.getState().columnFilters.length > 0,
+    is_filtered: table.atoms.columnFilters.get().length > 0,
     status_column: table.getColumn("status"),
   });
 

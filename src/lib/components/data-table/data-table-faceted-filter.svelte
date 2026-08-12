@@ -1,14 +1,15 @@
 <script lang="ts" module>
-  export type DataTableFacetedFilterProps<TData, TValue, FilterType> = {
+  import type { RowData } from "@tanstack/table-core";
+  export type DataTableFacetedFilterProps<TData extends RowData, TValue, FilterType> = {
     column: Column<TData, TValue>;
     title: string;
     options: FilterOption<FilterType>[];
   };
 </script>
 
-<script lang="ts" generics="TData, TValue, FilterType = string">
+<script lang="ts" generics="TData extends RowData, TValue, FilterType = string">
   import { CirclePlus, Check } from "$/assets/icons";
-  import type { Column } from "@tanstack/table-core";
+  import type { SvelteColumn as Column } from "$/components/ui/data-table";
   import { SvelteSet } from "svelte/reactivity";
   import * as Command from "$/components/ui/command/index.js";
   import * as Popover from "$/components/ui/popover/index.js";

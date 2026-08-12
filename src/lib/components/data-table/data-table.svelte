@@ -1,10 +1,19 @@
 <script module lang="ts">
   import type { DataTablePaginationProps } from "./data-table-pagination.svelte";
-  export interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[];
+  import type {
+    ColumnFiltersState,
+    ColumnVisibilityState,
+    PaginationState,
+    RowData,
+    RowSelectionState,
+    SortingState,
+  } from "@tanstack/table-core";
+  import type { SvelteColumnDef, SvelteTable } from "$/components/ui/data-table";
+  export interface DataTableProps<TData extends RowData, TValue> {
+    columns: SvelteColumnDef<TData, TValue>[];
     data: TData[];
-    data_table_toolbar?: Snippet<[{ table: TableCore<TData> }]>;
-    floating_bar?: Snippet<[{ table: TableCore<TData> }]>;
+    data_table_toolbar?: Snippet<[{ table: SvelteTable<TData> }]>;
+    floating_bar?: Snippet<[{ table: SvelteTable<TData> }]>;
     custom_row_count?: number;
     class?: string;
     status?: AsyncState;
@@ -13,34 +22,19 @@
 
   interface ComponentState {
     rowSelection: RowSelectionState;
-    columnVisibility: VisibilityState;
+    columnVisibility: ColumnVisibilityState;
     columnFilters: ColumnFiltersState;
     sorting: SortingState;
     pagination: PaginationState;
   }
 </script>
 
-<script lang="ts" generics="TData, TValue">
-  import {
-    type ColumnDef,
-    type ColumnFiltersState,
-    type PaginationState,
-    type RowSelectionState,
-    type SortingState,
-    type VisibilityState,
-    getCoreRowModel,
-    getFacetedRowModel,
-    getFacetedUniqueValues,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-  } from "@tanstack/table-core";
+<script lang="ts" generics="TData extends RowData, TValue">
   import { DataTablePagination } from ".";
-  import { createSvelteTable } from "$/components/ui/data-table/data-table.svelte.js";
+  import { createSvelteTable, type SvelteTable as TableCore } from "$/components/ui/data-table";
   import { FlexRender } from "$/components/ui/data-table";
   import * as Table from "$/components/ui/table/index.js";
   import type { Snippet } from "svelte";
-  import type { Table as TableCore } from "@tanstack/table-core";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { ScrollArea } from "../ui/scroll-area";
@@ -66,7 +60,7 @@
       pagination: { pageIndex: 0, pageSize: custom_row_count },
     });
 
-  const table = createSvelteTable({
+  const table = createSvelteTable<TData>({
     get data() {
       return data;
     },
@@ -106,12 +100,6 @@
     onPaginationChange: (updater) => {
       pagination = typeof updater === "function" ? updater(pagination) : updater;
     },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 </script>
 

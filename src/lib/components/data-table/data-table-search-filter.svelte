@@ -1,5 +1,6 @@
 <script lang="ts" module>
-  export type DataTableSearchFilterProps<TData> = {
+  import type { RowData } from "@tanstack/table-core";
+  export type DataTableSearchFilterProps<TData extends RowData> = {
     table: Table<TData>;
     where_to_search: keyof TData;
     icon_only?: boolean;
@@ -7,9 +8,9 @@
   };
 </script>
 
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
   import { Settings } from "$/assets/icons";
-  import type { Table } from "@tanstack/table-core";
+  import type { SvelteTable as Table } from "$/components/ui/data-table";
   import { buttonVariants } from "$/components/ui/button/index.js";
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
   import { cn } from "$/utils/style";

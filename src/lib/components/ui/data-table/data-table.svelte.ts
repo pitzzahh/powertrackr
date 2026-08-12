@@ -1,19 +1,87 @@
 import {
+  type CellContext,
+  type CellData,
+  type Column,
+  type ColumnDef,
+  type HeaderContext,
+  type Row,
   type RowData,
+  type Table,
   type TableOptions,
-  type TableOptionsResolved,
-  type TableState,
+  createExpandedRowModel,
+  createFacetedMinMaxValues,
+  createFacetedRowModel,
+  createFacetedUniqueValues,
+  createFilteredRowModel,
+  createGroupedRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
   createTable,
-} from "@tanstack/table-core";
+  stockFeatures,
+  tableFeatures,
+} from "@tanstack/svelte-table";
 
 /**
- * Creates a reactive TanStack table object for Svelte.
+ * The feature set used by every table in the app: all stock features plus the
+ * row-model factories they require (v9 moves row models from table options
+ * onto the `features` object).
+ */
+const features = tableFeatures({
+  ...stockFeatures,
+  // coreRowModel is automatic in v9; register the optional row models.
+  sortedRowModel: createSortedRowModel(),
+  filteredRowModel: createFilteredRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+  groupedRowModel: createGroupedRowModel(),
+  expandedRowModel: createExpandedRowModel(),
+  facetedRowModel: createFacetedRowModel(),
+  facetedUniqueValues: createFacetedUniqueValues(),
+  facetedMinMaxValues: createFacetedMinMaxValues(),
+});
+
+/** App-level table type with the app's feature set pre-bound. */
+export type SvelteTable<TData extends RowData> = Table<typeof features, TData>;
+/** App-level column type with the app's feature set pre-bound. */
+export type SvelteColumn<TData extends RowData, TValue = unknown> = Column<
+  typeof features,
+  TData,
+  TValue
+>;
+/** App-level row type with the app's feature set pre-bound. */
+export type SvelteRow<TData extends RowData> = Row<typeof features, TData>;
+/** App-level column definition type with the app's feature set pre-bound. */
+export type SvelteColumnDef<TData extends RowData, TValue extends CellData = CellData> = ColumnDef<
+  typeof features,
+  TData,
+  TValue
+>;
+/** App-level header context type with the app's feature set pre-bound. */
+export type SvelteHeaderContext<TData extends RowData, TValue = unknown> = HeaderContext<
+  typeof features,
+  TData,
+  TValue
+>;
+/** App-level cell context type with the app's feature set pre-bound. */
+export type SvelteCellContext<TData extends RowData, TValue extends CellData = CellData> = CellContext<
+  typeof features,
+  TData,
+  TValue
+>;
+
+/**
+ * Creates a reactive TanStack Table v9 object for Svelte 5.
+ *
+ * The official `@tanstack/svelte-table` adapter backs this: options are
+ * re-synced in `$effect.pre` (so reactive `get data()`/`get columns()` getters
+ * and controlled `state` getters stay live) and state reads through
+ * `table.atoms.*` participate in Svelte dependency tracking.
+ *
  * @param options Table options to create the table with.
  * @returns A reactive table object.
  * @example
  * ```svelte
  * <script>
- *   const table = createSvelteTable({ ... })
+ *   const table = createSvelteTable({ data, columns, ... })
  * </script>
  *
  * <table>
@@ -22,117 +90,23 @@ import {
  *       <tr>
  *         {#each headerGroup.headers as header}
  *           <th colspan={header.colSpan}>
- *         	   <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+ *           	 <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
  *         	 </th>
  *         {/each}
  *       </tr>
  *     {/each}
  *   </thead>
- * 	 <!-- ... -->
+ *   <!-- ... -->
  * </table>
  * ```
  */
-export function createSvelteTable<TData extends RowData>(options: TableOptions<TData>) {
-  const resolvedOptions: TableOptionsResolved<TData> = mergeObjects(
-    {
-      state: {},
-      onStateChange() {},
-      renderFallbackValue: null,
-      mergeOptions: (
-        defaultOptions: TableOptions<TData>,
-        options: Partial<TableOptions<TData>>
-      ) => {
-        return mergeObjects(defaultOptions, options);
-      },
-    },
-    options
-  );
-
-  const table = createTable(resolvedOptions);
-  let state = $state<Partial<TableState>>(table.initialState);
-
-  function updateOptions() {
-    table.setOptions((prev) => {
-      return mergeObjects(prev, options, {
-        state: mergeObjects(state, options.state || {}),
-
-        onStateChange: (updater: any) => {
-          if (updater instanceof Function) state = updater(state);
-          else state = mergeObjects(state, updater);
-
-          options.onStateChange?.(updater);
-        },
-      });
-    });
+export function createSvelteTable<TData extends RowData>(
+  options: Omit<TableOptions<typeof features, TData>, "features" | "columns"> & {
+    columns: ReadonlyArray<ColumnDef<typeof features, TData, any>>;
   }
-
-  updateOptions();
-
-  $effect.pre(() => {
-    updateOptions();
+): SvelteTable<TData> {
+  return createTable({
+    ...options,
+    features,
   });
-
-  return table;
-}
-
-type MaybeThunk<T extends object> = T | (() => T | null | undefined);
-type Intersection<T extends readonly unknown[]> = (T extends [infer H, ...infer R]
-  ? H & Intersection<R>
-  : unknown) & {};
-
-/**
- * Lazily merges several objects (or thunks) while preserving
- * getter semantics from every source.
- *
- * Proxy-based to avoid known WebKit recursion issue.
- */
-export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
-  ...sources: Sources
-): Intersection<{ [K in keyof Sources]: Sources[K] }> {
-  const resolve = <T extends object>(src: MaybeThunk<T>): T | undefined =>
-    typeof src === "function" ? (src() ?? undefined) : src;
-
-  const findSourceWithKey = (key: PropertyKey) => {
-    for (let i = sources.length - 1; i >= 0; i--) {
-      const obj = resolve(sources[i]);
-      if (obj && key in obj) return obj;
-    }
-    return undefined;
-  };
-
-  return new Proxy(Object.create(null), {
-    get(_, key) {
-      const src = findSourceWithKey(key);
-
-      return src?.[key as never];
-    },
-
-    has(_, key) {
-      return !!findSourceWithKey(key);
-    },
-
-    ownKeys(): (string | symbol)[] {
-      const all = new Set<string | symbol>();
-      for (const s of sources) {
-        const obj = resolve(s);
-        if (obj) {
-          for (const k of Reflect.ownKeys(obj) as (string | symbol)[]) {
-            all.add(k);
-          }
-        }
-      }
-      return [...all];
-    },
-
-    getOwnPropertyDescriptor(_, key) {
-      const src = findSourceWithKey(key);
-      if (!src) return undefined;
-      return {
-        configurable: true,
-        enumerable: true,
-        value: (src as any)[key],
-        writable: true,
-      };
-    },
-  }) as Intersection<{ [K in keyof Sources]: Sources[K] }>;
 }

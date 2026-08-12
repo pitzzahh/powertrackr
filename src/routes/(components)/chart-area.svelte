@@ -69,6 +69,10 @@
   const { visibleKeysSet } = $derived<Omit<ChartAreaState, "timeRange">>({
     visibleKeysSet: new SvelteSet<string>(Object.keys(CHART_CONFIG)),
   });
+
+  const activeSeriesKeys = $derived(
+    Object.keys(CHART_CONFIG).filter((key) => visibleKeysSet.has(key))
+  );
 </script>
 
 <Card.Root>
@@ -141,12 +145,12 @@
             },
           }}
         >
-          {#snippet marks({ series, getSplineProps, getPointsProps })}
-            {#each series as s, i (s.key)}
+          {#snippet marks()}
+            {#each activeSeriesKeys as key (key)}
               <Spline
-                {...getSplineProps(s, i)}
+                seriesKey={key}
                 curve={curveLinear}
-                stroke-width={2}
+                strokeWidth={2}
                 motion={{
                   type: "tween",
                   duration: 1000,
@@ -154,11 +158,10 @@
                 }}
               />
               <Points
-                {...getPointsProps(s, i)}
+                seriesKey={key}
                 r={3}
                 fill="white"
-                stroke={s.color}
-                stroke-width={1}
+                strokeWidth={1}
                 motion={{
                   type: "tween",
                   duration: 1000,

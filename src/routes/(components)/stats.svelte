@@ -38,7 +38,7 @@
         trailingZeroDisplay: "stripIfInteger",
       },
       suffix: "+",
-      label: `Active ${stats.userCount === 1 ? "User" : "Users"}`,
+      label: "Active Users",
     },
     {
       value: convertEnergy(stats.energyUsed.total, stats.energyUsed.energyUnit),
@@ -48,7 +48,7 @@
         trailingZeroDisplay: "stripIfInteger",
       },
       suffix: getEnergyUnit(stats.energyUsed.total),
-      label: `${stats.energyUsed.energyUnit} Tracked`,
+      label: "Energy Tracked",
     },
     {
       value: stats.billingCount,
@@ -74,54 +74,45 @@
   ]);
 </script>
 
-<section class="relative z-10 py-20">
+<section class="relative z-10 py-20 lg:py-28">
   <div class="container mx-auto px-4">
-    <div
-      class="mb-8 flex items-center gap-4 text-xs tracking-[0.3em] text-muted-foreground uppercase"
-    >
-      <span class="rounded-full border border-border/60 px-3 py-1 text-primary">Site stats</span>
-      <span>Across PowerTrackr</span>
-      <div class="h-px flex-1 bg-linear-to-r from-primary/30 via-white/10 to-transparent"></div>
-    </div>
-
-    <ScrollStagger
-      preset="slide-up"
-      stagger={0.1}
-      duration={0.6}
-      distance={30}
-      class="grid gap-6 sm:grid-cols-2 xl:grid-cols-4"
-    >
-      {#each statsList as stat (stat.label)}
+    <div class="overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur">
+      <div class="flex items-center justify-between border-b border-border/70 px-6 py-4">
         <div
-          class="relative overflow-hidden rounded-2xl border border-border/60 bg-background/60 p-6 backdrop-blur"
+          class="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
         >
-          <div class="flex items-start justify-between gap-4">
-            <div class="text-xs tracking-[0.2em] text-muted-foreground uppercase">Metric</div>
-            <span
-              class="rounded-full border border-border/60 px-2 py-1 text-[10px] text-muted-foreground"
-            >
-              Updated on load
-            </span>
-          </div>
-          <div class="mt-4 text-3xl font-semibold text-primary md:text-4xl">
-            <NumberTicker
-              format={stat.format}
-              suffix={stat.suffix}
-              prefix={stat.prefix}
-              value={stat.value}
-              {...stat?.suffix != "+" && {
-                class: "[&::part(suffix)]:ml-2",
-              }}
-            />
-          </div>
-          <div class="mt-2 text-sm text-muted-foreground">
-            {stat.label}
-          </div>
-          <div
-            class="pointer-events-none absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
-          ></div>
+          <span class="size-1.5 animate-pulse rounded-full bg-primary"></span>
+          Live stats
         </div>
-      {/each}
-    </ScrollStagger>
+        <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
+          Updated on load
+        </span>
+      </div>
+
+      <ScrollStagger
+        preset="slide-up"
+        stagger={0.08}
+        duration={0.6}
+        distance={24}
+        class="grid grid-cols-2 gap-px bg-border/70 lg:grid-cols-4"
+      >
+        {#each statsList as stat (stat.label)}
+          <div class="bg-card p-6 lg:p-8">
+            <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
+              {stat.label}
+            </p>
+            <p class="mt-3 text-3xl font-semibold text-primary tabular-nums md:text-4xl">
+              <NumberTicker
+                format={stat.format}
+                suffix={stat.suffix}
+                prefix={stat.prefix}
+                value={stat.value}
+                class="text-primary [&::part(suffix)]:ml-2"
+              />
+            </p>
+          </div>
+        {/each}
+      </ScrollStagger>
+    </div>
   </div>
 </section>
