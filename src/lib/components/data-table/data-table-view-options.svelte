@@ -1,13 +1,14 @@
 <script module lang="ts">
-  export interface DataTableViewOptionsProps<TData> {
+  import type { RowData } from "@tanstack/table-core";
+  export interface DataTableViewOptionsProps<TData extends RowData> {
     table: Table<TData>;
     default_hidden_columns?: (keyof TData)[];
   }
 </script>
 
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
   import { ChevronDown, TwoColumns } from "$/assets/icons";
-  import type { Table } from "@tanstack/table-core";
+  import type { SvelteTable as Table } from "$/components/ui/data-table";
   import { Button } from "$/components/ui/button/index.js";
   import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
   import { untrack } from "svelte";

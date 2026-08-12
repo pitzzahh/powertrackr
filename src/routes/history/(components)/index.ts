@@ -2,7 +2,10 @@ import { DataTableCheckbox, DataTableColumnHeader } from "$/components/data-tabl
 import { Badge } from "$/components/ui/badge";
 import { renderComponent } from "$/components/ui/data-table";
 import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
-import type { ColumnDef, Table } from "@tanstack/table-core";
+import type {
+  SvelteColumnDef as ColumnDef,
+  SvelteTable as Table,
+} from "$/components/ui/data-table";
 import { createRawSnippet } from "svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
 import { formatDate, formatNumber } from "$/utils/format";

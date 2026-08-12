@@ -1,7 +1,8 @@
-<script lang="ts" generics="TData, TValue">
+<script lang="ts" generics="TData extends RowData, TValue">
   import { EyeOff, ChevronsUpDown, ArrowUp, ArrowDown } from "$/assets/icons";
   import type { HTMLAttributes } from "svelte/elements";
-  import type { Column } from "@tanstack/table-core";
+  import type { RowData } from "@tanstack/table-core";
+  import type { SvelteColumn as Column } from "$/components/ui/data-table";
   import type { WithoutChildren } from "bits-ui";
   import { cn } from "$/utils/style";
   import * as DropdownMenu from "$/components/ui/dropdown-menu";

@@ -16,7 +16,7 @@
   import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
   import { BillingInfoForm, SubPaymentsButton } from ".";
   import { formatDate, formatNumber } from "$/utils/format";
-  import type { Row } from "@tanstack/table-core";
+  import type { SvelteRow as Row } from "$/components/ui/data-table";
   import Button from "$/components/ui/button/button.svelte";
   import * as Dialog from "$/components/ui/dialog";
   import { showInspectorWarning, showSuccess, showWarning } from "$/components/toast";

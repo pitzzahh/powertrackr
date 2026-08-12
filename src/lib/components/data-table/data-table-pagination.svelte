@@ -1,14 +1,15 @@
 <script module lang="ts">
-  export interface DataTablePaginationProps<TData> {
+  import type { RowData } from "@tanstack/table-core";
+  export interface DataTablePaginationProps<TData extends RowData> {
     table: Table<TData>;
     status?: AsyncState;
     hide_show_row_count?: boolean;
   }
 </script>
 
-<script lang="ts" generics="TData">
+<script lang="ts" generics="TData extends RowData">
   import { ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Loader } from "$/assets/icons";
-  import type { Table } from "@tanstack/table-core";
+  import type { SvelteTable as Table } from "$/components/ui/data-table";
   import * as Select from "$/components/ui/select/index.js";
 
   import { Button } from "$/components/ui/button/index.js";
@@ -66,7 +67,7 @@
             <Select.Root
               allowDeselect={false}
               type="single"
-              value={String(table.getState().pagination.pageSize)}
+              value={String(table.atoms.pagination.get().pageSize)}
               onValueChange={(value) => {
                 table.setPageSize(Number(value));
               }}
@@ -76,10 +77,10 @@
               >
                 <span class="font-medium"
                   >{String(
-                    table.getState().pagination.pageSize ==
-                      table.getPrePaginationRowModel().rows.length
+                    table.atoms.pagination.get().pageSize ==
+                      table.getPrePaginatedRowModel().rows.length
                       ? "All"
-                      : table.getState().pagination.pageSize
+                      : table.atoms.pagination.get().pageSize
                   )}</span
                 >
               </Select.Trigger>
@@ -92,7 +93,7 @@
                   </Select.Item>
                 {/each}
                 <Select.Item
-                  value={table.getPrePaginationRowModel().rows.length.toString()}
+                  value={table.getPrePaginatedRowModel().rows.length.toString()}
                   class="font-medium"
                 >
                   All
@@ -107,7 +108,7 @@
           <div class="rounded-md bg-muted/50 px-3 py-1.5">
             <span class="text-sm font-medium">
               Page <span class="font-semibold text-primary"
-                >{table.getState().pagination.pageIndex + 1}</span
+                >{table.atoms.pagination.get().pageIndex + 1}</span
               >
               of
               <span class="font-semibold">{table.getPageCount()}</span>
@@ -134,7 +135,7 @@
           <!-- Mobile page indicator -->
           <div class="mx-2 flex items-center rounded-md bg-muted/30 px-3 py-1.5">
             <span class="text-xs font-medium text-muted-foreground">
-              {table.getState().pagination.pageIndex + 1}/{table.getPageCount()}
+              {table.atoms.pagination.get().pageIndex + 1}/{table.getPageCount()}
             </span>
           </div>
 
