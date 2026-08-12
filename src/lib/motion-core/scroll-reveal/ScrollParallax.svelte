@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
   import { shouldDisableAnimations } from "../utils/reduced-motion";
@@ -27,35 +25,6 @@
      * @default "vertical"
      */
     direction?: ParallaxDirection;
-    /**
-     * ScrollTrigger start position.
-     * @default "top bottom"
-     */
-    start?: string;
-    /**
-     * ScrollTrigger end position.
-     * @default "bottom top"
-     */
-    end?: string;
-    /**
-     * Scrub smoothness (true for instant, or number for smoothing).
-     * @default true
-     */
-    scrub?: boolean | number;
-    /**
-     * The HTML tag to use for the wrapper.
-     * @default "div"
-     */
-    as?: keyof HTMLElementTagNameMap;
-    /**
-     * Enable debug markers for ScrollTrigger.
-     * @default false
-     */
-    markers?: boolean;
-    /**
-     * Custom trigger element selector. Defaults to the element itself.
-     */
-    trigger?: string | HTMLElement;
     /**
      * Whether to also apply scale effect.
      * @default false
@@ -101,6 +70,11 @@
      * @default 1
      */
     opacityTo?: number;
+    /**
+     * The HTML tag to use for the wrapper.
+     * @default "div"
+     */
+    as?: keyof HTMLElementTagNameMap;
     [prop: string]: unknown;
   }
 
@@ -109,12 +83,6 @@
     class: className = "",
     speed = 0.5,
     direction = "vertical" as ParallaxDirection,
-    start = "top bottom",
-    end = "bottom top",
-    scrub = true,
-    as = "div" as keyof HTMLElementTagNameMap,
-    markers = false,
-    trigger,
     scale: enableScale = false,
     scaleFrom = 1,
     scaleTo = 1.1,
@@ -124,63 +92,51 @@
     fade: enableFade = false,
     opacityFrom = 0,
     opacityTo = 1,
+    as = "div" as keyof HTMLElementTagNameMap,
     ...restProps
   }: ComponentProps = $props();
 
   function initScrollParallax(node: HTMLElement) {
     if (shouldDisableAnimations()) return () => {};
-    gsap.registerPlugin(ScrollTrigger);
 
-    // Calculate the parallax distance based on speed
-    // speed of 0.5 means element moves at half the scroll speed
-    // speed of -0.5 means element moves opposite to scroll
-    const distance = speed * 100;
+    let raf = 0;
 
-    const fromVars: gsap.TweenVars = {};
-    const toVars: gsap.TweenVars = {};
+    function update() {
+      const rect = node.getBoundingClientRect();
+      const vh = window.innerHeight || 1;
+      const progress = Math.min(1, Math.max(0, (vh - rect.top) / (vh + rect.height)));
 
-    // Set up directional movement
-    if (direction === "vertical") {
-      fromVars.yPercent = -distance;
-      toVars.yPercent = distance;
-    } else {
-      fromVars.xPercent = -distance;
-      toVars.xPercent = distance;
+      // speed of 0.5 means the element moves at half the scroll speed
+      const distance = speed * 100;
+      const offset = (progress - 0.5) * 2 * distance;
+
+      const transforms: string[] = [];
+      if (direction === "vertical") transforms.push(`translateY(${offset}%)`);
+      else transforms.push(`translateX(${offset}%)`);
+      if (enableScale) transforms.push(`scale(${scaleFrom + (scaleTo - scaleFrom) * progress})`);
+      if (enableRotate) {
+        transforms.push(`rotate(${rotateFrom + (rotateTo - rotateFrom) * progress}deg)`);
+      }
+
+      node.style.transform = transforms.join(" ");
+      if (enableFade) {
+        node.style.opacity = String(opacityFrom + (opacityTo - opacityFrom) * progress);
+      }
     }
 
-    // Add scale effect if enabled
-    if (enableScale) {
-      fromVars.scale = scaleFrom;
-      toVars.scale = scaleTo;
+    function onScroll() {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
     }
 
-    // Add rotation effect if enabled
-    if (enableRotate) {
-      fromVars.rotation = rotateFrom;
-      toVars.rotation = rotateTo;
-    }
-
-    // Add opacity fade if enabled
-    if (enableFade) {
-      fromVars.opacity = opacityFrom;
-      toVars.opacity = opacityTo;
-    }
-
-    const tween = gsap.fromTo(node, fromVars, {
-      ...toVars,
-      ease: "none",
-      scrollTrigger: {
-        trigger: trigger || node,
-        start: start,
-        end: end,
-        scrub: scrub,
-        markers: markers,
-      },
-    });
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
 
     return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
     };
   }
 </script>

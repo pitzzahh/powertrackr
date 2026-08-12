@@ -25,7 +25,7 @@
   import * as Card from "$/components/ui/card/index.js";
   import * as Select from "$/components/ui/select/index.js";
   import { scaleUtc } from "d3-scale";
-  import { Spline, LineChart, Points } from "layerchart";
+  import { Spline, LineChart, Points, getChartContext } from "layerchart";
   import { curveLinear } from "d3-shape";
   import ChartContainer from "$/components/ui/chart/chart-container.svelte";
   import { expoInOut } from "svelte/easing";
@@ -47,6 +47,9 @@
     filteredData: getFilteredData(chartData, timeRange),
     selectedLabel: getSelectedLabel(timeRange),
   });
+
+  const chartCtx = getChartContext();
+  const visibleSeries = $derived(chartCtx?.series?.visibleSeries ?? []);
 
   const { transformedData, CHART_CONFIG } = $derived({
     transformedData: filteredData.map((d) => ({
@@ -141,12 +144,12 @@
             },
           }}
         >
-          {#snippet marks({ series, getSplineProps, getPointsProps })}
-            {#each series as s, i (s.key)}
+          {#snippet marks()}
+            {#each visibleSeries as s, i (s.key)}
               <Spline
-                {...getSplineProps(s, i)}
+                seriesKey={s.key}
                 curve={curveLinear}
-                stroke-width={2}
+                strokeWidth={2}
                 motion={{
                   type: "tween",
                   duration: 1000,
@@ -154,11 +157,11 @@
                 }}
               />
               <Points
-                {...getPointsProps(s, i)}
+                seriesKey={s.key}
                 r={3}
                 fill="white"
                 stroke={s.color}
-                stroke-width={1}
+                strokeWidth={1}
                 motion={{
                   type: "tween",
                   duration: 1000,

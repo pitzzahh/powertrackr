@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { gsap } from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
-  import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   interface Props {
     /**
@@ -30,19 +27,10 @@
      */
     duration?: number;
     /**
-     * Factor to increase speed based on scroll velocity.
-     * @default 0.5
-     */
-    velocity?: number;
-    /**
      * Whether to scroll in the opposite direction.
      * @default false
      */
     reversed?: boolean;
-    /**
-     * The element to watch for scroll events to adjust velocity.
-     */
-    scrollElement?: string | HTMLElement | null;
   }
 
   let {
@@ -51,80 +39,47 @@
     children,
     repeat = 3,
     duration = 5,
-    velocity = 0.5,
     reversed = false,
-    scrollElement,
   }: Props = $props();
-
-  function initMarquee(container: HTMLDivElement) {
-    if (shouldDisableAnimations()) return () => {};
-    gsap.registerPlugin(ScrollTrigger);
-
-    const parts = container.querySelectorAll(".marquee-part");
-    if (!parts?.length) return () => {};
-
-    let direction = reversed ? -1 : 1;
-
-    const timeline = gsap.timeline({
-      repeat: -1,
-      onReverseComplete() {
-        this.totalTime(this.rawTime() + this.duration() * 10);
-      },
-    });
-
-    timeline.to(parts, {
-      xPercent: -100,
-      ease: "none",
-      duration,
-    });
-
-    if (reversed) {
-      timeline.progress(1);
-      timeline.timeScale(-1);
-    }
-
-    const trigger = ScrollTrigger.create({
-      scroller: scrollElement,
-      onUpdate(self) {
-        const currentScrollDir = self.direction;
-        const targetDir = reversed ? -currentScrollDir : currentScrollDir;
-
-        if (direction !== targetDir) {
-          direction = targetDir;
-          gsap.to(timeline, { timeScale: direction, overwrite: true });
-        }
-
-        const scrollVel = self.getVelocity();
-        if (Math.abs(scrollVel) > 0) {
-          const timeScale = direction * (1 + Math.abs(scrollVel * velocity) / 1000);
-          gsap.to(timeline, { timeScale, overwrite: true, duration: 0.1 });
-          gsap.to(timeline, {
-            timeScale: direction,
-            duration: 0.5,
-            delay: 0.1,
-            overwrite: "auto",
-          });
-        }
-      },
-    });
-
-    return () => {
-      timeline.kill();
-      trigger.kill();
-    };
-  }
 </script>
 
-<div {@attach initMarquee} class={cn("flex h-full w-full overflow-hidden", className)}>
-  {#each Array(repeat) as _, i (i)}
-    <div
-      class="marquee-part flex shrink-0"
-      style:gap="{gap}px"
-      style:padding-left="{gap / 2}px"
-      style:padding-right="{gap / 2}px"
-      aria-hidden={i > 0}
-    >
-      {@render children?.()}
-    </div>
-  {/each}
+<div class={cn("flex h-full w-full overflow-hidden", className)}>
+  <div
+    class="marquee-track"
+    style="--marquee-repeat: {repeat}; --marquee-duration: {duration}s; animation-direction: {reversed ? "reverse" : "normal"};"
+  >
+    {#each Array(repeat) as _, i (i)}
+      <div
+        class="marquee-part flex shrink-0"
+        style:gap="{gap}px"
+        style:padding-left="{gap / 2}px"
+        style:padding-right="{gap / 2}px"
+        aria-hidden={i > 0}
+      >
+        {@render children?.()}
+      </div>
+    {/each}
+  </div>
 </div>
+
+<style>
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: marquee-scroll linear infinite;
+    animation-duration: var(--marquee-duration, 5s);
+  }
+
+  @keyframes marquee-scroll {
+    to {
+      transform: translateX(calc(-100% / var(--marquee-repeat, 3)));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+    }
+  }
+</style>

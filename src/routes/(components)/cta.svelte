@@ -8,6 +8,7 @@
   import { Button } from "$/components/ui/button";
   import { Banknote, Download, InvoiceIcon } from "$lib/assets/icons";
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
+  import SectionLabel from "./section-label.svelte";
 
   let { user }: CtaProps = $props();
 </script>
@@ -16,12 +17,17 @@
   <div class="container mx-auto px-4">
     <ScrollReveal preset="scale" duration={0.8} scale={0.96}>
       <div
-        class="relative overflow-hidden rounded-3xl border border-border/60 bg-background/60 p-8 backdrop-blur sm:p-12 lg:p-14"
+        class="relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 p-8 backdrop-blur sm:p-12 lg:p-14"
       >
+        <div
+          class="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
+          aria-hidden="true"
+        ></div>
         <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <div class="relative">
+            <SectionLabel index="04" label="Get Started" note="takes about a minute" />
             <SplitReveal mode="words" triggerOnScroll>
-              <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
+              <h2 class="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
                 Ready to simplify your billing?
               </h2>
             </SplitReveal>
@@ -58,12 +64,9 @@
           </div>
 
           <div class="relative">
-            <div
-              class="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/10 blur-2xl"
-            ></div>
             <div class="rounded-2xl border border-primary/20 bg-primary/5 p-6">
               <div
-                class="flex items-center justify-between text-xs tracking-[0.3em] text-muted-foreground uppercase"
+                class="flex items-center justify-between font-mono text-[11px] tracking-[0.3em] text-muted-foreground uppercase"
               >
                 <span>Quick Actions</span>
               </div>

@@ -13,7 +13,7 @@
   type ChartBarState = {
     timeRange: TimeRangeOption["value"];
     activeChart: "totalkWh" | "mainKWh" | "subkWh" | "all";
-    context: ChartContextValue;
+    context: ChartState;
     totalkWh: number;
     mainKWh: number;
     subkWh: number;
@@ -30,7 +30,7 @@
   import * as Chart from "$/components/ui/chart/index.js";
   import * as Card from "$/components/ui/card/index.js";
   import * as Select from "$/components/ui/select/index.js";
-  import { BarChart, Highlight, type ChartContextValue } from "layerchart";
+  import { BarChart, type ChartState } from "layerchart";
   import { scaleBand } from "d3-scale";
   import { quintInOut } from "svelte/easing";
   import { formatDate, formatNumber, formatEnergy } from "$/utils/format";
@@ -228,6 +228,7 @@
           xScale={scaleBand().padding(0.25)}
           series={activeSeries}
           seriesLayout="group"
+          highlight={{ area: { class: "fill-black/10" } }}
           props={{
             bars: {
               stroke: "none",
@@ -247,7 +248,6 @@
                 },
               },
             },
-            highlight: { area: { fill: "none" } },
             xAxis: {
               format: (d: Date) => {
                 return d.toLocaleDateString("en-US", {
@@ -261,13 +261,6 @@
             },
           }}
         >
-          {#snippet belowMarks()}
-            <Highlight
-              area={{
-                class: "fill-black/10",
-              }}
-            />
-          {/snippet}
           {#snippet tooltip()}
             <Chart.Tooltip unit={chartUnit} labelFormatter={(v: Date) => formatDate(v)} />
           {/snippet}

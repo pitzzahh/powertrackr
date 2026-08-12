@@ -6,7 +6,6 @@
 
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import { gsap } from "gsap";
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
   import { ChartLine, Users, Shield, Download, InvoiceIcon } from "$lib/assets/icons";
@@ -44,7 +43,7 @@
 
           ctx.beginPath();
           ctx.arc(x, y, 1.2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
+          ctx.fillStyle = `rgba(240, 177, 0, ${alpha})`;
           ctx.fill();
 
           if (c < cols) {
@@ -52,7 +51,7 @@
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x + cellW, y);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${lineAlpha})`;
+            ctx.strokeStyle = `rgba(240, 177, 0, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -62,7 +61,7 @@
             ctx.beginPath();
             ctx.moveTo(x, y);
             ctx.lineTo(x, y + cellH);
-            ctx.strokeStyle = `rgba(56, 189, 248, ${lineAlpha})`;
+            ctx.strokeStyle = `rgba(240, 177, 0, ${lineAlpha})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }
@@ -75,9 +74,9 @@
         const sparkAlpha = 0.6 + Math.random() * 0.4;
         ctx.beginPath();
         ctx.arc(sx, sy, 2.5 + Math.random() * 2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(186, 230, 253, ${sparkAlpha})`;
+        ctx.fillStyle = `rgba(255, 220, 76, ${sparkAlpha})`;
         ctx.shadowBlur = 8;
-        ctx.shadowColor = "rgba(56, 189, 248, 0.8)";
+        ctx.shadowColor = "rgba(240, 177, 0, 0.8)";
         ctx.fill();
         ctx.shadowBlur = 0;
       }
@@ -97,26 +96,10 @@
     };
   }
 
-  // ─── GSAP entrance animations ─────────────────────────────────────────────
-  function initAnimations(footer: HTMLElement) {
-    gsap.fromTo(
-      footer.querySelectorAll(".footer-col"),
-      { opacity: 0, y: 24 },
-      { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power3.out", delay: 0.1 }
-    );
-
-    gsap.fromTo(
-      footer.querySelectorAll(".footer-bottom > *"),
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power2.out", delay: 0.5 }
-    );
-  }
-
   // ─── attach attachment ─────────────────────────────────────────────────────
   function footerAttach(footer: HTMLElement) {
     const canvas = footer.querySelector<HTMLCanvasElement>("canvas.grid-canvas")!;
     const cleanupCanvas = initCanvas(canvas);
-    initAnimations(footer);
     return () => {
       cleanupCanvas();
     };
@@ -251,9 +234,47 @@
 </footer>
 
 <style>
-  /* GSAP animates these in — start hidden */
-  .footer-col,
+  /* Entrance animations — pure CSS, staggered on load */
+  .footer-col {
+    opacity: 0;
+    animation: footer-rise 0.6s ease-out forwards;
+  }
+  .footer-col:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .footer-col:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .footer-col:nth-child(3) {
+    animation-delay: 0.3s;
+  }
   .footer-bottom > * {
     opacity: 0;
+    animation: footer-rise 0.5s ease-out forwards;
+  }
+  .footer-bottom > *:nth-child(1) {
+    animation-delay: 0.5s;
+  }
+  .footer-bottom > *:nth-child(2) {
+    animation-delay: 0.58s;
+  }
+
+  @keyframes footer-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer-col,
+    .footer-bottom > * {
+      animation: none;
+      opacity: 1;
+    }
   }
 </style>

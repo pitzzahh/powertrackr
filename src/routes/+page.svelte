@@ -18,43 +18,31 @@
 <div class="relative min-h-screen overflow-hidden bg-background">
   <LandingNav user={data.user} session={data.session} />
 
-  <!-- Hero Section with scroll indicator -->
-  <div class="relative">
+  <main>
     <Hero user={data.user} session={data.session} />
-  </div>
 
-  <!-- Benefits Marquee - Visual break with movement -->
-  <BenefitsMarquee />
+    <BenefitsMarquee />
 
-  <!-- How It Works Section -->
-  <div class="relative">
-    <div class="absolute inset-0 bg-linear-to-b from-transparent via-muted/20 to-transparent"></div>
     <HowItWorks />
-  </div>
 
-  <!-- Stats Section with parallax offset -->
-  <ScrollParallax speed={0.01}>
-    <Stats />
-  </ScrollParallax>
-
-  <!-- Features Section - Alternate background with enhanced texture -->
-  <div class="relative bg-muted/20">
-    <Features />
-  </div>
-
-  <div class="bg-muted/50">
-    <Scenarios />
-  </div>
-
-  <!-- CTA Section - With dramatic separators and parallax -->
-  <div class="relative">
-    <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-      <Cta user={data.user} />
+    <ScrollParallax speed={0.01}>
+      <Stats />
     </ScrollParallax>
-  </div>
 
-  <!-- Footer -->
-  <div class="relative">
-    <LandingFooter user={data.user} />
-  </div>
+    <Features />
+
+    <Scenarios />
+
+    <div class="relative">
+      <div
+        class="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-border/80 to-transparent"
+        aria-hidden="true"
+      ></div>
+      <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
+        <Cta user={data.user} />
+      </ScrollParallax>
+    </div>
+  </main>
+
+  <LandingFooter user={data.user} />
 </div>

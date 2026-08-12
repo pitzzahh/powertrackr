@@ -4,6 +4,7 @@ allowBuilds:
   workerd: true
 minimumReleaseAgeExclude:
   - cookie@0.7.0
+  - layerchart@2.1.1
 overrides:
   cookie@<0.7.0: ^0.7.0
   # @sveltejs/enhanced-img still pins sharp@^0.34.1; force the patched line

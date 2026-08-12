@@ -1,8 +1,4 @@
 <script lang="ts">
-  import { gsap } from "gsap";
-  import { CustomEase } from "gsap/CustomEase";
-  import { SplitText } from "gsap/SplitText";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
   import type { Snippet } from "svelte";
   import { cn } from "../utils/cn";
   import { shouldDisableAnimations } from "../utils/reduced-motion";
@@ -45,14 +41,10 @@
      */
     triggerOnScroll?: boolean;
     /**
-     * The element to use as the scroll trigger (optional).
-     */
-    scrollElement?: string | HTMLElement | null;
-    /**
      * The HTML tag to use for the wrapper.
-     * @default "div"
+     * @default "span"
      */
-    as?: keyof HTMLSpanElement;
+    as?: keyof HTMLElementTagNameMap;
     [prop: string]: unknown;
   }
 
@@ -64,15 +56,16 @@
     chars: { duration: 0.4, stagger: 0.008 },
   };
 
+  const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+
   let {
     children,
     class: className = "",
     mode = "lines" as SplitMode,
     config,
-    as = "span" as keyof HTMLSpanElement,
+    as = "span" as keyof HTMLElementTagNameMap,
     delay = 0,
     triggerOnScroll = false,
-    scrollElement,
     ...restProps
   }: ComponentProps = $props();
 
@@ -94,75 +87,124 @@
     };
   });
 
-  async function waitForFonts(): Promise<void> {
-    // Check if document.fonts API is available
-    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
-      await document.fonts.ready;
-    }
-  }
+  let revealed = $state(false);
+  let io: IntersectionObserver | null = null;
 
   function initSplitReveal(node: HTMLElement) {
-    if (shouldDisableAnimations()) return () => {};
-    gsap.registerPlugin(SplitText, CustomEase, ScrollTrigger);
-    CustomEase.create("motion-core-ease", "0.625, 0.05, 0, 1");
+    // Split the node's own text, or the text of its single element child
+    // (e.g. when wrapping an <h2> or <p>). Mixed content is skipped.
+    const elementChildren = [...node.children];
+    const target =
+      elementChildren.length === 1 ? (elementChildren[0] as HTMLElement) : node;
+    if (target !== node && [...target.childNodes].some((n) => n.nodeType === 1)) return () => {};
+    const text = target.textContent ?? "";
+    if (!text.trim()) return () => {};
 
-    let split: SplitText | null = null;
-    let tween: gsap.core.Tween | null = null;
+    let cancelled = false;
 
-    // Hide the node initially to prevent flash of unstyled content
-    gsap.set(node, { visibility: "hidden" });
+    async function split() {
+      try {
+        await document.fonts.ready;
+      } catch {
+        // fonts API unavailable — proceed anyway
+      }
+      if (cancelled) return;
 
-    // Wait for fonts to load before splitting text
-    waitForFonts().then(() => {
-      // Make visible again
-      gsap.set(node, { visibility: "visible" });
+      target.style.visibility = "hidden";
 
-      split = SplitText.create(node, {
-        type: "lines, words, chars",
-        tag: as,
-        mask: "lines",
-        aria: "none",
+      const tokens = text.split(/(\s+)/);
+      const wordSpans = tokens.map((token) => {
+        const span = document.createElement("span");
+        span.textContent = token;
+        return span;
       });
 
-      const targets =
-        mode === "lines"
-          ? (split.lines ?? [])
-          : mode === "words"
-            ? (split.words ?? [])
-            : (split.chars ?? []);
+      // Group tokens into lines by measuring their vertical position.
+      let groups: HTMLElement[][] = [];
+      if (mode === "lines") {
+        target.replaceChildren(...wordSpans);
+        void target.offsetWidth; // force reflow for measurement
 
-      if (!targets.length) {
-        split.revert();
-        split = null;
+        let line: HTMLElement[] = [];
+        let lastTop: number | null = null;
+        for (const word of wordSpans) {
+          const top = word.offsetTop;
+          if (lastTop !== null && top !== lastTop) {
+            groups.push(line);
+            line = [];
+          }
+          line.push(word);
+          lastTop = top;
+        }
+        if (line.length) groups.push(line);
+      } else if (mode === "words") {
+        groups = wordSpans.map((word) => [word]);
+      } else {
+        // chars — split each non-whitespace word into characters
+        groups = wordSpans.map((word) => {
+          if (!word.textContent || !word.textContent.trim()) return [word];
+          return [...word.textContent].map((char) => {
+            const span = document.createElement("span");
+            span.textContent = char;
+            return span;
+          });
+        });
+      }
+
+      // Build the revealed DOM.
+      const fragment = document.createDocumentFragment();
+      let index = 0;
+      for (const group of groups) {
+        const transitionDelay = `${delay + index * resolvedConfig.stagger}s`;
+        const transitionDuration = `${resolvedConfig.duration}s`;
+
+        if (mode === "lines") {
+          const mask = document.createElement("span");
+          mask.className = "sr-mask";
+          const inner = document.createElement("span");
+          inner.className = "sr-unit";
+          inner.style.transitionDuration = transitionDuration;
+          inner.style.transitionDelay = transitionDelay;
+          for (const el of group) inner.appendChild(el);
+          mask.appendChild(inner);
+          fragment.appendChild(mask);
+        } else {
+          for (const unit of group) {
+            unit.className = "sr-unit";
+            unit.style.transitionDuration = transitionDuration;
+            unit.style.transitionDelay = transitionDelay;
+            fragment.appendChild(unit);
+          }
+        }
+        index++;
+      }
+
+      target.replaceChildren(fragment);
+      target.style.visibility = "visible";
+
+      if (!triggerOnScroll || shouldDisableAnimations()) {
+        revealed = true;
         return;
       }
 
-      gsap.set(targets, { yPercent: 110 });
-
-      tween = gsap.to(targets, {
-        yPercent: 0,
-        duration: resolvedConfig.duration,
-        stagger: resolvedConfig.stagger,
-        ease: "motion-core-ease",
-        lazy: false,
-        delay: delay,
-        scrollTrigger: triggerOnScroll
-          ? {
-              trigger: node,
-              scroller: scrollElement,
-              start: "top 85%",
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              revealed = true;
+              io?.disconnect();
             }
-          : undefined,
-      });
-    });
+          }
+        },
+        { threshold: 0.2 }
+      );
+      io.observe(target);
+    }
 
+    split();
     return () => {
-      if (tween) {
-        tween.kill();
-      }
-      if (split) {
-        split.revert();
-      }
+      cancelled = true;
+      io?.disconnect();
     };
   }
 </script>
@@ -172,6 +214,38 @@
   {...forwardedProps}
   {@attach initSplitReveal}
   class={cn("font-inherit relative align-baseline text-inherit", className)}
+  class:is-revealed={revealed}
 >
   {@render children?.()}
 </svelte:element>
+
+<style>
+  :global(.sr-mask) {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+  }
+
+  :global(.sr-unit) {
+    display: inline-block;
+    transform: translateY(110%);
+    opacity: 0;
+    transition:
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  .is-revealed :global(.sr-unit) {
+    transform: none;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.sr-unit) {
+      transform: none;
+      opacity: 1;
+      transition: none;
+    }
+  }
+</style>
