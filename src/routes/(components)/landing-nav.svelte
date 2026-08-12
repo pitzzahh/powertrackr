@@ -10,11 +10,8 @@
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
-  import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
   let { user, session }: LandingNavProps = $props();
-
-  const isMobile = new IsMobile();
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -51,25 +48,22 @@
       </ul>
     </nav>
 
-    {#if !isMobile.current}
-      <div class="flex items-center justify-end gap-2">
-        {#if fullyAuthenticated}
-          <Button href={resolve("/dashboard")} class="hidden sm:inline-flex">Go to Dashboard</Button
-          >
-        {:else if needs2FA}
-          <Button href={resolve("/auth?act=2fa-checkpoint")} class="hidden sm:inline-flex">
-            Verify Two-Factor Authentication
-          </Button>
-        {:else}
-          <Button variant="outline" href={resolve("/auth?act=login")} class="hidden sm:inline-flex"
-            >Sign In</Button
-          >
-          <Button href={resolve("/auth?act=register")} class="hidden sm:inline-flex"
-            >Get Started</Button
-          >
-        {/if}
-      </div>
-    {/if}
+    <div class="hidden items-center justify-end gap-2 sm:flex">
+      {#if fullyAuthenticated}
+        <Button href={resolve("/dashboard")} class="inline-flex">Go to Dashboard</Button
+        >
+      {:else if needs2FA}
+        <Button href={resolve("/auth?act=2fa-checkpoint")} class="inline-flex">
+          Verify Two-Factor Authentication
+        </Button>
+      {:else}
+        <Button variant="outline" href={resolve("/auth?act=login")} class="inline-flex"
+          >Sign In</Button
+        >
+        <Button href={resolve("/auth?act=register")} class="inline-flex">Get Started</Button
+        >
+      {/if}
+    </div>
   </div>
 </header>
 </div>
