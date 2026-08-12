@@ -21,7 +21,10 @@
   <div class="container mx-auto px-4">
     <div class="flex items-center gap-3 text-muted-foreground">
       <p class="font-mono text-[11px] font-medium tracking-[0.3em] uppercase">Benefits</p>
-      <div class="h-px flex-1 bg-linear-to-r from-border/80 to-transparent" aria-hidden="true"></div>
+      <div
+        class="h-px flex-1 bg-linear-to-r from-border/80 to-transparent"
+        aria-hidden="true"
+      ></div>
     </div>
 
     <div

@@ -66,7 +66,7 @@
 <section class="relative z-10 overflow-hidden">
   <!-- Blueprint grid backdrop -->
   <div
-    class="pointer-events-none absolute inset-x-0 top-8 bottom-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_0%,black,transparent)]"
+    class="pointer-events-none absolute inset-x-0 top-8 bottom-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_0%,black,transparent)] bg-[size:48px_48px]"
     aria-hidden="true"
   ></div>
   <!-- Top glow -->
@@ -75,7 +75,7 @@
     aria-hidden="true"
   ></div>
 
-  <div class="container relative mx-auto px-4 py-20 lg:py-28">
+  <div class="relative container mx-auto px-4 py-20 lg:py-28">
     <div class="grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
       <div class="relative">
         <div
@@ -154,9 +154,7 @@
                 <span class="size-1.5 animate-pulse rounded-full bg-primary"></span>
                 Live readout
               </span>
-              <span
-                class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
-              >
+              <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
                 PowerTrackr
               </span>
             </div>
@@ -221,9 +219,7 @@
               </Chart>
 
               <div class="mt-2 text-center">
-                <p
-                  class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
-                >
+                <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
                   Total energy tracked
                 </p>
                 <p class="mt-2 text-4xl font-semibold text-primary tabular-nums">
@@ -235,7 +231,7 @@
                       trailingZeroDisplay: "stripIfInteger",
                     }}
                     suffix={energyUnit}
-                    class="[&::part(suffix)]:ml-2 text-primary"
+                    class="text-primary [&::part(suffix)]:ml-2"
                   />
                 </p>
               </div>
@@ -243,9 +239,7 @@
 
             <div class="mt-6 grid grid-cols-2 divide-x divide-border/70 border-t border-border/70">
               <div class="px-5 py-4">
-                <p
-                  class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
-                >
+                <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
                   Bills tracked
                 </p>
                 <p class="mt-1 text-lg font-semibold tabular-nums">
@@ -262,9 +256,7 @@
                 </p>
               </div>
               <div class="px-5 py-4">
-                <p
-                  class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase"
-                >
+                <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
                   Payments managed
                 </p>
                 <p class="mt-1 text-lg font-semibold tabular-nums">

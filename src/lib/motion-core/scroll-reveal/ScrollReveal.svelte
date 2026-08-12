@@ -4,14 +4,7 @@
   import { shouldDisableAnimations } from "../utils/reduced-motion";
 
   type AnimationPreset =
-    | "fade"
-    | "slide-up"
-    | "slide-down"
-    | "slide-left"
-    | "slide-right"
-    | "scale"
-    | "rotate"
-    | "blur";
+    "fade" | "slide-up" | "slide-down" | "slide-left" | "slide-right" | "scale" | "rotate" | "blur";
 
   interface ComponentProps {
     /**

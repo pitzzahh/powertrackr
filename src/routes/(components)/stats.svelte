@@ -76,9 +76,7 @@
 
 <section class="relative z-10 py-20 lg:py-28">
   <div class="container mx-auto px-4">
-    <div
-      class="overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur"
-    >
+    <div class="overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur">
       <div class="flex items-center justify-between border-b border-border/70 px-6 py-4">
         <div
           class="flex items-center gap-2.5 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
@@ -100,9 +98,7 @@
       >
         {#each statsList as stat (stat.label)}
           <div class="bg-card p-6 lg:p-8">
-            <p
-              class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
-            >
+            <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
               {stat.label}
             </p>
             <p class="mt-3 text-3xl font-semibold text-primary tabular-nums md:text-4xl">
@@ -111,7 +107,7 @@
                 suffix={stat.suffix}
                 prefix={stat.prefix}
                 value={stat.value}
-                class="[&::part(suffix)]:ml-2 text-primary"
+                class="text-primary [&::part(suffix)]:ml-2"
               />
             </p>
           </div>

@@ -46,7 +46,9 @@
 <div class={cn("flex h-full w-full overflow-hidden", className)}>
   <div
     class="marquee-track"
-    style="--marquee-repeat: {repeat}; --marquee-duration: {duration}s; animation-direction: {reversed ? "reverse" : "normal"};"
+    style="--marquee-repeat: {repeat}; --marquee-duration: {duration}s; animation-direction: {reversed
+      ? 'reverse'
+      : 'normal'};"
   >
     {#each Array(repeat) as _, i (i)}
       <div

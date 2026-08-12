@@ -94,8 +94,7 @@
     // Split the node's own text, or the text of its single element child
     // (e.g. when wrapping an <h2> or <p>). Mixed content is skipped.
     const elementChildren = [...node.children];
-    const target =
-      elementChildren.length === 1 ? (elementChildren[0] as HTMLElement) : node;
+    const target = elementChildren.length === 1 ? (elementChildren[0] as HTMLElement) : node;
     if (target !== node && [...target.childNodes].some((n) => n.nodeType === 1)) return () => {};
     const text = target.textContent ?? "";
     if (!text.trim()) return () => {};
@@ -228,6 +227,7 @@
 
   :global(.sr-unit) {
     display: inline-block;
+    white-space: pre;
     transform: translateY(110%);
     opacity: 0;
     transition:
