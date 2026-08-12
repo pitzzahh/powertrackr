@@ -23,8 +23,8 @@
 
   let { texts, interval = 2000, class: className, currentIndex = $bindable(0) }: Props = $props();
   let isFirst = $state(true);
-  let width = $state(0);
-  // The widest word reserves the box width so the headline never reflows.
+  let wordWidths = $state<number[]>([]);
+  // Invisible spacer word — reserves width/baseline before measurement.
   let widest = $state("");
 
   function measureWidth(node: HTMLElement) {
@@ -35,17 +35,13 @@
     document.body.appendChild(probe);
 
     function measure() {
-      let maxWidth = 0;
-      let maxText = texts[0] ?? "";
-      for (const text of texts) {
+      const widths = texts.map((text) => {
         probe.textContent = text;
-        if (probe.offsetWidth > maxWidth) {
-          maxWidth = probe.offsetWidth;
-          maxText = text;
-        }
-      }
-      width = maxWidth;
-      widest = maxText;
+        return probe.offsetWidth;
+      });
+      wordWidths = widths;
+      const max = Math.max(...widths, 0);
+      widest = widths.indexOf(max) >= 0 ? texts[widths.indexOf(max)] : "";
     }
 
     measure();
@@ -55,6 +51,10 @@
       document.body.removeChild(probe);
     };
   }
+
+  // The box animates between the current word's width and the next, so the
+  // headline never jumps and short words don't leave a large gap.
+  const boxWidth = $derived(wordWidths[currentIndex] ?? wordWidths[0] ?? 0);
 
   onMount(() => {
     if (shouldDisableAnimations()) return;
@@ -72,19 +72,18 @@
   style="clip-path: inset(-100vh 0 -100vh 0); min-width: auto;"
   {@attach measureWidth}
 >
-  <!-- Invisible widest word reserves the width and baseline -->
-  <span class="font-inherit invisible text-inherit" aria-hidden="true">{widest}</span>
+  <span
+    class="font-inherit invisible inline-block text-inherit"
+    style={`${boxWidth ? `width: ${boxWidth}px;` : ""} transition: width 0.3s ease;`}
+    aria-hidden="true"
+    >{widest || texts[0]}</span
+  >
   {#key currentIndex}
     <span
       class={cn(
         "font-inherit absolute inset-0 flex items-center justify-center whitespace-nowrap text-inherit"
       )}
-      in:fly={{
-        y: isFirst ? 0 : 40,
-        opacity: isFirst ? 1 : 0,
-        duration: isFirst ? 0 : 300,
-        delay: isFirst ? 0 : 150,
-      }}
+      in:fly={{ y: isFirst ? 0 : 40, opacity: isFirst ? 1 : 0, duration: isFirst ? 0 : 300, delay: isFirst ? 0 : 150 }}
       out:fly={{ y: -40, opacity: 0, duration: 150 }}
     >
       {texts[currentIndex]}
