@@ -16,7 +16,17 @@
   import { TextLoop } from "$lib/motion-core";
   import { getStats } from "$/api/stats.remote";
   import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
-  import { Arc, Chart, Circle, ClipPath, Group, Layer, Line, LinearGradient, Text } from "layerchart";
+  import {
+    Arc,
+    Chart,
+    Circle,
+    ClipPath,
+    Group,
+    Layer,
+    Line,
+    LinearGradient,
+    Text,
+  } from "layerchart";
   import { scaleLinear } from "d3-scale";
   import type { Stats } from "$/types/stats";
 
@@ -91,7 +101,10 @@
           class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] text-primary uppercase"
         >
           <Zap class="size-3.5" />
-          <span>Electricity billing<span class="hidden sm:inline">, without the spreadsheet</span></span>
+          <span
+            >Electricity billing<span class="hidden sm:inline">, without the spreadsheet</span
+            ></span
+          >
         </div>
 
         <h1 class="mt-6 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
@@ -148,169 +161,169 @@
 
       <!-- Live meter -->
       <div class="relative mx-auto w-full max-w-md">
-          <div
-            class="absolute -inset-6 rounded-[2.5rem] bg-primary/10 blur-3xl"
-            aria-hidden="true"
-          ></div>
-          <div
-            class="relative overflow-hidden rounded-3xl border border-border/70 bg-card/80 backdrop-blur"
-          >
-            <div class="flex items-center justify-between border-b border-border/70 px-5 py-3.5">
-              <span
-                class="flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
-              >
-                <span class="size-1.5 animate-pulse rounded-full bg-primary"></span>
-                Live readout
-              </span>
-              <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
-                PowerTrackr
-              </span>
-            </div>
+        <div
+          class="absolute -inset-6 rounded-[2.5rem] bg-primary/10 blur-3xl"
+          aria-hidden="true"
+        ></div>
+        <div
+          class="relative overflow-hidden rounded-3xl border border-border/70 bg-card/80 backdrop-blur"
+        >
+          <div class="flex items-center justify-between border-b border-border/70 px-5 py-3.5">
+            <span
+              class="flex items-center gap-2 font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase"
+            >
+              <span class="size-1.5 animate-pulse rounded-full bg-primary"></span>
+              Live readout
+            </span>
+            <span class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
+              PowerTrackr
+            </span>
+          </div>
 
-            <div class="h-[210px] px-5 pt-5">
-              <Chart height={190} padding={20} class="mx-auto w-full max-w-[16rem]">
-                <Layer center>
-                  <Group y={22}>
-                    <LinearGradient class="from-primary/30 via-primary/70 to-primary">
-                      {#snippet children({ gradient })}
-                        <ClipPath>
-                          {#snippet clip()}
-                            <Arc
-                              value={dial}
-                              {domain}
-                              range={angleRange}
-                              {...gaugeRadius}
-                              cornerRadius={8}
-                            />
-                          {/snippet}
+          <div class="h-[210px] px-5 pt-5">
+            <Chart height={190} padding={20} class="mx-auto w-full max-w-[16rem]">
+              <Layer center>
+                <Group y={22}>
+                  <LinearGradient class="from-primary/30 via-primary/70 to-primary">
+                    {#snippet children({ gradient })}
+                      <ClipPath>
+                        {#snippet clip()}
                           <Arc
-                            value={domain[1]}
+                            value={dial}
                             {domain}
                             range={angleRange}
                             {...gaugeRadius}
                             cornerRadius={8}
-                            fill={gradient}
                           />
-                        </ClipPath>
-                      {/snippet}
-                    </LinearGradient>
+                        {/snippet}
+                        <Arc
+                          value={domain[1]}
+                          {domain}
+                          range={angleRange}
+                          {...gaugeRadius}
+                          cornerRadius={8}
+                          fill={gradient}
+                        />
+                      </ClipPath>
+                    {/snippet}
+                  </LinearGradient>
 
-                    <!-- Track outline -->
-                    <Arc
-                      value={domain[1]}
-                      {domain}
-                      range={angleRange}
-                      {...gaugeRadius}
-                      cornerRadius={8}
-                      class="fill-none"
-                      track={{ class: "fill-none stroke-foreground/15" }}
-                    />
+                  <!-- Track outline -->
+                  <Arc
+                    value={domain[1]}
+                    {domain}
+                    range={angleRange}
+                    {...gaugeRadius}
+                    cornerRadius={8}
+                    class="fill-none"
+                    track={{ class: "fill-none stroke-foreground/15" }}
+                  />
 
-                    <!-- Minor tick marks -->
-                    {#each gaugeMinorTicks as tick (tick)}
-                      {@const angleDeg = angleScale(tick)}
-                      {@const angleRad = (angleDeg * Math.PI) / 180}
-                      {@const tickInner = 66 - 7}
-                      {@const tickOuter = 66 - 2}
-                      <Line
-                        x1={Math.sin(angleRad) * tickInner}
-                        y1={-Math.cos(angleRad) * tickInner}
-                        x2={Math.sin(angleRad) * tickOuter}
-                        y2={-Math.cos(angleRad) * tickOuter}
-                        class="stroke-foreground/20"
-                        strokeWidth={1}
-                      />
-                    {/each}
-
-                    <!-- Major tick marks -->
-                    {#each gaugeTicks as tick (tick)}
-                      {@const angleDeg = angleScale(tick)}
-                      {@const angleRad = (angleDeg * Math.PI) / 180}
-                      {@const tickInner = 66 - 10}
-                      {@const tickOuter = 66 - 3}
-                      <Line
-                        x1={Math.sin(angleRad) * tickInner}
-                        y1={-Math.cos(angleRad) * tickInner}
-                        x2={Math.sin(angleRad) * tickOuter}
-                        y2={-Math.cos(angleRad) * tickOuter}
-                        class={tick === 50 ? "stroke-foreground/60" : "stroke-foreground/25"}
-                        strokeWidth={tick === 50 ? 2 : 1.2}
-                      />
-                    {/each}
-
-                    <!-- Needle -->
+                  <!-- Minor tick marks -->
+                  {#each gaugeMinorTicks as tick (tick)}
+                    {@const angleDeg = angleScale(tick)}
+                    {@const angleRad = (angleDeg * Math.PI) / 180}
+                    {@const tickInner = 66 - 7}
+                    {@const tickOuter = 66 - 2}
                     <Line
-                      x1={Math.sin(needleAngle) * -8}
-                      y1={-Math.cos(needleAngle) * -8}
-                      x2={Math.sin(needleAngle) * 52}
-                      y2={-Math.cos(needleAngle) * 52}
-                      class="stroke-foreground"
-                      stroke-width={2.5}
-                      stroke-linecap="round"
+                      x1={Math.sin(angleRad) * tickInner}
+                      y1={-Math.cos(angleRad) * tickInner}
+                      x2={Math.sin(angleRad) * tickOuter}
+                      y2={-Math.cos(angleRad) * tickOuter}
+                      class="stroke-foreground/20"
+                      strokeWidth={1}
                     />
-                    <Circle r={5} class="fill-primary" />
-                    <Circle r={1.8} class="fill-background" />
+                  {/each}
 
-                    <!-- Value readout -->
-                    <Text
-                      value={formattedEnergy}
-                      textAnchor="middle"
-                      verticalAnchor="middle"
-                      dy={24}
-                      class="text-3xl font-bold fill-foreground tabular-nums"
+                  <!-- Major tick marks -->
+                  {#each gaugeTicks as tick (tick)}
+                    {@const angleDeg = angleScale(tick)}
+                    {@const angleRad = (angleDeg * Math.PI) / 180}
+                    {@const tickInner = 66 - 10}
+                    {@const tickOuter = 66 - 3}
+                    <Line
+                      x1={Math.sin(angleRad) * tickInner}
+                      y1={-Math.cos(angleRad) * tickInner}
+                      x2={Math.sin(angleRad) * tickOuter}
+                      y2={-Math.cos(angleRad) * tickOuter}
+                      class={tick === 50 ? "stroke-foreground/60" : "stroke-foreground/25"}
+                      strokeWidth={tick === 50 ? 2 : 1.2}
                     />
-                    <Text
-                      x={0}
-                      y={44}
-                      value={energyUnit}
-                      textAnchor="middle"
-                      verticalAnchor="middle"
-                      class="text-[10px] fill-muted-foreground font-mono uppercase"
-                    />
-                  </Group>
-                </Layer>
-              </Chart>
+                  {/each}
+
+                  <!-- Needle -->
+                  <Line
+                    x1={Math.sin(needleAngle) * -8}
+                    y1={-Math.cos(needleAngle) * -8}
+                    x2={Math.sin(needleAngle) * 52}
+                    y2={-Math.cos(needleAngle) * 52}
+                    class="stroke-foreground"
+                    stroke-width={2.5}
+                    stroke-linecap="round"
+                  />
+                  <Circle r={5} class="fill-primary" />
+                  <Circle r={1.8} class="fill-background" />
+
+                  <!-- Value readout -->
+                  <Text
+                    value={formattedEnergy}
+                    textAnchor="middle"
+                    verticalAnchor="middle"
+                    dy={24}
+                    class="fill-foreground text-3xl font-bold tabular-nums"
+                  />
+                  <Text
+                    x={0}
+                    y={44}
+                    value={energyUnit}
+                    textAnchor="middle"
+                    verticalAnchor="middle"
+                    class="fill-muted-foreground font-mono text-[10px] uppercase"
+                  />
+                </Group>
+              </Layer>
+            </Chart>
+          </div>
+
+          <div class="mt-6 grid grid-cols-2 divide-x divide-border/70 border-t border-border/70">
+            <div class="px-5 py-4">
+              <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+                Bills tracked
+              </p>
+              <p class="mt-1 text-lg font-semibold tabular-nums">
+                <NumberTicker
+                  value={stats.billingCount}
+                  format={{
+                    style: "decimal",
+                    notation: "compact",
+                    trailingZeroDisplay: "stripIfInteger",
+                  }}
+                  suffix="+"
+                  class="text-foreground [&::part(suffix)]:ml-1"
+                />
+              </p>
             </div>
-
-            <div class="mt-6 grid grid-cols-2 divide-x divide-border/70 border-t border-border/70">
-              <div class="px-5 py-4">
-                <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
-                  Bills tracked
-                </p>
-                <p class="mt-1 text-lg font-semibold tabular-nums">
-                  <NumberTicker
-                    value={stats.billingCount}
-                    format={{
-                      style: "decimal",
-                      notation: "compact",
-                      trailingZeroDisplay: "stripIfInteger",
-                    }}
-                    suffix="+"
-                    class="text-foreground [&::part(suffix)]:ml-1"
-                  />
-                </p>
-              </div>
-              <div class="px-5 py-4">
-                <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
-                  Payments managed
-                </p>
-                <p class="mt-1 text-lg font-semibold tabular-nums">
-                  <NumberTicker
-                    value={stats.paymentsAmount.total}
-                    format={{
-                      style: "currency",
-                      currency: "PHP",
-                      notation: "compact",
-                      trailingZeroDisplay: "stripIfInteger",
-                    }}
-                    suffix="+"
-                    class="text-foreground [&::part(suffix)]:ml-1"
-                  />
-                </p>
-              </div>
+            <div class="px-5 py-4">
+              <p class="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
+                Payments managed
+              </p>
+              <p class="mt-1 text-lg font-semibold tabular-nums">
+                <NumberTicker
+                  value={stats.paymentsAmount.total}
+                  format={{
+                    style: "currency",
+                    currency: "PHP",
+                    notation: "compact",
+                    trailingZeroDisplay: "stripIfInteger",
+                  }}
+                  suffix="+"
+                  class="text-foreground [&::part(suffix)]:ml-1"
+                />
+              </p>
             </div>
           </div>
         </div>
+      </div>
     </div>
   </div>
 </section>

@@ -75,15 +75,19 @@
   <span
     class="font-inherit invisible inline-block text-inherit"
     style={`${boxWidth ? `width: ${boxWidth}px;` : ""} transition: width 0.3s ease;`}
-    aria-hidden="true"
-    >{widest || texts[0]}</span
+    aria-hidden="true">{widest || texts[0]}</span
   >
   {#key currentIndex}
     <span
       class={cn(
         "font-inherit absolute inset-0 flex items-center justify-center whitespace-nowrap text-inherit"
       )}
-      in:fly={{ y: isFirst ? 0 : 40, opacity: isFirst ? 1 : 0, duration: isFirst ? 0 : 280, delay: isFirst ? 0 : 100 }}
+      in:fly={{
+        y: isFirst ? 0 : 40,
+        opacity: isFirst ? 1 : 0,
+        duration: isFirst ? 0 : 280,
+        delay: isFirst ? 0 : 100,
+      }}
       out:fade={{ duration: 120 }}
     >
       {texts[currentIndex]}
