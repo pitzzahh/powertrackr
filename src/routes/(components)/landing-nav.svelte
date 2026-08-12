@@ -15,7 +15,6 @@
   let { user, session }: LandingNavProps = $props();
 
   const isMobile = new IsMobile();
-  let isOnline = $derived(true);
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -27,22 +26,13 @@
   });
 </script>
 
-<svelte:window bind:online={isOnline} />
-
-<div class="h-18">
+<div class="h-16">
   <header class="fixed inset-x-0 z-50 border-b border-border/50 bg-background/70 backdrop-blur-lg">
     <div
       class="relative mx-auto grid w-full items-center gap-4 px-4 py-3.5 md:grid-cols-[auto_1fr_auto]"
     >
       <div class="flex w-full items-center justify-center gap-3 md:w-auto md:justify-start">
         <Logo variant="ghost" class="w-auto px-0 md:pl-0!" viewTransitionName="logo" />
-        <span
-          class="hidden items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1 text-[10px] font-medium tracking-[0.3em] text-muted-foreground uppercase sm:inline-flex"
-        >
-          <span class={["h-2 w-2 rounded-full", isOnline ? "bg-emerald-400" : "bg-rose-400"]}
-          ></span>
-          {isOnline ? "System Online" : "System Offline"}
-        </span>
       </div>
 
       <nav class="absolute left-1/2 hidden -translate-x-1/2 md:flex md:items-center">

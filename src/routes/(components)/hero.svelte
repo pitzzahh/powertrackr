@@ -13,10 +13,10 @@
   import { Button } from "$/components/ui/button";
   import { NumberTicker } from "$lib/components/number-ticker";
   import { Zap } from "$lib/assets/icons";
-  import { TextLoop, ScrollReveal } from "$lib/motion-core";
+  import { TextLoop } from "$lib/motion-core";
   import { getStats } from "$/api/stats.remote";
   import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
-  import { Arc, Chart, ClipPath, Group, Layer, Line, LinearGradient } from "layerchart";
+  import { Arc, Chart, Circle, ClipPath, Group, Layer, Line, LinearGradient, Text } from "layerchart";
   import { scaleLinear } from "d3-scale";
   import type { Stats } from "$/types/stats";
 
@@ -52,15 +52,24 @@
   // ─── Ambient gauge ────────────────────────────────────────────────────────
   const domain: [number, number] = [0, 100];
   const angleRange: [number, number] = [-120, 120];
-  const gaugeRadius = { outerRadius: 80, innerRadius: 68 };
+  const gaugeRadius = { outerRadius: 84, innerRadius: 66 };
 
   const angleScale = scaleLinear().domain(domain).range(angleRange);
 
   const gaugeTicks = [0, 25, 50, 75, 100];
+  const gaugeMinorTicks = Array.from({ length: 11 }, (_, i) => i * 10).filter(
+    (tick) => tick % 25 !== 0
+  );
 
   // Decorative resting position — set once, never mutated. The real figures
-  // come from the live readout below, not from this dial.
+  // come from the readout inside the gauge, not from this dial.
   let dial = $state(62);
+
+  const needleAngle = $derived((angleScale(dial) * Math.PI) / 180);
+
+  const formattedEnergy = $derived(
+    new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(energyValue)
+  );
 </script>
 
 <section class="relative z-10 overflow-hidden">
@@ -90,9 +99,9 @@
             {currentText === "Payments" ? "Record" : "Track"}
           </span>
           <span class="inline-flex align-baseline text-primary">
-            <TextLoop {texts} bind:currentIndex interval={2500} />
+            <TextLoop {texts} bind:currentIndex interval={2500} />.
           </span>
-          <span>with clarity</span>
+          <span class="block">No guesswork.</span>
         </h1>
 
         <p class="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
@@ -138,8 +147,7 @@
       </div>
 
       <!-- Live meter -->
-      <ScrollReveal preset="slide-up" duration={0.7} delay={0.2} distance={32}>
-        <div class="relative mx-auto w-full max-w-md">
+      <div class="relative mx-auto w-full max-w-md">
           <div
             class="absolute -inset-6 rounded-[2.5rem] bg-primary/10 blur-3xl"
             aria-hidden="true"
@@ -159,10 +167,10 @@
               </span>
             </div>
 
-            <div class="px-5 pt-5">
-              <Chart height={168} padding={20} class="mx-auto w-full max-w-[15rem]">
+            <div class="h-[210px] px-5 pt-5">
+              <Chart height={190} padding={20} class="mx-auto w-full max-w-[16rem]">
                 <Layer center>
-                  <Group y={20}>
+                  <Group y={22}>
                     <LinearGradient class="from-primary/30 via-primary/70 to-primary">
                       {#snippet children({ gradient })}
                         <ClipPath>
@@ -172,8 +180,7 @@
                               {domain}
                               range={angleRange}
                               {...gaugeRadius}
-                              cornerRadius={6}
-                              motion="spring"
+                              cornerRadius={8}
                             />
                           {/snippet}
                           <Arc
@@ -181,7 +188,7 @@
                             {domain}
                             range={angleRange}
                             {...gaugeRadius}
-                            cornerRadius={6}
+                            cornerRadius={8}
                             fill={gradient}
                           />
                         </ClipPath>
@@ -194,17 +201,33 @@
                       {domain}
                       range={angleRange}
                       {...gaugeRadius}
-                      cornerRadius={6}
+                      cornerRadius={8}
                       class="fill-none"
                       track={{ class: "fill-none stroke-foreground/15" }}
                     />
+
+                    <!-- Minor tick marks -->
+                    {#each gaugeMinorTicks as tick (tick)}
+                      {@const angleDeg = angleScale(tick)}
+                      {@const angleRad = (angleDeg * Math.PI) / 180}
+                      {@const tickInner = 66 - 7}
+                      {@const tickOuter = 66 - 2}
+                      <Line
+                        x1={Math.sin(angleRad) * tickInner}
+                        y1={-Math.cos(angleRad) * tickInner}
+                        x2={Math.sin(angleRad) * tickOuter}
+                        y2={-Math.cos(angleRad) * tickOuter}
+                        class="stroke-foreground/20"
+                        strokeWidth={1}
+                      />
+                    {/each}
 
                     <!-- Major tick marks -->
                     {#each gaugeTicks as tick (tick)}
                       {@const angleDeg = angleScale(tick)}
                       {@const angleRad = (angleDeg * Math.PI) / 180}
-                      {@const tickInner = 68 - 10}
-                      {@const tickOuter = 68 - 3}
+                      {@const tickInner = 66 - 10}
+                      {@const tickOuter = 66 - 3}
                       <Line
                         x1={Math.sin(angleRad) * tickInner}
                         y1={-Math.cos(angleRad) * tickInner}
@@ -214,27 +237,39 @@
                         strokeWidth={tick === 50 ? 2 : 1.2}
                       />
                     {/each}
+
+                    <!-- Needle -->
+                    <Line
+                      x1={Math.sin(needleAngle) * -8}
+                      y1={-Math.cos(needleAngle) * -8}
+                      x2={Math.sin(needleAngle) * 52}
+                      y2={-Math.cos(needleAngle) * 52}
+                      class="stroke-foreground"
+                      stroke-width={2.5}
+                      stroke-linecap="round"
+                    />
+                    <Circle r={5} class="fill-primary" />
+                    <Circle r={1.8} class="fill-background" />
+
+                    <!-- Value readout -->
+                    <Text
+                      value={formattedEnergy}
+                      textAnchor="middle"
+                      verticalAnchor="middle"
+                      dy={24}
+                      class="text-3xl font-bold fill-foreground tabular-nums"
+                    />
+                    <Text
+                      x={0}
+                      y={44}
+                      value={energyUnit}
+                      textAnchor="middle"
+                      verticalAnchor="middle"
+                      class="text-[10px] fill-muted-foreground font-mono uppercase"
+                    />
                   </Group>
                 </Layer>
               </Chart>
-
-              <div class="mt-2 text-center">
-                <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
-                  Total energy tracked
-                </p>
-                <p class="mt-2 text-4xl font-semibold text-primary tabular-nums">
-                  <NumberTicker
-                    value={energyValue}
-                    format={{
-                      style: "decimal",
-                      maximumFractionDigits: 2,
-                      trailingZeroDisplay: "stripIfInteger",
-                    }}
-                    suffix={energyUnit}
-                    class="text-primary [&::part(suffix)]:ml-2"
-                  />
-                </p>
-              </div>
             </div>
 
             <div class="mt-6 grid grid-cols-2 divide-x divide-border/70 border-t border-border/70">
@@ -276,7 +311,6 @@
             </div>
           </div>
         </div>
-      </ScrollReveal>
     </div>
   </div>
 </section>

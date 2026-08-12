@@ -13,17 +13,17 @@
   let { user }: CtaProps = $props();
 </script>
 
-<section class="relative z-10 py-24 lg:py-32">
+<section class="relative z-10 py-16 sm:py-24 lg:py-32">
   <div class="container mx-auto px-4">
     <ScrollReveal preset="scale" duration={0.8} scale={0.96}>
       <div
-        class="relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 p-8 backdrop-blur sm:p-12 lg:p-14"
+        class="relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 p-6 backdrop-blur sm:p-12 lg:p-14"
       >
         <div
           class="pointer-events-none absolute -top-24 right-0 h-64 w-64 rounded-full bg-primary/10 blur-3xl"
           aria-hidden="true"
         ></div>
-        <div class="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10">
           <div class="relative">
             <SectionLabel index="04" label="Get Started" note="takes about a minute" />
             <SplitReveal mode="words" triggerOnScroll>
@@ -40,7 +40,7 @@
             </SplitReveal>
 
             <ScrollReveal preset="slide-up" duration={0.6} delay={0.4} distance={30}>
-              <div class="mt-10 flex flex-col gap-4 sm:flex-row">
+              <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 {#if user}
                   <Button
                     size="lg"

@@ -52,14 +52,14 @@
         class="relative space-y-6"
       >
         <div
-          class="pointer-events-none absolute top-10 bottom-10 left-5 hidden w-px bg-linear-to-b from-primary/50 via-primary/10 to-transparent md:block"
+          class="pointer-events-none absolute top-10 bottom-10 left-5 hidden w-px bg-linear-to-b from-primary/50 via-primary/10 to-transparent sm:block"
           aria-hidden="true"
         ></div>
 
         {#each steps as step, i (step.number)}
-          <article class="relative md:pl-14">
+          <article class="relative sm:pl-14">
             <div
-              class="absolute top-6 left-0 hidden h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-background font-mono text-xs font-semibold text-primary ring-8 ring-background before:absolute before:inset-1 before:rounded-full before:bg-primary/10 before:content-[''] md:flex"
+              class="absolute top-6 left-0 hidden h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-background font-mono text-xs font-semibold text-primary ring-8 ring-background before:absolute before:inset-1 before:rounded-full before:bg-primary/10 before:content-[''] sm:flex"
             >
               {step.number}
             </div>

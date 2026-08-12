@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fly } from "svelte/transition";
+  import { fly, fade } from "svelte/transition";
   import { cn } from "../utils/cn";
   import { shouldDisableAnimations } from "../utils/reduced-motion";
 
@@ -83,8 +83,8 @@
       class={cn(
         "font-inherit absolute inset-0 flex items-center justify-center whitespace-nowrap text-inherit"
       )}
-      in:fly={{ y: isFirst ? 0 : 40, opacity: isFirst ? 1 : 0, duration: isFirst ? 0 : 300, delay: isFirst ? 0 : 150 }}
-      out:fly={{ y: -40, opacity: 0, duration: 150 }}
+      in:fly={{ y: isFirst ? 0 : 40, opacity: isFirst ? 1 : 0, duration: isFirst ? 0 : 280, delay: isFirst ? 0 : 100 }}
+      out:fade={{ duration: 120 }}
     >
       {texts[currentIndex]}
     </span>
