@@ -91,7 +91,7 @@
           class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] text-primary uppercase"
         >
           <Zap class="size-3.5" />
-          <span>Electricity billing, without the spreadsheet</span>
+          <span>Electricity billing<span class="hidden sm:inline">, without the spreadsheet</span></span>
         </div>
 
         <h1 class="mt-6 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
