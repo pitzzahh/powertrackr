@@ -1,12 +1,13 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import { TEST_DATABASE_URL } from "$env/static/private";
 import { relations } from "./relations";
 
 let client: Client | undefined;
 let testDb: TestDatabase | undefined;
 
 export function createTestDb(): TestDatabase {
-  const url = process.env.TEST_DATABASE_URL;
+  const url = TEST_DATABASE_URL;
   if (!url) {
     throw new Error("TEST_DATABASE_URL is not defined for test database.");
   }

@@ -1,6 +1,6 @@
 {
   "name": "powertrackr",
-  "version": "2.1.1",
+  "version": "2.3.1",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@11.21.0",
@@ -33,7 +33,6 @@
     "@tanstack/table-core": "^9.1.2",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",
-    "dotenv": "^17.4.2",
     "drizzle-orm": "1.0.0-rc.4",
     "mode-watcher": "^1.1.0",
     "otpauth": "^9.5.1",

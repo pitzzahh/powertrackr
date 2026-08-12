@@ -13,13 +13,15 @@ import {
 import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
-import { config } from "dotenv";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
+// Load .env if present, but do not override already-set env vars. Vitest setup
+// files run outside the SvelteKit pipeline, so `$env/*` isn't available here;
+// Node's built-in loader (Node 20.12+) replaces dotenv.
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {
-  config({ path: envPath, override: false });
+  process.loadEnvFile(envPath);
 }
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
