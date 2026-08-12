@@ -1,11 +1,12 @@
-import { config } from "dotenv";
 import { existsSync } from "fs";
 import { resolve } from "path";
 
-// Load .env if present, but do not override already-set env vars.
+// Load .env if present, but do not override already-set env vars. This file is
+// the vitest stand-in for `$env/static/private` (see the alias in
+// vitest.config.ts); Node's built-in loader (Node 20.12+) replaces dotenv.
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {
-  config({ path: envPath, override: false });
+  process.loadEnvFile(envPath);
 }
 
 // Export the values expected by `$env/static/private`.
