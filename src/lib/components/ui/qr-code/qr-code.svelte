@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils/style';
-	import QR from '@svelte-put/qr/svg/QR.svelte';
 	import type { Snippet } from 'svelte';
+	import { qr } from '@svelte-put/qr/svg';
 
 	let {
 		value,
@@ -32,15 +32,17 @@
 	style:height={`${size}px`}
 	style:background-color={backgroundColor}
 >
-	<QR
-		data={value}
-		moduleFill={color}
-		anchorOuterFill={color}
-		anchorInnerFill={color}
-		correction={errorCorrection}
-		{margin}
-		class="h-full w-full"
+	<svg
+		use:qr={{
+			data: value,
+			moduleFill: color,
+			anchorOuterFill: color,
+			anchorInnerFill: color,
+			correction: errorCorrection,
+			margin,
+		}}
 	/>
+
 
 	{#if logo}
 		<div

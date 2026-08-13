@@ -80,11 +80,11 @@ export const requireAuth = query(() => requireAuthServer());
 export const signout = form(async () => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
-    return redirect(303, "/auth?act=login");
+    throw redirect(303, "/auth?act=login");
   }
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
-  redirect(303, "/auth?act=login");
+  throw redirect(303, "/auth?act=login");
 });
 
 export const login = form(loginSchema, async (user, issues) => {
@@ -147,12 +147,12 @@ export const login = form(loginSchema, async (user, issues) => {
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
   if (!userResult.githubId && !userResult.emailVerified) {
-    return redirect(303, "/auth?act=verify-email");
+    throw redirect(303, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
-    return redirect(303, "/auth?act=2fa-checkpoint");
+    throw redirect(303, "/auth?act=2fa-checkpoint");
   }
-  return redirect(301, "/dashboard");
+  throw redirect(301, "/dashboard");
 });
 export const register = form(registerSchema, async (newUser, issues) => {
   const event = getRequestEvent();
@@ -218,7 +218,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   });
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
-  return redirect(302, "/auth?act=verify-email");
+  throw redirect(302, "/auth?act=verify-email");
 });
 
 export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
@@ -297,9 +297,9 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
     options: { with_session: false, fields: ["registeredTwoFactor"] },
   })) as HelperResult<NewUser[]>;
   if (updatedUser.registeredTwoFactor) {
-    return redirect(302, "/auth?act=2fa-checkpoint");
+    throw redirect(302, "/auth?act=2fa-checkpoint");
   }
-  return redirect(302, "/dashboard");
+  throw redirect(302, "/dashboard");
 });
 
 export const setup2FA = form(disable2FASchema, async (data, _issues) => {
@@ -317,7 +317,7 @@ export const setup2FA = form(disable2FASchema, async (data, _issues) => {
   if (!updateResult.valid) {
     error(400, "Failed to set up 2FA");
   }
-  return redirect(302, "/dashboard");
+  throw redirect(302, "/dashboard");
 });
 
 export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
@@ -330,7 +330,7 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   // If the session is already flagged as twoFactorVerified, no need to re-run checkpoint.
   if (event.locals.session.twoFactorVerified) {
     // Already verified on this session — send to dashboard.
-    return redirect(302, "/dashboard");
+    throw redirect(302, "/dashboard");
   }
 
   const { code } = data;
@@ -383,7 +383,7 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   }
 
   // After successful checkpoint, send the user to dashboard
-  return redirect(302, "/dashboard");
+  throw redirect(302, "/dashboard");
 });
 
 export const forgotPassword = form(forgotPasswordSchema, async (user) => {
@@ -464,7 +464,7 @@ export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
     updatePasswordResetSessionBy({ query: { id } }, { expiresAt: new Date(Date.now() - 1) });
   }
 
-  return redirect(302, "/auth?act=login");
+  throw redirect(302, "/auth?act=login");
 });
 
 export const changePassword = form(changePasswordSchema, async (data, issues) => {
