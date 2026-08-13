@@ -23,13 +23,6 @@ migrations_pattern = "migrations/*/migration.sql"
 PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAAELwssik2qD1noZv"
 
 [[ratelimits]]
-name = "RATE_LIMITER"
-namespace_id = "1001"
-  [ratelimits.simple]
-  limit = 50
-  period = 60
-
-[[ratelimits]]
 name = "EMAIL_RATE_LIMITER"
 namespace_id = "1002"
   [ratelimits.simple]

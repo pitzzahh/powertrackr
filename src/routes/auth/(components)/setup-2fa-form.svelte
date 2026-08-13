@@ -29,6 +29,7 @@
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
+  import Logo from "$/components/logo.svelte";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
@@ -121,10 +122,8 @@
           <p class="mt-1 text-sm text-muted-foreground">
             Scan this QR code with your authenticator app.
           </p>
-          <div class="mt-4 flex justify-center">
-            <div class="rounded-lg bg-white p-3">
-              <QRCode.Root value={otpauthUrl} size={180} />
-            </div>
+          <div class="mt-4 flex items-center justify-center">
+            <QRCode.Root value={otpauthUrl} size={250} logo="/logo/favicon.png" />
           </div>
           <div class="mt-4">
             <p class="text-center text-xs text-muted-foreground">Or enter this code manually:</p>
