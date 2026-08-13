@@ -11,15 +11,13 @@
     Stats,
   } from "./(components)";
   import { ScrollParallax } from "$lib/motion-core";
-
-  let { data } = $props();
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">
-  <LandingNav user={data.user} session={data.session} />
+  <LandingNav />
 
   <main>
-    <Hero user={data.user} session={data.session} />
+    <Hero />
 
     <BenefitsMarquee />
 
@@ -39,10 +37,10 @@
         aria-hidden="true"
       ></div>
       <ScrollParallax speed={0.05} fade opacityFrom={0.8} opacityTo={1}>
-        <Cta user={data.user} />
+        <Cta />
       </ScrollParallax>
     </div>
   </main>
 
-  <LandingFooter user={data.user} />
+  <LandingFooter />
 </div>

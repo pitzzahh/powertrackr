@@ -1,17 +1,15 @@
-<script module lang="ts">
-  interface LandingFooterProps {
-    user: App.Locals["user"];
-  }
-</script>
-
 <script lang="ts">
   import { resolve } from "$app/paths";
   import Logo from "$/components/logo.svelte";
   import { site } from "$/site";
   import { ChartLine, Users, Shield, Download, InvoiceIcon } from "$lib/assets/icons";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+  import { getCurrentUser } from "$/api/user.remote";
+  import { ButtonSkeleton } from "$/components/snippets.svelte";
+  import { browser } from "$app/environment";
 
-  let { user }: LandingFooterProps = $props();
+  const authQuery = browser ? getCurrentUser() : null;
+  const user = $derived(authQuery?.current?.user ?? null);
 
   // ─── Canvas grid drawing ───────────────────────────────────────────────────
   function initCanvas(canvas: HTMLCanvasElement) {
@@ -107,8 +105,8 @@
 </script>
 
 <footer
-  {@attach footerAttach}
   class="relative z-10 overflow-hidden border-t border-border bg-background"
+  {@attach footerAttach}
 >
   <!-- Electric grid canvas background -->
   <canvas class="grid-canvas pointer-events-none absolute inset-0 size-full" aria-hidden="true"
@@ -212,16 +210,16 @@
           >
             Dashboard
           </a>
+        {:else if authQuery?.loading}
+          {@render ButtonSkeleton({ size: "sm" })}
         {:else}
           <a
-            data-sveltekit-reload
             href={resolve("/auth?act=login")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign In
           </a>
           <a
-            data-sveltekit-reload
             href={resolve("/auth?act=register")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >

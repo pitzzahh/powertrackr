@@ -1,16 +1,14 @@
-<script module lang="ts">
-  interface CtaProps {
-    user?: App.Locals["user"];
-  }
-</script>
-
 <script lang="ts">
   import { Button } from "$/components/ui/button";
   import { Banknote, Download, InvoiceIcon } from "$lib/assets/icons";
   import { SplitReveal, ScrollReveal } from "$lib/motion-core";
   import SectionLabel from "./section-label.svelte";
+  import { getCurrentUser } from "$/api/user.remote";
+  import { ButtonSkeleton } from "$/components/snippets.svelte";
+  import { browser } from "$app/environment";
 
-  let { user }: CtaProps = $props();
+  const authQuery = browser ? getCurrentUser() : null;
+  const user = $derived(authQuery?.current?.user ?? null);
 </script>
 
 <section class="relative z-10 py-16 sm:py-24 lg:py-32">
@@ -43,12 +41,15 @@
               <div class="mt-8 flex flex-col gap-4 sm:flex-row">
                 {#if user}
                   <Button
+                    data-sveltekit-reload
                     size="lg"
                     class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
                     href="/dashboard"
                   >
                     Go to Dashboard
                   </Button>
+                {:else if authQuery?.loading}
+                  {@render ButtonSkeleton({ size: "lg" })}
                 {:else}
                   <Button
                     size="lg"
