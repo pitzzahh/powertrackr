@@ -1,8 +1,4 @@
 <script module lang="ts">
-  interface HeroProps {
-    user: App.Locals["user"];
-    session: App.Locals["session"];
-  }
   type HeroState = {
     texts: ("Billing" | "Payments" | "Usage" | "Expenses")[];
     currentIndex: number;
@@ -15,6 +11,9 @@
   import { Zap } from "$lib/assets/icons";
   import { TextLoop } from "$lib/motion-core";
   import { getStats } from "$/api/stats.remote";
+  import { getCurrentUser } from "$/api/user.remote";
+  import { ButtonSkeleton } from "$/components/snippets.svelte";
+  import { browser } from "$app/environment";
   import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
   import {
     Arc,
@@ -30,7 +29,8 @@
   import { scaleLinear } from "d3-scale";
   import type { Stats } from "$/types/stats";
 
-  let { user, session }: HeroProps = $props();
+  const authQuery = browser ? getCurrentUser() : null;
+  const { user, session } = $derived(authQuery?.current ?? { user: null, session: null });
 
   let { texts, currentIndex } = $state<HeroState>({
     texts: ["Billing", "Payments", "Usage", "Expenses"],
@@ -44,8 +44,8 @@
     paymentsAmount: { total: 0, formatted: "" },
   };
 
-  const statsQuery = getStats();
-  const stats = $derived(statsQuery.current ?? FALLBACK_STATS);
+  const statsQuery = browser ? getStats() : null;
+  const stats = $derived(statsQuery?.current ?? FALLBACK_STATS);
 
   const { fullyAuthenticated, needs2FA, currentText, energyValue, energyUnit } = $derived({
     fullyAuthenticated:
@@ -85,12 +85,12 @@
 <section class="relative z-10 overflow-hidden">
   <!-- Blueprint grid backdrop -->
   <div
-    class="pointer-events-none absolute inset-x-0 top-8 bottom-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px)] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_0%,black,transparent)] bg-[size:48px_48px]"
+    class="pointer-events-none absolute inset-x-0 top-8 bottom-0 bg-[linear-gradient(to_right,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_oklab,var(--color-border)_45%,transparent)_1px,transparent_1px)] mask-[radial-gradient(ellipse_75%_65%_at_50%_0%,black,transparent)] bg-size-[48px_48px]"
     aria-hidden="true"
   ></div>
   <!-- Top glow -->
   <div
-    class="pointer-events-none absolute -top-40 left-1/2 h-[34rem] w-[54rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+    class="pointer-events-none absolute -top-40 left-1/2 h-136 w-216 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
     aria-hidden="true"
   ></div>
 
@@ -126,6 +126,7 @@
         <div class="mt-8 flex flex-col gap-4 sm:flex-row">
           {#if fullyAuthenticated}
             <Button
+              data-sveltekit-reload
               size="lg"
               class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
               href="/dashboard"
@@ -140,6 +141,8 @@
             >
               Verify Two-Factor Authentication
             </Button>
+          {:else if authQuery?.loading}
+            {@render ButtonSkeleton({ size: "lg" })}
           {:else}
             <Button
               size="lg"
@@ -180,109 +183,111 @@
             </span>
           </div>
 
-          <div class="h-[210px] px-5 pt-5">
-            <Chart height={190} padding={20} class="mx-auto w-full max-w-[16rem]">
-              <Layer center>
-                <Group y={22}>
-                  <LinearGradient class="from-primary/30 via-primary/70 to-primary">
-                    {#snippet children({ gradient })}
-                      <ClipPath>
-                        {#snippet clip()}
+          <div class="h-52.5 px-5 pt-5">
+            {#if browser}
+              <Chart height={190} padding={20} class="mx-auto w-full max-w-[16rem]">
+                <Layer center>
+                  <Group y={22}>
+                    <LinearGradient class="from-primary/30 via-primary/70 to-primary">
+                      {#snippet children({ gradient })}
+                        <ClipPath>
+                          {#snippet clip()}
+                            <Arc
+                              value={dial}
+                              {domain}
+                              range={angleRange}
+                              {...gaugeRadius}
+                              cornerRadius={8}
+                            />
+                          {/snippet}
                           <Arc
-                            value={dial}
+                            value={domain[1]}
                             {domain}
                             range={angleRange}
                             {...gaugeRadius}
                             cornerRadius={8}
+                            fill={gradient}
                           />
-                        {/snippet}
-                        <Arc
-                          value={domain[1]}
-                          {domain}
-                          range={angleRange}
-                          {...gaugeRadius}
-                          cornerRadius={8}
-                          fill={gradient}
-                        />
-                      </ClipPath>
-                    {/snippet}
-                  </LinearGradient>
+                        </ClipPath>
+                      {/snippet}
+                    </LinearGradient>
 
-                  <!-- Track outline -->
-                  <Arc
-                    value={domain[1]}
-                    {domain}
-                    range={angleRange}
-                    {...gaugeRadius}
-                    cornerRadius={8}
-                    class="fill-none"
-                    track={{ class: "fill-none stroke-foreground/15" }}
-                  />
-
-                  <!-- Minor tick marks -->
-                  {#each gaugeMinorTicks as tick (tick)}
-                    {@const angleDeg = angleScale(tick)}
-                    {@const angleRad = (angleDeg * Math.PI) / 180}
-                    {@const tickInner = 66 - 7}
-                    {@const tickOuter = 66 - 2}
-                    <Line
-                      x1={Math.sin(angleRad) * tickInner}
-                      y1={-Math.cos(angleRad) * tickInner}
-                      x2={Math.sin(angleRad) * tickOuter}
-                      y2={-Math.cos(angleRad) * tickOuter}
-                      class="stroke-foreground/20"
-                      strokeWidth={1}
+                    <!-- Track outline -->
+                    <Arc
+                      value={domain[1]}
+                      {domain}
+                      range={angleRange}
+                      {...gaugeRadius}
+                      cornerRadius={8}
+                      class="fill-none"
+                      track={{ class: "fill-none stroke-foreground/15" }}
                     />
-                  {/each}
 
-                  <!-- Major tick marks -->
-                  {#each gaugeTicks as tick (tick)}
-                    {@const angleDeg = angleScale(tick)}
-                    {@const angleRad = (angleDeg * Math.PI) / 180}
-                    {@const tickInner = 66 - 10}
-                    {@const tickOuter = 66 - 3}
+                    <!-- Minor tick marks -->
+                    {#each gaugeMinorTicks as tick (tick)}
+                      {@const angleDeg = angleScale(tick)}
+                      {@const angleRad = (angleDeg * Math.PI) / 180}
+                      {@const tickInner = 66 - 7}
+                      {@const tickOuter = 66 - 2}
+                      <Line
+                        x1={Math.sin(angleRad) * tickInner}
+                        y1={-Math.cos(angleRad) * tickInner}
+                        x2={Math.sin(angleRad) * tickOuter}
+                        y2={-Math.cos(angleRad) * tickOuter}
+                        class="stroke-foreground/20"
+                        strokeWidth={1}
+                      />
+                    {/each}
+
+                    <!-- Major tick marks -->
+                    {#each gaugeTicks as tick (tick)}
+                      {@const angleDeg = angleScale(tick)}
+                      {@const angleRad = (angleDeg * Math.PI) / 180}
+                      {@const tickInner = 66 - 10}
+                      {@const tickOuter = 66 - 3}
+                      <Line
+                        x1={Math.sin(angleRad) * tickInner}
+                        y1={-Math.cos(angleRad) * tickInner}
+                        x2={Math.sin(angleRad) * tickOuter}
+                        y2={-Math.cos(angleRad) * tickOuter}
+                        class={tick === 50 ? "stroke-foreground/60" : "stroke-foreground/25"}
+                        strokeWidth={tick === 50 ? 2 : 1.2}
+                      />
+                    {/each}
+
+                    <!-- Needle -->
                     <Line
-                      x1={Math.sin(angleRad) * tickInner}
-                      y1={-Math.cos(angleRad) * tickInner}
-                      x2={Math.sin(angleRad) * tickOuter}
-                      y2={-Math.cos(angleRad) * tickOuter}
-                      class={tick === 50 ? "stroke-foreground/60" : "stroke-foreground/25"}
-                      strokeWidth={tick === 50 ? 2 : 1.2}
+                      x1={Math.sin(needleAngle) * -8}
+                      y1={-Math.cos(needleAngle) * -8}
+                      x2={Math.sin(needleAngle) * 52}
+                      y2={-Math.cos(needleAngle) * 52}
+                      class="stroke-foreground"
+                      stroke-width={2.5}
+                      stroke-linecap="round"
                     />
-                  {/each}
+                    <Circle r={5} class="fill-primary" />
+                    <Circle r={1.8} class="fill-background" />
 
-                  <!-- Needle -->
-                  <Line
-                    x1={Math.sin(needleAngle) * -8}
-                    y1={-Math.cos(needleAngle) * -8}
-                    x2={Math.sin(needleAngle) * 52}
-                    y2={-Math.cos(needleAngle) * 52}
-                    class="stroke-foreground"
-                    stroke-width={2.5}
-                    stroke-linecap="round"
-                  />
-                  <Circle r={5} class="fill-primary" />
-                  <Circle r={1.8} class="fill-background" />
-
-                  <!-- Value readout -->
-                  <Text
-                    value={formattedEnergy}
-                    textAnchor="middle"
-                    verticalAnchor="middle"
-                    dy={24}
-                    class="fill-foreground text-3xl font-bold tabular-nums"
-                  />
-                  <Text
-                    x={0}
-                    y={44}
-                    value={energyUnit}
-                    textAnchor="middle"
-                    verticalAnchor="middle"
-                    class="fill-muted-foreground font-mono text-[10px] uppercase"
-                  />
-                </Group>
-              </Layer>
-            </Chart>
+                    <!-- Value readout -->
+                    <Text
+                      value={formattedEnergy}
+                      textAnchor="middle"
+                      verticalAnchor="middle"
+                      dy={24}
+                      class="fill-foreground text-3xl font-bold tabular-nums"
+                    />
+                    <Text
+                      x={0}
+                      y={44}
+                      value={energyUnit}
+                      textAnchor="middle"
+                      verticalAnchor="middle"
+                      class="fill-muted-foreground font-mono text-[10px] uppercase"
+                    />
+                  </Group>
+                </Layer>
+              </Chart>
+            {/if}
           </div>
 
           <div class="mt-6 grid grid-cols-2 divide-x divide-border/70 border-t border-border/70">

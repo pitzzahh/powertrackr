@@ -14,9 +14,20 @@ import {
   updateUserBy,
 } from "$/server/crud/user-crud";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { invalidateSession, deleteSessionTokenCookie, requireAuth } from "$/server/auth";
+import {
+  invalidateSession,
+  deleteSessionTokenCookie,
+  requireAuth,
+  originCheck,
+} from "$/server/auth";
 
 export const getTotalUserCount = query(getUserCountLogic);
+
+export const getCurrentUser = query(() => {
+  originCheck();
+  const { locals } = getRequestEvent();
+  return { user: locals.user, session: locals.session };
+});
 
 // Query to get all users
 export const getUsers = query(v.object({}), async () => {

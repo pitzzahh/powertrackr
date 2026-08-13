@@ -1,18 +1,20 @@
 import * as auth from "$lib/server/auth";
 import { sequence } from "@sveltejs/kit/hooks";
-import { dev } from "$app/environment";
+import { building, dev } from "$app/environment";
 import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
 import { isPublicPathname } from "$lib/utils/constant";
 
 const handleRateLimit: Handle = async ({ event, resolve }) => {
-  // Use user ID for authenticated users, otherwise IP address
-  const key = event.locals.user?.id || event.getClientAddress() || "unknown";
+  // No client address or platform bindings during prerendering
+  if (!building) {
+    // Use user ID for authenticated users, otherwise IP address
+    const key = event.locals.user?.id || event.getClientAddress() || "unknown";
+    const { success } = await event.platform!.env.RATE_LIMITER.limit({ key });
 
-  const { success } = await event.platform!.env.RATE_LIMITER.limit({ key });
-
-  if (!success) {
-    return new Response("Too Many Requests - Rate limit exceeded", { status: 429 });
+    if (!success) {
+      return new Response("Too Many Requests - Rate limit exceeded", { status: 429 });
+    }
   }
 
   return resolve(event);

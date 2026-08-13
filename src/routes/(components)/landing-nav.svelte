@@ -1,17 +1,14 @@
-<script module lang="ts">
-  interface LandingNavProps {
-    user: App.Locals["user"];
-    session: App.Locals["session"];
-  }
-</script>
-
 <script lang="ts">
   import { resolve } from "$app/paths";
   import Logo from "$/components/logo.svelte";
   import { Button } from "$/components/ui/button";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
+  import { getCurrentUser } from "$/api/user.remote";
+  import { ButtonSkeleton } from "$/components/snippets.svelte";
+  import { browser } from "$app/environment";
 
-  let { user, session }: LandingNavProps = $props();
+  const authQuery = browser ? getCurrentUser() : null;
+  const { user, session } = $derived(authQuery?.current ?? { user: null, session: null });
 
   const { fullyAuthenticated, needs2FA } = $derived({
     fullyAuthenticated:
@@ -52,11 +49,15 @@
 
       <div class="hidden items-center justify-end gap-2 sm:flex">
         {#if fullyAuthenticated}
-          <Button href={resolve("/dashboard")} class="inline-flex">Go to Dashboard</Button>
+          <Button href={resolve("/dashboard")} data-sveltekit-reload class="inline-flex"
+            >Go to Dashboard</Button
+          >
         {:else if needs2FA}
           <Button href={resolve("/auth?act=2fa-checkpoint")} class="inline-flex">
             Verify Two-Factor Authentication
           </Button>
+        {:else if authQuery?.loading}
+          {@render ButtonSkeleton()}
         {:else}
           <Button variant="outline" href={resolve("/auth?act=login")} class="inline-flex"
             >Sign In</Button

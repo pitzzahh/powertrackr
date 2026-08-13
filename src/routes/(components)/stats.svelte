@@ -12,6 +12,7 @@
   import { ScrollStagger } from "$lib/motion-core";
   import { NumberTicker } from "$lib/components/number-ticker";
   import { getStats } from "$/api/stats.remote";
+  import { browser } from "$app/environment";
   import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
   import { type Format } from "@number-flow/svelte";
   import type { Stats } from "$/types/stats";
@@ -23,11 +24,11 @@
     paymentsAmount: { total: 0, formatted: "" },
   };
 
-  const statsQuery = getStats();
+  const statsQuery = browser ? getStats() : null;
 
   // `current` is the snapshot value returned by the one-shot query. Accessing it
   // in a `$derived` keeps the UI reactive; the value refreshes on page reload.
-  const stats = $derived(statsQuery.current ?? FALLBACK_STATS);
+  const stats = $derived(statsQuery?.current ?? FALLBACK_STATS);
 
   const statsList = $derived<StatsList[]>([
     {
