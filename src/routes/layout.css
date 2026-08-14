@@ -27,6 +27,9 @@
   --border: oklch(0.862 0.009 258);
   --input: oklch(0.862 0.009 258);
 
+  /* Subtle top edge for cards in light mode (dark already defines its own) */
+  --card-highlight: oklch(0.2 0.01 258 / 0.08);
+
   /* Brand: utility amber on paper, volt on graphite */
   --primary: oklch(0.72 0.16 82);
   --primary-foreground: oklch(0.25 0.05 70);
@@ -37,7 +40,7 @@
   /* Status */
   --destructive: oklch(0.56 0.21 27);
   --destructive-foreground: oklch(0.985 0.004 258);
-  --success: oklch(0.55 0.12 150);
+  --success: oklch(0.47 0.11 150);
   --warning: oklch(0.62 0.15 70);
   --money: oklch(0.6 0.15 55);
 
@@ -325,12 +328,7 @@
     border-radius: inherit;
     pointer-events: none;
     z-index: -1;
-  }
-
-  @variant dark {
-    &::before {
-      box-shadow: inset 0 1px 0 0 var(--card-highlight);
-    }
+    box-shadow: inset 0 1px 0 0 var(--card-highlight);
   }
 }
 

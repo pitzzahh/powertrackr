@@ -383,6 +383,8 @@
                 <Button
                   {...triggerProps}
                   variant="ghost"
+                  aria-label="Open settings"
+                  title="Settings"
                   class="flex w-full items-center justify-center transition-all duration-300 ease-in-out"
                 >
                   <Settings2 class="size-6 shrink-0" />
@@ -392,7 +394,7 @@
           {/snippet}
         </Tooltip.Trigger>
         <Tooltip.Content side="right">
-          <p>SETTINGS</p>
+          <p>Settings</p>
         </Tooltip.Content>
       </Tooltip.Root>
     </Tooltip.Provider>
@@ -402,6 +404,7 @@
         <Button
           {...props}
           variant="ghost"
+          aria-label="Open settings"
           class="flex w-full cursor-pointer items-center justify-start gap-4 no-underline!"
         >
           <Settings2 class="size-6" />

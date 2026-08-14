@@ -132,8 +132,8 @@
       </Avatar.Root>
       {#if !collapsed}
         <div class="grid flex-1 text-start text-sm leading-tight">
-          <span class="truncate font-medium">{user?.name}</span>
-          <span class="truncate text-xs">{user?.email}</span>
+          <span class="truncate font-medium" title={user?.name ?? undefined}>{user?.name}</span>
+          <span class="truncate text-xs" title={user?.email ?? undefined}>{user?.email}</span>
         </div>
         <ChevronsUpDown class="ms-auto size-4 shrink-0" />
       {/if}
@@ -153,8 +153,10 @@
             >
           </Avatar.Root>
           <div class="grid flex-1 text-start text-sm leading-tight">
-            <span class="truncate font-medium">{user?.name ?? "PowerTrackr"}</span>
-            <span class="truncate text-xs">{user?.email}</span>
+            <span class="truncate font-medium" title={user?.name ?? undefined}
+              >{user?.name ?? "PowerTrackr"}</span
+            >
+            <span class="truncate text-xs" title={user?.email ?? undefined}>{user?.email}</span>
           </div>
         </div>
       </DropdownMenu.Label>

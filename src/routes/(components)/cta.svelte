@@ -23,7 +23,7 @@
         ></div>
         <div class="grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-10">
           <div class="relative">
-            <SectionLabel index="04" label="Get Started" note="takes about a minute" />
+            <SectionLabel index="CTA" label="Get Started" note="takes about a minute" />
             <SplitReveal mode="words" triggerOnScroll>
               <h2 class="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">
                 Ready to simplify your billing?

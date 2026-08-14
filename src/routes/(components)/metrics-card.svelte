@@ -49,7 +49,9 @@
         {#if Icon}
           <Icon class="size-4" aria-hidden="true" />
         {/if}
-        <span class="text-sm font-medium">{label}</span>
+        <span class="text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+          >{label}</span
+        >
       </div>
       <div
         class={cn(
@@ -74,7 +76,7 @@
             <span class="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               {stat.label}
             </span>
-            <div class="flex items-baseline gap-1.5">
+            <div class="flex items-baseline gap-2">
               {#if loading}
                 <Loader class="h-4 w-4 animate-spin" />
               {:else}
@@ -85,7 +87,9 @@
                   )}>{stat.value}</span
                 >
                 {#if stat.note}
-                  <span class="text-xs text-muted-foreground">{stat.note}</span>
+                  <span class="border-s border-border ps-2 text-xs text-muted-foreground"
+                    >{stat.note}</span
+                  >
                 {/if}
               {/if}
             </div>

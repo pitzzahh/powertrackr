@@ -149,7 +149,7 @@
       <Card.Description>Showing {chartUnit} usage over time</Card.Description>
     </div>
     <div class="grid h-fit grid-cols-2 md:grid-cols-4">
-      {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
+      {#each ["all", "mainKWh", "subkWh"] as key (key)}
         {@const chart = key}
         {@const value =
           key === "all"

@@ -96,7 +96,7 @@
   ></div>
   <!-- Top glow -->
   <div
-    class="pointer-events-none absolute -top-40 left-1/2 h-136 w-216 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+    class="pointer-events-none absolute -top-40 left-1/2 h-136 w-216 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl"
     aria-hidden="true"
   ></div>
 
@@ -109,8 +109,7 @@
           <Zap class="size-3.5" />
 
           <span>
-            Electricity billing
-            <span class="hidden sm:inline">, without the spreadsheet</span>
+            Electricity billing<span class="hidden sm:inline">, without the spreadsheet</span>
           </span>
         </div>
 
@@ -119,7 +118,7 @@
             >{CURRENT_TEXT === "Payments" ? "Record" : "Track"}</span
           >
 
-          <span class="inline-flex align-baseline text-primary">
+          <span class="inline-flex align-baseline text-accent-foreground">
             <TextLoop {texts} bind:currentIndex interval={2500} />
             .
           </span>
@@ -164,10 +163,16 @@
           {/if}
         </div>
 
-        <div class="mt-8 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span class="rounded-full border border-border/60 px-3 py-1">Multi-tenant</span>
-          <span class="rounded-full border border-border/60 px-3 py-1">Sub-metering</span>
-          <span class="rounded-full border border-border/60 px-3 py-1">2FA-ready</span>
+        <div class="mt-8 flex flex-wrap items-center gap-3 text-xs">
+          <span class="rounded-full border border-accent bg-accent px-3 py-1 text-accent-foreground"
+            >Multi-tenant</span
+          >
+          <span class="rounded-full border border-accent bg-accent px-3 py-1 text-accent-foreground"
+            >Sub-metering</span
+          >
+          <span class="rounded-full border border-accent bg-accent px-3 py-1 text-accent-foreground"
+            >2FA-ready</span
+          >
         </div>
       </div>
 
@@ -282,12 +287,12 @@
                       value={FORMATTED_ENERGY}
                       textAnchor="middle"
                       verticalAnchor="middle"
-                      dy={24}
+                      dy={20}
                       class="fill-foreground text-3xl font-bold tabular-nums"
                     />
                     <Text
                       x={0}
-                      y={44}
+                      y={48}
                       value={ENERGY_UNIT}
                       textAnchor="middle"
                       verticalAnchor="middle"

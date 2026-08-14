@@ -138,9 +138,7 @@
         </ul>
 
         <div class="mt-4">
-          <h4 class="text-xs font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-            Navigate
-          </h4>
+          <h4 class="text-xs font-semibold tracking-[0.2em] text-muted-foreground">Navigate</h4>
           <ul class="mt-2 flex flex-col gap-2">
             {#each LANDING_NAV_ITEMS as item (item.href)}
               <li>

@@ -115,7 +115,10 @@
         </Button>
       </div>
     {:else if filteredData.length > 0 && browser}
-      <ChartContainer config={CHART_CONFIG} class="-ml-3 aspect-auto h-62.5 w-full">
+      <ChartContainer
+        config={CHART_CONFIG}
+        class="-ml-3 aspect-auto h-62.5 w-full [&_.lc-axis-tick-label]:fill-foreground/80"
+      >
         <LineChart
           data={transformedData}
           x="date"
@@ -157,7 +160,7 @@
               <Points
                 seriesKey={key}
                 r={3}
-                fill="white"
+                fill="var(--color-foreground)"
                 strokeWidth={1}
                 motion={{
                   type: "tween",
