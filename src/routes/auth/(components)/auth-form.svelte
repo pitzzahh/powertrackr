@@ -208,7 +208,7 @@
         autocomplete="current-password"
         showProgress={action === "register"}
         showRequirements={action === "register"}
-        {...register.fields.password.as("password")}
+        {...currentAction.fields.password.as("password")}
       />
       <FieldError errors={currentAction.fields.password.issues()} />
     </Field>
