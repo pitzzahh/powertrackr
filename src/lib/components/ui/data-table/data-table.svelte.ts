@@ -105,8 +105,19 @@ export function createSvelteTable<TData extends RowData>(
     columns: ReadonlyArray<ColumnDef<typeof features, TData, any>>;
   }
 ): SvelteTable<TData> {
-  return createTable({
-    ...options,
-    features,
-  });
+  // NOTE: build the options object with descriptor copies, NOT `{ ...options,
+  // features }`. Object spread evaluates accessor properties once and stores
+  // the resulting value, flattening reactive `get data()` / `get state()`
+  // getters into static snapshots — async data updates then never reach the
+  // table (empty rows forever). Copying descriptors preserves the getters so
+  // the adapter's `$effect.pre` keeps re-syncing options.
+  const descriptors = Object.getOwnPropertyDescriptors(options);
+  const tableOptions = Object.defineProperties(
+    Object.create(Object.getPrototypeOf(options)),
+    {
+      ...descriptors,
+      features: { value: features, enumerable: true, configurable: true, writable: true },
+    }
+  ) as TableOptions<typeof features, TData>;
+  return createTable(tableOptions);
 }

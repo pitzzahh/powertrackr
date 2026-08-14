@@ -11,11 +11,6 @@ export default defineConfig({
     enhancedImages(),
     sveltekit({
       preprocess: vitePreprocess(),
-      compilerOptions: {
-        experimental: {
-          async: true,
-        },
-      },
       adapter: adapter({
         fallback: "plaintext",
       }),

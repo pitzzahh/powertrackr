@@ -19,17 +19,10 @@
     status?: AsyncState;
     pagination_props?: Omit<DataTablePaginationProps<TData>, "table" | "pagination">;
   }
-
-  interface ComponentState {
-    rowSelection: RowSelectionState;
-    columnVisibility: ColumnVisibilityState;
-    columnFilters: ColumnFiltersState;
-    sorting: SortingState;
-    pagination: PaginationState;
-  }
 </script>
 
 <script lang="ts" generics="TData extends RowData, TValue">
+  import { createTableState } from "@tanstack/svelte-table";
   import { DataTablePagination } from ".";
   import {
     createSvelteTable,
@@ -54,56 +47,54 @@
     pagination_props = $bindable<DataTablePaginationProps<TData>>(),
   }: DataTableProps<TData, TValue> = $props();
 
-  let { rowSelection, columnVisibility, columnFilters, sorting, pagination } =
-    $derived<ComponentState>({
-      rowSelection: {},
-      columnVisibility: {},
-      columnFilters: [],
-      sorting: [],
-      pagination: { pageIndex: 0, pageSize: custom_row_count },
-    });
+  // Controlled state slices owned by this component. `createTableState` is the
+  // v9-supported holder: its setter accepts both plain values and TanStack
+  // updater functions, and its getter is read through the state getters below
+  // so the adapter's `$effect.pre` re-syncs options on every change.
+  const [rowSelection, setRowSelection] = createTableState<RowSelectionState>({});
+  const [columnVisibility, setColumnVisibility] = createTableState<ColumnVisibilityState>({});
+  const [columnFilters, setColumnFilters] = createTableState<ColumnFiltersState>([]);
+  const [sorting, setSorting] = createTableState<SortingState>([]);
+  const [pagination, setPagination] = $derived(
+    createTableState<PaginationState>({
+      pageIndex: 0,
+      pageSize: custom_row_count,
+    })
+  );
 
-  const table = createSvelteTable<TData>({
-    get data() {
-      return data;
-    },
-    state: {
-      get sorting() {
-        return sorting;
+  const table = $derived(
+    createSvelteTable<TData>({
+      get data() {
+        return data;
       },
-      get columnVisibility() {
-        return columnVisibility;
+      state: {
+        get sorting() {
+          return sorting();
+        },
+        get columnVisibility() {
+          return columnVisibility();
+        },
+        get rowSelection() {
+          return rowSelection();
+        },
+        get columnFilters() {
+          return columnFilters();
+        },
+        get pagination() {
+          return pagination();
+        },
       },
-      get rowSelection() {
-        return rowSelection;
+      get columns() {
+        return columns;
       },
-      get columnFilters() {
-        return columnFilters;
-      },
-      get pagination() {
-        return pagination;
-      },
-    },
-    get columns() {
-      return columns;
-    },
-    enableRowSelection: true,
-    onRowSelectionChange: (updater) => {
-      rowSelection = typeof updater === "function" ? updater(rowSelection) : updater;
-    },
-    onSortingChange: (updater) => {
-      sorting = typeof updater === "function" ? updater(sorting) : updater;
-    },
-    onColumnFiltersChange: (updater) => {
-      columnFilters = typeof updater === "function" ? updater(columnFilters) : updater;
-    },
-    onColumnVisibilityChange: (updater) => {
-      columnVisibility = typeof updater === "function" ? updater(columnVisibility) : updater;
-    },
-    onPaginationChange: (updater) => {
-      pagination = typeof updater === "function" ? updater(pagination) : updater;
-    },
-  });
+      enableRowSelection: true,
+      onRowSelectionChange: setRowSelection,
+      onSortingChange: setSorting,
+      onColumnFiltersChange: setColumnFilters,
+      onColumnVisibilityChange: setColumnVisibility,
+      onPaginationChange: setPagination,
+    })
+  );
 </script>
 
 {#if floating_bar && table.getFilteredSelectedRowModel().rows.length > 0}
@@ -167,7 +158,7 @@
             {:else}
               <Table.Row>
                 <Table.Cell colspan={columns.length} class="h-24 text-center">
-                  No data available.
+                  No matching records. Adjust the filters or add a billing period.
                 </Table.Cell>
               </Table.Row>
             {/each}
