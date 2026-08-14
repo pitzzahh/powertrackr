@@ -20,7 +20,6 @@ import type { Payment } from "#lib/types/payment.js";
 import { calculatePayPerKwh } from "#lib";
 import { formatEnergy } from "#lib/utils/format.js";
 import { error } from "@sveltejs/kit";
-import { getRequestEvent } from "$app/server";
 import { getEnergyUnit, type EnergyUnit } from "#lib/utils/converter/energy.js";
 import { originCheck } from "#lib/server/auth.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
@@ -1081,17 +1080,9 @@ export async function finalizeBillingInfoLogic(
 }
 
 export async function getTotalEnergyUsageLogic() {
-  const event = getRequestEvent();
-  const origin = event.request.headers.get("origin");
-  const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
-  const isAllowedOrigin =
-    origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
-
-  if (!isAllowedOrigin) {
-    throw error(403, "Forbidden");
-  }
+  // `event.url` is unavailable inside remote calls (stripped by the runtime);
+  // originCheck uses the request URL instead.
+  originCheck();
 
   return await getTotalEnergyUsage();
 }
