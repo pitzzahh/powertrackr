@@ -1,7 +1,7 @@
 <script lang="ts" module>
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
   import type { HTMLAttributes } from "svelte/elements";
-  import type { WithElementRef } from "$/index";
+  import type { WithElementRef } from "#lib/index.js";
 
   export type Setup2FAFormProps = WithElementRef<HTMLAttributes<HTMLDivElement>>;
 
@@ -16,20 +16,20 @@
 </script>
 
 <script lang="ts">
-  import { FieldGroup } from "$/components/ui/field/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style.js";
-  import { Loader, Shield, ShieldCheck, Copy, Check } from "$/assets/icons";
-  import { generate2FASecret, verify2FA, signout } from "$/api/auth.remote";
+  import { FieldGroup } from "#lib/components/ui/field/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { Loader, Shield, ShieldCheck, Copy, Check } from "#lib/assets/icons.js";
+  import { generate2FASecret, verify2FA, signout } from "#lib/api/auth.remote.js";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { showLoading, showSuccess, showWarning } from "$/components/toast";
-  import * as QRCode from "$/components/ui/qr-code";
-  import * as InputOTP from "$/components/ui/input-otp";
+  import { showLoading, showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import * as QRCode from "#lib/components/ui/qr-code/index.js";
+  import * as InputOTP from "#lib/components/ui/input-otp/index.js";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
-  import Logo from "$/components/logo.svelte";
+  import Logo from "#lib/components/logo.svelte";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
@@ -171,11 +171,11 @@
               }
             })}
           >
-            <input type="hidden" name="secret" value={secret} />
+            <input {...verify2FA.fields.secret.as("hidden", secret)} />
             <div class="flex flex-col items-center gap-4">
               <InputOTP.Root
                 maxlength={6}
-                name="code"
+                name={verify2FA.fields.code.as("text").name}
                 onValueChange={(value) => verify2FA.fields.code.set(value)}
                 pattern={REGEXP_ONLY_DIGITS}
               >

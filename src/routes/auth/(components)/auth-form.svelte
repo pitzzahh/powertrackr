@@ -1,8 +1,8 @@
 <script lang="ts" module>
   import type { AuthAction } from ".";
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "$/index";
+  import type { WithElementRef } from "#lib/index.js";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
     action: AuthAction;
     /** Turnstile site key, resolved server-side (PUBLIC_TURNSTILE_SITE_KEY). */
@@ -26,18 +26,18 @@
     FieldDescription,
     FieldSeparator,
     FieldError,
-  } from "$/components/ui/field/index.js";
-  import { Input } from "$/components/ui/input/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style.js";
-  import { loadTurnstileScript } from "$/utils/turnstile.js";
-  import Password from "$/components/password.svelte";
-  import { Github, Loader } from "$/assets/icons";
-  import { login, register } from "$/api/auth.remote";
+  } from "#lib/components/ui/field/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { loadTurnstileScript } from "#lib/utils/turnstile.js";
+  import Password from "#lib/components/password.svelte";
+  import { Github, Loader } from "#lib/assets/icons.js";
+  import { login, register } from "#lib/api/auth.remote.js";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { loginWithGithub } from "$/api/github.remote";
-  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
+  import { loginWithGithub } from "#lib/api/github.remote.js";
+  import { showError, showLoading, showSuccess, showWarning } from "#lib/components/toast/index.js";
 
   let {
     action,
@@ -228,7 +228,7 @@
         <FieldError errors={register.fields.confirmPassword.issues()} />
       </Field>
     {/if}
-    <input type="hidden" name="turnstileToken" value={token} />
+    <input {...currentAction.fields.turnstileToken.as("hidden", token)} />
     <Field>
       <div
         class="cf-turnstile"

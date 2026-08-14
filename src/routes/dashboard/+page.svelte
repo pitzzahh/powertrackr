@@ -32,19 +32,24 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
-  import { showSuccess, showWarning } from "$/components/toast";
-  import { formatNumber } from "$/utils/format";
-  import { ChartArea, ChartBar, toAreaChartData, toBarChartData } from "$routes/(components)";
+  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import { formatNumber } from "#lib/utils/format.js";
+  import {
+    ChartArea,
+    ChartBar,
+    toAreaChartData,
+    toBarChartData,
+  } from "#routes/(components)/index.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { useBillingStore } from "$/stores/billing.svelte.js";
-  import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import { Loader, Banknote, PhilippinePeso } from "$lib/assets/icons";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
+  import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
+  import * as Sheet from "#lib/components/ui/sheet/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import { Loader, Banknote, PhilippinePeso } from "#lib/assets/icons.js";
   import { goto } from "$app/navigation";
   import { BillingInfoForm } from "../history/(components)/index.js";
-  import { useLatestBillingStore } from "$/stores/latest-billing.svelte.js";
+  import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
 
   let { data } = $props();
 
@@ -60,7 +65,7 @@
     billingStore.fetchData();
     if (page.url.searchParams.get("oauth") === "github" && data.user) {
       showSuccess("Logged in successfully");
-      goto(page.url.pathname, { replaceState: true });
+      goto(page.url.pathname, { replace: true });
     }
   });
 </script>

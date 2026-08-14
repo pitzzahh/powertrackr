@@ -1,14 +1,14 @@
 import { eq } from "drizzle-orm";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { encodeHexLowerCase } from "@oslojs/encoding";
-import { user, session } from "$lib/server/db/schema";
-import { db } from "$/server/db";
+import { user, session } from "#lib/server/db/schema/index.js";
+import { db } from "#lib/server/db/index.js";
 import { getRequestEvent } from "$app/server";
 import { error, redirect, type RequestEvent } from "@sveltejs/kit";
-import type { Session, SessionFlags } from "$/types/session";
-import { omit } from "$/utils/mapper";
+import type { Session, SessionFlags } from "#lib/types/session.js";
+import { omit } from "#lib/utils/mapper.js";
 import { addSession, deleteSessionBy, updateSessionBy } from "./crud/session-crud";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 
 export function requireAuth() {
   const { locals } = getRequestEvent();
@@ -68,7 +68,7 @@ export async function validateSessionToken(token: string) {
         githubId: user.githubId,
         ownerId: user.ownerId,
       },
-      session: session,
+      session,
     })
     .from(session)
     .innerJoin(user, eq(session.userId, user.id))
@@ -136,8 +136,9 @@ export function originCheck() {
   const event = getRequestEvent();
   const origin = event.request.headers.get("origin");
   const referer = event.request.headers.get("referer");
-  const siteOrigin = event.url.origin;
-
+  // `event.url` is unavailable inside remote queries; the request URL carries
+  // the same origin and is accessible everywhere.
+  const siteOrigin = new URL(event.request.url).origin;
   const isAllowedOrigin =
     origin === siteOrigin || origin === null || (referer && referer.startsWith(siteOrigin));
 

@@ -1,14 +1,14 @@
 <script lang="ts" module>
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
 </script>
 
 <script lang="ts">
-  import { FieldGroup, Field, FieldLabel, FieldError } from "$/components/ui/field/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { Loader } from "$lib/assets/icons.js";
-  import * as InputOTP from "$/components/ui/input-otp";
-  import { checkpoint2FA, signout } from "$/api/auth.remote";
-  import { showError, showLoading, showSuccess, showWarning } from "$/components/toast";
+  import { FieldGroup, Field, FieldLabel, FieldError } from "#lib/components/ui/field/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Loader } from "#lib/assets/icons.js";
+  import * as InputOTP from "#lib/components/ui/input-otp/index.js";
+  import { checkpoint2FA, signout } from "#lib/api/auth.remote.js";
+  import { showError, showLoading, showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
@@ -58,7 +58,7 @@
       <div class="flex justify-center">
         <InputOTP.Root
           maxlength={6}
-          name="code"
+          name={checkpoint2FA.fields.code.as("text").name}
           onValueChange={(value) => checkpoint2FA.fields.code.set(value)}
           pattern={REGEXP_ONLY_DIGITS}
         >

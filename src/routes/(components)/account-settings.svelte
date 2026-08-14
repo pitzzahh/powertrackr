@@ -17,28 +17,33 @@
 </script>
 
 <script lang="ts">
-  import * as Drawer from "$/components/ui/drawer/index.js";
+  import * as Drawer from "#lib/components/ui/drawer/index.js";
   import { MediaQuery } from "svelte/reactivity";
-  import * as Dialog from "$/components/ui/dialog";
-  import * as UnderlineTabs from "$/components/underline-tabs";
-  import * as Field from "$/components/ui/field/index.js";
-  import { Input } from "$/components/ui/input/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { Separator } from "$/components/ui/separator/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import { Loader, Lock, User, Trash2, Shield, ShieldCheck, ShieldOff } from "$lib/assets/icons.js";
-  import { Badge } from "$/components/ui/badge";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import * as UnderlineTabs from "#lib/components/underline-tabs/index.js";
+  import * as Field from "#lib/components/ui/field/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import { Loader, Lock, User, Trash2, Shield, ShieldCheck, ShieldOff } from "#lib/assets/icons.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
   import { toast } from "svelte-sonner";
-  import type { AsyncState } from "$/types/state";
-  import { WarningBanner, LoadingDots } from "$/components/snippets.svelte";
-  import { showInspectorWarning, showLoading, showSuccess, showWarning } from "$/components/toast";
-  import { updateUser, deleteUser } from "$/api/user.remote";
-  import { changePassword, disable2FA } from "$/api/auth.remote";
-  import * as InputOTP from "$/components/ui/input-otp";
+  import type { AsyncState } from "#lib/types/state.js";
+  import { WarningBanner, LoadingDots } from "#lib/components/snippets.svelte";
+  import {
+    showInspectorWarning,
+    showLoading,
+    showSuccess,
+    showWarning,
+  } from "#lib/components/toast/index.js";
+  import { updateUser, deleteUser } from "#lib/api/user.remote.js";
+  import { changePassword, disable2FA } from "#lib/api/auth.remote.js";
+  import * as InputOTP from "#lib/components/ui/input-otp/index.js";
   import { isHttpError } from "@sveltejs/kit";
-  import Password from "$/components/password.svelte";
-  import { Checkbox } from "$/components/ui/checkbox/index.js";
-  import { Label } from "$/components/ui/label/index.js";
+  import Password from "#lib/components/password.svelte";
+  import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+  import { Label } from "#lib/components/ui/label/index.js";
   import { fly } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
@@ -543,7 +548,7 @@
                   <div class="flex flex-col items-center gap-4">
                     <InputOTP.Root
                       maxlength={6}
-                      name="code"
+                      name={disable2FA.fields.code.as("text").name}
                       onValueChange={(value) => disable2FA.fields.code.set(value)}
                       pattern={REGEXP_ONLY_DIGITS}
                     >
