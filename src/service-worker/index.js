@@ -47,6 +47,9 @@ self.addEventListener("fetch", (event) => {
   // ignore POST requests etc
   if (event.request.method !== "GET") return;
 
+  // never intercept WebSocket upgrades (e.g. Vite HMR in dev)
+  if (event.request.headers.get("upgrade") === "websocket") return;
+
   async function respond() {
     const url = new URL(event.request.url);
 
@@ -77,7 +80,9 @@ self.addEventListener("fetch", (event) => {
         throw new Error("invalid response from fetch");
       }
 
-      if (response.status === 200) {
+      // cache successful responses, but never streaming/no-store ones
+      // (e.g. remote live queries) — caching those breaks the stream
+      if (response.status === 200 && !response.headers.get("cache-control")?.includes("no-store")) {
         cache.put(event.request, response.clone());
       }
 
