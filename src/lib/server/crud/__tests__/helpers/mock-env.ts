@@ -37,5 +37,5 @@ export const PLUNK_SECRET_KEY: string | undefined = undefined;
 // Optional vars consumed by email helpers; undefined keeps `??`/`||` fallbacks
 // intact (same semantics as the old `$env/dynamic/private`).
 export const BASE_URL: string | undefined = undefined;
-export const PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES: string | undefined = undefined;
+export const EMAIL_VERIFICATION_TIMEOUT_MINUTES: string | undefined = undefined;
 export const PASSWORD_RESET_TIMEOUT_MINUTES: string | undefined = undefined;
