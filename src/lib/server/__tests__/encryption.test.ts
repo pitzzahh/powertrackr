@@ -54,4 +54,24 @@ describe("encryption utilities", () => {
     expect(await verifyPasswordHash(hashed, password)).toBe(true);
     expect(await verifyPasswordHash(hashed, "wrong")).toBe(false);
   });
+
+  it("roundtrips with a 32-byte key (openssl rand -hex 32) via aes-256-gcm", async () => {
+    vi.resetModules();
+    vi.doMock("$app/env/private", () => ({
+      // 32 bytes (64 hex chars), the format `.env.example` documents
+      ENCRYPTION_KEY: "a2b4cb1395bf95852abebc89274f96e883d4f8f743947737590a768b8a456075",
+    }));
+    const mod = await import("#lib/server/encryption.js");
+    const plain = "roundtrip with a 32-byte key";
+    expect(mod.decryptToString(mod.encryptString(plain))).toBe(plain);
+  });
+
+  it("fails fast at module load when the key length is invalid", async () => {
+    vi.resetModules();
+    vi.doMock("$app/env/private", () => ({
+      // 12 bytes (24 hex chars) — neither 16 nor 32
+      ENCRYPTION_KEY: "00112233445566778899aabbcc",
+    }));
+    await expect(import("#lib/server/encryption.js")).rejects.toThrow(/ENCRYPTION_KEY/);
+  });
 });
