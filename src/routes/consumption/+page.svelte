@@ -8,6 +8,7 @@
   import * as Card from "#lib/components/ui/card/index.js";
   import { ChartConsumption } from "#routes/(components)/index.js";
   import PageHeader from "#routes/(components)/page-header.svelte";
+  import MetricsCard from "#routes/(components)/metrics-card.svelte";
 
   let { data } = $props();
 
@@ -88,63 +89,29 @@
 </div>
 
 {#snippet Metrics()}
-  <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
-  >
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <Zap class="h-5 w-5 text-primary" />
-        <span class="text-lg">Total Consumption</span>
-      </div>
-      {#if consumptionStore.status === "fetching"}
-        <Loader class="h-5 w-5 animate-spin" />
-      {:else if consumptionStore.status === "error"}
-        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">0 kWh</div>
-      {:else}
-        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">
-          <span class="text-primary">{formatEnergy(consumptionStore.summary?.totalKWh || 0)}</span>
-        </div>
-      {/if}
-    </div>
-
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-3 xl:gap-16">
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Average Daily</span>
-        {#if consumptionStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatEnergy(consumptionStore.summary?.averageDailyKWh || 0)} /day</span
-          >
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Sub-Meters</span>
-        {#if consumptionStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{consumptionStore.summary?.totalSubMeters || 0}</span
-          >
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Latest Consumption</span>
-        {#if consumptionStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatEnergy(consumptionStore.summary?.latestReading || 0)}</span
-          >
-        {/if}
-      </div>
-    </div>
-  </section>
+  <div in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}>
+    <MetricsCard
+      icon={Zap}
+      label="Total Consumption"
+      hero={consumptionStore.status === "error"
+        ? "0 kWh"
+        : formatEnergy(consumptionStore.summary?.totalKWh || 0)}
+      heroTone="primary"
+      loading={consumptionStore.status === "fetching"}
+      stats={[
+        {
+          label: "Average Daily",
+          value: `${formatEnergy(consumptionStore.summary?.averageDailyKWh || 0)} /day`,
+        },
+        {
+          label: "Sub-Meters",
+          value: consumptionStore.summary?.totalSubMeters || 0,
+        },
+        {
+          label: "Latest Consumption",
+          value: formatEnergy(consumptionStore.summary?.latestReading || 0),
+        },
+      ]}
+    />
+  </div>
 {/snippet}

@@ -24,8 +24,8 @@
   --secondary-foreground: oklch(0.27 0.01 258);
   --muted: oklch(0.96 0.004 258);
   --muted-foreground: oklch(0.52 0.012 258);
-  --border: oklch(0.905 0.007 258);
-  --input: oklch(0.905 0.007 258);
+  --border: oklch(0.862 0.009 258);
+  --input: oklch(0.862 0.009 258);
 
   /* Brand: utility amber on paper, volt on graphite */
   --primary: oklch(0.72 0.16 82);
@@ -65,7 +65,7 @@
   --sidebar-primary-foreground: oklch(0.25 0.05 70);
   --sidebar-accent: oklch(0.92 0.02 88);
   --sidebar-accent-foreground: oklch(0.42 0.1 85);
-  --sidebar-border: oklch(0.9 0.007 258);
+  --sidebar-border: oklch(0.885 0.008 258);
   --sidebar-ring: oklch(0.72 0.16 82);
 
   /* Shadows — layered, low alpha */
