@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Users, Banknote, ChartLine, type PhosphorIcon } from "$lib/assets/icons";
-  import { SplitReveal, ScrollStagger } from "$lib/motion-core";
+  import { Users, Banknote, ChartLine, type PhosphorIcon } from "#lib/assets/icons.js";
+  import { SplitReveal, ScrollStagger } from "#lib/motion-core/index.js";
   import SectionLabel from "./section-label.svelte";
 
   const scenarios = [

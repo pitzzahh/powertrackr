@@ -1,27 +1,27 @@
 <script lang="ts">
   import "./layout.css";
   import { mode, ModeWatcher, toggleMode } from "mode-watcher";
-  import favicon from "$/assets/favicon.svg";
-  import FocusRing from "$/components/focus-ring.svelte";
-  import Header from "$routes/(components)/header.svelte";
-  import { site } from "$/site";
-  import SidebarContent from "$routes/(components)/sidebar-content.svelte";
+  import favicon from "#lib/assets/favicon.svg";
+  import FocusRing from "#lib/components/focus-ring.svelte";
+  import Header from "#routes/(components)/header.svelte";
+  import { site } from "#lib/site.js";
+  import SidebarContent from "#routes/(components)/sidebar-content.svelte";
   import { scale } from "svelte/transition";
-  import { setSidebarStore } from "$/stores/sidebar.svelte";
-  import { setBillingStore } from "$/stores/billing.svelte";
-  import { setLatestBillingStore } from "$/stores/latest-billing.svelte";
+  import { setSidebarStore } from "#lib/stores/sidebar.svelte.js";
+  import { setBillingStore } from "#lib/stores/billing.svelte.js";
+  import { setLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
   import { Toaster } from "svelte-sonner";
   import { untrack } from "svelte";
-  import { invalidateAll, onNavigate } from "$app/navigation";
-  import { setConsumptionStore } from "$/stores/consumption.svelte.js";
+  import { refreshAll, onNavigate } from "$app/navigation";
+  import { setConsumptionStore } from "#lib/stores/consumption.svelte.js";
   import { RenderScan } from "svelte-render-scan";
-  import { dev, browser } from "$app/environment";
+  import { dev, browser } from "$app/env";
   import { page } from "$app/state";
-  import { IsMobile } from "$/hooks/is-mobile.svelte.js";
+  import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
   import SvelteSeo from "svelte-seo";
-  import { isEditableTarget } from "$/utils/index.js";
-  import { isPublicRouteId } from "$lib/utils/constant";
-  import { setPendingFetch } from "$/hooks/use-pending-fetch.svelte.js";
+  import { isEditableTarget } from "#lib/utils/index.js";
+  import { isPublicRouteId } from "#lib/utils/constant.js";
+  import { setPendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
   import { Agentation } from "sv-agentation";
 
   const { children, data } = $props();
@@ -51,6 +51,7 @@
   setPendingFetch();
 
   onNavigate((navigation) => {
+    if (navigation.shallow) return;
     if (!document.startViewTransition) return;
     return new Promise((resolve) => {
       document.startViewTransition(async () => {
@@ -79,7 +80,7 @@
 </svelte:head>
 
 <svelte:window
-  onclose={() => invalidateAll()}
+  onclose={() => refreshAll()}
   onkeydown={(e) => {
     // Only consider the plain "d" key (no modifiers)
     if (e.key !== "d") return;

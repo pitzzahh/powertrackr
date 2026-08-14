@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { HelperResult } from "$/server/types/helper";
+  import type { HelperResult } from "#lib/server/types/helper.js";
   import type { RowData } from "@tanstack/table-core";
 
   export interface DataTableFloatingBarProps<TData extends RowData> {
@@ -19,19 +19,19 @@
 </script>
 
 <script lang="ts" generics="TData extends RowData">
-  import type { SvelteTable as Table } from "$/components/ui/data-table";
-  import { Separator } from "$/components/ui/separator";
-  import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Trash2, X, RefreshCw } from "$/assets/icons";
+  import type { SvelteTable as Table } from "#lib/components/ui/data-table/index.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
+  import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+  import { Trash2, X, RefreshCw } from "#lib/assets/icons.js";
   import { scale } from "svelte/transition";
-  import { Button, buttonVariants } from "$/components/ui/button/index.js";
-  import * as Dialog from "$/components/ui/dialog/index.js";
-  import { catchErrorTyped } from "$/utils/error";
-  import { cn } from "$/utils/style";
-  import { showError, showWarning } from "$/components/toast";
+  import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import { catchErrorTyped } from "#lib/utils/error.js";
+  import { cn } from "#lib/utils/style.js";
+  import { showError, showWarning } from "#lib/components/toast/index.js";
   import { cubicInOut } from "svelte/easing";
-  import { Input } from "$/components/ui/input";
-  import { WarningBanner } from "$/components/snippets.svelte";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { WarningBanner } from "#lib/components/snippets.svelte";
 
   let {
     table,

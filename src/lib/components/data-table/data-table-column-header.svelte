@@ -1,12 +1,12 @@
 <script lang="ts" generics="TData extends RowData, TValue">
-  import { EyeOff, ChevronsUpDown, ArrowUp, ArrowDown } from "$/assets/icons";
+  import { EyeOff, ChevronsUpDown, ArrowUp, ArrowDown } from "#lib/assets/icons.js";
   import type { HTMLAttributes } from "svelte/elements";
   import type { RowData } from "@tanstack/table-core";
-  import type { SvelteColumn as Column } from "$/components/ui/data-table";
+  import type { SvelteColumn as Column } from "#lib/components/ui/data-table/index.js";
   import type { WithoutChildren } from "bits-ui";
-  import { cn } from "$/utils/style";
-  import * as DropdownMenu from "$/components/ui/dropdown-menu";
-  import Button from "$/components/ui/button/button.svelte";
+  import { cn } from "#lib/utils/style.js";
+  import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
 
   type Props = HTMLAttributes<HTMLDivElement> & {
     column: Column<TData, TValue>;

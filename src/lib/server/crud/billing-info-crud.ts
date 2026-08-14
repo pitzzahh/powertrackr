@@ -1,10 +1,10 @@
-import { db, asNonEmptyBatch } from "$/server/db";
-import type { BatchQuery } from "$/server/db";
+import { db, asNonEmptyBatch } from "#lib/server/db/index.js";
+import type { BatchQuery } from "#lib/server/db/index.js";
 import { and, count, desc, eq, inArray, isNotNull, lt, not, sum, type SQL } from "drizzle-orm";
-import { billingInfo, payment, tenantReading } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData, omit } from "$/utils/mapper";
+import { billingInfo, payment, tenantReading } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData, omit } from "#lib/utils/mapper.js";
 import type {
   NewBillingInfo,
   BillingInfo,
@@ -13,17 +13,17 @@ import type {
   BillingCreateForm,
   BillingUpdateForm,
   BillingSubMeterForm,
-} from "$/types/billing-info";
-import type { TenantReadingDTO } from "$/types/tenant-reading";
-import type { User } from "$/types/user";
-import type { Payment } from "$/types/payment";
-import { calculatePayPerKwh } from "$lib";
-import { formatEnergy } from "$/utils/format";
+} from "#lib/types/billing-info.js";
+import type { TenantReadingDTO } from "#lib/types/tenant-reading.js";
+import type { User } from "#lib/types/user.js";
+import type { Payment } from "#lib/types/payment.js";
+import { calculatePayPerKwh } from "#lib";
+import { formatEnergy } from "#lib/utils/format.js";
 import { error } from "@sveltejs/kit";
 import { getRequestEvent } from "$app/server";
-import { getEnergyUnit, type EnergyUnit } from "$/utils/converter/energy";
-import { originCheck } from "$/server/auth";
-import { generateQueryConditions } from "$/server/mapper";
+import { getEnergyUnit, type EnergyUnit } from "#lib/utils/converter/energy.js";
+import { originCheck } from "#lib/server/auth.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 export type TotalEnergyUsageResult = {
   total: number;

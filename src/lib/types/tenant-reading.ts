@@ -1,6 +1,6 @@
-import type { tenantReading } from "$/server/db/schema";
-import type { Payment } from "$/types/payment";
-import type { Status } from "$/types/billing-info";
+import type { tenantReading } from "#lib/server/db/schema/index.js";
+import type { Payment } from "#lib/types/payment.js";
+import type { Status } from "#lib/types/billing-info.js";
 
 export type TenantReading = typeof tenantReading.$inferSelect;
 export type NewTenantReading = typeof tenantReading.$inferInsert;

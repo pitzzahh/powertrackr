@@ -1,14 +1,14 @@
-import { db } from "$/server/db";
+import { db } from "#lib/server/db/index.js";
 
 import { and, count, eq, not, sum, type SQL } from "drizzle-orm";
-import { payment, billingInfo } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
-import { formatNumber } from "$/utils/format";
-import type { NewPayment, Payment, PaymentDTO } from "$/types/payment";
-import { originCheck } from "$/server/auth";
-import { generateQueryConditions } from "$/server/mapper";
+import { payment, billingInfo } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData } from "#lib/utils/mapper.js";
+import { formatNumber } from "#lib/utils/format.js";
+import type { NewPayment, Payment, PaymentDTO } from "#lib/types/payment.js";
+import { originCheck } from "#lib/server/auth.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type PaymentQueryOptions = {
   where?: Record<string, unknown>;

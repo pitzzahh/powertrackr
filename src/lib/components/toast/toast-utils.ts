@@ -5,7 +5,7 @@
  *
  * @example
  * ```typescript
- * import { showSuccess, showError, showWarning, showInfo } from '$/components/toast';
+ * import { showSuccess, showError, showWarning, showInfo } from '#lib/components/toast/index.js';
  *
  * // Show success
  * showSuccess("Saved!", "Your changes have been saved.");

@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { DataTableProps } from "$/components/data-table/data-table.svelte";
+  import type { DataTableProps } from "#lib/components/data-table/data-table.svelte";
 
   export interface HistoryDataTableProps {
     data: ExtendedBillingInfoTableView[];
@@ -9,14 +9,14 @@
 </script>
 
 <script lang="ts">
-  import { generateOptions } from "$/utils/mapper";
-  import { showSuccess } from "$/components/toast";
-  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
-  import { useBillingStore } from "$/stores/billing.svelte";
+  import { generateOptions } from "#lib/utils/mapper.js";
+  import { showSuccess } from "#lib/components/toast/index.js";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { historyTableColumns, HistoryDataTableToolbar } from ".";
-  import { DataTable, DataTableFloatingBar } from "$/components/data-table";
-  import type { AsyncState } from "$/types/state";
-  import { deleteBillingInfoBatch } from "$/api/billing-info.remote";
+  import { DataTable, DataTableFloatingBar } from "#lib/components/data-table/index.js";
+  import type { AsyncState } from "#lib/types/state.js";
+  import { deleteBillingInfoBatch } from "#lib/api/billing-info.remote.js";
 
   let { data, data_table_props, status }: HistoryDataTableProps = $props();
 

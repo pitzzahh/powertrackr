@@ -1,13 +1,17 @@
 import { describe, it, expect } from "vitest";
 import * as v from "valibot";
-import { billFormSchema, subMeterSchema, updateBillingInfoSchema } from "$/validators/billing-info";
-import { importBillFormSchema, importSubMeterSchema } from "$/validators/import";
+import {
+  billFormSchema,
+  subMeterSchema,
+  updateBillingInfoSchema,
+} from "#lib/validators/billing-info.js";
+import { importBillFormSchema, importSubMeterSchema } from "#lib/validators/import.js";
 import {
   createTenantSchema,
   updateTenantSchema,
   submitReadingSchema,
   updateSubmissionSchema,
-} from "$/validators/tenant";
+} from "#lib/validators/tenant.js";
 
 describe("subMeterSchema", () => {
   it("accepts an eager entry with a reading", () => {

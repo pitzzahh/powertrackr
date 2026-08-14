@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Badge } from "$/components/ui/badge";
-  import type { BadgeVariant } from "$/components/ui/badge";
-  import { cn } from "$/utils/style";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import type { BadgeVariant } from "#lib/components/ui/badge/index.js";
+  import { cn } from "#lib/utils/style.js";
 
   interface Props {
     value: boolean | string | number | null;

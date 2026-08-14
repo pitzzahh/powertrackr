@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
-  import { HistoryDataTable } from "$routes/history/(components)";
+  import { extendedBillingInfoToTableView } from "#lib/utils/mapper/billing-info.js";
+  import { HistoryDataTable } from "#routes/history/(components)/index.js";
   import { onMount } from "svelte";
-  import { useBillingStore } from "$/stores/billing.svelte.js";
-  import { formatNumber, formatEnergy } from "$/utils/format";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
+  import { formatNumber, formatEnergy } from "#lib/utils/format.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { Loader, Banknote } from "$lib/assets/icons";
+  import { Loader, Banknote } from "#lib/assets/icons.js";
 
   let { data } = $props();
 

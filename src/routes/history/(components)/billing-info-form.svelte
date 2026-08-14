@@ -55,38 +55,38 @@
 </script>
 
 <script lang="ts">
-  import * as Field from "$/components/ui/field";
-  import { Button } from "$/components/ui/button";
-  import { Input } from "$/components/ui/input";
-  import * as Popover from "$/components/ui/popover";
-  import * as Select from "$/components/ui/select";
+  import * as Field from "#lib/components/ui/field/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import * as Popover from "#lib/components/ui/popover/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
   import { CalendarDate, today } from "@internationalized/date";
-  import { getChangedData, omit } from "$/utils/mapper";
-  import { resolvePreviousReadings } from "$/utils/previous-reading";
-  import { createBillingInfo, updateBillingInfo } from "$/api/billing-info.remote";
-  import { getTenants } from "$/api/tenant.remote";
-  import type { TenantWithMeters } from "$/types/tenant";
-  import { Label } from "$/components/ui/label";
-  import { Checkbox } from "$/components/ui/checkbox/index.js";
-  import { ChevronDown, CirclePlus, Loader, Trash2 } from "$/assets/icons";
-  import { Calendar } from "$/components/ui/calendar";
-  import * as Card from "$/components/ui/card/index.js";
+  import { getChangedData, omit } from "#lib/utils/mapper.js";
+  import { resolvePreviousReadings } from "#lib/utils/previous-reading.js";
+  import { createBillingInfo, updateBillingInfo } from "#lib/api/billing-info.remote.js";
+  import { getTenants } from "#lib/api/tenant.remote.js";
+  import type { TenantWithMeters } from "#lib/types/tenant.js";
+  import { Label } from "#lib/components/ui/label/index.js";
+  import { Checkbox } from "#lib/components/ui/checkbox/index.js";
+  import { ChevronDown, CirclePlus, Loader, Trash2 } from "#lib/assets/icons.js";
+  import { Calendar } from "#lib/components/ui/calendar/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
   import {
     STATUS_VALUES,
     type BillingInfoDTOWithSubMeters,
     type Status,
-  } from "$/types/billing-info";
-  import { formatDate, formatEnergy } from "$/utils/format";
-  import { convertToNormalText } from "$/utils/text";
+  } from "#lib/types/billing-info.js";
+  import { formatDate, formatEnergy } from "#lib/utils/format.js";
+  import { convertToNormalText } from "#lib/utils/text.js";
   import * as v from "valibot";
-  import { billFormSchema } from "$/validators/billing-info";
+  import { billFormSchema } from "#lib/validators/billing-info.js";
   import { toast } from "svelte-sonner";
   import { watch } from "runed";
-  import { showInspectorWarning, showLoading } from "$/components/toast";
-  import Separator from "$/components/ui/separator/separator.svelte";
+  import { showInspectorWarning, showLoading } from "#lib/components/toast/index.js";
+  import Separator from "#lib/components/ui/separator/separator.svelte";
   import { sineInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
 
   let {
     action,

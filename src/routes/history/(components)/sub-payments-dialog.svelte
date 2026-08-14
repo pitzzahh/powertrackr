@@ -1,12 +1,17 @@
 <script lang="ts">
-  import { Separator } from "$/components/ui/separator/index.js";
-  import { formatNumber } from "$/utils/format";
-  import { convertToNormalText } from "$/utils/text";
-  import { Dialog, DialogContent, DialogHeader, DialogTitle } from "$lib/components/ui/dialog";
-  import { ScrollArea } from "$lib/components/ui/scroll-area";
-  import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
-  import type { ExtendedBillingInfoTableView } from "$lib/types/billing-info";
-  import type { TenantReadingDTO } from "$lib/types/tenant-reading";
+  import { Separator } from "#lib/components/ui/separator/index.js";
+  import { formatNumber } from "#lib/utils/format.js";
+  import { convertToNormalText } from "#lib/utils/text.js";
+  import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+  } from "#lib/components/ui/dialog/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
+  import type { TenantReadingDTO } from "#lib/types/tenant-reading.js";
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
 

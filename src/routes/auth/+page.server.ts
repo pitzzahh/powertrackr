@@ -1,9 +1,9 @@
 import { redirect } from "@sveltejs/kit";
-import { getEmailVerificationRequestBy } from "$/server/crud/email-verification-request-crud";
-import { createEmailVerification } from "$lib/server/email";
-import type { AuthAction } from "$routes/auth/(components)/index.js";
-import type { EmailVerificationRequest } from "$/types/email-verification-request";
-import { env } from "$env/dynamic/public";
+import { getEmailVerificationRequestBy } from "#lib/server/crud/email-verification-request-crud.js";
+import { createEmailVerification } from "#lib/server/email.js";
+import type { AuthAction } from "#routes/auth/(components)/index.js";
+import type { EmailVerificationRequest } from "#lib/types/email-verification-request.js";
+import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 
 export async function load({
   url: { searchParams, origin, pathname },
@@ -64,7 +64,7 @@ export async function load({
           user.id,
           user.email,
           origin,
-          Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+          Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
         );
       } else {
         console.warn("Email rate limit exceeded for initial verification:", user.email);

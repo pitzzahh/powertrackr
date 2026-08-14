@@ -1,18 +1,18 @@
 <script lang="ts">
-  import * as Field from "$/components/ui/field";
-  import { Button } from "$/components/ui/button";
-  import { Input } from "$/components/ui/input";
-  import * as Card from "$/components/ui/card";
-  import { Loader, Zap, Pencil, InvoiceIcon } from "$/assets/icons";
+  import * as Field from "#lib/components/ui/field/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { Loader, Zap, Pencil, InvoiceIcon } from "#lib/assets/icons.js";
   import {
     getMyMeter,
     submitReading,
     updateSubmission,
     getPendingBillings,
     getCurrentBilling,
-  } from "$/api/tenant.remote";
-  import { formatDate, formatEnergy, formatNumber } from "$/utils/format";
-  import { showSuccess, showWarning } from "$/components/toast";
+  } from "#lib/api/tenant.remote.js";
+  import { formatDate, formatEnergy, formatNumber } from "#lib/utils/format.js";
+  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { isHttpError } from "@sveltejs/kit";
   import { watch } from "runed";
 

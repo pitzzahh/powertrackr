@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { BarChartData } from "$lib/types/chart";
+  import type { BarChartData } from "#lib/types/chart.js";
 
   export type { BarChartData };
 
@@ -27,24 +27,24 @@
 </script>
 
 <script lang="ts">
-  import * as Chart from "$/components/ui/chart/index.js";
-  import * as Card from "$/components/ui/card/index.js";
-  import * as Select from "$/components/ui/select/index.js";
+  import * as Chart from "#lib/components/ui/chart/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
   import { BarChart, type ChartState } from "layerchart";
   import { scaleBand } from "d3-scale";
   import { quintInOut } from "svelte/easing";
-  import { formatDate, formatNumber, formatEnergy } from "$/utils/format";
+  import { formatDate, formatNumber, formatEnergy } from "#lib/utils/format.js";
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
-  import { browser } from "$app/environment";
-  import type { Total } from "$lib/workers/total-calculator";
-  import { Loader, RefreshCw } from "$lib/assets/icons";
-  import { Button } from "$/components/ui/button";
-  import type { AsyncState } from "$/types/state";
+  import { browser } from "$app/env";
+  import type { Total } from "#lib/workers/total-calculator.js";
+  import { Loader, RefreshCw } from "#lib/assets/icons.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import type { AsyncState } from "#lib/types/state.js";
   import type { TimeRangeOption } from "./types";
-  import { getEnergyUnit, convertEnergy } from "$/utils/converter/energy";
-  import { NumberTicker } from "$lib/components/number-ticker";
+  import { getEnergyUnit, convertEnergy } from "#lib/utils/converter/energy.js";
+  import { NumberTicker } from "#lib/components/number-ticker/index.js";
   import type { Format } from "@number-flow/svelte";
-  import { cn } from "$/utils/style";
+  import { cn } from "#lib/utils/style.js";
   import { onDestroy } from "svelte";
 
   let { chartData, status, retryStatus, refetch }: BarChartInteractiveProps = $props();
@@ -120,7 +120,7 @@
   );
 
   if (browser) {
-    worker = new Worker(new URL("$lib/workers/total-calculator.ts", import.meta.url), {
+    worker = new Worker(new URL("#lib/workers/total-calculator.ts", import.meta.url), {
       type: "module",
     });
 
@@ -210,14 +210,11 @@
             retryStatus = "fetching";
             refetch?.(() => (retryStatus = "success"));
           }}
-          ><RefreshCw
-            class={[
-              {
-                "animate-spin": retryStatus === "fetching",
-              },
-            ]}
-          /> Refetch</Button
         >
+          <RefreshCw class={[{ "animate-spin": retryStatus === "fetching" }]} />
+
+          Refetch
+        </Button>
       </div>
     {:else if filteredData.length > 0 && browser}
       <Chart.Container config={CHART_CONFIG} class="aspect-auto h-62.5 w-full">

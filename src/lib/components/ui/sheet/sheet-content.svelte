@@ -26,9 +26,9 @@
   import type { Snippet } from "svelte";
   import SheetPortal from "./sheet-portal.svelte";
   import SheetOverlay from "./sheet-overlay.svelte";
-  import { cn } from "$lib/utils/style.js";
+  import { cn } from "#lib/utils/style.js";
   import type { ComponentProps } from "svelte";
-  import type { WithoutChildrenOrChild } from "$/index";
+  import type { WithoutChildrenOrChild } from "#lib/index.js";
 
   let {
     ref = $bindable(null),
@@ -54,7 +54,7 @@
   >
     {@render children?.()}
     <SheetPrimitive.Close
-      class="absolute end-4 top-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none"
+      class="absolute inset-e-4 top-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none"
     >
       <XIcon class="size-4" />
       <span class="sr-only">Close</span>

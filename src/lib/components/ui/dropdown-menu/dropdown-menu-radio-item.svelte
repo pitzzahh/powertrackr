@@ -1,8 +1,8 @@
 <script lang="ts">
   import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
   import CircleIcon from "@lucide/svelte/icons/circle";
-  import { cn } from "$lib/utils/style.js";
-  import type { WithoutChild } from "$/index";
+  import { cn } from "#lib/utils/style.js";
+  import type { WithoutChild } from "#lib/index.js";
 
   let {
     ref = $bindable(null),

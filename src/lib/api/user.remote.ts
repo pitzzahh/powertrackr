@@ -5,21 +5,21 @@ import {
   updateUserSchema,
   getUserSchema,
   deleteUserSchema,
-} from "$/validators/user";
+} from "#lib/validators/user.js";
 import {
   addUser,
   deleteUserBy,
   getUserBy,
   getUserCountLogic,
   updateUserBy,
-} from "$/server/crud/user-crud";
+} from "#lib/server/crud/user-crud.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import {
   invalidateSession,
   deleteSessionTokenCookie,
   requireAuth,
   originCheck,
-} from "$/server/auth";
+} from "#lib/server/auth.js";
 
 export const getTotalUserCount = query(getUserCountLogic);
 

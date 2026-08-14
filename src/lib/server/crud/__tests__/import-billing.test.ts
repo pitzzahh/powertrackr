@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { importBillingHandler } from "$/server/data-import";
-import { createBillingInfoLogic, getBillingInfoBy } from "$/server/crud/billing-info-crud";
-import { addUser } from "$/server/crud/user-crud";
-import { createUser, createTenantUser } from "$/server/crud/__tests__/helpers/factories";
+import { importBillingHandler } from "#lib/server/data-import.js";
+import { createBillingInfoLogic, getBillingInfoBy } from "#lib/server/crud/billing-info-crud.js";
+import { addUser } from "#lib/server/crud/user-crud.js";
+import { createUser, createTenantUser } from "#lib/server/crud/__tests__/helpers/factories.js";
 
 // Mirrors the reported sample: latest record (2026-09-01) has NO sub-meters,
 // while older records bill "Lola's House".

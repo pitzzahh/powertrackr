@@ -1,14 +1,14 @@
-import { db } from "$/server/db";
+import { db } from "#lib/server/db/index.js";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { tenantReading } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
-import type { NewTenantReading } from "$/types/tenant-reading";
-import type { Payment } from "$/types/payment";
-import type { User } from "$/types/user";
-import type { BillingInfo } from "$/types/billing-info";
-import { generateQueryConditions } from "$/server/mapper";
+import { tenantReading } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData } from "#lib/utils/mapper.js";
+import type { NewTenantReading } from "#lib/types/tenant-reading.js";
+import type { Payment } from "#lib/types/payment.js";
+import type { User } from "#lib/types/user.js";
+import type { BillingInfo } from "#lib/types/billing-info.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type TenantReadingQueryOptions = {
   with?: { tenant?: true; payment?: true; billingInfo?: true };

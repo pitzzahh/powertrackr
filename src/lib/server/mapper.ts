@@ -1,4 +1,4 @@
-import type { HelperParam } from "$/server/types/helper";
+import type { HelperParam } from "#lib/server/types/helper.js";
 
 export function generateQueryConditions<T>(data: HelperParam<T>) {
   const { query, options } = data;

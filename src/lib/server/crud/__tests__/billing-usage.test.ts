@@ -4,7 +4,7 @@ import {
   getLastTenantReading,
   createBillingInfoLogic,
 } from "../billing-info-crud";
-import { calculatePayPerKwh } from "$lib";
+import { calculatePayPerKwh } from "#lib";
 import { addUser } from "../user-crud";
 import { createUser, createTenantUser } from "./helpers/factories";
 

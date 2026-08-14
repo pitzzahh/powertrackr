@@ -1,4 +1,4 @@
-import type { TimeRangeOption } from "$routes/(components)/types";
+import type { TimeRangeOption } from "#routes/(components)/types.js";
 
 export type HelperResult<T = unknown> = {
   valid: boolean;

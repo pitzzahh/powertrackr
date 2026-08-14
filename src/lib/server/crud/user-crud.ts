@@ -1,12 +1,12 @@
-import { db } from "$/server/db";
+import { db } from "#lib/server/db/index.js";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { user } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
-import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "$/types/user";
-import { originCheck } from "$/server/auth";
-import { generateQueryConditions } from "$/server/mapper";
+import { user } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData } from "#lib/utils/mapper.js";
+import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "#lib/types/user.js";
+import { originCheck } from "#lib/server/auth.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type UserQueryOptions = {
   with?: { sessions: true };

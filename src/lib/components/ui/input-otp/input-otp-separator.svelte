@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { HTMLAttributes } from "svelte/elements";
 	import MinusIcon from "@lucide/svelte/icons/minus";
-  import type { WithElementRef } from "$/index";
+  import type { WithElementRef } from "#lib/index.js";
 
 	let {
 		ref = $bindable(null),

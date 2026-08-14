@@ -8,7 +8,7 @@
     RowSelectionState,
     SortingState,
   } from "@tanstack/table-core";
-  import type { SvelteColumnDef, SvelteTable } from "$/components/ui/data-table";
+  import type { SvelteColumnDef, SvelteTable } from "#lib/components/ui/data-table/index.js";
   export interface DataTableProps<TData extends RowData, TValue> {
     columns: SvelteColumnDef<TData, TValue>[];
     data: TData[];
@@ -31,14 +31,17 @@
 
 <script lang="ts" generics="TData extends RowData, TValue">
   import { DataTablePagination } from ".";
-  import { createSvelteTable, type SvelteTable as TableCore } from "$/components/ui/data-table";
-  import { FlexRender } from "$/components/ui/data-table";
-  import * as Table from "$/components/ui/table/index.js";
+  import {
+    createSvelteTable,
+    type SvelteTable as TableCore,
+  } from "#lib/components/ui/data-table/index.js";
+  import { FlexRender } from "#lib/components/ui/data-table/index.js";
+  import * as Table from "#lib/components/ui/table/index.js";
   import type { Snippet } from "svelte";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { ScrollArea } from "../ui/scroll-area";
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
 
   let {
     columns,

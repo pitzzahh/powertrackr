@@ -10,9 +10,9 @@ import {
 } from "../session-crud";
 import { createSession, createSessions, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
-import type { NewSession } from "$/types/session";
-import type { HelperParam } from "$/server/types/helper";
-import { generateQueryConditions } from "$/server/mapper";
+import type { NewSession } from "#lib/types/session.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Session CRUD Operations", () => {
   beforeEach(() => {

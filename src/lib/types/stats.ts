@@ -1,4 +1,4 @@
-import type { EnergyUnit } from "$/utils/converter/energy";
+import type { EnergyUnit } from "#lib/utils/converter/energy.js";
 
 export interface Stats {
   userCount: number;

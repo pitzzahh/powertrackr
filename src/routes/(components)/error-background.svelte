@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { TriangleAlert, ShieldAlert, CircleAlert, Lock } from "$/assets/icons";
+  import { TriangleAlert, ShieldAlert, CircleAlert, Lock } from "#lib/assets/icons.js";
   import type { Component } from "svelte";
 </script>
 

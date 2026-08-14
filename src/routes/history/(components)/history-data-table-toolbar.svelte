@@ -1,8 +1,8 @@
 <script module lang="ts">
-  import type { DataTableViewOptionsProps } from "$/components/data-table/data-table-view-options.svelte";
+  import type { DataTableViewOptionsProps } from "#lib/components/data-table/data-table-view-options.svelte";
   import type { RowData } from "@tanstack/table-core";
-  import type { SvelteTable as Table } from "$/components/ui/data-table";
-  import type { FilterOption } from "$/types/filter";
+  import type { SvelteTable as Table } from "#lib/components/ui/data-table/index.js";
+  import type { FilterOption } from "#lib/types/filter.js";
 
   export interface BillingInfosDataTableToolbarProps<TData extends RowData> {
     table: Table<TData>;
@@ -18,15 +18,15 @@
 </script>
 
 <script lang="ts">
-  import { Button } from "$/components/ui/button/index.js";
-  import { Input } from "$/components/ui/input/index.js";
-  import { DataTableSearchFilter, DataTableViewOptions } from "$/components/data-table";
-  import { DataTableFacetedFilter } from "$/components/data-table";
-  import { X } from "$/assets/icons.js";
-  import { convertToNormalText } from "$/utils/text";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { DataTableSearchFilter, DataTableViewOptions } from "#lib/components/data-table/index.js";
+  import { DataTableFacetedFilter } from "#lib/components/data-table/index.js";
+  import { X } from "#lib/assets/icons.js";
+  import { convertToNormalText } from "#lib/utils/text.js";
   import { onDestroy } from "svelte";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
 
   let {
     table,

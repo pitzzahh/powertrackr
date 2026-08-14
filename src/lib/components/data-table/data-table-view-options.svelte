@@ -7,10 +7,10 @@
 </script>
 
 <script lang="ts" generics="TData extends RowData">
-  import { ChevronDown, TwoColumns } from "$/assets/icons";
-  import type { SvelteTable as Table } from "$/components/ui/data-table";
-  import { Button } from "$/components/ui/button/index.js";
-  import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
+  import { ChevronDown, TwoColumns } from "#lib/assets/icons.js";
+  import type { SvelteTable as Table } from "#lib/components/ui/data-table/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
   import { untrack } from "svelte";
 
   let { table, default_hidden_columns = $bindable([]) }: DataTableViewOptionsProps<TData> =

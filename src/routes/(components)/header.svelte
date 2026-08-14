@@ -20,23 +20,23 @@
 </script>
 
 <script lang="ts">
-  import Logo from "$/components/logo.svelte";
-  import { Button, buttonVariants } from "$/components/ui/button";
-  import * as Sheet from "$lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun, Loader } from "$/assets/icons";
-  import SidebarContent from "$routes/(components)/sidebar-content.svelte";
-  import { cn } from "$/utils/style";
+  import Logo from "#lib/components/logo.svelte";
+  import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+  import * as Sheet from "#lib/components/ui/sheet/index.js";
+  import { Menu, PhilippinePeso, Moon, Sun, Loader } from "#lib/assets/icons.js";
+  import SidebarContent from "#routes/(components)/sidebar-content.svelte";
+  import { cn } from "#lib/utils/style.js";
   import { toggleMode } from "mode-watcher";
-  import { type BillingInfoWithSubMetersFormProps } from "$routes/history/(components)/billing-info-form.svelte";
-  import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-  import { showSuccess, showWarning } from "$/components/toast";
-  import { useBillingStore } from "$lib/stores/billing.svelte.js";
-  import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import { useLatestBillingStore } from "$/stores/latest-billing.svelte";
-  import { Badge } from "$/components/ui/badge";
-  import { BillingInfoForm } from "$routes/history/(components)";
-  import { useSidebarStore } from "$/stores/sidebar.svelte";
+  import { type BillingInfoWithSubMetersFormProps } from "#routes/history/(components)/billing-info-form.svelte";
+  import type { BillingInfoDTOWithSubMeters } from "#lib/types/billing-info.js";
+  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
+  import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { BillingInfoForm } from "#routes/history/(components)/index.js";
+  import { useSidebarStore } from "#lib/stores/sidebar.svelte.js";
   import { watch } from "runed";
 
   let { user }: HeaderProps = $props();

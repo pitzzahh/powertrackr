@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { cn } from "$lib/utils/style.js";
+  import { cn } from "#lib/utils/style.js";
   import type { HTMLAttributes } from "svelte/elements";
   import { getPayloadConfigFromPayload, useChart, type TooltipPayload } from "./chart-utils.js";
   import { getChartContext, Tooltip as TooltipPrimitive } from "layerchart";
   import type { Snippet } from "svelte";
-  import type { WithoutChildren, WithElementRef } from "$/index.js";
-  import { formatNumber } from "$lib/utils/format.js";
+  import type { WithoutChildren, WithElementRef } from "#lib/index.js";
+  import { formatNumber } from "#lib/utils/format.js";
 
   function defaultFormatter(value: unknown, _payload: TooltipPayload[]) {
     return `${value}`;

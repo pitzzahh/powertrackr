@@ -5,13 +5,13 @@ import {
   getSessionsSchema,
   getSessionSchema,
   deleteSessionSchema,
-} from "$/validators/session";
+} from "#lib/validators/session.js";
 import {
   addSession,
   updateSessionBy,
   getSessionBy,
   deleteSessionBy,
-} from "$/server/crud/session-crud";
+} from "#lib/server/crud/session-crud.js";
 import { error } from "@sveltejs/kit";
 
 // Query to get all sessions for a user

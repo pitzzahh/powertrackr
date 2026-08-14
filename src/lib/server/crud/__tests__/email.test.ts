@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 
 describe("server/email", () => {
   it("createEmailVerification should create a verification request with expiresAt as Date", async () => {
-    const { createEmailVerification } = await import("$/server/email");
+    const { createEmailVerification } = await import("#lib/server/email.js");
 
-    const { addUser } = await import("$/server/crud/user-crud");
+    const { addUser } = await import("#lib/server/crud/user-crud.js");
     const { createUser } = await import("./helpers/factories");
     const {
       valid,
@@ -27,7 +27,7 @@ describe("server/email", () => {
     expect((verification!.expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
 
     const { getEmailVerificationRequestBy } =
-      await import("$/server/crud/email-verification-request-crud");
+      await import("#lib/server/crud/email-verification-request-crud.js");
     const found = await getEmailVerificationRequestBy({
       query: { userId: user.id },
       options: { limit: 1 },
@@ -38,9 +38,9 @@ describe("server/email", () => {
   });
 
   it("createPasswordReset should create a password reset session with expiresAt as Date", async () => {
-    const { createPasswordReset } = await import("$/server/email");
+    const { createPasswordReset } = await import("#lib/server/email.js");
 
-    const { addUser } = await import("$/server/crud/user-crud");
+    const { addUser } = await import("#lib/server/crud/user-crud.js");
     const { createUser } = await import("./helpers/factories");
     const {
       valid,
@@ -63,7 +63,8 @@ describe("server/email", () => {
     expect((reset!.expiresAt as Date).getTime()).toBeGreaterThan(1_000_000_000_000);
     expect(reset!.code).toBeDefined();
 
-    const { getPasswordResetSessionBy } = await import("$/server/crud/password-reset-session-crud");
+    const { getPasswordResetSessionBy } =
+      await import("#lib/server/crud/password-reset-session-crud.js");
     const found = await getPasswordResetSessionBy({
       query: { userId: user.id },
       options: { limit: 1 },

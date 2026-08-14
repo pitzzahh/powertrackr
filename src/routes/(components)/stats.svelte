@@ -9,13 +9,13 @@
 </script>
 
 <script lang="ts">
-  import { ScrollStagger } from "$lib/motion-core";
-  import { NumberTicker } from "$lib/components/number-ticker";
-  import { getStats } from "$/api/stats.remote";
-  import { browser } from "$app/environment";
-  import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
+  import { ScrollStagger } from "#lib/motion-core/index.js";
+  import { NumberTicker } from "#lib/components/number-ticker/index.js";
+  import { getStats } from "#lib/api/stats.remote.js";
+  import { browser } from "$app/env";
+  import { convertEnergy, getEnergyUnit } from "#lib/utils/converter/energy.js";
   import { type Format } from "@number-flow/svelte";
-  import type { Stats } from "$/types/stats";
+  import type { Stats } from "#lib/types/stats.js";
 
   const FALLBACK_STATS: Stats = {
     userCount: 0,

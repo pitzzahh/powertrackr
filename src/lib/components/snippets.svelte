@@ -1,7 +1,7 @@
 <script module lang="ts">
-  import { TriangleAlert } from "$lib/assets/icons";
-  import { Skeleton } from "$lib/components/ui/skeleton/index.js";
-  import { cn } from "$lib/utils/style.js";
+  import { TriangleAlert } from "#lib/assets/icons.js";
+  import { Skeleton } from "#lib/components/ui/skeleton/index.js";
+  import { cn } from "#lib/utils/style.js";
 
   export type WarningBannerProps = {
     message: string;

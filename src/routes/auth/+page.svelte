@@ -7,10 +7,10 @@
     ForgotPasswordForm,
     ResetPasswordForm,
     AuthBackground,
-  } from "$routes/auth/(components)";
-  import Logo from "$/components/logo.svelte";
-  import { Button } from "$/components/ui/button/index.js";
-  import { Moon, Sun } from "$/assets/icons";
+  } from "#routes/auth/(components)/index.js";
+  import Logo from "#lib/components/logo.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Moon, Sun } from "#lib/assets/icons.js";
   import { toggleMode } from "mode-watcher";
 
   let { data } = $props();

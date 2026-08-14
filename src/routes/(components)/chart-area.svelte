@@ -20,20 +20,20 @@
 </script>
 
 <script lang="ts">
-  import { browser } from "$app/environment";
-  import * as Chart from "$/components/ui/chart/index.js";
-  import * as Card from "$/components/ui/card/index.js";
-  import * as Select from "$/components/ui/select/index.js";
+  import { browser } from "$app/env";
+  import * as Chart from "#lib/components/ui/chart/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
   import { scaleUtc } from "d3-scale";
   import { Spline, LineChart, Points } from "layerchart";
   import { curveLinear } from "d3-shape";
-  import ChartContainer from "$/components/ui/chart/chart-container.svelte";
+  import ChartContainer from "#lib/components/ui/chart/chart-container.svelte";
   import { expoInOut } from "svelte/easing";
-  import { formatDate, formatNumber } from "$/utils/format";
+  import { formatDate, formatNumber } from "#lib/utils/format.js";
   import { TIME_RANGE_OPTIONS, getSelectedLabel, getFilteredData } from ".";
-  import { Loader, RefreshCw } from "$lib/assets/icons";
-  import { Button } from "$/components/ui/button";
-  import type { AsyncState } from "$/types/state";
+  import { Loader, RefreshCw } from "#lib/assets/icons.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import type { AsyncState } from "#lib/types/state.js";
   import { SvelteSet } from "svelte/reactivity";
   import type { TimeRangeOption } from "./types";
 
@@ -108,14 +108,11 @@
             asyncState = "fetching";
             refetch?.(() => (asyncState = "success"));
           }}
-          ><RefreshCw
-            class={[
-              {
-                "animate-spin": asyncState === "fetching",
-              },
-            ]}
-          /> Refetch</Button
         >
+          <RefreshCw class={[{ "animate-spin": asyncState === "fetching" }]} />
+
+          Refetch
+        </Button>
       </div>
     {:else if filteredData.length > 0 && browser}
       <ChartContainer config={CHART_CONFIG} class="-ml-3 aspect-auto h-62.5 w-full">

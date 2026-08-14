@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { CreditCard } from "$/assets/icons";
-  import Button, { type ButtonProps } from "$/components/ui/button/button.svelte";
+  import { CreditCard } from "#lib/assets/icons.js";
+  import Button, { type ButtonProps } from "#lib/components/ui/button/button.svelte";
   import SubPaymentsDialog from "./sub-payments-dialog.svelte";
-  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
 
   let {
     row,

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Zap, ChartLine, Coins, Clock, Shield, Users } from "$lib/assets/icons";
-  import { Marquee, ScrollReveal } from "$lib/motion-core";
+  import { Zap, ChartLine, Coins, Clock, Shield, Users } from "#lib/assets/icons.js";
+  import { Marquee, ScrollReveal } from "#lib/motion-core/index.js";
 
   const topRowBenefits = [
     { icon: Zap, text: "Track energy usage in real-time" },

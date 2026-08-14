@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { toAreaChartData } from "../index";
-import type { ExtendedBillingInfo } from "$/types/billing-info";
+import type { ExtendedBillingInfo } from "#lib/types/billing-info.js";
 
 function billingInfo(overrides: Partial<ExtendedBillingInfo>): ExtendedBillingInfo {
   return {

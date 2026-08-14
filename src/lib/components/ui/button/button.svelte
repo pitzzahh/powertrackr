@@ -1,6 +1,6 @@
 <script lang="ts" module>
-  import type { WithElementRef } from "$/index";
-  import { cn } from "$lib/utils/style.js";
+  import type { WithElementRef } from "#lib/index.js";
+  import { cn } from "#lib/utils/style.js";
   import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
   import { type VariantProps, tv } from "tailwind-variants";
 

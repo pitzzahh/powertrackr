@@ -1,6 +1,6 @@
-import { db } from "$/server/db";
-import { createBillingInfoLogic } from "$/server/crud/billing-info-crud";
-import type { BillingInfo, BillingSubMeterForm } from "$/types/billing-info";
+import { db } from "#lib/server/db/index.js";
+import { createBillingInfoLogic } from "#lib/server/crud/billing-info-crud.js";
+import type { BillingInfo, BillingSubMeterForm } from "#lib/types/billing-info.js";
 
 /**
  * A billing item as accepted by imports: sub-meters are identified by label

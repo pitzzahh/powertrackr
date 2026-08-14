@@ -1,6 +1,6 @@
-import type { ExtendedBillingInfo } from "$/types/billing-info";
+import type { ExtendedBillingInfo } from "#lib/types/billing-info.js";
 import type { ChartData } from "./chart-area.svelte";
-import type { BarChartData } from "$lib/types/chart";
+import type { BarChartData } from "#lib/types/chart.js";
 import type { TimeRangeOption } from "./types";
 
 // Landing page navigation

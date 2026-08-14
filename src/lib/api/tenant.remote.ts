@@ -1,14 +1,23 @@
 import { query, form, command } from "$app/server";
 import * as v from "valibot";
-import { requireAuth } from "$/server/auth";
-import { db } from "$/server/db";
+import { requireAuth } from "#lib/server/auth.js";
+import { db } from "#lib/server/db/index.js";
 import { and, count, desc, eq, inArray, isNull, max, ne } from "drizzle-orm";
-import { tenantReading, readingSubmission, billingInfo, user, payment } from "$/server/db/schema";
-import { getUserBy } from "$/server/crud/user-crud";
-import { addUser } from "$/server/crud/user-crud";
-import { getLastTenantReading, finalizeBillingInfoLogic } from "$/server/crud/billing-info-crud";
-import { hashPassword } from "$/server/encryption";
-import { calculatePayPerKwh } from "$lib";
+import {
+  tenantReading,
+  readingSubmission,
+  billingInfo,
+  user,
+  payment,
+} from "#lib/server/db/schema/index.js";
+import { getUserBy } from "#lib/server/crud/user-crud.js";
+import { addUser } from "#lib/server/crud/user-crud.js";
+import {
+  getLastTenantReading,
+  finalizeBillingInfoLogic,
+} from "#lib/server/crud/billing-info-crud.js";
+import { hashPassword } from "#lib/server/encryption.js";
+import { calculatePayPerKwh } from "#lib";
 import { refreshBillingData } from "./billing-refresh";
 import { error, invalid } from "@sveltejs/kit";
 import {
@@ -17,9 +26,14 @@ import {
   deleteTenantSchema,
   submitReadingSchema,
   updateSubmissionSchema,
-} from "$/validators/tenant";
-import type { TenantWithMeters, MyMeter, PendingBilling, ComputedBilling } from "$/types/tenant";
-import type { NewUser } from "$/types/user";
+} from "#lib/validators/tenant.js";
+import type {
+  TenantWithMeters,
+  MyMeter,
+  PendingBilling,
+  ComputedBilling,
+} from "#lib/types/tenant.js";
+import type { NewUser } from "#lib/types/user.js";
 
 // Form to create a tenant account (owner vouches for the credentials)
 export const createTenant = form(createTenantSchema, async (data, issues): Promise<NewUser> => {

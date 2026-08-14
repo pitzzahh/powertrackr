@@ -9,9 +9,9 @@ import {
   mapNewPayment_to_DTO,
 } from "../payment-crud";
 import { createPayment, createPayments, resetSequence } from "./helpers/factories";
-import type { NewPayment } from "$/types/payment";
-import type { HelperParam } from "$/server/types/helper";
-import { generateQueryConditions } from "$/server/mapper";
+import type { NewPayment } from "#lib/types/payment.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Payment CRUD Operations", () => {
   beforeEach(() => {

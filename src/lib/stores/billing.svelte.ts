@@ -1,6 +1,6 @@
-import type { BillingSummary, ExtendedBillingInfo } from "$/types/billing-info";
-import type { AsyncState } from "$/types/state.js";
-import { getExtendedBillingInfos } from "$/api/billing-info.remote";
+import type { BillingSummary, ExtendedBillingInfo } from "#lib/types/billing-info.js";
+import type { AsyncState } from "#lib/types/state.js";
+import { getExtendedBillingInfos } from "#lib/api/billing-info.remote.js";
 import { getContext, setContext } from "svelte";
 
 export function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {

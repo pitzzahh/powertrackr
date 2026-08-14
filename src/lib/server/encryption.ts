@@ -5,8 +5,8 @@ import {
   encodeBase64url,
 } from "@oslojs/encoding";
 import crypto from "node:crypto";
-import { ENCRYPTION_KEY } from "$env/static/private";
-import { dev } from "$app/environment";
+import { ENCRYPTION_KEY } from "$app/env/private";
+import { dev } from "$app/env";
 import { pbkdf2, sha256 } from "@noble/hashes/webcrypto.js";
 import { randomBytes, utf8ToBytes } from "@noble/hashes/utils.js";
 

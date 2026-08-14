@@ -10,7 +10,7 @@
     Scenarios,
     Stats,
   } from "./(components)";
-  import { ScrollParallax } from "$lib/motion-core";
+  import { ScrollParallax } from "#lib/motion-core/index.js";
 </script>
 
 <div class="relative min-h-screen overflow-hidden bg-background">

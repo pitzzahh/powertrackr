@@ -10,9 +10,9 @@ import {
 } from "../password-reset-session-crud";
 import { createPasswordResetSession, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
-import type { NewPasswordResetSession } from "$/types/password-reset-session";
-import type { HelperParam } from "$/server/types/helper";
-import { generateQueryConditions } from "$/server/mapper";
+import type { NewPasswordResetSession } from "#lib/types/password-reset-session.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Password Reset Session CRUD Operations", () => {
   beforeEach(() => {

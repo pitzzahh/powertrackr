@@ -12,11 +12,10 @@
       <p class="text-xs tracking-[0.3em] text-muted-foreground uppercase">Terms</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight md:text-5xl">Terms & Conditions</h1>
       <a
-        href={resolve("/")}
-        class="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+        href={resolve("")}
+        class="mt-3 inline-flex text-sm font-medium text-primary hover:underline">Back to Home</a
       >
-        Back to Home
-      </a>
+
       <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
         These Terms & Conditions govern your use of PowerTrackr, a platform for electricity billing,
         usage tracking, and payment reconciliation. By using the service, you agree to these terms.

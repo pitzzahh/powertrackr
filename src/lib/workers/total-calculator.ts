@@ -1,4 +1,4 @@
-import type { BarChartData } from "$lib/types/chart";
+import type { BarChartData } from "#lib/types/chart.js";
 
 export type Total = {
   totalkWh: number;

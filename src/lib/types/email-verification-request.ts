@@ -1,5 +1,5 @@
-import type { emailVerificationRequest } from "$/server/db/schema";
-import type { NewUser, UserDTO } from "$/types/user";
+import type { emailVerificationRequest } from "#lib/server/db/schema/index.js";
+import type { NewUser, UserDTO } from "#lib/types/user.js";
 
 export type EmailVerificationRequest = typeof emailVerificationRequest.$inferSelect;
 export type NewEmailVerificationRequest = typeof emailVerificationRequest.$inferInsert;

@@ -7,17 +7,17 @@ vi.mock("$app/server", () => ({
   getRequestEvent: () => ({ locals: fakeLocals }),
 }));
 
-import { createSession, validateSessionToken, requireAuth } from "$/server/auth";
+import { createSession, validateSessionToken, requireAuth } from "#lib/server/auth.js";
 
 import { addUser } from "../user-crud";
 import {
   addEmailVerificationRequest,
   getEmailVerificationRequestBy,
 } from "../email-verification-request-crud";
-import type { EmailVerificationRequestDTO } from "$/types/email-verification-request";
+import type { EmailVerificationRequestDTO } from "#lib/types/email-verification-request.js";
 
 import { createUser, createEmailVerificationRequest, resetSequence } from "./helpers/factories";
-import type { UserDTO } from "$/types/user";
+import type { UserDTO } from "#lib/types/user.js";
 
 describe("Auth Flow CRUD Operations", () => {
   beforeEach(() => {

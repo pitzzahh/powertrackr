@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 // Ensure the static private env used by the module is set at import-time
-vi.mock("$env/static/private", () => ({
+vi.mock("$app/env/private", () => ({
   ENCRYPTION_KEY: "00112233445566778899aabbccddeeff", // 16 bytes (32 hex chars) for AES-128
 }));
 
@@ -14,7 +14,7 @@ import {
   generateSessionToken,
   hashPassword,
   verifyPasswordHash,
-} from "$/server/encryption";
+} from "#lib/server/encryption.js";
 
 describe("encryption utilities", () => {
   it("roundtrips strings via encrypt/decrypt", () => {

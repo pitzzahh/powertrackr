@@ -1,8 +1,8 @@
 import { query } from "$app/server";
-import { db } from "$lib/server/db";
-import { getGlobalStats } from "$lib/server/stats";
-import { originCheck } from "$lib/server/auth";
-import type { Stats } from "$/types/stats";
+import { db } from "#lib/server/db/index.js";
+import { getGlobalStats } from "#lib/server/stats.js";
+import { originCheck } from "#lib/server/auth.js";
+import type { Stats } from "#lib/types/stats.js";
 
 /**
  * Site-wide stats snapshot. One-shot remote query (no SSE stream): fetched

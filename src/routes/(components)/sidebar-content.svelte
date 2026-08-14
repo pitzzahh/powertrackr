@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
 
   export type SidebarContentProps = {
     open: boolean;
@@ -16,23 +16,30 @@
 </script>
 
 <script lang="ts">
-  import { Button, buttonVariants } from "$/components/ui/button";
-  import * as AlertDialog from "$/components/ui/alert-dialog/index.js";
+  import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+  import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
-  import { useSidebarStore } from "$/stores/sidebar.svelte";
-  import { Separator } from "$/components/ui/separator";
-  import { signout } from "$/api/auth.remote";
-  import { Loader, PanelLeftClose, LogOut, BadgeCheck, Bell, ChevronsUpDown } from "$/assets/icons";
+  import { useSidebarStore } from "#lib/stores/sidebar.svelte.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
+  import { signout } from "#lib/api/auth.remote.js";
+  import {
+    Loader,
+    PanelLeftClose,
+    LogOut,
+    BadgeCheck,
+    Bell,
+    ChevronsUpDown,
+  } from "#lib/assets/icons.js";
   import { page } from "$app/state";
   import { onDestroy } from "svelte";
-  import * as Avatar from "$/components/ui/avatar/index.js";
-  import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
-  import { IsMobile } from "$/hooks/is-mobile.svelte";
-  import { toShortName } from "$/utils/text";
-  import { showLoading, showSuccess, toast } from "$/components/toast";
+  import * as Avatar from "#lib/components/ui/avatar/index.js";
+  import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+  import { IsMobile } from "#lib/hooks/is-mobile.svelte.js";
+  import { toShortName } from "#lib/utils/text.js";
+  import { showLoading, showSuccess, toast } from "#lib/components/toast/index.js";
   import { goto } from "$app/navigation";
   import { AccountSettings } from ".";
-  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
+  import { usePendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
 
   let { open = $bindable(false), user, isMobileSheet = false }: SidebarContentProps = $props();
 

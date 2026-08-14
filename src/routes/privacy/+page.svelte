@@ -12,11 +12,10 @@
       <p class="text-xs tracking-[0.3em] text-muted-foreground uppercase">Privacy</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight md:text-5xl">Privacy Policy</h1>
       <a
-        href={resolve("/")}
-        class="mt-3 inline-flex text-sm font-medium text-primary hover:underline"
+        href={resolve("")}
+        class="mt-3 inline-flex text-sm font-medium text-primary hover:underline">Back to Home</a
       >
-        Back to Home
-      </a>
+
       <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
         This Privacy Policy explains how PowerTrackr collects, uses, and protects your information
         when you use our electricity billing and usage tracking tools.

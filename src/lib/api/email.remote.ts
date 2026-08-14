@@ -9,7 +9,7 @@
 
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { createEmailVerification } from "$lib/server/email";
+import { createEmailVerification } from "#lib/server/email.js";
 
 export const resendVerification = command(async () => {
   const event = getRequestEvent();

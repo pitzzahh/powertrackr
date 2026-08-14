@@ -3,8 +3,8 @@ import {
   billingInfoToDto,
   billingInfoToTableView,
   extendedBillingInfoToTableView,
-} from "$/utils/mapper/billing-info";
-import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
+} from "#lib/utils/mapper/billing-info.js";
+import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
 
 const basePayment = {
   id: "p1",
