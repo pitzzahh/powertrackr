@@ -39,10 +39,10 @@
 
   <!-- Ambient Glow Effects (Red/Rose for Error Theme) -->
   <div
-    class="absolute top-[10%] -left-[20%] h-125 w-125 rounded-full bg-red-500/20 blur-[120px] dark:bg-red-500/10"
+    class="absolute top-[10%] left-[-20%] h-125 w-125 rounded-full bg-red-500/20 blur-[120px] dark:bg-red-500/10"
   ></div>
   <div
-    class="absolute -right-[20%] bottom-[10%] h-125 w-125 rounded-full bg-orange-500/20 blur-[120px] dark:bg-orange-600/10"
+    class="absolute right-[-20%] bottom-[10%] h-125 w-125 rounded-full bg-orange-500/20 blur-[120px] dark:bg-orange-600/10"
   ></div>
 
   <div class="relative flex h-full flex-col items-center justify-center">
