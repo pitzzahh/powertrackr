@@ -7,8 +7,8 @@
   import { ButtonSkeleton } from "#lib/components/snippets.svelte";
   import { browser } from "$app/env";
 
-  const authQuery = browser ? getCurrentUser() : null;
-  const user = $derived(authQuery?.current?.user ?? null);
+  const AUTH_QUERY = browser ? getCurrentUser() : null;
+  const USER = $derived(AUTH_QUERY?.current?.user ?? null);
 </script>
 
 <section class="relative z-10 py-16 sm:py-24 lg:py-32">
@@ -39,7 +39,7 @@
 
             <ScrollReveal preset="slide-up" duration={0.6} delay={0.4} distance={30}>
               <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-                {#if user}
+                {#if USER}
                   <Button
                     data-sveltekit-reload
                     size="lg"
@@ -48,7 +48,7 @@
                   >
                     Go to Dashboard
                   </Button>
-                {:else if authQuery?.loading}
+                {:else if AUTH_QUERY?.loading}
                   {@render ButtonSkeleton({ size: "lg" })}
                 {:else}
                   <Button

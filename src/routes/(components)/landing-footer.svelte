@@ -8,8 +8,8 @@
   import { ButtonSkeleton } from "#lib/components/snippets.svelte";
   import { browser } from "$app/env";
 
-  const authQuery = browser ? getCurrentUser() : null;
-  const user = $derived(authQuery?.current?.user ?? null);
+  const AUTH_QUERY = browser ? getCurrentUser() : null;
+  const USER = $derived(AUTH_QUERY?.current?.user ?? null);
 
   // ─── Canvas grid drawing ───────────────────────────────────────────────────
   function initCanvas(canvas: HTMLCanvasElement) {
@@ -203,7 +203,7 @@
       </p>
 
       <div class="flex items-center gap-6">
-        {#if user}
+        {#if USER}
           <a
             data-sveltekit-reload
             href={resolve("dashboard")}
@@ -211,7 +211,7 @@
           >
             Dashboard
           </a>
-        {:else if authQuery?.loading}
+        {:else if AUTH_QUERY?.loading}
           {@render ButtonSkeleton({ size: "sm" })}
         {:else}
           <a

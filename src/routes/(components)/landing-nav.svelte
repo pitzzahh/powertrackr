@@ -7,17 +7,21 @@
   import { ButtonSkeleton } from "#lib/components/snippets.svelte";
   import { browser } from "$app/env";
 
-  const authQuery = browser ? getCurrentUser() : null;
-  const { user, session } = $derived(authQuery?.current ?? { user: null, session: null });
+  const AUTH_QUERY = browser ? getCurrentUser() : null;
 
-  const { fullyAuthenticated, needs2FA } = $derived({
-    fullyAuthenticated:
-      user &&
-      session &&
-      (user.isOauthUser || user.emailVerified) &&
-      (!user.registeredTwoFactor || session.twoFactorVerified),
-    needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
-  });
+  const USER = $derived(AUTH_QUERY?.current?.user ?? null);
+  const SESSION = $derived(AUTH_QUERY?.current?.session ?? null);
+
+  const FULLY_AUTHENTICATED = $derived(
+    USER &&
+      SESSION &&
+      (USER.isOauthUser || USER.emailVerified) &&
+      (!USER.registeredTwoFactor || SESSION.twoFactorVerified)
+  );
+
+  const NEEDS_2FA = $derived(
+    USER && USER.registeredTwoFactor && (!SESSION || !SESSION.twoFactorVerified)
+  );
 </script>
 
 <div class="h-18">
@@ -48,21 +52,20 @@
       </nav>
 
       <div class="hidden items-center justify-end gap-2 sm:flex">
-        {#if fullyAuthenticated}
-          <Button href={resolve("dashboard")} data-sveltekit-reload class="inline-flex"
-            >Go to Dashboard</Button
-          >
-        {:else if needs2FA}
-          <Button href={resolve("auth?act=2fa-checkpoint")} class="inline-flex"
-            >Verify Two-Factor Authentication</Button
-          >
-        {:else if authQuery?.loading}
+        {#if FULLY_AUTHENTICATED}
+          <Button href={resolve("dashboard")} data-sveltekit-reload class="inline-flex">
+            Go to Dashboard
+          </Button>
+        {:else if NEEDS_2FA}
+          <Button href={resolve("auth?act=2fa-checkpoint")} class="inline-flex">
+            Verify Two-Factor Authentication
+          </Button>
+        {:else if AUTH_QUERY?.loading}
           {@render ButtonSkeleton()}
         {:else}
-          <Button variant="outline" href={resolve("auth?act=login")} class="inline-flex"
-            >Sign In</Button
-          >
-
+          <Button variant="outline" href={resolve("auth?act=login")} class="inline-flex">
+            Sign In
+          </Button>
           <Button href={resolve("auth?act=register")} class="inline-flex">Get Started</Button>
         {/if}
       </div>

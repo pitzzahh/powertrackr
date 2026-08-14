@@ -24,15 +24,15 @@
     paymentsAmount: { total: 0, formatted: "" },
   };
 
-  const statsQuery = browser ? getStats() : null;
+  const STATS_QUERY = browser ? getStats() : null;
 
   // `current` is the snapshot value returned by the one-shot query. Accessing it
   // in a `$derived` keeps the UI reactive; the value refreshes on page reload.
-  const stats = $derived(statsQuery?.current ?? FALLBACK_STATS);
+  const STATS = $derived(STATS_QUERY?.current ?? FALLBACK_STATS);
 
-  const statsList = $derived<StatsList[]>([
+  const STATS_LIST = $derived<StatsList[]>([
     {
-      value: stats.userCount,
+      value: STATS.userCount,
       format: {
         style: "decimal",
         notation: "compact",
@@ -42,17 +42,17 @@
       label: "Active Users",
     },
     {
-      value: convertEnergy(stats.energyUsed.total, stats.energyUsed.energyUnit),
+      value: convertEnergy(STATS.energyUsed.total, STATS.energyUsed.energyUnit),
       format: {
         style: "decimal",
         maximumFractionDigits: 2,
         trailingZeroDisplay: "stripIfInteger",
       },
-      suffix: getEnergyUnit(stats.energyUsed.total),
+      suffix: getEnergyUnit(STATS.energyUsed.total),
       label: "Energy Tracked",
     },
     {
-      value: stats.billingCount,
+      value: STATS.billingCount,
       format: {
         style: "decimal",
         notation: "compact",
@@ -62,7 +62,7 @@
       label: "Bills Tracked",
     },
     {
-      value: stats.paymentsAmount.total,
+      value: STATS.paymentsAmount.total,
       format: {
         style: "currency",
         currency: "PHP",
@@ -97,7 +97,7 @@
         distance={24}
         class="grid grid-cols-2 gap-px bg-border/70 lg:grid-cols-4"
       >
-        {#each statsList as stat (stat.label)}
+        {#each STATS_LIST as stat (stat.label)}
           <div class="bg-card p-6 lg:p-8">
             <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
               {stat.label}

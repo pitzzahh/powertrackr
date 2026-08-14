@@ -29,8 +29,10 @@
   import { scaleLinear } from "d3-scale";
   import type { Stats } from "#lib/types/stats.js";
 
-  const authQuery = browser ? getCurrentUser() : null;
-  const { user, session } = $derived(authQuery?.current ?? { user: null, session: null });
+  const AUTH_QUERY = browser ? getCurrentUser() : null;
+
+  const USER = $derived(AUTH_QUERY?.current?.user ?? null);
+  const SESSION = $derived(AUTH_QUERY?.current?.session ?? null);
 
   let { texts, currentIndex } = $state<HeroState>({
     texts: ["Billing", "Payments", "Usage", "Expenses"],
@@ -44,20 +46,25 @@
     paymentsAmount: { total: 0, formatted: "" },
   };
 
-  const statsQuery = browser ? getStats() : null;
-  const stats = $derived(statsQuery?.current ?? FALLBACK_STATS);
+  const STATS_QUERY = browser ? getStats() : null;
+  const STATS = $derived(STATS_QUERY?.current ?? FALLBACK_STATS);
 
-  const { fullyAuthenticated, needs2FA, currentText, energyValue, energyUnit } = $derived({
-    fullyAuthenticated:
-      user &&
-      session &&
-      (user.isOauthUser || user.emailVerified) &&
-      (!user.registeredTwoFactor || session.twoFactorVerified),
-    needs2FA: user && user.registeredTwoFactor && (!session || !session.twoFactorVerified),
-    currentText: texts[currentIndex],
-    energyValue: convertEnergy(stats.energyUsed.total, stats.energyUsed.energyUnit),
-    energyUnit: getEnergyUnit(stats.energyUsed.total),
-  });
+  const FULLY_AUTHENTICATED = $derived(
+    USER &&
+      SESSION &&
+      (USER.isOauthUser || USER.emailVerified) &&
+      (!USER.registeredTwoFactor || SESSION.twoFactorVerified)
+  );
+
+  const NEEDS_2FA = $derived(
+    USER && USER.registeredTwoFactor && (!SESSION || !SESSION.twoFactorVerified)
+  );
+
+  const CURRENT_TEXT = $derived(texts[currentIndex]);
+
+  const ENERGY_VALUE = $derived(convertEnergy(STATS.energyUsed.total, STATS.energyUsed.energyUnit));
+
+  const ENERGY_UNIT = $derived(getEnergyUnit(STATS.energyUsed.total));
 
   // ─── Ambient gauge ────────────────────────────────────────────────────────
   const domain: [number, number] = [0, 100];
@@ -75,9 +82,9 @@
   // come from the readout inside the gauge, not from this dial.
   let dial = $state(62);
 
-  const needleAngle = $derived((angleScale(dial) * Math.PI) / 180);
-  const formattedEnergy = $derived(
-    new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(energyValue)
+  const NEEDLE_ANGLE = $derived((angleScale(dial) * Math.PI) / 180);
+  const FORMATTED_ENERGY = $derived(
+    new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(ENERGY_VALUE)
   );
 </script>
 
@@ -109,7 +116,7 @@
 
         <h1 class="mt-6 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
           <span class="text-muted-foreground"
-            >{currentText === "Payments" ? "Record" : "Track"}</span
+            >{CURRENT_TEXT === "Payments" ? "Record" : "Track"}</span
           >
 
           <span class="inline-flex align-baseline text-primary">
@@ -126,7 +133,7 @@
         </p>
 
         <div class="mt-8 flex flex-col gap-4 sm:flex-row">
-          {#if fullyAuthenticated}
+          {#if FULLY_AUTHENTICATED}
             <Button
               data-sveltekit-reload
               size="lg"
@@ -135,7 +142,7 @@
             >
               Go to Dashboard
             </Button>
-          {:else if needs2FA}
+          {:else if NEEDS_2FA}
             <Button
               size="lg"
               class="shadow-lg shadow-primary/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary/40"
@@ -143,7 +150,7 @@
             >
               Verify Two-Factor Authentication
             </Button>
-          {:else if authQuery?.loading}
+          {:else if AUTH_QUERY?.loading}
             {@render ButtonSkeleton({ size: "lg" })}
           {:else}
             <Button
@@ -259,10 +266,10 @@
 
                     <!-- Needle -->
                     <Line
-                      x1={Math.sin(needleAngle) * -8}
-                      y1={-Math.cos(needleAngle) * -8}
-                      x2={Math.sin(needleAngle) * 52}
-                      y2={-Math.cos(needleAngle) * 52}
+                      x1={Math.sin(NEEDLE_ANGLE) * -8}
+                      y1={-Math.cos(NEEDLE_ANGLE) * -8}
+                      x2={Math.sin(NEEDLE_ANGLE) * 52}
+                      y2={-Math.cos(NEEDLE_ANGLE) * 52}
                       class="stroke-foreground"
                       stroke-width={2.5}
                       stroke-linecap="round"
@@ -272,7 +279,7 @@
 
                     <!-- Value readout -->
                     <Text
-                      value={formattedEnergy}
+                      value={FORMATTED_ENERGY}
                       textAnchor="middle"
                       verticalAnchor="middle"
                       dy={24}
@@ -281,7 +288,7 @@
                     <Text
                       x={0}
                       y={44}
-                      value={energyUnit}
+                      value={ENERGY_UNIT}
                       textAnchor="middle"
                       verticalAnchor="middle"
                       class="fill-muted-foreground font-mono text-[10px] uppercase"
@@ -299,7 +306,7 @@
               </p>
               <p class="mt-1 text-lg font-semibold tabular-nums">
                 <NumberTicker
-                  value={stats.billingCount}
+                  value={STATS.billingCount}
                   format={{
                     style: "decimal",
                     notation: "compact",
@@ -316,7 +323,7 @@
               </p>
               <p class="mt-1 text-lg font-semibold tabular-nums">
                 <NumberTicker
-                  value={stats.paymentsAmount.total}
+                  value={STATS.paymentsAmount.total}
                   format={{
                     style: "currency",
                     currency: "PHP",
