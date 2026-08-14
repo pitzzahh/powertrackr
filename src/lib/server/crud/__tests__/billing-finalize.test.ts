@@ -5,13 +5,13 @@ import {
   finalizeBillingInfoLogic,
   getLastTenantReading,
   getBillingInfoBy,
-} from "$/server/crud/billing-info-crud";
-import { db } from "$/server/db";
-import { tenantReading, payment } from "$/server/db/schema";
+} from "#lib/server/crud/billing-info-crud.js";
+import { db } from "#lib/server/db/index.js";
+import { tenantReading, payment } from "#lib/server/db/schema/index.js";
 import { eq } from "drizzle-orm";
-import { getPaymentBy } from "$/server/crud/payment-crud";
-import { addUser } from "$/server/crud/user-crud";
-import { createUser, createTenantUser } from "$/server/crud/__tests__/helpers/factories";
+import { getPaymentBy } from "#lib/server/crud/payment-crud.js";
+import { addUser } from "#lib/server/crud/user-crud.js";
+import { createUser, createTenantUser } from "#lib/server/crud/__tests__/helpers/factories.js";
 
 async function seedOwnerWithTenant() {
   const {

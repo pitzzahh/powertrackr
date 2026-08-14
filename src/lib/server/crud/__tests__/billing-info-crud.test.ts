@@ -16,7 +16,7 @@ import {
   createPayment,
   resetSequence,
 } from "./helpers/factories";
-import { calculatePayPerKwh } from "$lib";
+import { calculatePayPerKwh } from "#lib";
 import { addUser } from "../user-crud";
 import { addPayment, getPaymentBy, updatePaymentBy } from "../payment-crud";
 import {
@@ -24,12 +24,12 @@ import {
   getTenantReadingBy,
   updateTenantReadingBy,
 } from "../tenant-reading-crud";
-import { db } from "$/server/db";
-import { billingInfo, payment, tenantReading, user } from "$/server/db/schema";
-import type { NewBillingInfo } from "$/types/billing-info";
-import type { HelperParam } from "$/server/types/helper";
-import type { NewUser } from "$/types/user";
-import { generateQueryConditions } from "$/server/mapper";
+import { db } from "#lib/server/db/index.js";
+import { billingInfo, payment, tenantReading, user } from "#lib/server/db/schema/index.js";
+import type { NewBillingInfo } from "#lib/types/billing-info.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import type { NewUser } from "#lib/types/user.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Billing Info CRUD Operations", () => {
   beforeEach(() => {

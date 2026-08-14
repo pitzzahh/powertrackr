@@ -1,4 +1,4 @@
-import type { WithElementRef } from "$/index";
+import type { WithElementRef } from "#lib/index.js";
 import type { WithChildren } from "bits-ui";
 import type { HTMLInputAttributes, HTMLLabelAttributes } from "svelte/elements";
 

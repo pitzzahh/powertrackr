@@ -8,16 +8,16 @@
 </script>
 
 <script lang="ts" generics="TData extends RowData, TValue, FilterType = string">
-  import { CirclePlus, Check } from "$/assets/icons";
-  import type { SvelteColumn as Column } from "$/components/ui/data-table";
+  import { CirclePlus, Check } from "#lib/assets/icons.js";
+  import type { SvelteColumn as Column } from "#lib/components/ui/data-table/index.js";
   import { SvelteSet } from "svelte/reactivity";
-  import * as Command from "$/components/ui/command/index.js";
-  import * as Popover from "$/components/ui/popover/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style";
-  import { Separator } from "$/components/ui/separator/index.js";
-  import { Badge } from "$/components/ui/badge/index.js";
-  import type { FilterOption } from "$/types/filter";
+  import * as Command from "#lib/components/ui/command/index.js";
+  import * as Popover from "#lib/components/ui/popover/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { Separator } from "#lib/components/ui/separator/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import type { FilterOption } from "#lib/types/filter.js";
 
   let { column, title, options }: DataTableFacetedFilterProps<TData, TValue, FilterType> = $props();
   const { facets, selectedValues } = $derived({

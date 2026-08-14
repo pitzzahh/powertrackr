@@ -10,9 +10,9 @@ import {
 } from "../email-verification-request-crud";
 import { createEmailVerificationRequest, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
-import type { NewEmailVerificationRequest } from "$/types/email-verification-request";
-import type { HelperParam } from "$/server/types/helper";
-import { generateQueryConditions } from "$/server/mapper";
+import type { NewEmailVerificationRequest } from "#lib/types/email-verification-request.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Email Verification Request CRUD Operations", () => {
   beforeEach(() => {

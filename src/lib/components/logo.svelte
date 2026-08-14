@@ -10,14 +10,14 @@
 </script>
 
 <script lang="ts">
-  import { site } from "$/site";
+  import { site } from "#lib/site.js";
   import Button, {
     type ButtonProps,
     type ButtonSize,
     type ButtonVariant,
-  } from "$/components/ui/button/button.svelte";
-  import { cn } from "$/utils/style";
-  import { Zap } from "$/assets/icons";
+  } from "#lib/components/ui/button/button.svelte";
+  import { cn } from "#lib/utils/style.js";
+  import { Zap } from "#lib/assets/icons.js";
 
   let {
     href = "/",

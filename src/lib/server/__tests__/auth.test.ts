@@ -13,8 +13,8 @@ vi.mock("@sveltejs/kit", () => ({
   redirect: (status: number, location: string) => ({ status, location }),
 }));
 
-import { db } from "$/server/db";
-import { user, session } from "$/server/db/schema";
+import { db } from "#lib/server/db/index.js";
+import { user, session } from "#lib/server/db/schema/index.js";
 import { eq } from "drizzle-orm";
 
 // Import the module under test after setting up the mocks
@@ -26,7 +26,7 @@ import {
   setSessionTokenCookie,
   deleteSessionTokenCookie,
   sessionCookieName,
-} from "$/server/auth";
+} from "#lib/server/auth.js";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 

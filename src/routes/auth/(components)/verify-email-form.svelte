@@ -1,7 +1,7 @@
 <script lang="ts" module>
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "$/index";
+  import type { WithElementRef } from "#lib/index.js";
 
   export type VerifyEmailFormProps = WithElementRef<HTMLFormAttributes> & {
     code: string;
@@ -22,24 +22,24 @@
     FieldLabel,
     FieldDescription,
     FieldError,
-  } from "$/components/ui/field/index.js";
-  import { Input } from "$/components/ui/input/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import { cn } from "$/utils/style.js";
-  import { Loader, MessageCircle } from "$/assets/icons";
-  import { verifyEmail } from "$/api/auth.remote";
+  } from "#lib/components/ui/field/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { Loader, MessageCircle } from "#lib/assets/icons.js";
+  import { verifyEmail } from "#lib/api/auth.remote.js";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { signout } from "$/api/auth.remote";
-  import { resendVerification } from "$/api/email.remote";
+  import { signout } from "#lib/api/auth.remote.js";
+  import { resendVerification } from "#lib/api/email.remote.js";
   import {
     showError,
     showInspectorWarning,
     showLoading,
     showSuccess,
     showWarning,
-  } from "$/components/toast";
-  import { env } from "$env/dynamic/public";
+  } from "#lib/components/toast/index.js";
+  import { PUBLIC_RESEND_COOLDOWN_SECONDS } from "$app/env/public";
   import { watch } from "runed";
   let {
     code,
@@ -56,7 +56,7 @@
   });
 
   const id = $props.id();
-  const resendCooldownSeconds = Number(env.PUBLIC_RESEND_COOLDOWN_SECONDS ?? 60);
+  const resendCooldownSeconds = Number(PUBLIC_RESEND_COOLDOWN_SECONDS ?? 60);
 
   $effect(() => {
     const cookies = document.cookie.split(";").map((c) => c.trim());

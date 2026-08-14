@@ -5,9 +5,9 @@ import type {
   ExtendedBillingInfo,
   ExtendedBillingInfoTableView,
   Status,
-} from "$/types/billing-info";
-import { formatDate, DateFormat } from "$/utils/format";
-import { omit } from "$/utils/mapper";
+} from "#lib/types/billing-info.js";
+import { formatDate, DateFormat } from "#lib/utils/format.js";
+import { omit } from "#lib/utils/mapper.js";
 
 export function billingInfoToDto(
   original: ExtendedBillingInfoTableView

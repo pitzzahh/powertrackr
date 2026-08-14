@@ -50,8 +50,8 @@
 </script>
 
 <script lang="ts">
-  import { X, Info, CircleCheck, TriangleAlert, CircleAlert, Loader } from "$/assets/icons";
-  import { cn } from "$/utils/style";
+  import { X, Info, CircleCheck, TriangleAlert, CircleAlert, Loader } from "#lib/assets/icons.js";
+  import { cn } from "#lib/utils/style.js";
 
   let {
     title,

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { cn } from '$lib/utils/style';
+	import { cn } from '#lib/utils/style.js';
 	import type { Snippet } from 'svelte';
 	import { qr } from '@svelte-put/qr/svg';
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { computeSummary } from "../billing.svelte";
-import type { ExtendedBillingInfo, Status } from "$/types/billing-info";
+import type { ExtendedBillingInfo, Status } from "#lib/types/billing-info.js";
 
 function payment(id: string, amount: number) {
   return {

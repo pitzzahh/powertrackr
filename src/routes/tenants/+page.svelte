@@ -1,14 +1,14 @@
 <script lang="ts">
-  import * as Field from "$/components/ui/field";
-  import { Button } from "$/components/ui/button";
-  import { Input } from "$/components/ui/input";
-  import * as Card from "$/components/ui/card";
-  import * as Dialog from "$/components/ui/dialog";
-  import { Loader, CirclePlus, Pencil, Trash2 } from "$/assets/icons";
-  import { getTenants, createTenant, updateTenant, deleteTenant } from "$/api/tenant.remote";
-  import type { TenantWithMeters } from "$/types/tenant";
-  import { formatDate } from "$/utils/format";
-  import { showSuccess, showWarning } from "$/components/toast";
+  import * as Field from "#lib/components/ui/field/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import { Loader, CirclePlus, Pencil, Trash2 } from "#lib/assets/icons.js";
+  import { getTenants, createTenant, updateTenant, deleteTenant } from "#lib/api/tenant.remote.js";
+  import type { TenantWithMeters } from "#lib/types/tenant.js";
+  import { formatDate } from "#lib/utils/format.js";
+  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { isHttpError } from "@sveltejs/kit";
 
   // The query drives the page reactively. Mutations refresh it server-side

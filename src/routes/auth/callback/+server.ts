@@ -1,13 +1,13 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { getUserFromGitHubId } from "$/api/user.remote";
-import { createSession, setSessionTokenCookie } from "$/server/auth";
+import { getUserFromGitHubId } from "#lib/api/user.remote.js";
+import { createSession, setSessionTokenCookie } from "#lib/server/auth.js";
 
-import type { OAuth2Tokens } from "$/server/oauth";
+import type { OAuth2Tokens } from "#lib/server/oauth.js";
 import type { RequestEvent } from "./$types";
-import { generateSessionToken } from "$/server/encryption";
-import { createGitHub } from "$/server/oauth";
-import { addUser, updateUserBy, getUserBy } from "$/server/crud/user-crud";
-import type { NewUser } from "$/types/user";
+import { generateSessionToken } from "#lib/server/encryption.js";
+import { createGitHub } from "#lib/server/oauth.js";
+import { addUser, updateUserBy, getUserBy } from "#lib/server/crud/user-crud.js";
+import type { NewUser } from "#lib/types/user.js";
 
 async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const storedState = event.cookies.get("github_oauth_state") ?? null;

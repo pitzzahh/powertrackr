@@ -1,18 +1,18 @@
-import { db } from "$/server/db";
+import { db } from "#lib/server/db/index.js";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { emailVerificationRequest } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
+import { emailVerificationRequest } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData } from "#lib/utils/mapper.js";
 import type {
   NewEmailVerificationRequest,
   EmailVerificationRequestDTO,
   NewEmailVerificationRequestWithUser,
   EmailVerificationRequest,
-} from "$/types/email-verification-request";
+} from "#lib/types/email-verification-request.js";
 import { mapNewUser_to_DTO } from "./user-crud";
-import type { UserDTO } from "$/types/user";
-import { generateQueryConditions } from "$/server/mapper";
+import type { UserDTO } from "#lib/types/user.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type EmailVerificationRequestQueryOptions = {
   with?: { user: true };

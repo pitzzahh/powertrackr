@@ -8,14 +8,14 @@ import {
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
   finalizeBillingSchema,
-} from "$/validators/billing-info";
+} from "#lib/validators/billing-info.js";
 import type {
   BillingInfo,
   BillingInfoWithPaymentAndSubMetersWithPayment,
   BillingSummary,
   NewBillingInfo,
-} from "$/types/billing-info";
-import { requireAuth } from "$/server/auth";
+} from "#lib/types/billing-info.js";
+import { requireAuth } from "#lib/server/auth.js";
 import {
   getBillingInfoBy as getBillingInfoByCrud,
   deleteBillingInfoBy,
@@ -24,9 +24,9 @@ import {
   finalizeBillingInfoLogic,
   getTotalEnergyUsageLogic,
   getTotalBillingInfoCountLogic,
-} from "$/server/crud/billing-info-crud";
+} from "#lib/server/crud/billing-info-crud.js";
 import { invalid, error } from "@sveltejs/kit";
-import type { HelperResult } from "$/server/types/helper";
+import type { HelperResult } from "#lib/server/types/helper.js";
 
 const COMMON_FIELDS: (keyof NewBillingInfo)[] = [
   "id",

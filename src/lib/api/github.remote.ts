@@ -1,7 +1,7 @@
 import { getRequestEvent, command } from "$app/server";
-import { createGitHub } from "$/server/oauth";
+import { createGitHub } from "#lib/server/oauth.js";
 import { randomBytes } from "node:crypto";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 
 export const loginWithGithub = command(async () => {
   const event = getRequestEvent();

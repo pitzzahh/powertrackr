@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Zap, Banknote, House, ListIcon } from "$/assets/icons";
+  import { Zap, Banknote, House, ListIcon } from "#lib/assets/icons.js";
   import { Icon as LucideIcon } from "@lucide/svelte";
 </script>
 

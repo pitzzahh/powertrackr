@@ -10,10 +10,10 @@
 </script>
 
 <script lang="ts">
-  import { cn } from "$lib/utils/style.js";
-  import { X, EyeOff, View, Check } from "$/assets/icons";
-  import { Input } from "$/components/ui/input";
-  import { usePasswordStrength } from "$/hooks/password-strength.svelte";
+  import { cn } from "#lib/utils/style.js";
+  import { X, EyeOff, View, Check } from "#lib/assets/icons.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { usePasswordStrength } from "#lib/hooks/password-strength.svelte.js";
 
   let {
     id,

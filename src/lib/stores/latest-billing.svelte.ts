@@ -1,6 +1,6 @@
-import type { BillingInfoDTOWithSubMeters } from "$/types/billing-info";
-import type { AsyncState } from "$/types/state.js";
-import { getLatestBillingInfo } from "$/api/billing-info.remote";
+import type { BillingInfoDTOWithSubMeters } from "#lib/types/billing-info.js";
+import type { AsyncState } from "#lib/types/state.js";
+import { getLatestBillingInfo } from "#lib/api/billing-info.remote.js";
 import { getContext, setContext } from "svelte";
 
 class LatestBillingState {

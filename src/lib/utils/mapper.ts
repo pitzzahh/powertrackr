@@ -1,5 +1,5 @@
-import type { FilterOption } from "$/types/filter";
-import { convertToNormalText } from "$/utils/text";
+import type { FilterOption } from "#lib/types/filter.js";
+import { convertToNormalText } from "#lib/utils/text.js";
 
 /**
  * A generic function to compare two objects and return the properties that have changed.

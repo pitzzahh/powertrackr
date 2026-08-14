@@ -13,25 +13,30 @@
 </script>
 
 <script lang="ts">
-  import * as Breadcrumb from "$/components/ui/breadcrumb/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import * as Dialog from "$/components/ui/dialog/index.js";
-  import * as Sidebar from "$/components/ui/sidebar/index.js";
-  import * as Tooltip from "$/components/ui/tooltip/index.js";
-  import { Settings2, Upload, Download, DatabaseBackupIcon, X, Loader } from "$/assets/icons";
-  import { useBillingStore } from "$/stores/billing.svelte";
-  import { useConsumptionStore } from "$/stores/consumption.svelte";
-  import * as FileDropZone from "$/components/file-drop-zone/index.js";
-  import * as Alert from "$/components/ui/alert/index.js";
-  import { importBillingFile } from "$/api/import.remote";
+  import * as Breadcrumb from "#lib/components/ui/breadcrumb/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import * as Sidebar from "#lib/components/ui/sidebar/index.js";
+  import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+  import { Settings2, Upload, Download, DatabaseBackupIcon, X, Loader } from "#lib/assets/icons.js";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
+  import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
+  import * as FileDropZone from "#lib/components/file-drop-zone/index.js";
+  import * as Alert from "#lib/components/ui/alert/index.js";
+  import { importBillingFile } from "#lib/api/import.remote.js";
   import { isHttpError } from "@sveltejs/kit";
-  import { showInspectorWarning, showSuccess, showError, showLoading } from "$/components/toast";
+  import {
+    showInspectorWarning,
+    showSuccess,
+    showError,
+    showLoading,
+  } from "#lib/components/toast/index.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import * as v from "valibot";
-  import { importBillFormSchema } from "$/validators/import";
-  import { Table, TableBody, TableCell, TableRow } from "$/components/ui/table/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area/index.js";
+  import { importBillFormSchema } from "#lib/validators/import.js";
+  import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { toast } from "svelte-sonner";
   let { collapsed = false }: SettingsDialogProps = $props();
 

@@ -7,7 +7,7 @@ import {
   imageFileToDataUrl,
   dataUrlToImageFile,
   mapToType,
-} from "$/utils/mapper";
+} from "#lib/utils/mapper.js";
 
 describe("mapper utilities", () => {
   const realFile = (globalThis as any).File;

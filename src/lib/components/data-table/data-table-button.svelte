@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { buttonVariants, type ButtonVariant } from "$/components/ui/button";
-  import * as Tooltip from "$/components/ui/tooltip";
+  import { buttonVariants, type ButtonVariant } from "#lib/components/ui/button/index.js";
+  import * as Tooltip from "#lib/components/ui/tooltip/index.js";
   import { goto } from "$app/navigation";
-  import { ArrowUpRight } from "$/assets/icons";
-  import { cn } from "$/utils/style";
+  import { ArrowUpRight } from "#lib/assets/icons.js";
+  import { cn } from "#lib/utils/style.js";
 
   interface DataTableButtonProps {
     content: string;

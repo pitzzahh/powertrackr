@@ -1,4 +1,4 @@
-import type { payment } from "$/server/db/schema";
+import type { payment } from "#lib/server/db/schema/index.js";
 
 export type Payment = typeof payment.$inferSelect;
 export type NewPayment = typeof payment.$inferInsert;

@@ -9,12 +9,12 @@
 </script>
 
 <script lang="ts" generics="TData extends RowData">
-  import { Settings } from "$/assets/icons";
-  import type { SvelteTable as Table } from "$/components/ui/data-table";
-  import { buttonVariants } from "$/components/ui/button/index.js";
-  import * as DropdownMenu from "$/components/ui/dropdown-menu/index.js";
-  import { cn } from "$/utils/style";
-  import { convertToNormalText } from "$/utils/text";
+  import { Settings } from "#lib/assets/icons.js";
+  import type { SvelteTable as Table } from "#lib/components/ui/data-table/index.js";
+  import { buttonVariants } from "#lib/components/ui/button/index.js";
+  import * as DropdownMenu from "#lib/components/ui/dropdown-menu/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { convertToNormalText } from "#lib/utils/text.js";
 
   type ComponentState = {
     all_columns: FilterColumn[];

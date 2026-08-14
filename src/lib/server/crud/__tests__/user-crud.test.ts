@@ -8,12 +8,12 @@ import {
   deleteUserBy,
   mapNewUser_to_DTO,
 } from "../user-crud";
-import { db } from "$/server/db";
-import { user } from "$/server/db/schema";
+import { db } from "#lib/server/db/index.js";
+import { user } from "#lib/server/db/schema/index.js";
 import { createUser, createUsers, resetSequence } from "./helpers/factories";
-import type { NewUser } from "$/types/user";
-import type { HelperParam } from "$/server/types/helper";
-import { generateQueryConditions } from "$/server/mapper";
+import type { NewUser } from "#lib/types/user.js";
+import type { HelperParam } from "#lib/server/types/helper.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("User CRUD Operations", () => {
   beforeEach(() => {

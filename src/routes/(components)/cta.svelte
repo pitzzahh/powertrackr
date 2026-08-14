@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Button } from "$/components/ui/button";
-  import { Banknote, Download, InvoiceIcon } from "$lib/assets/icons";
-  import { SplitReveal, ScrollReveal } from "$lib/motion-core";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Banknote, Download, InvoiceIcon } from "#lib/assets/icons.js";
+  import { SplitReveal, ScrollReveal } from "#lib/motion-core/index.js";
   import SectionLabel from "./section-label.svelte";
-  import { getCurrentUser } from "$/api/user.remote";
-  import { ButtonSkeleton } from "$/components/snippets.svelte";
-  import { browser } from "$app/environment";
+  import { getCurrentUser } from "#lib/api/user.remote.js";
+  import { ButtonSkeleton } from "#lib/components/snippets.svelte";
+  import { browser } from "$app/env";
 
   const authQuery = browser ? getCurrentUser() : null;
   const user = $derived(authQuery?.current?.user ?? null);

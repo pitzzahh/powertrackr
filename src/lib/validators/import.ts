@@ -1,4 +1,4 @@
-import { STATUS_VALUES } from "$/types/billing-info";
+import { STATUS_VALUES } from "#lib/types/billing-info.js";
 import * as v from "valibot";
 
 /**

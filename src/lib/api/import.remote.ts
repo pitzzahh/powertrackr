@@ -1,9 +1,9 @@
 import { form } from "$app/server";
 import * as v from "valibot";
-import { importBillFormSchema } from "$/validators/import";
-import { requireAuth } from "$/server/auth";
+import { importBillFormSchema } from "#lib/validators/import.js";
+import { requireAuth } from "#lib/server/auth.js";
 import { error, invalid } from "@sveltejs/kit";
-import { importBillingHandler, type ImportBillingItem } from "$/server/data-import";
+import { importBillingHandler, type ImportBillingItem } from "#lib/server/data-import.js";
 import { refreshBillingData } from "./billing-refresh";
 
 /**

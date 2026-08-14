@@ -1,4 +1,4 @@
-import type { user } from "$/server/db/schema";
+import type { user } from "#lib/server/db/schema/index.js";
 import type { NewSession, Session } from "./session";
 
 export type User = typeof user.$inferSelect;

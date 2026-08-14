@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { verifyTurnstileToken } from "$/server/turnstile";
+import { verifyTurnstileToken } from "#lib/server/turnstile.js";
 
 const SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const SECRET = "test-secret";

@@ -4,17 +4,17 @@ import {
   updatePaymentSchema,
   getPaymentSchema,
   deletePaymentSchema,
-} from "$/validators/payment";
+} from "#lib/validators/payment.js";
 import {
   addPayment,
   deletePaymentBy,
   getPaymentBy,
   getTotalPaymentsAmountLogic,
   updatePaymentBy,
-} from "$/server/crud/payment-crud";
+} from "#lib/server/crud/payment-crud.js";
 import { error } from "@sveltejs/kit";
-import type { HelperResult } from "$/server/types/helper";
-import type { Payment } from "$/types/payment";
+import type { HelperResult } from "#lib/server/types/helper.js";
+import type { Payment } from "#lib/types/payment.js";
 
 // Query to get total payments amount
 // Public endpoint with origin check - only allows requests from same origin

@@ -1,4 +1,4 @@
-import { House, Zap, Clock, Users } from "$lib/assets/icons";
+import { House, Zap, Clock, Users } from "#lib/assets/icons.js";
 import { getContext, setContext } from "svelte";
 
 type NavItem = {

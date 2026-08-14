@@ -9,24 +9,24 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
-} from "$/validators/auth";
+} from "#lib/validators/auth.js";
 import {
   createSession,
   deleteSessionTokenCookie,
   invalidateSession,
   setSessionTokenCookie,
-} from "$/server/auth";
-import { addUser, getUserBy, updateUserBy } from "$/server/crud/user-crud";
-import { updateSessionBy } from "$/server/crud/session-crud";
+} from "#lib/server/auth.js";
+import { addUser, getUserBy, updateUserBy } from "#lib/server/crud/user-crud.js";
+import { updateSessionBy } from "#lib/server/crud/session-crud.js";
 import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
-} from "$/server/crud/email-verification-request-crud";
+} from "#lib/server/crud/email-verification-request-crud.js";
 import {
   getPasswordResetSessionBy,
   updatePasswordResetSessionBy,
-} from "$/server/crud/password-reset-session-crud";
-import { createPasswordReset } from "$lib/server/email";
+} from "#lib/server/crud/password-reset-session-crud.js";
+import { createPasswordReset } from "#lib/server/email.js";
 
 import {
   encrypt,
@@ -36,7 +36,7 @@ import {
   generateSessionToken,
   hashPassword,
   verifyPasswordHash,
-} from "$/server/encryption";
+} from "#lib/server/encryption.js";
 import { Secret, TOTP } from "otpauth";
 import {
   decodeBase32IgnorePadding,
@@ -45,13 +45,13 @@ import {
   decodeBase64url,
 } from "@oslojs/encoding";
 import crypto from "node:crypto";
-import type { HelperResult } from "$/server/types/helper";
-import type { NewUser } from "$/types/user";
+import type { HelperResult } from "#lib/server/types/helper.js";
+import type { NewUser } from "#lib/types/user.js";
 import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { requireAuth as requireAuthServer } from "$/server/auth";
-import { verifyTurnstileToken } from "$/server/turnstile";
-import { env } from "$env/dynamic/private";
+import { requireAuth as requireAuthServer } from "#lib/server/auth.js";
+import { verifyTurnstileToken } from "#lib/server/turnstile.js";
+import { TURNSTILE_SECRET } from "$app/env/private";
 
 function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
   return (
@@ -96,9 +96,10 @@ export const login = form(loginSchema, async (user, issues) => {
   if (email === "" || password === "") {
     error(400, "Please enter your email and password.");
   }
+
   const valid = await verifyTurnstileToken(
     user.turnstileToken,
-    env.TURNSTILE_SECRET!,
+    TURNSTILE_SECRET!,
     event.getClientAddress()
   );
 
@@ -116,9 +117,7 @@ export const login = form(loginSchema, async (user, issues) => {
   const {
     value: [userResult],
   } = (await getUserBy({
-    query: {
-      email,
-    },
+    query: { email },
     options: {
       with_session: false,
       fields: ["id", "passwordHash", "githubId", "emailVerified", "registeredTwoFactor"],
@@ -162,7 +161,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   if (
     !(await verifyTurnstileToken(
       newUser.turnstileToken,
-      env.TURNSTILE_SECRET!,
+      TURNSTILE_SECRET!,
       event.getClientAddress()
     ))
   ) {
@@ -178,16 +177,12 @@ export const register = form(registerSchema, async (newUser, issues) => {
   if (password !== confirmPassword) {
     invalid(issues.confirmPassword("Passwords do not match"));
   }
+
   const {
     value: [userEmailCheck],
-  } = (await getUserBy({
-    query: {
-      email,
-    },
-    options: {
-      with_session: false,
-    },
-  })) as HelperResult<NewUser[]>;
+  } = (await getUserBy({ query: { email }, options: { with_session: false } })) as HelperResult<
+    NewUser[]
+  >;
 
   if (userEmailCheck !== undefined && userEmailCheck !== null) {
     invalid(issues.email("Email is already used"));
@@ -560,7 +555,10 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
   const encryptedRecoveryCode = encodeBase64url(encryptString(recoveryCode));
 
   const updateResult = await updateUserBy(
-    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      query: { id: event.locals.session.userId },
+      options: { with_session: false },
+    },
     {
       totpKey: encryptedSecret,
       recoveryCode: encryptedRecoveryCode,
@@ -632,7 +630,10 @@ export const disable2FA = form(disable2FASchema, async (data, issues) => {
 
   // Disable 2FA
   const updateResult = await updateUserBy(
-    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    {
+      query: { id: event.locals.session.userId },
+      options: { with_session: false },
+    },
     {
       totpKey: null,
       recoveryCode: null,

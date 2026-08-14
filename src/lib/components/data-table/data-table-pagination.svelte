@@ -8,18 +8,24 @@
 </script>
 
 <script lang="ts" generics="TData extends RowData">
-  import { ChevronRight, ChevronLeft, ChevronsRight, ChevronsLeft, Loader } from "$/assets/icons";
-  import type { SvelteTable as Table } from "$/components/ui/data-table";
-  import * as Select from "$/components/ui/select/index.js";
+  import {
+    ChevronRight,
+    ChevronLeft,
+    ChevronsRight,
+    ChevronsLeft,
+    Loader,
+  } from "#lib/assets/icons.js";
+  import type { SvelteTable as Table } from "#lib/components/ui/data-table/index.js";
+  import * as Select from "#lib/components/ui/select/index.js";
 
-  import { Button } from "$/components/ui/button/index.js";
-  import { Badge } from "$/components/ui/badge/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
   import type { Icon } from "@lucide/svelte";
-  import type { AsyncState } from "$/types/state";
-  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
+  import type { AsyncState } from "#lib/types/state.js";
+  import { usePendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
 
   const pendingFetch = usePendingFetch();
 

@@ -1,4 +1,4 @@
-import type { passwordResetSession } from "$/server/db/schema";
+import type { passwordResetSession } from "#lib/server/db/schema/index.js";
 
 export type PasswordResetSession = typeof passwordResetSession.$inferSelect;
 export type NewPasswordResetSession = typeof passwordResetSession.$inferInsert;

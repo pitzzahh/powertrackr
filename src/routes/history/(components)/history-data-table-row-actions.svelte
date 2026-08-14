@@ -12,27 +12,30 @@
 </script>
 
 <script lang="ts">
-  import { Loader, Trash2, View, Pencil, Ticket, Check } from "$/assets/icons";
-  import { Table, TableBody, TableCell, TableRow } from "$lib/components/ui/table";
+  import { Loader, Trash2, View, Pencil, Ticket, Check } from "#lib/assets/icons.js";
+  import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import { BillingInfoForm, SubPaymentsButton } from ".";
-  import { formatDate, formatNumber } from "$/utils/format";
-  import type { SvelteRow as Row } from "$/components/ui/data-table";
-  import Button from "$/components/ui/button/button.svelte";
-  import * as Dialog from "$/components/ui/dialog";
-  import { showInspectorWarning, showSuccess, showWarning } from "$/components/toast";
-  import * as Sheet from "$/components/ui/sheet/index.js";
-  import { ScrollArea } from "$/components/ui/scroll-area";
-  import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
-  import { LoadingDots, WarningBanner } from "$/components/snippets.svelte";
-  import { Input } from "$/components/ui/input";
-  import { deleteBillingInfo, finalizeBilling } from "$/api/billing-info.remote";
+  import { formatDate, formatNumber } from "#lib/utils/format.js";
+  import type { SvelteRow as Row } from "#lib/components/ui/data-table/index.js";
+  import Button from "#lib/components/ui/button/button.svelte";
+  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import { showInspectorWarning, showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import * as Sheet from "#lib/components/ui/sheet/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
+  import { LoadingDots, WarningBanner } from "#lib/components/snippets.svelte";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { deleteBillingInfo, finalizeBilling } from "#lib/api/billing-info.remote.js";
   import { isHttpError } from "@sveltejs/kit";
-  import { useBillingStore } from "$/stores/billing.svelte";
-  import { useConsumptionStore } from "$/stores/consumption.svelte";
+  import { useBillingStore } from "#lib/stores/billing.svelte.js";
+  import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
   import { page } from "$app/state";
-  import { billingInfoToDto, extendedBillingInfoToTableView } from "$/utils/mapper/billing-info";
-  import { findPreviousBillingInfo } from "$/utils/previous-reading";
-  import { convertToNormalText } from "$/utils/text";
+  import {
+    billingInfoToDto,
+    extendedBillingInfoToTableView,
+  } from "#lib/utils/mapper/billing-info.js";
+  import { findPreviousBillingInfo } from "#lib/utils/previous-reading.js";
+  import { convertToNormalText } from "#lib/utils/text.js";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 

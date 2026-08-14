@@ -1,15 +1,15 @@
-import { DataTableCheckbox, DataTableColumnHeader } from "$/components/data-table";
-import { Badge } from "$/components/ui/badge";
-import { renderComponent } from "$/components/ui/data-table";
-import type { ExtendedBillingInfoTableView } from "$/types/billing-info";
+import { DataTableCheckbox, DataTableColumnHeader } from "#lib/components/data-table/index.js";
+import { Badge } from "#lib/components/ui/badge/index.js";
+import { renderComponent } from "#lib/components/ui/data-table/index.js";
+import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
 import type {
   SvelteColumnDef as ColumnDef,
   SvelteTable as Table,
-} from "$/components/ui/data-table";
+} from "#lib/components/ui/data-table/index.js";
 import { createRawSnippet } from "svelte";
 import { HistoryDataTableRowActions, SubPaymentsButton } from ".";
-import { formatDate, formatNumber } from "$/utils/format";
-import { convertToNormalText } from "$/utils/text";
+import { formatDate, formatNumber } from "#lib/utils/format.js";
+import { convertToNormalText } from "#lib/utils/text.js";
 
 export function historyTableColumns() {
   return [

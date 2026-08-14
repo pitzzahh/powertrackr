@@ -6,15 +6,15 @@
 </script>
 
 <script lang="ts">
-  import { Button } from "$/components/ui/button";
-  import { NumberTicker } from "$lib/components/number-ticker";
-  import { Zap } from "$lib/assets/icons";
-  import { TextLoop } from "$lib/motion-core";
-  import { getStats } from "$/api/stats.remote";
-  import { getCurrentUser } from "$/api/user.remote";
-  import { ButtonSkeleton } from "$/components/snippets.svelte";
-  import { browser } from "$app/environment";
-  import { convertEnergy, getEnergyUnit } from "$/utils/converter/energy";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { NumberTicker } from "#lib/components/number-ticker/index.js";
+  import { Zap } from "#lib/assets/icons.js";
+  import { TextLoop } from "#lib/motion-core/index.js";
+  import { getStats } from "#lib/api/stats.remote.js";
+  import { getCurrentUser } from "#lib/api/user.remote.js";
+  import { ButtonSkeleton } from "#lib/components/snippets.svelte";
+  import { browser } from "$app/env";
+  import { convertEnergy, getEnergyUnit } from "#lib/utils/converter/energy.js";
   import {
     Arc,
     Chart,
@@ -27,7 +27,7 @@
     Text,
   } from "layerchart";
   import { scaleLinear } from "d3-scale";
-  import type { Stats } from "$/types/stats";
+  import type { Stats } from "#lib/types/stats.js";
 
   const authQuery = browser ? getCurrentUser() : null;
   const { user, session } = $derived(authQuery?.current ?? { user: null, session: null });
@@ -76,7 +76,6 @@
   let dial = $state(62);
 
   const needleAngle = $derived((angleScale(dial) * Math.PI) / 180);
-
   const formattedEnergy = $derived(
     new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(energyValue)
   );
@@ -101,18 +100,21 @@
           class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] text-primary uppercase"
         >
           <Zap class="size-3.5" />
-          <span
-            >Electricity billing<span class="hidden sm:inline">, without the spreadsheet</span
-            ></span
-          >
+
+          <span>
+            Electricity billing
+            <span class="hidden sm:inline">, without the spreadsheet</span>
+          </span>
         </div>
 
         <h1 class="mt-6 text-4xl font-semibold tracking-tight md:text-6xl lg:text-7xl">
-          <span class="text-muted-foreground">
-            {currentText === "Payments" ? "Record" : "Track"}
-          </span>
+          <span class="text-muted-foreground"
+            >{currentText === "Payments" ? "Record" : "Track"}</span
+          >
+
           <span class="inline-flex align-baseline text-primary">
-            <TextLoop {texts} bind:currentIndex interval={2500} />.
+            <TextLoop {texts} bind:currentIndex interval={2500} />
+            .
           </span>
           <span class="block">No guesswork.</span>
         </h1>

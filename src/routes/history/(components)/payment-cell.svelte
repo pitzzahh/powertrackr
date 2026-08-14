@@ -1,12 +1,12 @@
 <script lang="ts">
   import { untrack, onDestroy } from "svelte";
-  import { Badge } from "$/components/ui/badge";
-  import { getPayment } from "$/api/payment.remote";
-  import { formatNumber } from "$/utils/format";
-  import { Loader } from "$lib/assets/icons";
+  import { Badge } from "#lib/components/ui/badge/index.js";
+  import { getPayment } from "#lib/api/payment.remote.js";
+  import { formatNumber } from "#lib/utils/format.js";
+  import { Loader } from "#lib/assets/icons.js";
   import { watch } from "runed";
-  import { Button } from "$/components/ui/button";
-  import { usePendingFetch } from "$/hooks/use-pending-fetch.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { usePendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
 
   let { paymentId }: { paymentId: string | null } = $props();
 

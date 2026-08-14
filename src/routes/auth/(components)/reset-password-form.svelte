@@ -1,7 +1,7 @@
 <script lang="ts" module>
-  import type { AsyncState } from "$/types/state";
+  import type { AsyncState } from "#lib/types/state.js";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import type { WithElementRef } from "$/index";
+  import type { WithElementRef } from "#lib/index.js";
 
   export type ResetPasswordFormProps = WithElementRef<HTMLFormAttributes> & {
     code: string;
@@ -19,15 +19,15 @@
     FieldLabel,
     FieldDescription,
     FieldError,
-  } from "$/components/ui/field/index.js";
-  import { Input } from "$/components/ui/input/index.js";
-  import { Button } from "$/components/ui/button/index.js";
-  import Password from "$/components/password.svelte";
-  import { Loader, Lock } from "$/assets/icons";
-  import { resetPassword } from "$/api/auth.remote";
+  } from "#lib/components/ui/field/index.js";
+  import { Input } from "#lib/components/ui/input/index.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import Password from "#lib/components/password.svelte";
+  import { Loader, Lock } from "#lib/assets/icons.js";
+  import { resetPassword } from "#lib/api/auth.remote.js";
   import { toast } from "svelte-sonner";
   import { isHttpError } from "@sveltejs/kit";
-  import { showError, showLoading, showSuccess } from "$/components/toast";
+  import { showError, showLoading, showSuccess } from "#lib/components/toast/index.js";
 
   let {
     code,

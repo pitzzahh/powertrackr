@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SplitReveal, ScrollStagger, Magnetic } from "$lib/motion-core";
+  import { SplitReveal, ScrollStagger, Magnetic } from "#lib/motion-core/index.js";
   import SectionLabel from "./section-label.svelte";
 
   const steps = [

@@ -13,16 +13,16 @@
 </script>
 
 <script lang="ts">
-  import * as Chart from "$/components/ui/chart/index.js";
-  import * as Card from "$/components/ui/card/index.js";
+  import * as Chart from "#lib/components/ui/chart/index.js";
+  import * as Card from "#lib/components/ui/card/index.js";
   import { scaleUtc } from "d3-scale";
   import { LineChart } from "layerchart";
   import { curveStep } from "d3-shape";
-  import { Loader, RefreshCw } from "$lib/assets/icons";
-  import { Button } from "$/components/ui/button";
-  import { DateFormat, formatDate, formatEnergy, formatNumber } from "$/utils/format";
-  import { browser } from "$app/environment";
-  import type { AsyncState } from "$/types/state";
+  import { Loader, RefreshCw } from "#lib/assets/icons.js";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { DateFormat, formatDate, formatEnergy, formatNumber } from "#lib/utils/format.js";
+  import { browser } from "$app/env";
+  import type { AsyncState } from "#lib/types/state.js";
 
   let { chartData, status, retryStatus, refetch }: ConsumptionChartProps = $props();
 
@@ -68,14 +68,11 @@
             retryStatus = "fetching";
             refetch?.(() => (retryStatus = "success"));
           }}
-          ><RefreshCw
-            class={[
-              {
-                "animate-spin": retryStatus === "fetching",
-              },
-            ]}
-          /> Refetch</Button
         >
+          <RefreshCw class={[{ "animate-spin": retryStatus === "fetching" }]} />
+
+          Refetch
+        </Button>
       </div>
     {:else if chartData.length > 0 && browser}
       <Chart.Container config={CHART_CONFIG}>

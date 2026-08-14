@@ -1,12 +1,12 @@
 <script lang="ts">
   import { resolve } from "$app/paths";
-  import Logo from "$/components/logo.svelte";
-  import { site } from "$/site";
-  import { ChartLine, Users, Shield, Download, InvoiceIcon } from "$lib/assets/icons";
+  import Logo from "#lib/components/logo.svelte";
+  import { site } from "#lib/site.js";
+  import { ChartLine, Users, Shield, Download, InvoiceIcon } from "#lib/assets/icons.js";
   import { LANDING_NAV_ITEMS, handleLandingNavClick } from ".";
-  import { getCurrentUser } from "$/api/user.remote";
-  import { ButtonSkeleton } from "$/components/snippets.svelte";
-  import { browser } from "$app/environment";
+  import { getCurrentUser } from "#lib/api/user.remote.js";
+  import { ButtonSkeleton } from "#lib/components/snippets.svelte";
+  import { browser } from "$app/env";
 
   const authQuery = browser ? getCurrentUser() : null;
   const user = $derived(authQuery?.current?.user ?? null);
@@ -155,7 +155,7 @@
             {/each}
             <li>
               <a
-                href={resolve("/privacy")}
+                href={resolve("privacy")}
                 class="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Privacy Policy
@@ -163,7 +163,7 @@
             </li>
             <li>
               <a
-                href={resolve("/terms")}
+                href={resolve("terms")}
                 class="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Terms & Conditions
@@ -197,15 +197,16 @@
     <!-- Bottom Row -->
     <div class="footer-bottom flex flex-col items-center justify-between gap-4 md:flex-row">
       <p class="text-xs text-muted-foreground">
-        &copy; {new Date().getFullYear()}
-        <span class="font-medium text-foreground">{site.name}</span>. All rights reserved.
+        © {new Date().getFullYear()}
+        <span class="font-medium text-foreground">{site.name}</span>
+        . All rights reserved.
       </p>
 
       <div class="flex items-center gap-6">
         {#if user}
           <a
             data-sveltekit-reload
-            href={resolve("/dashboard")}
+            href={resolve("dashboard")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Dashboard
@@ -214,13 +215,13 @@
           {@render ButtonSkeleton({ size: "sm" })}
         {:else}
           <a
-            href={resolve("/auth?act=login")}
+            href={resolve("auth?act=login")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Sign In
           </a>
           <a
-            href={resolve("/auth?act=register")}
+            href={resolve("auth?act=register")}
             class="text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Get Started
@@ -232,7 +233,6 @@
 </footer>
 
 <style>
-  /* Entrance animations — pure CSS, staggered on load */
   .footer-col {
     opacity: 0;
     animation: footer-rise 0.6s ease-out forwards;

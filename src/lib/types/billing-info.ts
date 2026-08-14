@@ -1,6 +1,6 @@
-import type { billingInfo } from "$/server/db/schema/billing-info";
-import type { Payment } from "$/server/db/schema/payment";
-import type { TenantReadingDTO } from "$/types/tenant-reading";
+import type { billingInfo } from "#lib/server/db/schema/billing-info.js";
+import type { Payment } from "#lib/server/db/schema/payment.js";
+import type { TenantReadingDTO } from "#lib/types/tenant-reading.js";
 
 export type BillingInfo = typeof billingInfo.$inferSelect;
 export type NewBillingInfo = Omit<typeof billingInfo.$inferInsert, "createdAt" | "updatedAt">;

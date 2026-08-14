@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getGlobalStats, FALLBACK_STATS } from "$/server/stats";
-import { db } from "$/server/db";
-import { addUser } from "$/server/crud/user-crud";
-import { addPayment } from "$/server/crud/payment-crud";
-import { addBillingInfo } from "$/server/crud/billing-info-crud";
+import { getGlobalStats, FALLBACK_STATS } from "#lib/server/stats.js";
+import { db } from "#lib/server/db/index.js";
+import { addUser } from "#lib/server/crud/user-crud.js";
+import { addPayment } from "#lib/server/crud/payment-crud.js";
+import { addBillingInfo } from "#lib/server/crud/billing-info-crud.js";
 import {
   createUser,
   createPayments,
   createBillingInfo,
   resetSequence,
-} from "$/server/crud/__tests__/helpers/factories";
+} from "#lib/server/crud/__tests__/helpers/factories.js";
 
 function withoutId<T extends { id: string }>({ id: _id, ...rest }: T): Omit<T, "id"> {
   return rest;

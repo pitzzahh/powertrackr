@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-  import { cn } from "$lib/utils/style.js";
+  import * as Tooltip from "#lib/components/ui/tooltip/index.js";
+  import { cn } from "#lib/utils/style.js";
   import type { HTMLAttributes } from "svelte/elements";
   import {
     SIDEBAR_COOKIE_MAX_AGE,
@@ -9,7 +9,7 @@
     SIDEBAR_WIDTH_ICON,
   } from "./constants.js";
   import { setSidebar } from "./context.svelte.js";
-  import type { WithElementRef } from "$/index.js";
+  import type { WithElementRef } from "#lib/index.js";
 
   let {
     ref = $bindable(null),

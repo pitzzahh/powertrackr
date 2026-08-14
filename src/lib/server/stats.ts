@@ -1,9 +1,9 @@
 import { count, eq, sum } from "drizzle-orm";
-import { billingInfo, payment, user } from "$/server/db/schema";
-import { formatEnergy, formatNumber } from "$/utils/format";
-import { getEnergyUnit } from "$/utils/converter/energy";
-import type { Database } from "$/server/db";
-import type { Stats } from "$/types/stats";
+import { billingInfo, payment, user } from "#lib/server/db/schema/index.js";
+import { formatEnergy, formatNumber } from "#lib/utils/format.js";
+import { getEnergyUnit } from "#lib/utils/converter/energy.js";
+import type { Database } from "#lib/server/db/index.js";
+import type { Stats } from "#lib/types/stats.js";
 
 export const FALLBACK_STATS: Stats = {
   userCount: 0,

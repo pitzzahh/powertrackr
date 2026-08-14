@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import Logo from "$/components/logo.svelte";
-  import { Button } from "$/components/ui/button/index.js";
-  import { Sun, Moon, ChevronLeft } from "$/assets/icons";
+  import Logo from "#lib/components/logo.svelte";
+  import { Button } from "#lib/components/ui/button/index.js";
+  import { Sun, Moon, ChevronLeft } from "#lib/assets/icons.js";
   import { toggleMode } from "mode-watcher";
   import { goto } from "$app/navigation";
-  import { ErrorBackground } from "$routes/(components)";
+  import { ErrorBackground } from "#routes/(components)/index.js";
 </script>
 
 <div class="grid min-h-svh lg:grid-cols-2">

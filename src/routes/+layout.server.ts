@@ -1,5 +1,5 @@
-import { building } from "$app/environment";
-import { isPublicPathname } from "$lib/utils/constant";
+import { building } from "$app/env";
+import { isPublicPathname } from "#lib/utils/constant.js";
 
 export function load({ setHeaders, url, locals, cookies }) {
   const sidebarCollapsed = cookies.get("sidebar-collapsed") === "true";

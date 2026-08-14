@@ -1,14 +1,14 @@
-import { db } from "$/server/db";
+import { db } from "#lib/server/db/index.js";
 import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { passwordResetSession } from "$/server/db/schema";
-import type { HelperParam, HelperResult } from "$/server/types/helper";
-import { generateNotFoundMessage } from "$/utils/text";
-import { getChangedData } from "$/utils/mapper";
+import { passwordResetSession } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { generateNotFoundMessage } from "#lib/utils/text.js";
+import { getChangedData } from "#lib/utils/mapper.js";
 import type {
   NewPasswordResetSession,
   PasswordResetSessionDTO,
-} from "$/types/password-reset-session";
-import { generateQueryConditions } from "$/server/mapper";
+} from "#lib/types/password-reset-session.js";
+import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type PasswordResetSessionQueryOptions = {
   where?: Record<string, unknown>;

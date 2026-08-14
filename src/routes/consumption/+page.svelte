@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { formatNumber, formatEnergy } from "$/utils/format";
+  import { formatNumber, formatEnergy } from "#lib/utils/format.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { useConsumptionStore } from "$/stores/consumption.svelte.js";
-  import { Loader, Zap } from "$lib/assets/icons";
-  import * as Card from "$/components/ui/card";
-  import { ChartConsumption } from "$routes/(components)";
+  import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
+  import { Loader, Zap } from "#lib/assets/icons.js";
+  import * as Card from "#lib/components/ui/card/index.js";
+  import { ChartConsumption } from "#routes/(components)/index.js";
 
   let { data } = $props();
 

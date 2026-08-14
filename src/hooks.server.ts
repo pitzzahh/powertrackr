@@ -1,9 +1,8 @@
-import * as auth from "$lib/server/auth";
-import { sequence } from "@sveltejs/kit/hooks";
-import { building, dev } from "$app/environment";
-import type { Handle } from "@sveltejs/kit";
 import { redirect } from "@sveltejs/kit";
-import { isPublicPathname } from "$lib/utils/constant";
+import * as auth from "#lib/server/auth.js";
+import { sequence, type Handle } from "@sveltejs/kit/hooks";
+import { dev } from "$app/env";
+import { isPublicPathname } from "#lib/utils/constant.js";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
   const sessionToken = event.cookies.get(auth.sessionCookieName);

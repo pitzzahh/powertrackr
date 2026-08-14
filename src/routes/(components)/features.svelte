@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { ChartLine, Users, Shield, Download, type PhosphorIcon } from "$lib/assets/icons";
-  import { SplitReveal } from "$lib/motion-core";
+  import { ChartLine, Users, Shield, Download, type PhosphorIcon } from "#lib/assets/icons.js";
+  import { SplitReveal } from "#lib/motion-core/index.js";
   import SectionLabel from "./section-label.svelte";
 
   const features = [
