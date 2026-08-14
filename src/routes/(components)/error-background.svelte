@@ -17,23 +17,21 @@
     style="animation-duration: {duration}; animation-delay: {delay}"
   >
     <div
-      class="flex items-center gap-2 rounded-xl border border-white/40 bg-white/60 p-3 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-zinc-900/60"
+      class="flex items-center gap-2 rounded-xl border border-border/60 bg-card/80 p-3 shadow-lg backdrop-blur-md dark:bg-card/60"
     >
       <div class="rounded-full p-1.5 {iconBgClass}">
         <Icon class="h-4 w-4 {iconTextClass}" />
       </div>
       <div class="space-y-1">
         {#each bars as width}
-          <div class="h-1.5 {width} rounded-full bg-zinc-200 dark:bg-zinc-700"></div>
+          <div class="h-1.5 {width} rounded-full bg-border"></div>
         {/each}
       </div>
     </div>
   </div>
 {/snippet}
 
-<div
-  class="relative h-full w-full overflow-hidden border-l border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950"
->
+<div class="relative h-full w-full overflow-hidden border-l border-border bg-muted">
   <!-- Grid Pattern Background -->
   <div
     class="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] mask-[radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] bg-size-[24px_24px]"
@@ -41,10 +39,10 @@
 
   <!-- Ambient Glow Effects (Red/Rose for Error Theme) -->
   <div
-    class="absolute top-[10%] -left-[20%] h-125 w-125 rounded-full bg-red-500/20 blur-[120px] dark:bg-red-500/10"
+    class="absolute top-[10%] left-[-20%] h-125 w-125 rounded-full bg-red-500/20 blur-[120px] dark:bg-red-500/10"
   ></div>
   <div
-    class="absolute -right-[20%] bottom-[10%] h-125 w-125 rounded-full bg-orange-500/20 blur-[120px] dark:bg-orange-600/10"
+    class="absolute right-[-20%] bottom-[10%] h-125 w-125 rounded-full bg-orange-500/20 blur-[120px] dark:bg-orange-600/10"
   ></div>
 
   <div class="relative flex h-full flex-col items-center justify-center">
@@ -100,10 +98,8 @@
 
     <!-- Text Content -->
     <div class="mt-12 text-center">
-      <h2 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-        Something went wrong
-      </h2>
-      <p class="mt-2 text-zinc-500 dark:text-zinc-400">
+      <h2 class="text-2xl font-bold tracking-tight text-foreground">Something went wrong</h2>
+      <p class="mt-2 text-muted-foreground">
         We encountered an unexpected issue. Please try again later or contact support.
       </p>
     </div>

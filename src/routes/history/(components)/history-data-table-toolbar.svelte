@@ -47,10 +47,10 @@
 </script>
 
 <ScrollArea orientation="horizontal" class="rounded-none">
-  <div class="m-1 flex items-center justify-between space-x-2">
-    <div class="flex items-center space-x-2">
+  <div class="flex min-w-max items-center justify-between gap-2 p-1">
+    <div class="flex min-w-max items-center gap-2">
       <Input
-        placeholder="Filter BillingInfos by {convertToNormalText(where_to_search)}..."
+        placeholder="Filter billing records by {convertToNormalText(where_to_search)}..."
         bind:value={
           () => search,
           (v) => {
@@ -62,7 +62,7 @@
           }
         }
         type="search"
-        class="h-8 w-50 min-w-75 lg:w-min"
+        class="h-8 w-50 min-w-75 lg:w-auto"
       />
       <DataTableSearchFilter {table} bind:where_to_search />
       {#if status_column}

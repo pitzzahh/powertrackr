@@ -16,16 +16,11 @@
     return formatted;
   }
 
-  function signClass(
-    value?: number | null,
-    positiveClass = "text-green-600",
-    negativeClass = "text-destructive"
-  ): string {
+  function signTone(value?: number | null): "default" | "success" | "destructive" {
     const v = value ?? 0;
-    if (v > 0) return positiveClass;
-    if (v < 0) return negativeClass;
-    // zero -> no color class
-    return "";
+    if (v > 0) return "success";
+    if (v < 0) return "destructive";
+    return "default";
   }
 </script>
 
@@ -40,13 +35,15 @@
     toAreaChartData,
     toBarChartData,
   } from "#routes/(components)/index.js";
+  import PageHeader from "#routes/(components)/page-header.svelte";
+  import MetricsCard from "#routes/(components)/metrics-card.svelte";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
   import * as Sheet from "#lib/components/ui/sheet/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
-  import { Loader, Banknote, PhilippinePeso } from "#lib/assets/icons.js";
+  import { Banknote, PhilippinePeso } from "#lib/assets/icons.js";
   import { goto } from "$app/navigation";
   import { BillingInfoForm } from "../history/(components)/index.js";
   import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
@@ -71,12 +68,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex items-center justify-between">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-muted-foreground">Overview of your energy billing and savings</p>
-    </div>
-  </div>
+  <PageHeader
+    eyebrow="Overview"
+    title="Dashboard"
+    description="Your energy billing and savings at a glance"
+  />
 
   <!-- Mobile-only compact New Bill card (inline with content, not fixed) -->
   <div class="md:hidden">
@@ -149,95 +145,36 @@
 </div>
 
 {#snippet Metrics()}
-  <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
-  >
-    <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <Banknote class="h-5 w-5" />
-        <span class="text-lg">Current</span>
-      </div>
-      {#if billingStore.status === "fetching"}
-        <Loader class="h-5 w-5 animate-spin" />
-      {:else if billingStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
-      {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          {formatNumber(billingStore.summary?.current || 0)}
-        </div>
-      {/if}
-    </div>
-
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Cost</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(billingStore.summary?.invested || 0)}</span
-          >
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Savings</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
-        {:else}
-          <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-              billingStore.summary?.totalReturns
-            )}"
-          >
-            {signedCurrency(billingStore.summary?.totalReturns)}
-          </span>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Net Savings</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0%</span>
-        {:else}
-          <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-              billingStore.summary?.netReturns
-            )}"
-          >
-            {signedPercent(billingStore.summary?.netReturns)}
-          </span>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Period Change</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
-            <span class="text-xs text-muted-foreground">0%</span>
-          </div>
-        {:else}
-          <div class="flex items-baseline gap-2">
-            <span
-              class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
-                billingStore.summary?.periodPaymentChange
-              )}"
-            >
-              {signedCurrency(billingStore.summary?.periodPaymentChange)}
-            </span>
-            <span class="text-xs text-muted-foreground">
-              {signedPercent(billingStore.summary?.periodPaymentChangePct)}
-            </span>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </section>
+  <div in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}>
+    <MetricsCard
+      icon={Banknote}
+      label="Current"
+      hero={billingStore.status === "error"
+        ? "0"
+        : formatNumber(billingStore.summary?.current || 0)}
+      loading={billingStore.status === "fetching"}
+      stats={[
+        {
+          label: "Total Cost",
+          value: formatNumber(billingStore.summary?.invested || 0),
+        },
+        {
+          label: "Total Savings",
+          value: signedCurrency(billingStore.summary?.totalReturns),
+          tone: signTone(billingStore.summary?.totalReturns),
+        },
+        {
+          label: "Net Savings",
+          value: signedPercent(billingStore.summary?.netReturns),
+          tone: signTone(billingStore.summary?.netReturns),
+        },
+        {
+          label: "Period Change",
+          value: signedCurrency(billingStore.summary?.periodPaymentChange),
+          tone: signTone(billingStore.summary?.periodPaymentChange),
+          note: signedPercent(billingStore.summary?.periodPaymentChangePct),
+        },
+      ]}
+    />
+  </div>
 {/snippet}

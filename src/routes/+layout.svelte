@@ -60,6 +60,13 @@
       });
     });
   });
+
+  // Keep the browser chrome (theme-color meta) in sync with the active theme.
+  $effect(() => {
+    if (!browser) return;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    meta?.setAttribute("content", mode.current === "dark" ? "#1a1a21" : "#f7f7f9");
+  });
 </script>
 
 {#if browser && dev}
@@ -126,7 +133,7 @@
             in:scale={{ duration: 150 }}
             class={[
               {
-                "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
+                "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border border-sidebar-border bg-sidebar p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
                 "w-16": sidebar.collapsed,
                 "md:w-48 lg:w-54": !sidebar.collapsed,
               },

@@ -31,7 +31,9 @@
       </Button>
     </div>
     <div class="flex flex-1 items-center justify-center">
-      <div class="w-full max-w-md">
+      <div
+        class="w-full max-w-md rounded-2xl border border-border/70 bg-card/80 p-6 shadow-sm md:p-8"
+      >
         {#if ["login", "register"].includes(data.action)}
           <AuthForm action={data.action} siteKey={data.turnstileSiteKey} />
         {:else if data.action === "verify-email"}

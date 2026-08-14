@@ -89,6 +89,14 @@
           ]}
           props={{
             spline: { curve: curveStep, motion: "tween", strokeWidth: 2 },
+            xAxis: {
+              ticks: sortedData.length > 7 ? 7 : undefined,
+              format: (v) =>
+                v.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                }),
+            },
             yAxis: {
               format: (v) => `${formatNumber(v, { style: "decimal" })} ${chartUnit}`,
             },
