@@ -3,7 +3,19 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), sveltekit()],
+  plugins: [
+    tailwindcss(),
+    sveltekit({
+      compilerOptions: {
+        experimental: {
+          async: true,
+        },
+      },
+      experimental: {
+        remoteFunctions: true,
+      },
+    }),
+  ],
   test: {
     include: ["src/**/*.{test,spec}.{js,ts}"],
     environment: "node",
@@ -30,8 +42,7 @@ export default defineConfig({
     // https://svelte.dev/docs/svelte/testing
     ...(process.env.VITEST ? { conditions: ["browser"] } : {}),
     alias: {
-      $: "/src/lib",
-      "$env/static/private": "/src/lib/server/crud/__tests__/helpers/mock-env.ts",
+      "$app/env/private": "/src/lib/server/crud/__tests__/helpers/mock-env.ts",
     },
   },
 });

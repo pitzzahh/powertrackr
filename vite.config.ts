@@ -19,10 +19,6 @@ export default defineConfig({
       adapter: adapter({
         fallback: "plaintext",
       }),
-      alias: {
-        "$/*": "./src/lib/*",
-        "$routes/*": "./src/routes/*",
-      },
       experimental: {
         remoteFunctions: true,
       },
