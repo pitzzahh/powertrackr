@@ -46,9 +46,9 @@
     "@number-flow/svelte": "^0.4.2",
     "@prettier/plugin-oxc": "^0.2.2",
     "@svelte-put/qr": "^2.1.3",
-    "@sveltejs/adapter-cloudflare": "^7.2.9",
+    "@sveltejs/adapter-cloudflare": "8.0.0-next.6",
     "@sveltejs/enhanced-img": "^0.11.0",
-    "@sveltejs/kit": "^2.70.2",
+    "@sveltejs/kit": "3.0.0-next.23",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/svelte-table": "^9.1.2",
@@ -82,5 +82,10 @@
     "vite": "^8.2.1",
     "vitest": "^4.1.10",
     "wrangler": "^4.122.0"
+  },
+  "imports": {
+    "#lib": "./src/lib/index.js",
+    "#lib/*": "./src/lib/*",
+    "#routes/*": "./src/routes/*"
   }
 }
