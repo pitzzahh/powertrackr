@@ -1,6 +1,6 @@
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
-import { TEST_DATABASE_URL } from "$env/static/private";
+import { TEST_DATABASE_URL } from "$app/env/private";
 import { relations } from "./relations";
 
 let client: Client | undefined;

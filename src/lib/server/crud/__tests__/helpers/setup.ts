@@ -1,5 +1,5 @@
-import { setTestDb, type Database } from "$/server/db";
-import { createTestDb, closeTestDb } from "$/server/db/test-db";
+import { setTestDb, type Database } from "#lib/server/db/index.js";
+import { createTestDb, closeTestDb } from "#lib/server/db/test-db.js";
 import {
   billingInfo,
   emailVerificationRequest,
@@ -9,7 +9,7 @@ import {
   tenantReading,
   readingSubmission,
   user,
-} from "$/server/db/schema";
+} from "#lib/server/db/schema/index.js";
 import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -17,7 +17,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 // Load .env if present, but do not override already-set env vars. Vitest setup
-// files run outside the SvelteKit pipeline, so `$env/*` isn't available here;
+// files run outside the SvelteKit pipeline, so `$app/env/*` isn't available here;
 // Node's built-in loader (Node 20.12+) replaces dotenv.
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {

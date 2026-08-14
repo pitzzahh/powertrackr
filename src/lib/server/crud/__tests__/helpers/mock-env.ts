@@ -2,14 +2,14 @@ import { existsSync } from "fs";
 import { resolve } from "path";
 
 // Load .env if present, but do not override already-set env vars. This file is
-// the vitest stand-in for `$env/static/private` (see the alias in
+// the vitest stand-in for `$app/env/private` (see the alias in
 // vitest.config.ts); Node's built-in loader (Node 20.12+) replaces dotenv.
 const envPath = resolve(process.cwd(), ".env");
 if (existsSync(envPath)) {
   process.loadEnvFile(envPath);
 }
 
-// Export the values expected by `$env/static/private`.
+// Export the values expected by `$app/env/private`.
 export const TEST_DATABASE_URL: string | undefined = process.env.TEST_DATABASE_URL;
 
 // Only throw error if TEST_DATABASE_URL is missing
@@ -33,3 +33,9 @@ export const GITHUB_CLIENT_SECRET: string | undefined =
  */
 export const PLUNK_BASE_URL = "https://next-api.useplunk.com";
 export const PLUNK_SECRET_KEY: string | undefined = undefined;
+
+// Optional vars consumed by email helpers; undefined keeps `??`/`||` fallbacks
+// intact (same semantics as the old `$env/dynamic/private`).
+export const BASE_URL: string | undefined = undefined;
+export const PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES: string | undefined = undefined;
+export const PASSWORD_RESET_TIMEOUT_MINUTES: string | undefined = undefined;

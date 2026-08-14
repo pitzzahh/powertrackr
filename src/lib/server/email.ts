@@ -5,10 +5,16 @@
  *  - create an email verification request in the DB and send verification email
  *  - create a password reset session in the DB and send password reset email
  */
+import {
+  PLUNK_BASE_URL,
+  PLUNK_SECRET_KEY,
+  BASE_URL,
+  PASSWORD_RESET_TIMEOUT_MINUTES,
+} from "$app/env/private";
+import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 
-import { env } from "$env/dynamic/private";
-import { addEmailVerificationRequest } from "$/server/crud/email-verification-request-crud";
-import { addPasswordResetSession } from "$/server/crud/password-reset-session-crud";
+import { addEmailVerificationRequest } from "#lib/server/crud/email-verification-request-crud.js";
+import { addPasswordResetSession } from "#lib/server/crud/password-reset-session-crud.js";
 import { generateRandomOTP } from "./encryption";
 import type {
   PlunkTemplate,
@@ -16,11 +22,12 @@ import type {
   PlunkAPIResponse,
   PlunkListData,
   PlunkSendResponseData,
-} from "$/types/plunk";
+} from "#lib/types/plunk.js";
 
 /** Whether the Plunk client is configured (secret key present) */
-const PLUNK_BASE = env.PLUNK_BASE_URL ?? "https://api.plunk.com";
-const PLUNK_KEY = env.PLUNK_SECRET_KEY ?? undefined;
+const PLUNK_BASE = PLUNK_BASE_URL ?? "https://api.plunk.com";
+
+const PLUNK_KEY = PLUNK_SECRET_KEY ?? undefined;
 
 /** Internal helper to attach auth header (when available) */
 function getAuthHeaders(): Record<string, string> {
@@ -97,7 +104,7 @@ async function sendVerificationEmail(
     console.warn("PLUNK_SECRET_KEY not set. Skipping sending verification email.");
     return null;
   }
-  const verifyLink = `${env.BASE_URL ?? origin ?? "http://localhost:5173"}/auth?act=verify-email&code=${code}`;
+  const verifyLink = `${BASE_URL ?? origin ?? "http://localhost:5173"}/auth?act=verify-email&code=${code}`;
 
   try {
     // Ensure the contact exists (best-effort)
@@ -118,6 +125,7 @@ async function sendVerificationEmail(
         : Array.isArray(rawData)
           ? (rawData as PlunkTemplate[])
           : [];
+
     const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "email verification");
     if (tpl && tpl.id) {
       // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
@@ -203,7 +211,7 @@ async function sendPasswordResetEmail(
     return null;
   }
 
-  const resetLink = `${env.BASE_URL ?? baseUrl ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`;
+  const resetLink = `${BASE_URL ?? baseUrl ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`;
   // Try to fetch templates and find the one we want
   try {
     const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
@@ -218,6 +226,7 @@ async function sendPasswordResetEmail(
         : Array.isArray(rawData)
           ? (rawData as PlunkTemplate[])
           : [];
+
     const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "password reset");
     if (tpl && tpl.id) {
       // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
@@ -266,7 +275,7 @@ async function sendPasswordResetEmail(
   // Fallback: send a simple inline message
   try {
     const subject = "Reset your password";
-    const body = `<p>Your password reset code is <strong>${code}</strong>, or use this link ${resetLink}. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${env.BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
+    const body = `<p>Your password reset code is <strong>${code}</strong>, or use this link ${resetLink}. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
     const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
       method: "POST",
       body: JSON.stringify({ to: email, subject, body }),
@@ -290,7 +299,7 @@ export async function createEmailVerification(
   userId: string,
   email: string,
   origin: string,
-  timeoutMinutes = Number(env.PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+  timeoutMinutes = Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
@@ -322,7 +331,7 @@ export async function createPasswordReset(
   userId: string,
   email: string,
   baseUrl: string,
-  timeoutMinutes = Number(env.PASSWORD_RESET_TIMEOUT_MINUTES || 1)
+  timeoutMinutes = Number(PASSWORD_RESET_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
