@@ -7,6 +7,7 @@
   import { Loader, Zap } from "#lib/assets/icons.js";
   import * as Card from "#lib/components/ui/card/index.js";
   import { ChartConsumption } from "#routes/(components)/index.js";
+  import PageHeader from "#routes/(components)/page-header.svelte";
 
   let { data } = $props();
 
@@ -23,12 +24,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex items-center justify-between">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Consumption</h1>
-      <p class="text-muted-foreground">Monitor your energy usage and sub-meter readings</p>
-    </div>
-  </div>
+  <PageHeader
+    eyebrow="Monitoring"
+    title="Consumption"
+    description="Monitor your energy usage and sub-meter readings"
+  />
 
   {@render Metrics()}
 
@@ -94,15 +94,15 @@
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
-        <Zap class="h-5 w-5" />
+        <Zap class="h-5 w-5 text-primary" />
         <span class="text-lg">Total Consumption</span>
       </div>
       {#if consumptionStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
       {:else if consumptionStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0 kWh</div>
+        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">0 kWh</div>
       {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
+        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">
           <span class="text-primary">{formatEnergy(consumptionStore.summary?.totalKWh || 0)}</span>
         </div>
       {/if}

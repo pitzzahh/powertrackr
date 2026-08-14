@@ -18,7 +18,7 @@
 
   function signClass(
     value?: number | null,
-    positiveClass = "text-green-600",
+    positiveClass = "text-success",
     negativeClass = "text-destructive"
   ): string {
     const v = value ?? 0;
@@ -40,6 +40,7 @@
     toAreaChartData,
     toBarChartData,
   } from "#routes/(components)/index.js";
+  import PageHeader from "#routes/(components)/page-header.svelte";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
@@ -71,12 +72,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex items-center justify-between">
-    <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-muted-foreground">Overview of your energy billing and savings</p>
-    </div>
-  </div>
+  <PageHeader
+    eyebrow="Overview"
+    title="Dashboard"
+    description="Your energy billing and savings at a glance"
+  />
 
   <!-- Mobile-only compact New Bill card (inline with content, not fixed) -->
   <div class="md:hidden">
@@ -155,15 +155,15 @@
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
-        <Banknote class="h-5 w-5" />
+        <Banknote class="h-5 w-5 text-primary" />
         <span class="text-lg">Current</span>
       </div>
       {#if billingStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
       {:else if billingStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
+        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">0</div>
       {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
+        <div class="text-5xl font-bold tabular-nums md:text-4xl lg:text-5xl">
           {formatNumber(billingStore.summary?.current || 0)}
         </div>
       {/if}

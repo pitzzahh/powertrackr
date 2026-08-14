@@ -14,6 +14,7 @@
   import { formatDate, formatEnergy, formatNumber } from "#lib/utils/format.js";
   import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { isHttpError } from "@sveltejs/kit";
+  import PageHeader from "#routes/(components)/page-header.svelte";
   import { watch } from "runed";
 
   // Queries drive the page reactively: `.loading`, `.error`, `.current`.
@@ -60,14 +61,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="space-y-2">
-      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">My Meter</h1>
-      <p class="text-muted-foreground">
-        Submit your reading when the owner opens a billing period.
-      </p>
-    </div>
-  </div>
+  <PageHeader
+    eyebrow="Tenant Portal"
+    title="My Meter"
+    description="Submit your reading when the owner opens a billing period."
+  />
 
   {#if myMeterQuery.error}
     <div class="flex items-center justify-center py-8 text-muted-foreground">

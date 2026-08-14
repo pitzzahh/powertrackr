@@ -90,7 +90,7 @@
       size={collapsed ? "icon" : "default"}
       class={[
         {
-          "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground data-[active=true]:text-primary": true,
+          "relative flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg no-underline! transition-colors before:absolute before:top-1/2 before:left-0 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-primary before:transition-opacity data-[active=false]:text-muted-foreground data-[active=false]:before:opacity-0 data-[active=false]:hover:bg-accent/60 data-[active=false]:hover:text-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:before:opacity-100": true,
           "justify-start": !collapsed,
         },
       ]}

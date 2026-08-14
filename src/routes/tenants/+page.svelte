@@ -10,6 +10,7 @@
   import { formatDate } from "#lib/utils/format.js";
   import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { isHttpError } from "@sveltejs/kit";
+  import PageHeader from "#routes/(components)/page-header.svelte";
 
   // The query drives the page reactively. Mutations refresh it server-side
   // (single-flight), so `current` updates without any client-side re-fetch.
@@ -39,13 +40,11 @@
 </script>
 
 <div class="space-y-6 pb-4">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="space-y-2">
-      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Tenants</h1>
-      <p class="text-muted-foreground">
-        Create tenant accounts — each tenant is a sub-meter you can bill against.
-      </p>
-    </div>
+  <PageHeader
+    eyebrow="Sub-meters"
+    title="Tenants"
+    description="Each tenant is a sub-meter you can bill against."
+  >
     <Button
       type="button"
       class="w-full justify-center sm:w-auto"
@@ -54,7 +53,7 @@
       <CirclePlus class="size-4" />
       Add Tenant
     </Button>
-  </div>
+  </PageHeader>
 
   {#if tenantsQuery.error}
     <div class="flex items-center justify-center py-8 text-muted-foreground">

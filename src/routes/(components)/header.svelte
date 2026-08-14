@@ -174,7 +174,7 @@
     </div>
   </header>
 
-  <Sheet.Content side="left" class="flex h-full w-full flex-col bg-muted p-4">
+  <Sheet.Content side="left" class="flex h-full w-full flex-col bg-sidebar p-4">
     {@render logo({ className: "py-6 w-fit mx-auto", viewTransitionName: "logo-mobile" })}
     <SidebarContent bind:open={openMenu} {user} isMobileSheet={true} />
   </Sheet.Content>

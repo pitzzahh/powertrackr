@@ -89,12 +89,12 @@
     {
       label: "Balance",
       value: formatNumber(row.original.balance),
-      class: `font-semibold ${row.original.balance > 2000 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`,
+      class: `font-semibold ${row.original.balance > 2000 ? "text-destructive" : "text-success"}`,
     },
     {
       label: "Status",
       value: convertToNormalText(row.original.status),
-      class: `font-semibold ${row.original.status === "paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`,
+      class: `font-semibold ${row.original.status === "paid" ? "text-success" : "text-destructive"}`,
     },
     {
       label: "Pay Per kWh",
