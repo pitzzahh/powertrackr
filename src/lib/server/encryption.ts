@@ -73,9 +73,20 @@ function concatBytes(...chunks: Uint8Array[]): Uint8Array {
 
 const key = decodeHex(ENCRYPTION_KEY);
 
+// aes-128-gcm needs a 16-byte key, aes-256-gcm a 32-byte one. `.env.example`
+// documents `openssl rand -hex 32` (32 bytes), so accept both and fail fast at
+// startup on any other length instead of a cryptic RangeError on first use.
+if (key.byteLength !== 16 && key.byteLength !== 32) {
+  throw new Error(
+    `ENCRYPTION_KEY must be 32 or 64 hex characters (16 or 32 bytes), got ${ENCRYPTION_KEY.length} characters (${key.byteLength} bytes). Generate one with: openssl rand -hex 32`
+  );
+}
+
+const CIPHER = key.byteLength === 16 ? "aes-128-gcm" : "aes-256-gcm";
+
 export function encrypt(data: Uint8Array): Uint8Array {
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv("aes-128-gcm", key, iv);
+  const cipher = crypto.createCipheriv(CIPHER, key, iv);
   return concatBytes(iv, cipher.update(data), cipher.final(), cipher.getAuthTag());
 }
 
@@ -87,7 +98,7 @@ export function decrypt(encrypted: Uint8Array): Uint8Array {
   if (encrypted.byteLength < 33) {
     throw new Error("Invalid data");
   }
-  const decipher = crypto.createDecipheriv("aes-128-gcm", key, encrypted.slice(0, 16));
+  const decipher = crypto.createDecipheriv(CIPHER, key, encrypted.slice(0, 16));
   decipher.setAuthTag(encrypted.slice(encrypted.byteLength - 16));
   return concatBytes(
     decipher.update(encrypted.slice(16, encrypted.byteLength - 16)),

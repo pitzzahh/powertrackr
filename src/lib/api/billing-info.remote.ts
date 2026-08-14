@@ -4,7 +4,6 @@ import {
   billFormSchema,
   updateBillingInfoSchema,
   getBillingInfosSchema,
-  getBillingInfoSchema,
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
   finalizeBillingSchema,
@@ -95,16 +94,6 @@ export const getExtendedBillingInfos = query(
     });
   }
 );
-
-// Query to get a single billing info by id
-export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
-  return await getBillingInfoByCrud({
-    query: { id },
-    options: {
-      fields: COMMON_FIELDS,
-    },
-  });
-});
 
 // Query to get billing summary for the authenticated user
 export const getBillingSummary = query(getBillingInfosSchema, async (): Promise<BillingSummary> => {

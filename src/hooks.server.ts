@@ -34,6 +34,16 @@ const handleAuth: Handle = async ({ event, resolve }) => {
     return resolve(event);
   }
 
+  // Remote function calls (/_app/remote/*) enforce their own auth inside each
+  // handler (see src/lib/api/*.remote.ts); the request-level redirects below
+  // apply to page navigations only. They must not intercept remote calls:
+  // login/register are anonymous by design, and 2FA-pending users need to reach
+  // getCurrentUser (landing nav) and checkpoint2FA. `isRemoteRequest` is
+  // SvelteKit's sanctioned signal for this distinction.
+  if (event.isRemoteRequest) {
+    return resolve(event);
+  }
+
   // Require authentication for other paths
   if (!event.locals.user || !event.locals.session) {
     redirect(307, "/auth?act=login");

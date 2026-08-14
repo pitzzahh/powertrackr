@@ -39,7 +39,7 @@
     showSuccess,
     showWarning,
   } from "#lib/components/toast/index.js";
-  import { PUBLIC_RESEND_COOLDOWN_SECONDS } from "$app/env/public";
+  import { RESEND_COOLDOWN_SECONDS } from "$app/env/public";
   import { watch } from "runed";
   let {
     code,
@@ -56,7 +56,7 @@
   });
 
   const id = $props.id();
-  const resendCooldownSeconds = Number(PUBLIC_RESEND_COOLDOWN_SECONDS ?? 60);
+  const resendCooldownSeconds = Number(RESEND_COOLDOWN_SECONDS ?? 60);
 
   $effect(() => {
     const cookies = document.cookie.split(";").map((c) => c.trim());

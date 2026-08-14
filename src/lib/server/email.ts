@@ -11,7 +11,7 @@ import {
   BASE_URL,
   PASSWORD_RESET_TIMEOUT_MINUTES,
 } from "$app/env/private";
-import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
+import { EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 
 import { addEmailVerificationRequest } from "#lib/server/crud/email-verification-request-crud.js";
 import { addPasswordResetSession } from "#lib/server/crud/password-reset-session-crud.js";
@@ -299,7 +299,7 @@ export async function createEmailVerification(
   userId: string,
   email: string,
   origin: string,
-  timeoutMinutes = Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+  timeoutMinutes = Number(EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
 ) {
   const code = generateRandomOTP();
   const expiresAt = new Date(Date.now() + timeoutMinutes * 60 * 1000);
