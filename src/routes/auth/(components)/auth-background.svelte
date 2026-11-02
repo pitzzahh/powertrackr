@@ -59,9 +59,7 @@
       <div
         class="relative flex h-40 w-40 items-center justify-center rounded-3xl border border-white/40 bg-white/10 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-black/20"
       >
-        <Zap
-          class="h-20 w-20 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)] dark:text-yellow-400"
-        />
+        <Zap class="h-20 w-20 text-accent-foreground drop-shadow-[0_0_15px_var(--color-primary)]" />
       </div>
 
       <!-- Floating Satellite 1 -->
@@ -70,8 +68,8 @@
         "-top-12 -right-16",
         "6s",
         "1s",
-        "bg-blue-100 dark:bg-blue-500/20",
-        "text-blue-600 dark:text-blue-400",
+        "bg-primary/15 text-accent-foreground",
+        "text-accent-foreground",
         ["w-12", "w-8"]
       )}
 

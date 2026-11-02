@@ -4,7 +4,7 @@
 
 <div class="flex items-center gap-3 text-muted-foreground">
   {#if index}
-    <span class="font-mono text-xs text-primary">{index}</span>
+    <span class="font-mono text-xs text-accent-foreground">{index}</span>
     <span class="h-3.5 w-px bg-border" aria-hidden="true"></span>
   {/if}
   <p class="font-mono text-[11px] font-medium tracking-[0.3em] uppercase">{label}</p>

@@ -111,7 +111,7 @@
         <div class="flex shrink-0 items-center gap-2">
           <div class="rounded-md bg-muted/50 px-3 py-1.5">
             <span class="text-sm font-medium">
-              Page <span class="font-semibold text-primary"
+              Page <span class="font-semibold text-accent-foreground"
                 >{table.atoms.pagination.get().pageIndex + 1}</span
               >
               of

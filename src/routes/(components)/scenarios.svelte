@@ -59,7 +59,7 @@
         >
           <div class="flex items-center justify-between gap-3">
             <div
-              class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 transition-colors group-hover:bg-primary/20"
+              class="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-accent-foreground ring-1 ring-primary/15 transition-colors group-hover:bg-primary/20"
             >
               <scenario.Icon class="size-5" />
             </div>

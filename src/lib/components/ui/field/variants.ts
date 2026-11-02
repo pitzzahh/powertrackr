@@ -20,7 +20,7 @@ export const field = tv({
 			"text-left font-normal text-muted-foreground text-sm leading-normal",
 			"group-has-data-[orientation=horizontal]/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
 			"last:mt-0 nth-last-2:-mt-1",
-			"[&>a:hover]:text-foreground [&>a]:underline [&>a]:underline-offset-4",
+			"[&>a:hover]:text-accent-foreground [&>a]:underline [&>a]:underline-offset-4",
 		],
 		separator: "relative -my-2 h-5 text-muted-foreground text-xs",
 		separatorContent: "relative mx-auto block w-fit bg-background px-2",

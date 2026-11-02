@@ -55,7 +55,7 @@
           class="group -mx-4 grid items-start gap-4 border-t border-border/60 px-4 py-7 transition-colors hover:bg-muted/20 sm:grid-cols-[auto_1fr_auto] sm:gap-8"
         >
           <div
-            class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 transition-colors group-hover:bg-primary/20"
+            class="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-accent-foreground ring-1 ring-primary/15 transition-colors group-hover:bg-primary/20"
           >
             <feature.Icon class="size-5" />
           </div>

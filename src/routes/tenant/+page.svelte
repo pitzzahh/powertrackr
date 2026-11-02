@@ -122,7 +122,7 @@
             class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
           >
             <span class="font-medium">Amount due</span>
-            <span class="min-w-0 text-right font-semibold text-primary tabular-nums"
+            <span class="min-w-0 text-right font-semibold text-accent-foreground tabular-nums"
               >{formatNumber(billing.amount)}</span
             >
           </div>

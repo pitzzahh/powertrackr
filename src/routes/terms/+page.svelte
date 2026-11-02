@@ -13,7 +13,8 @@
       <h1 class="mt-4 text-3xl font-semibold tracking-tight md:text-5xl">Terms & Conditions</h1>
       <a
         href={resolve("")}
-        class="mt-3 inline-flex text-sm font-medium text-primary hover:underline">Back to Home</a
+        class="mt-3 inline-flex text-sm font-medium text-accent-foreground hover:underline"
+        >Back to Home</a
       >
 
       <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
