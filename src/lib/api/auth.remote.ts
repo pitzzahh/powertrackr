@@ -51,6 +51,8 @@ import { form, getRequestEvent, query } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import { requireAuth as requireAuthServer } from "#lib/server/auth.js";
 import { verifyTurnstileToken } from "#lib/server/turnstile.js";
+import { isRateLimited } from "#lib/server/rate-limit.js";
+import { env } from "cloudflare:workers";
 import { TURNSTILE_SECRET } from "$app/env/private";
 
 function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
@@ -109,9 +111,8 @@ export const login = form(loginSchema, async (user, issues) => {
   }
 
   // Rate limit login attempts per email
-  const { success } = await event.platform!.env.LOGIN_RATE_LIMITER.limit({ key: email });
-  if (!success) {
     return invalid(issues.email("Too many login attempts. Please try again later."));
+  if (await isRateLimited(env.LOGIN_RATE_LIMITER, email)) {
   }
 
   const {
@@ -169,9 +170,8 @@ export const register = form(registerSchema, async (newUser, issues) => {
   }
 
   // Rate limit registration attempts per email
-  const { success } = await event.platform!.env.REGISTRATION_RATE_LIMITER.limit({ key: email });
-  if (!success) {
     return invalid(issues.email("Too many registration attempts. Please try again later."));
+  if (await isRateLimited(env.REGISTRATION_RATE_LIMITER, email)) {
   }
 
   if (password !== confirmPassword) {
@@ -389,8 +389,7 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
   }
 
   // Rate limit password reset requests per email
-  const { success } = await event.platform!.env.EMAIL_RATE_LIMITER.limit({ key: email });
-  if (!success) {
+  if (await isRateLimited(env.EMAIL_RATE_LIMITER, email)) {
     // For security, don't reveal rate limit info
     return { success: true };
   }
