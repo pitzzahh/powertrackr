@@ -1,21 +1,18 @@
 <script lang="ts">
-  import type { HTMLLiAttributes } from "svelte/elements";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithElementRef } from "#lib/index.js";
+import type { Snippet } from "svelte";
+import type { HTMLLiAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { breadcrumbStyles } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLLiAttributes> = $props();
+let {
+	children,
+	class: classProp,
+	...rest
+}: { children?: Snippet; class?: string } & HTMLLiAttributes = $props();
+
+const s = $derived(breadcrumbStyles());
 </script>
 
-<li
-  bind:this={ref}
-  data-slot="breadcrumb-item"
-  class={cn("inline-flex items-center gap-1.5", className)}
-  {...restProps}
->
-  {@render children?.()}
+<li {...rest} data-slot="breadcrumb-item" class={cn(s.item(), classProp)}>
+	{@render children?.()}
 </li>

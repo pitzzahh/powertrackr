@@ -1,39 +1,45 @@
 <script lang="ts">
-  import CheckIcon from "@lucide/svelte/icons/check";
-  import { Select as SelectPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithoutChild } from "#lib/index.js";
+import { Select as SelectPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { menu } from "#lib/menu.js";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    value,
-    label,
-    children: childrenProp,
-    ...restProps
-  }: WithoutChild<SelectPrimitive.ItemProps> = $props();
+let {
+	class: classProp,
+	value,
+	label,
+	children: childrenProp,
+	...rest
+}: SelectPrimitive.ItemProps = $props();
+
+const styles = menu();
 </script>
 
 <SelectPrimitive.Item
-  bind:ref
-  {value}
-  data-slot="select-item"
-  class={cn(
-    "relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 ps-2 pe-8 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-accent data-highlighted:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
-    className
-  )}
-  {...restProps}
+	{value}
+	{label}
+	{...rest}
+	data-slot="select-item"
+	class={cn(styles.item(), classProp)}
 >
-  {#snippet children({ selected, highlighted })}
-    <span class="absolute inset-e-2 flex size-3.5 items-center justify-center">
-      {#if selected}
-        <CheckIcon class="size-4" />
-      {/if}
-    </span>
-    {#if childrenProp}
-      {@render childrenProp({ selected, highlighted })}
-    {:else}
-      {label || value}
-    {/if}
-  {/snippet}
+	{#snippet children({ selected, highlighted })}
+		<!-- One wrapper, so a leading icon sits beside its label instead of spreading with the tick. -->
+		<span class="flex min-w-0 items-center gap-2">
+			{#if childrenProp}
+				{@render childrenProp({ selected, highlighted })}
+			{:else}
+				{label || value}
+			{/if}
+		</span>
+		<!-- Always mounted so the tick draws in when the row is chosen. -->
+		<svg viewBox="0 0 14 14" fill="none" aria-hidden="true" data-on={selected} class={styles.check()}>
+			<path
+				d="M3 7.4 5.6 10 11 4.2"
+				pathLength="1"
+				stroke="currentColor"
+				stroke-width="1.6"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			/>
+		</svg>
+	{/snippet}
 </SelectPrimitive.Item>

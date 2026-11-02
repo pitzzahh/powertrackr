@@ -1,10 +1,7 @@
-import Root from "./toggle-group.svelte";
-import Item from "./toggle-group-item.svelte";
-
-export {
-  Root,
-  Item,
-  //
-  Root as ToggleGroup,
-  Item as ToggleGroupItem,
-};
+export { default as ToggleGroup } from "./toggle-group.svelte";
+export { default as ToggleGroupItem } from "./toggle-group-item.svelte";
+export { type ToggleGroupContext } from "./context";
+export { attachSegmentPill } from "./segment";
+export { toggleGroup, type ToggleGroupVariant, type ToggleGroupSize } from "./variants";
+export { default as Root } from "./toggle-group.svelte";
+export { default as Item } from "./toggle-group-item.svelte";

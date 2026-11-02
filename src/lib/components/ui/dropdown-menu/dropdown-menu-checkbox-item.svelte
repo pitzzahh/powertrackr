@@ -1,42 +1,44 @@
 <script lang="ts">
-  import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-  import CheckIcon from "@lucide/svelte/icons/check";
-  import MinusIcon from "@lucide/svelte/icons/minus";
-  import { cn } from "#lib/utils/style.js";
-  import type { Snippet } from "svelte";
-  import type { WithoutChildrenOrChild } from "#lib/index.js";
+import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
+import type { Snippet } from "svelte";
+import { cn } from "#lib/cn.js";
+import { menu } from "#lib/menu.js";
 
-  let {
-    ref = $bindable(null),
-    checked = $bindable(false),
-    indeterminate = $bindable(false),
-    class: className,
-    children: childrenProp,
-    ...restProps
-  }: WithoutChildrenOrChild<DropdownMenuPrimitive.CheckboxItemProps> & {
-    children?: Snippet;
-  } = $props();
+let {
+	class: classProp,
+	checked = $bindable(false),
+	children: label,
+	closeOnSelect = false,
+	...rest
+}: Omit<DropdownMenuPrimitive.CheckboxItemProps, "children"> & {
+	children?: Snippet;
+} = $props();
+
+const styles = menu();
 </script>
 
 <DropdownMenuPrimitive.CheckboxItem
-  bind:ref
-  bind:checked
-  bind:indeterminate
-  data-slot="dropdown-menu-checkbox-item"
-  class={cn(
-    "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 ps-8 pe-2 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-    className
-  )}
-  {...restProps}
+	bind:checked
+	{closeOnSelect}
+	{...rest}
+	data-slot="dropdown-menu-checkbox-item"
+	data-inset=""
+	class={cn(styles.item(), classProp)}
 >
-  {#snippet children({ checked, indeterminate })}
-    <span class="pointer-events-none absolute inset-s-2 flex size-3.5 items-center justify-center">
-      {#if indeterminate}
-        <MinusIcon class="size-4" />
-      {:else}
-        <CheckIcon class={cn("size-4", !checked && "text-transparent")} />
-      {/if}
-    </span>
-    {@render childrenProp?.()}
-  {/snippet}
+	{#snippet children({ checked: on })}
+		<span class={styles.indicator()}>
+			<!-- Always mounted so the tick can draw in and back out. -->
+			<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" data-on={on} class={styles.check()}>
+				<path
+					d="m3.5 8.5 3 3 6-7"
+					pathLength="1"
+					stroke="currentColor"
+					stroke-width="1.6"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
+			</svg>
+		</span>
+		{@render label?.()}
+	{/snippet}
 </DropdownMenuPrimitive.CheckboxItem>

@@ -116,7 +116,7 @@
   {/if}
 </div>
 <div in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
-  <ScrollArea class="h-full max-h-[calc(100vh-12.25rem)]">
+  <ScrollArea maxHeight="none" class="h-full max-h-[calc(100vh-12.25rem)]">
     <div
       class={[
         "h-full overflow-auto bg-muted",

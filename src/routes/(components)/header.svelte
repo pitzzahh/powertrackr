@@ -124,38 +124,36 @@
                     {quickAction.label}
                   </span>
                 </Button>
-                <Sheet.Portal>
-                  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-                    <Sheet.Header class="flex flex-row items-center justify-between border-b pr-10">
-                      <div class="flex flex-col">
-                        <Sheet.Title>Add new Bill</Sheet.Title>
-                        <Sheet.Description>Enter billing info</Sheet.Description>
-                      </div>
-                      {#if latestBillingStore.status === "fetching"}
-                        <Badge
-                          variant="secondary"
-                          class="flex h-6 animate-pulse items-center text-sm font-medium"
-                        >
-                          <Loader class="mr-1 h-3.5 w-3.5 animate-spin" />
-                          Filling form with previous data...
-                        </Badge>
+                <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
+                  <Sheet.Header class="flex flex-row items-center justify-between border-b pr-10">
+                    <div class="flex flex-col">
+                      <Sheet.Title>Add new Bill</Sheet.Title>
+                      <Sheet.Description>Enter billing info</Sheet.Description>
+                    </div>
+                    {#if latestBillingStore.status === "fetching"}
+                      <Badge
+                        variant="secondary"
+                        class="flex h-6 animate-pulse items-center text-sm font-medium"
+                      >
+                        <Loader class="mr-1 h-3.5 w-3.5 animate-spin" />
+                        Filling form with previous data...
+                      </Badge>
+                    {/if}
+                  </Sheet.Header>
+                  <ScrollArea maxHeight="none" class="min-h-0 flex-1">
+                    {@const latestBillingInfo = quickAction.data()}
+                    <div class="space-y-4 p-4 pb-8">
+                      {#if quickAction.label === "New Bill"}
+                        <BillingInfoForm
+                          action="add"
+                          callback={quickAction.callback}
+                          billingInfo={latestBillingInfo || undefined}
+                          bind:open={quickAction.open}
+                        />
                       {/if}
-                    </Sheet.Header>
-                    <ScrollArea class="min-h-0 flex-1">
-                      {@const latestBillingInfo = quickAction.data()}
-                      <div class="space-y-4 p-4 pb-8">
-                        {#if quickAction.label === "New Bill"}
-                          <BillingInfoForm
-                            action="add"
-                            callback={quickAction.callback}
-                            billingInfo={latestBillingInfo || undefined}
-                            bind:open={quickAction.open}
-                          />
-                        {/if}
-                      </div>
-                    </ScrollArea>
-                  </Sheet.Content>
-                </Sheet.Portal>
+                    </div>
+                  </ScrollArea>
+                </Sheet.Content>
               </Sheet.Root>
             {/if}
           {/each}

@@ -409,10 +409,7 @@
       {/snippet}
     </Dialog.Trigger>
   {/if}
-  <Dialog.Content
-    class="h-[70vh] overflow-hidden p-0 md:h-[75vh] md:max-w-175 lg:max-w-350"
-    trapFocus={false}
-  >
+  <Dialog.Content class="h-[70vh] overflow-hidden p-0 md:h-[75vh] md:max-w-175 lg:max-w-350">
     <Dialog.Title class="sr-only">Settings</Dialog.Title>
     <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
     <Sidebar.Provider class="h-full min-h-0 items-start">
@@ -466,7 +463,7 @@
             </Breadcrumb.Root>
           </div>
         </header>
-        <ScrollArea class="h-72 flex-1 rounded-md">
+        <ScrollArea maxHeight="none" class="h-72 flex-1 rounded-md">
           <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
             <div class="flex flex-1 flex-col gap-4">
               {#if active_setting === "Import Data"}
@@ -567,7 +564,12 @@
             <span>{file.name}</span>
             <span class="text-xs text-muted-foreground">{FileDropZone.displaySize(file.size)}</span>
           </div>
-          <Button variant="hover-text-destructive" size="icon" onclick={() => clearImport()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="hover:text-destructive"
+            onclick={() => clearImport()}
+          >
             <X />
           </Button>
         {/if}
@@ -587,7 +589,7 @@
         <Alert.Root variant="destructive" class="mt-4">
           <Alert.Title>Validation errors</Alert.Title>
           <Alert.Description>
-            {#each importErrors as err}
+            {#each importErrors as err, i (i)}
               <div>{err}</div>
             {/each}
           </Alert.Description>
@@ -609,7 +611,7 @@
             </TableBody>
           </Table>
 
-          <ScrollArea class="h-72 rounded-md border bg-muted/10">
+          <ScrollArea maxHeight="none" class="h-72 rounded-md border bg-muted/10">
             <div class="p-4">
               <pre class="text-xs whitespace-pre-wrap">{JSON.stringify(
                   validatedItems,
@@ -673,7 +675,7 @@
       <Alert.Root variant="destructive" class="mt-4">
         <Alert.Title>Export errors</Alert.Title>
         <Alert.Description>
-          {#each exportErrors as err}
+          {#each exportErrors as err, i (i)}
             <div>{err}</div>
           {/each}
         </Alert.Description>
@@ -701,7 +703,7 @@
           </TableBody>
         </Table>
 
-        <ScrollArea class="h-72 rounded-md border bg-muted/10">
+        <ScrollArea maxHeight="none" class="h-72 rounded-md border bg-muted/10">
           <div class="p-4">
             <pre class="text-xs whitespace-pre-wrap">{exportJson}</pre>
           </div>

@@ -19,6 +19,7 @@
     FieldError,
   } from "#lib/components/ui/field/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { cn } from "#lib/utils/style.js";
   import { Loader, MessageCircle } from "#lib/assets/icons.js";
@@ -73,7 +74,7 @@
         placeholder="m@example.com"
         required
         autocomplete="email"
-        {...forgotPassword.fields.email.as("email")}
+        {...fieldInputProps(forgotPassword.fields.email.as("email"))}
       />
       <FieldError errors={forgotPassword.fields.email.issues()} />
     </Field>

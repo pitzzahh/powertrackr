@@ -1,24 +1,20 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLTdAttributes } from "svelte/elements";
+import type { Snippet } from "svelte";
+import type { HTMLTdAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { table } from "./variants";
+import { getTableStyle } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLTdAttributes> = $props();
+let {
+	children,
+	class: className,
+	...rest
+}: { children?: Snippet } & HTMLTdAttributes = $props();
+
+const style = getTableStyle();
+const classes = $derived(table(style()));
 </script>
 
-<td
-  bind:this={ref}
-  data-slot="table-cell"
-  class={cn(
-    "bg-clip-padding p-2 align-middle whitespace-nowrap has-[[role=checkbox]]:pe-0",
-    className
-  )}
-  {...restProps}
->
-  {@render children?.()}
+<td data-slot="table-cell" class={cn(classes.cell(), className)} {...rest}>
+	{@render children?.()}
 </td>

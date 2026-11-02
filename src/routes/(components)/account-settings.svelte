@@ -23,6 +23,8 @@
   import * as UnderlineTabs from "#lib/components/underline-tabs/index.js";
   import * as Field from "#lib/components/ui/field/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { cn } from "#lib/utils/style.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Separator } from "#lib/components/ui/separator/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
@@ -81,18 +83,22 @@
 
 {#if isDesktop.current}
   <Dialog.Root
-    bind:open={openAccountSettings}
-    onOpenChange={(open) => {
-      if (
-        !open &&
-        (overviewAsyncState === "processing" ||
-          passwordAsyncState === "processing" ||
-          deleteAsyncState === "processing")
-      ) {
-        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-        openAccountSettings = true;
+    bind:open={
+      () => openAccountSettings,
+      (open) => {
+        if (
+          !open &&
+          (overviewAsyncState === "processing" ||
+            passwordAsyncState === "processing" ||
+            deleteAsyncState === "processing")
+        ) {
+          showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+          openAccountSettings = true;
+        } else {
+          openAccountSettings = open;
+        }
       }
-    }}
+    }
   >
     {#if trigger}
       <Dialog.Trigger>
@@ -161,7 +167,7 @@
     </UnderlineTabs.List>
 
     <UnderlineTabs.Content value="overview" class="min-h-0 flex-1">
-      <ScrollArea orientation="vertical" class="h-full">
+      <ScrollArea maxHeight="none" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...updateUser.enhance(async ({ submit }) => {
@@ -269,13 +275,13 @@
                     </div>
                   </div>
                   <Badge
-                    class={[
+                    class={cn([
                       "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
                       {
                         "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
                           user?.emailVerified,
                       },
-                    ]}
+                    ])}
                   >
                     {user?.emailVerified ? "Verified" : "Pending"}
                   </Badge>
@@ -289,13 +295,13 @@
                     </div>
                   </div>
                   <Badge
-                    class={[
+                    class={cn([
                       "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
                       {
                         "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
                           user?.registeredTwoFactor,
                       },
-                    ]}
+                    ])}
                   >
                     {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
                   </Badge>
@@ -330,7 +336,7 @@
     </UnderlineTabs.Content>
 
     <UnderlineTabs.Content value="change-password" class="min-h-0 flex-1">
-      <ScrollArea orientation="vertical" class="h-full">
+      <ScrollArea maxHeight="none" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...changePassword.enhance(async ({ submit, element }) => {
@@ -455,7 +461,7 @@
     </UnderlineTabs.Content>
 
     <UnderlineTabs.Content value="security" class="min-h-0 flex-1">
-      <ScrollArea orientation="vertical" class="h-full">
+      <ScrollArea maxHeight="none" class="h-full">
         <div class="space-y-6 p-1 pr-3">
           <div class="space-y-4">
             <h4 class="text-sm font-medium tracking-wide text-muted-foreground uppercase">
@@ -483,13 +489,13 @@
                   </p>
                 </div>
                 <Badge
-                  class={[
+                  class={cn([
                     "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
                     {
                       "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400":
                         user?.registeredTwoFactor,
                     },
-                  ]}
+                  ])}
                 >
                   {user?.registeredTwoFactor ? "Enabled" : "Disabled"}
                 </Badge>
@@ -596,7 +602,7 @@
     </UnderlineTabs.Content>
 
     <UnderlineTabs.Content value="delete-account" class="min-h-0 flex-1">
-      <ScrollArea orientation="vertical" class="h-full">
+      <ScrollArea maxHeight="none" class="h-full">
         <div class="p-1 pr-3">
           <form
             {...deleteUser.enhance(async ({ submit }) => {
@@ -681,7 +687,7 @@
                     disabled={deleteAsyncState === "processing"}
                     class="text-center"
                     autocomplete="off"
-                    {...deleteUser.fields.confirmEmail.as("email")}
+                    {...fieldInputProps(deleteUser.fields.confirmEmail.as("email"))}
                   />
                   <Field.Description>
                     Enter your email address exactly as shown above to confirm deletion.
@@ -700,7 +706,6 @@
                     class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
                   >
                     <Checkbox
-                      id="delete-confirm-1"
                       bind:checked={deleteCheckbox1}
                       disabled={deleteAsyncState === "processing"}
                       class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"
@@ -721,7 +726,6 @@
                         class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
                       >
                         <Checkbox
-                          id="delete-confirm-2"
                           bind:checked={deleteCheckbox2}
                           disabled={deleteAsyncState === "processing"}
                           class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"
@@ -744,7 +748,6 @@
                         class="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-3 has-aria-checked:border-destructive has-aria-checked:bg-destructive/20"
                       >
                         <Checkbox
-                          id="delete-confirm-3"
                           bind:checked={deleteCheckbox3}
                           disabled={deleteAsyncState === "processing"}
                           class="data-[state=checked]:border-destructive data-[state=checked]:bg-destructive"

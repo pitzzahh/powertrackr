@@ -141,22 +141,29 @@
       </Tooltip.Provider>
     </div>
 
-    <Button size="icon" variant="hover-text-destructive" onclick={() => (dialog_open = true)}>
+    <Button
+      size="icon"
+      variant="ghost"
+      class="hover:text-destructive"
+      onclick={() => (dialog_open = true)}
+    >
       <Trash2 />
     </Button>
   </div>
 </div>
 
 <Dialog.Root
-  open={dialog_open}
-  onOpenChange={(value) => {
-    if (!value && app_state === "processing") {
-      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-      dialog_open = true;
-    } else {
-      dialog_open = value;
+  bind:open={
+    () => dialog_open,
+    (value) => {
+      if (!value && app_state === "processing") {
+        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+        dialog_open = true;
+      } else {
+        dialog_open = value;
+      }
     }
-  }}
+  }
 >
   <Dialog.Content>
     <Dialog.Header>

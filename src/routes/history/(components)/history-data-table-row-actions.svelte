@@ -204,13 +204,17 @@
 </div>
 
 <Dialog.Root
-  bind:open={open_view}
-  onOpenChange={(open) => {
-    if (!open && app_state === "processing") {
-      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-      open_view = true;
+  bind:open={
+    () => open_view,
+    (open) => {
+      if (!open && app_state === "processing") {
+        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+        open_view = true;
+      } else {
+        open_view = open;
+      }
     }
-  }}
+  }
 >
   {#if active_dialog_content === "view"}
     <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-250">
@@ -224,7 +228,7 @@
           <span class="font-mono text-primary">{row.original.dateFormatted}</span>
         </Dialog.Description>
       </Dialog.Header>
-      <ScrollArea class="max-h-[60vh] pr-2.5">
+      <ScrollArea maxHeight="none" class="max-h-[60vh] pr-2.5">
         <div class="max-w-full overflow-x-auto rounded-md border bg-background">
           <Table class="w-full">
             <TableBody>
@@ -308,37 +312,35 @@
 </Dialog.Root>
 
 <Sheet.Root bind:open={open_edit}>
-  <Sheet.Portal>
-    <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-      <Sheet.Header class="border-b">
-        <Sheet.Title>Edit billing info of {row.original.dateFormatted}</Sheet.Title>
-        <Sheet.Description>
-          Update the billing info details for billing info with id
-          <span class="font-mono text-primary">
-            #{row.original.id}
-          </span>
-        </Sheet.Description>
-      </Sheet.Header>
-      <ScrollArea class="min-h-0 flex-1">
-        <div class="space-y-4 p-4 pb-8">
-          <BillingInfoForm
-            action="update"
-            callback={(valid, _, metaData) => {
-              open_edit = false;
-              if (valid) {
-                billingStore.refresh();
-                consumptionStore.refresh();
-                showSuccess("Billing info updated successfully!");
-              } else {
-                showWarning("Failed to update billing info", metaData?.error);
-              }
-            }}
-            billingInfo={billingInfoToDto(row.original)}
-            {previousBillingInfo}
-            bind:open={open_edit}
-          />
-        </div>
-      </ScrollArea>
-    </Sheet.Content>
-  </Sheet.Portal>
+  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
+    <Sheet.Header class="border-b">
+      <Sheet.Title>Edit billing info of {row.original.dateFormatted}</Sheet.Title>
+      <Sheet.Description>
+        Update the billing info details for billing info with id
+        <span class="font-mono text-primary">
+          #{row.original.id}
+        </span>
+      </Sheet.Description>
+    </Sheet.Header>
+    <ScrollArea maxHeight="none" class="min-h-0 flex-1">
+      <div class="space-y-4 p-4 pb-8">
+        <BillingInfoForm
+          action="update"
+          callback={(valid, _, metaData) => {
+            open_edit = false;
+            if (valid) {
+              billingStore.refresh();
+              consumptionStore.refresh();
+              showSuccess("Billing info updated successfully!");
+            } else {
+              showWarning("Failed to update billing info", metaData?.error);
+            }
+          }}
+          billingInfo={billingInfoToDto(row.original)}
+          {previousBillingInfo}
+          bind:open={open_edit}
+        />
+      </div>
+    </ScrollArea>
+  </Sheet.Content>
 </Sheet.Root>
