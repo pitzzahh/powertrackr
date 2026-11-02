@@ -23,7 +23,7 @@
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
-  import type { Icon } from "@lucide/svelte";
+  import type { PhosphorIcon } from "#lib/assets/icons.js";
   import type { AsyncState } from "#lib/types/state.js";
   import { usePendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
 
@@ -173,7 +173,7 @@
   onclick: () => void;
   disabled: boolean;
   content: string;
-  BtnIcon: typeof Icon;
+  BtnIcon: PhosphorIcon;
 })}
   <Button
     variant="ghost"

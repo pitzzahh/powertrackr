@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import { Icon } from "@lucide/svelte";
+  import type { PhosphorIcon } from "#lib/assets/icons.js";
 
   export type HeaderProps = {
     user: App.Locals["user"];
@@ -9,7 +9,7 @@
     openMenu: boolean;
     quickActions: {
       visible: boolean;
-      icon: typeof Icon;
+      icon: PhosphorIcon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
       data: () => BillingInfoDTOWithSubMeters | null;
@@ -23,7 +23,7 @@
   import Logo from "#lib/components/logo.svelte";
   import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
   import * as Sheet from "#lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun, Loader } from "#lib/assets/icons.js";
+  import { Menu, Banknote, Moon, Sun, Loader } from "#lib/assets/icons.js";
   import SidebarContent from "#routes/(components)/sidebar-content.svelte";
   import { cn } from "#lib/utils/style.js";
   import { toggleMode } from "mode-watcher";
@@ -51,7 +51,7 @@
     quickActions: [
       {
         visible: true,
-        icon: PhilippinePeso,
+        icon: Banknote,
         label: "New Bill",
         open: false,
         data: () => latestBillingStore.latestBillingInfo,
