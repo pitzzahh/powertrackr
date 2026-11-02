@@ -33,8 +33,7 @@
   } from "#lib/components/toast/index.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import * as v from "valibot";
-  import { importBillFormSchema } from "#lib/validators/import.js";
+  import { parseImportItems } from "#lib/validators/import.js";
   import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { toast } from "svelte-sonner";
@@ -131,7 +130,7 @@
       } else {
         try {
           // Strict client-side validation using the shared import schema
-          const validated = v.parse(v.array(importBillFormSchema), items);
+          const validated = parseImportItems(items);
 
           // Compute counts for preview
           const payments = validated.reduce(

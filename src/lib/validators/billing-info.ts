@@ -58,3 +58,7 @@ export const deleteBillingInfoSchemaBatch = v.object({
 export const finalizeBillingSchema = v.object({
   billingInfoId: v.string(),
 });
+
+export function isBillFormValid(data: unknown): boolean {
+  return v.safeParse(billFormSchema, data).success;
+}
