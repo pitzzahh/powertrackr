@@ -3,7 +3,7 @@ import { getEmailVerificationRequestBy } from "#lib/server/crud/email-verificati
 import { createEmailVerification } from "#lib/server/email.js";
 import type { AuthAction } from "#routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "#lib/types/email-verification-request.js";
-import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
+import { EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 
 export async function load({
   url: { searchParams, origin, pathname },
@@ -64,7 +64,7 @@ export async function load({
           user.id,
           user.email,
           origin,
-          Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+          Number(EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
         );
       } else {
         console.warn("Email rate limit exceeded for initial verification:", user.email);
@@ -83,6 +83,6 @@ export async function load({
   return {
     action: act as AuthAction,
     code,
-    turnstileSiteKey: platform!.env.PUBLIC_TURNSTILE_SITE_KEY,
+    turnstileSiteKey: platform!.env.TURNSTILE_SITE_KEY,
   };
 }
