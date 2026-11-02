@@ -84,8 +84,6 @@
   import { watch } from "runed";
   import { showInspectorWarning, showLoading } from "#lib/components/toast/index.js";
   import Separator from "#lib/components/ui/separator/separator.svelte";
-  import { sineInOut } from "svelte/easing";
-  import { scale } from "svelte/transition";
   import type { AsyncState } from "#lib/types/state.js";
 
   let {
@@ -510,52 +508,46 @@
             {/snippet}
           </Popover.Trigger>
           <Popover.Content class="w-auto overflow-hidden p-0" align="start">
-            <Card.Root class="max-w-75 py-4">
-              <Card.Content class="px-4">
-                <Calendar
-                  type="single"
-                  bind:value={dateValue}
-                  captionLayout="dropdown"
-                  onValueChange={() => {
-                    openDatePicker = false;
-                    // Keep the action fields in sync when the user picks a date (use UTC ISO string)
-                    currentAction?.fields?.date?.set?.(
-                      dateValue
-                        ? new Date(
-                            Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
-                          ).toISOString()
-                        : ""
-                    );
-                  }}
-                  class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
-                />
-              </Card.Content>
-              <Card.Footer class="flex flex-wrap gap-2 border-t px-4 pt-4!">
-                {#each [{ label: "Today", value: 0 }, { label: "Tomorrow", value: 1 }, { label: "In 3 days", value: 3 }, { label: "In a week", value: 7 }, { label: "In 2 weeks", value: 14 }] as preset (preset.value)}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="flex-1"
-                    onclick={() => {
-                      openDatePicker = false;
-                      const utcToday = today("UTC");
-                      dateValue = utcToday?.add({
-                        days: preset.value,
-                      });
-                      currentAction?.fields?.date?.set?.(
-                        dateValue
-                          ? new Date(
-                              Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
-                            ).toISOString()
-                          : ""
-                      );
-                    }}
-                  >
-                    {preset.label}
-                  </Button>
-                {/each}
-              </Card.Footer>
-            </Card.Root>
+            <Calendar
+              type="single"
+              bind:value={dateValue}
+              captionLayout="dropdown"
+              onValueChange={() => {
+                openDatePicker = false;
+                // Keep the action fields in sync when the user picks a date (use UTC ISO string)
+                currentAction?.fields?.date?.set?.(
+                  dateValue
+                    ? new Date(
+                        Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                      ).toISOString()
+                    : ""
+                );
+              }}
+              class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
+            />
+            {#each [{ label: "Today", value: 0 }, { label: "Tomorrow", value: 1 }, { label: "In 3 days", value: 3 }, { label: "In a week", value: 7 }, { label: "In 2 weeks", value: 14 }] as preset (preset.value)}
+              <Button
+                variant="outline"
+                size="sm"
+                class="flex-1"
+                onclick={() => {
+                  openDatePicker = false;
+                  const utcToday = today("UTC");
+                  dateValue = utcToday?.add({
+                    days: preset.value,
+                  });
+                  currentAction?.fields?.date?.set?.(
+                    dateValue
+                      ? new Date(
+                          Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                        ).toISOString()
+                      : ""
+                  );
+                }}
+              >
+                {preset.label}
+              </Button>
+            {/each}
           </Popover.Content>
         </Popover.Root>
         <input
@@ -857,6 +849,10 @@
       {@render meterCard(entry)}
     {/each}
   </div>
+  {@render footer()}
+</form>
+
+{#snippet footer()}
   <!-- Submit Button -->
   <div class="mt-4 flex">
     <Button
@@ -880,4 +876,4 @@
       {/if}
     </Button>
   </div>
-</form>
+{/snippet}
