@@ -3,7 +3,7 @@
   import { useFileDropZoneTrigger } from "./file-drop-zone.svelte.js";
   import { displaySize } from "./index.js";
   import type { FileDropZoneTriggerProps } from "./types.js";
-  import UploadIcon from "@lucide/svelte/icons/upload";
+  import { UploadSimpleIcon as UploadIcon } from "#lib/assets/icons.js";
 
   let {
     ref = $bindable(null),

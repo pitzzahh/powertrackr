@@ -1,9 +1,9 @@
-import type { Icon } from "@lucide/svelte";
+import type { PhosphorIcon } from "#lib/assets/icons.js";
 
 export type FilterOption<T> = {
   value: T;
   label: T;
-  icon?: typeof Icon;
+  icon?: PhosphorIcon;
 };
 
 export type Filter<T> = {

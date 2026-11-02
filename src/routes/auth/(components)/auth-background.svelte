@@ -1,10 +1,10 @@
 <script lang="ts">
   import { Zap, Banknote, House, ListIcon } from "#lib/assets/icons.js";
-  import { Icon as LucideIcon } from "@lucide/svelte";
+  import type { PhosphorIcon } from "#lib/assets/icons.js";
 </script>
 
 {#snippet satellite(
-  Icon: typeof LucideIcon,
+  Icon: PhosphorIcon,
   positionClass: string,
   duration: string,
   delay: string,
