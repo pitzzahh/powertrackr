@@ -20,7 +20,7 @@ migrations_pattern = "migrations/*/migration.sql"
 # Public Turnstile site key (client-side widget); the matching secret is a
 # platform secret (TURNSTILE_SECRET, `wrangler secret put`) and never lives in
 # this file or any other committed source.
-PUBLIC_TURNSTILE_SITE_KEY = "0x4AAAAAAELwssik2qD1noZv"
+TURNSTILE_SITE_KEY = "0x4AAAAAAELwssik2qD1noZv"
 
 [[ratelimits]]
 name = "EMAIL_RATE_LIMITER"
