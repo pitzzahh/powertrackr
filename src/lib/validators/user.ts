@@ -23,6 +23,8 @@ export const userSchema = updateUserSchema;
 
 export const getUserSchema = v.string();
 
+export const GITHUB_ID_SCHEMA = v.number();
+
 export const deleteUserSchema = v.object({
   id: v.string(),
   confirmEmail: v.pipe(v.string(), v.email()),
