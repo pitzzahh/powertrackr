@@ -1,24 +1,24 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { table } from "./variants";
+import { getTableStyle } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLTableRowElement>> = $props();
+let {
+	ref = $bindable(null),
+	children,
+	class: className,
+	...rest
+}: {
+	ref?: HTMLTableRowElement | null;
+	children?: Snippet;
+} & HTMLAttributes<HTMLTableRowElement> = $props();
+
+const style = getTableStyle();
+const classes = $derived(table(style()));
 </script>
 
-<tr
-  bind:this={ref}
-  data-slot="table-row"
-  class={cn(
-    "border-b transition-colors data-[state=selected]:bg-muted hover:[&,&>svelte-css-wrapper]:[&>th,td]:bg-muted/50",
-    className
-  )}
-  {...restProps}
->
-  {@render children?.()}
+<tr bind:this={ref} data-slot="table-row" class={cn(classes.row(), className)} {...rest}>
+	{@render children?.()}
 </tr>

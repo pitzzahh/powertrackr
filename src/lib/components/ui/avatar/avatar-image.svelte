@@ -1,17 +1,22 @@
 <script lang="ts">
-  import { Avatar as AvatarPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
+import { Avatar as AvatarPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { getAvatar } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: AvatarPrimitive.ImageProps = $props();
+let { src, alt = "", class: classProp, ...rest }: AvatarPrimitive.ImageProps = $props();
+
+const avatar = getAvatar();
 </script>
 
-<AvatarPrimitive.Image
-  bind:ref
-  data-slot="avatar-image"
-  class={cn("aspect-square size-full", className)}
-  {...restProps}
-/>
+{#if src && avatar.status !== "error"}
+	<AvatarPrimitive.Image
+		{src}
+		{alt}
+		data-slot="avatar-image"
+		class={cn(
+			"absolute inset-0 size-full rounded-[inherit] object-cover opacity-0 transition-opacity duration-(--duration-base) ease-[var(--ease-ui-out)] data-[status=loaded]:opacity-100 motion-reduce:transition-none",
+			classProp,
+		)}
+		{...rest}
+	/>
+{/if}

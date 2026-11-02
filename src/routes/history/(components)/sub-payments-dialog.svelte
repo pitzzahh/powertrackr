@@ -72,12 +72,20 @@
   </div>
 {/snippet}
 
-<Dialog bind:open {onOpenChange}>
+<Dialog
+  bind:open={
+    () => open,
+    (value) => {
+      open = value;
+      onOpenChange(value);
+    }
+  }
+>
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Sub Payments for [{billingInfo.dateFormatted}]</DialogTitle>
     </DialogHeader>
-    <ScrollArea class="max-h-96 pr-2.5">
+    <ScrollArea maxHeight="none" class="max-h-96 pr-2.5">
       {#each billingInfo.subMeters as subMeter, index (subMeter.id)}
         <div
           class="space-y-2"

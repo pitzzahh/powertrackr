@@ -1,31 +1,29 @@
 <script lang="ts">
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
-  import type { Snippet } from "svelte";
-  import type { WithElementRef } from "#lib/index.js";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { buttonGroup } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    child,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-    child?: Snippet<[{ props: Record<string, unknown> }]>;
-  } = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	child,
+	children,
+	...rest
+}: HTMLAttributes<HTMLDivElement> & {
+	ref?: HTMLDivElement | null;
+	child?: Snippet<[{ props: Record<string, unknown> }]>;
+} = $props();
 
-  const mergedProps = $derived({
-    ...restProps,
-    class: cn(
-      "bg-muted flex items-center gap-2 rounded-md border px-4 text-sm font-medium shadow-xs [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-      className
-    ),
-  });
+const merged = $derived({
+	...rest,
+	class: cn(buttonGroup().text(), classProp),
+	"data-slot": "button-group-text",
+});
 </script>
 
 {#if child}
-  {@render child({ props: mergedProps })}
+	{@render child({ props: merged })}
 {:else}
-  <div bind:this={ref} {...mergedProps}>
-    {@render mergedProps.children?.()}
-  </div>
+	<div bind:this={ref} {...merged}>{@render children?.()}</div>
 {/if}

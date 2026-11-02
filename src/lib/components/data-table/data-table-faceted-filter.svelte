@@ -63,6 +63,7 @@
           {#each options as option (option.label)}
             {@const isSelected = selectedValues.has(option.value)}
             <Command.Item
+              value={String(option.label)}
               onSelect={() => {
                 if (isSelected) {
                   selectedValues.delete(option.value);
@@ -100,6 +101,7 @@
         <Command.Separator />
         <Command.Group>
           <Command.Item
+            value="clear-filters"
             onSelect={() => column?.setFilterValue(undefined)}
             class="justify-center text-center"
           >

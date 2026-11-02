@@ -2,6 +2,7 @@
   import * as Field from "#lib/components/ui/field/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import * as Card from "#lib/components/ui/card/index.js";
   import * as Dialog from "#lib/components/ui/dialog/index.js";
   import { Loader, CirclePlus, Pencil, Trash2 } from "#lib/assets/icons.js";
@@ -185,7 +186,7 @@
           placeholder="tenant@example.com"
           required
           aria-describedby="tenant-email-error"
-          {...createTenant.fields.email.as("email")}
+          {...fieldInputProps(createTenant.fields.email.as("email"))}
         />
         <Field.Error id="tenant-email-error" errors={createTenant.fields.email.issues()} />
       </Field.Field>
@@ -196,7 +197,7 @@
           placeholder="At least 8 characters"
           required
           aria-describedby="tenant-password-error"
-          {...createTenant.fields.password.as("password")}
+          {...fieldInputProps(createTenant.fields.password.as("password"))}
         />
         <Field.Error id="tenant-password-error" errors={createTenant.fields.password.issues()} />
       </Field.Field>

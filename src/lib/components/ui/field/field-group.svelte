@@ -1,24 +1,26 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { type FieldSize, field } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	size = "default",
+	children,
+	...rest
+}: HTMLAttributes<HTMLDivElement> & {
+	ref?: HTMLDivElement | null;
+	size?: FieldSize;
+} = $props();
 </script>
 
 <div
-  bind:this={ref}
-  data-slot="field-group"
-  class={cn(
-    "group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
-    className
-  )}
-  {...restProps}
+	bind:this={ref}
+	data-slot="field-group"
+	data-size={size}
+	class={cn(field({ size }).group(), classProp)}
+	{...rest}
 >
-  {@render children?.()}
+	{@render children?.()}
 </div>

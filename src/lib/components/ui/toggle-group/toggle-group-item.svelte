@@ -1,35 +1,27 @@
 <script lang="ts">
-  import { ToggleGroup as ToggleGroupPrimitive } from "bits-ui";
-  import { getToggleGroupCtx } from "./toggle-group.svelte";
-  import { cn } from "#lib/utils/style.js";
-  import { type ToggleVariants, toggleVariants } from "#lib/components/ui/toggle/index.js";
+import { ToggleGroup as ToggleGroupPrimitive } from "bits-ui";
+import type { Snippet } from "svelte";
+import { cn } from "#lib/cn.js";
+import { getToggleGroup } from "./context";
+import { toggleGroup } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    value = $bindable(),
-    class: className,
-    size,
-    variant,
-    ...restProps
-  }: ToggleGroupPrimitive.ItemProps & ToggleVariants = $props();
+let {
+	children: childrenProp,
+	value,
+	class: classProp,
+	...rest
+}: Omit<ToggleGroupPrimitive.ItemProps, "children"> & { children?: Snippet } = $props();
 
-  const ctx = getToggleGroupCtx();
+const group = getToggleGroup();
 </script>
 
 <ToggleGroupPrimitive.Item
-  bind:ref
-  data-slot="toggle-group-item"
-  data-variant={ctx.variant || variant}
-  data-size={ctx.size || size}
-  data-spacing={ctx.spacing}
-  class={cn(
-    toggleVariants({
-      variant: ctx.variant || variant,
-      size: ctx.size || size,
-    }),
-    "w-auto min-w-0 shrink-0 px-3 focus:z-10 focus-visible:z-10 data-[spacing=0]:rounded-none data-[spacing=0]:shadow-none data-[spacing=0]:first:rounded-l-md data-[spacing=0]:last:rounded-r-md data-[spacing=0]:data-[variant=outline]:border-l-0 data-[spacing=0]:data-[variant=outline]:first:border-l",
-    className
-  )}
-  {value}
-  {...restProps}
-/>
+	{value}
+	data-slot="toggle-group-item"
+	class={cn(toggleGroup({ variant: group.variant, size: group.size }).item(), classProp)}
+	{...rest}
+>
+	{#snippet children()}
+		{@render childrenProp?.()}
+	{/snippet}
+</ToggleGroupPrimitive.Item>
