@@ -46,7 +46,7 @@
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
   import * as Sheet from "#lib/components/ui/sheet/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
-  import { Loader, Banknote, PhilippinePeso } from "#lib/assets/icons.js";
+  import { Loader, Banknote } from "#lib/assets/icons.js";
   import { goto } from "$app/navigation";
   import { BillingInfoForm } from "../history/(components)/index.js";
   import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
@@ -85,7 +85,7 @@
         class="flex items-center justify-between gap-2 rounded-md border bg-card p-3 text-muted-foreground shadow-sm"
       >
         <div class="flex items-center gap-3">
-          <PhilippinePeso class="size-5" />
+          <Banknote class="size-5" />
           <div class="text-sm font-medium">Add new bill</div>
         </div>
         <Sheet.Root bind:open={openNewBill}>

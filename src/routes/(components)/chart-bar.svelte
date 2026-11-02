@@ -120,7 +120,7 @@
   );
 
   if (browser) {
-    worker = new Worker(new URL("#lib/workers/total-calculator.ts", import.meta.url), {
+    worker = new Worker(new URL("../../lib/workers/total-calculator.ts", import.meta.url), {
       type: "module",
     });
 
