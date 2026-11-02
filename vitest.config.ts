@@ -43,6 +43,7 @@ export default defineConfig({
     ...(process.env.VITEST ? { conditions: ["browser"] } : {}),
     alias: {
       "$app/env/private": "/src/lib/server/crud/__tests__/helpers/mock-env.ts",
+      "cloudflare:workers": "/src/lib/server/crud/__tests__/helpers/mock-workers.ts",
     },
   },
 });
