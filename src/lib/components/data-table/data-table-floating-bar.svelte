@@ -25,7 +25,7 @@
   import { Trash2, X, RefreshCw } from "#lib/assets/icons.js";
   import { scale } from "svelte/transition";
   import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
-  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { catchErrorTyped } from "#lib/utils/error.js";
   import { cn } from "#lib/utils/style.js";
   import { showError, showWarning } from "#lib/components/toast/index.js";
@@ -146,42 +146,40 @@
       variant="ghost"
       class="hover:text-destructive"
       onclick={() => (dialog_open = true)}
+      aria-haspopup="dialog"
+      aria-expanded={dialog_open}
     >
       <Trash2 />
     </Button>
   </div>
 </div>
 
-<Dialog.Root
-  bind:open={
-    () => dialog_open,
-    (value) => {
-      if (!value && app_state === "processing") {
-        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-        dialog_open = true;
-      } else {
-        dialog_open = value;
-      }
+<DynamicModal
+  open={dialog_open}
+  onOpenChange={(value) => {
+    if (!value && app_state === "processing") {
+      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+      dialog_open = true;
+    } else {
+      dialog_open = value;
     }
-  }
+  }}
+  title="Are you sure?"
+  description={dialogDescription || default_dialog_description}
 >
-  <Dialog.Content>
-    <Dialog.Header>
-      <Dialog.Title>Are you sure?</Dialog.Title>
-      <Dialog.Description>
-        {dialogDescription || default_dialog_description}
-        {@render WarningBanner({
-          message: "This action cannot be undone, please confirm",
-        })}
-      </Dialog.Description>
-    </Dialog.Header>
+  <div class="flex flex-col gap-4">
+    {@render WarningBanner({
+      message: "This action cannot be undone, please confirm",
+    })}
     <Input
       bind:value={delete_confirm_value}
       type="text"
       placeholder="Type {deleteMessage} to confirm"
       class="text-center"
     />
-    <Dialog.Footer>
+  </div>
+  {#snippet footer()}
+    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
       <Button
         variant="outline"
         onclick={() => {
@@ -204,6 +202,6 @@
         <span class={cn("block", { hidden: app_state === "processing" })}>Delete</span>
         <span class={cn("hidden", { block: app_state === "processing" })}>Please Wait</span>
       </Button>
-    </Dialog.Footer>
-  </Dialog.Content>
-</Dialog.Root>
+    </div>
+  {/snippet}
+</DynamicModal>

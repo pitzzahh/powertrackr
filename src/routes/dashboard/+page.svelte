@@ -44,12 +44,12 @@
   import { cubicInOut } from "svelte/easing";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
-  import * as Sheet from "#lib/components/ui/sheet/index.js";
-  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { Loader, Banknote } from "#lib/assets/icons.js";
   import { goto } from "$app/navigation";
   import { BillingInfoForm } from "../history/(components)/index.js";
   import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
+  import { Button } from "#lib/components/ui/button/index.js";
 
   let { data } = $props();
 
@@ -88,41 +88,31 @@
           <Banknote class="size-5" />
           <div class="text-sm font-medium">Add new bill</div>
         </div>
-        <Sheet.Root bind:open={openNewBill}>
-          <Sheet.Trigger
-            class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
-          >
-            New
-            <span class="sr-only">Open new bill</span>
-          </Sheet.Trigger>
-          <Sheet.Content side="bottom" class="h-[90vh] w-full">
-            <Sheet.Header class="border-b">
-              <Sheet.Title>Add new Bill</Sheet.Title>
-              <Sheet.Description>Enter billing info</Sheet.Description>
-            </Sheet.Header>
-            <ScrollArea maxHeight="none" class="min-h-0 flex-1">
-              {@const latestBillingInfo = latestBillingStore.latestBillingInfo}
-              <div class="px-2 pb-2">
-                <BillingInfoForm
-                  action="add"
-                  callback={(valid, _, metaData) => {
-                    openNewBill = false;
-                    if (valid) {
-                      billingStore.refresh();
-                      latestBillingStore.refresh();
-                      consumptionStore.refresh();
-                      showSuccess("Billing info created successfully!");
-                    } else {
-                      showWarning("Failed to create billing info", metaData?.error);
-                    }
-                  }}
-                  billingInfo={latestBillingInfo || undefined}
-                  bind:open={openNewBill}
-                />
-              </div>
-            </ScrollArea>
-          </Sheet.Content>
-        </Sheet.Root>
+        <DynamicModal bind:open={openNewBill} title="Add new Bill" description="Enter billing info">
+          {#snippet trigger({ props })}
+            <Button {...props} size="sm">
+              New
+              <span class="sr-only">Open new bill</span>
+            </Button>
+          {/snippet}
+          {@const latestBillingInfo = latestBillingStore.latestBillingInfo}
+          <BillingInfoForm
+            action="add"
+            callback={(valid, _, metaData) => {
+              openNewBill = false;
+              if (valid) {
+                billingStore.refresh();
+                latestBillingStore.refresh();
+                consumptionStore.refresh();
+                showSuccess("Billing info created successfully!");
+              } else {
+                showWarning("Failed to create billing info", metaData?.error);
+              }
+            }}
+            billingInfo={latestBillingInfo || undefined}
+            bind:open={openNewBill}
+          />
+        </DynamicModal>
       </div>
     </section>
   </div>

@@ -1,9 +1,6 @@
 <script lang="ts" module>
-  import type { Snippet } from "svelte";
-
   export type AccountSettingsProps = {
     user: App.Locals["user"];
-    trigger?: Snippet;
     openAccountSettings?: boolean;
   };
 
@@ -17,9 +14,7 @@
 </script>
 
 <script lang="ts">
-  import * as Drawer from "#lib/components/ui/drawer/index.js";
-  import { MediaQuery } from "svelte/reactivity";
-  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import * as UnderlineTabs from "#lib/components/underline-tabs/index.js";
   import * as Field from "#lib/components/ui/field/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
@@ -50,9 +45,7 @@
   import { cubicOut } from "svelte/easing";
   import { REGEXP_ONLY_DIGITS } from "bits-ui";
 
-  let { user, trigger, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
-
-  const isDesktop = new MediaQuery("(min-width: 768px)");
+  let { user, openAccountSettings = $bindable(false) }: AccountSettingsProps = $props();
 
   let { activeTab, overviewAsyncState, passwordAsyncState, securityAsyncState, deleteAsyncState } =
     $state<AccountSettingsState>({
@@ -81,73 +74,27 @@
   });
 </script>
 
-{#if isDesktop.current}
-  <Dialog.Root
-    bind:open={
-      () => openAccountSettings,
-      (open) => {
-        if (
-          !open &&
-          (overviewAsyncState === "processing" ||
-            passwordAsyncState === "processing" ||
-            deleteAsyncState === "processing")
-        ) {
-          showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-          openAccountSettings = true;
-        } else {
-          openAccountSettings = open;
-        }
-      }
+<DynamicModal
+  bind:open={openAccountSettings}
+  onOpenChange={(open) => {
+    if (
+      !open &&
+      (overviewAsyncState === "processing" ||
+        passwordAsyncState === "processing" ||
+        deleteAsyncState === "processing")
+    ) {
+      showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+      openAccountSettings = true;
     }
-  >
-    {#if trigger}
-      <Dialog.Trigger>
-        {@render trigger?.()}
-      </Dialog.Trigger>
-    {/if}
-    <Dialog.Content
-      class="flex h-[80vh] flex-col overflow-hidden md:h-[75vh] md:max-w-175 lg:max-w-350"
-    >
-      <Dialog.Header>
-        <Dialog.Title>Account Settings</Dialog.Title>
-        <Dialog.Description>Manage your account settings and preferences.</Dialog.Description>
-      </Dialog.Header>
-      <div class="min-h-0 flex-1 overflow-hidden">
-        {@render content()}
-      </div>
-    </Dialog.Content>
-  </Dialog.Root>
-{:else}
-  <Drawer.Root
-    bind:open={openAccountSettings}
-    onOpenChange={(open) => {
-      if (
-        !open &&
-        (overviewAsyncState === "processing" ||
-          passwordAsyncState === "processing" ||
-          deleteAsyncState === "processing")
-      ) {
-        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-        openAccountSettings = true;
-      }
-    }}
-  >
-    {#if trigger}
-      <Drawer.Trigger>
-        {@render trigger?.()}
-      </Drawer.Trigger>
-    {/if}
-    <Drawer.Content class="flex h-[85vh] flex-col">
-      <Drawer.Header class="text-start">
-        <Drawer.Title>Account Settings</Drawer.Title>
-        <Drawer.Description>Manage your account settings and preferences.</Drawer.Description>
-      </Drawer.Header>
-      <div class="min-h-0 flex-1 overflow-hidden p-2">
-        {@render content()}
-      </div>
-    </Drawer.Content>
-  </Drawer.Root>
-{/if}
+  }}
+  title="Account Settings"
+  description="Manage your account settings and preferences."
+  dialogClass="md:max-w-175 lg:max-w-350"
+>
+  <div class="min-h-0 flex-1 overflow-hidden">
+    {@render content()}
+  </div>
+</DynamicModal>
 
 {#snippet content()}
   <UnderlineTabs.Root bind:value={activeTab} class="flex h-full flex-col">
@@ -679,7 +626,7 @@
                 <Field.Field>
                   <Field.Label for="delete-confirm-email" class="px-1">
                     Type your email to confirm:
-                    <span class="font-mono text-primary">{user?.email}</span>
+                    <span class="font-mono text-accent-foreground">{user?.email}</span>
                   </Field.Label>
                   <Input
                     id="delete-confirm-email"

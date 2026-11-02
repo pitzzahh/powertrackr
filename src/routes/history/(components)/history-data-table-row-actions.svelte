@@ -18,9 +18,8 @@
   import { formatDate, formatNumber } from "#lib/utils/format.js";
   import type { SvelteRow as Row } from "#lib/components/ui/data-table/index.js";
   import Button from "#lib/components/ui/button/button.svelte";
-  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { showInspectorWarning, showSuccess, showWarning } from "#lib/components/toast/index.js";
-  import * as Sheet from "#lib/components/ui/sheet/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
   import { LoadingDots, WarningBanner } from "#lib/components/snippets.svelte";
@@ -69,7 +68,7 @@
     {
       label: "ID",
       value: row.original.id,
-      class: "font-mono text-primary",
+      class: "font-mono text-accent-foreground",
     },
     {
       label: "User ID",
@@ -203,85 +202,79 @@
   </Button>
 </div>
 
-<Dialog.Root
-  bind:open={
-    () => open_view,
-    (open) => {
+{#if active_dialog_content === "view"}
+  <DynamicModal
+    bind:open={open_view}
+    onOpenChange={(open) => {
       if (!open && app_state === "processing") {
         showWarning("Process Interrupted", "The operation is still processing. Please wait...");
         open_view = true;
-      } else {
-        open_view = open;
       }
-    }
-  }
->
-  {#if active_dialog_content === "view"}
-    <Dialog.Content class="md:max-h-132.5 md:max-w-237.5 lg:max-w-250">
-      <Dialog.Header>
-        <Dialog.Title class="flex items-center gap-2 text-3xl font-bold">
-          <Ticket class="size-6" />
-          Billing Info Details
-        </Dialog.Title>
-        <Dialog.Description class="mt-2 text-lg text-muted-foreground">
-          Comprehensive billing information for
-          <span class="font-mono text-primary">{row.original.dateFormatted}</span>
-        </Dialog.Description>
-      </Dialog.Header>
-      <ScrollArea maxHeight="none" class="max-h-[60vh] pr-2.5">
-        <div class="max-w-full overflow-x-auto rounded-md border bg-background">
-          <Table class="w-full">
-            <TableBody>
-              {#each BILLING_DETAILS as item (item.label)}
-                <TableRow
-                  class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r"
-                >
-                  <TableCell
-                    class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-                    >{item.label}</TableCell
-                  >
-                  <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal {item.class}"
-                    >{item.value}</TableCell
-                  >
-                </TableRow>
-              {/each}
+    }}
+    title="Billing Info Details"
+    description="Comprehensive billing information for {row.original.dateFormatted}"
+    dialogClass="md:max-w-237.5 lg:max-w-250"
+  >
+    <div class="flex items-center gap-2 pb-2">
+      <Ticket class="size-6" />
+    </div>
+    <ScrollArea class="max-h-[60vh] pr-2.5">
+      <div class="max-w-full overflow-x-auto rounded-md border bg-background">
+        <Table class="w-full">
+          <TableBody>
+            {#each BILLING_DETAILS as item (item.label)}
               <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
                 <TableCell
                   class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-                  >Sub Payments</TableCell
+                  >{item.label}</TableCell
                 >
-                <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
-                  <SubPaymentsButton class="w-full" row={row.original} size="xs"
-                    >View Sub Payments</SubPaymentsButton
-                  >
-                </TableCell>
+                <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal {item.class}"
+                  >{item.value}</TableCell
+                >
               </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-      </ScrollArea>
-    </Dialog.Content>
-  {/if}
+            {/each}
+            <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
+              <TableCell
+                class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
+                >Sub Payments</TableCell
+              >
+              <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
+                <SubPaymentsButton class="w-full" row={row.original} size="xs"
+                  >View Sub Payments</SubPaymentsButton
+                >
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    </ScrollArea>
+  </DynamicModal>
+{/if}
 
-  {#if active_dialog_content === "remove"}
-    {@const currentDate = formatDate(row.original.date)}
-    <Dialog.Content>
-      <Dialog.Header>
-        <Dialog.Title>Remove Billing Info Record</Dialog.Title>
-        <Dialog.Description>
-          Are you sure you want to remove this billing info record? This action cannot be undone.
-          {@render WarningBanner({
-            message: "Removing this will also remove the sub meter billing informations.",
-          })}
-        </Dialog.Description>
-      </Dialog.Header>
-      <Input
-        bind:value={delete_confirm_value}
-        type="text"
-        placeholder={currentDate}
-        class="text-center"
-      />
-      <Dialog.Footer>
+{#if active_dialog_content === "remove"}
+  {@const currentDate = formatDate(row.original.date)}
+  <DynamicModal
+    bind:open={open_view}
+    onOpenChange={(open) => {
+      if (!open && app_state === "processing") {
+        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
+        open_view = true;
+      }
+    }}
+    title="Remove Billing Info Record"
+    description="Are you sure you want to remove this billing info record? This action cannot be undone."
+  >
+    {@render WarningBanner({
+      message: "Removing this will also remove the sub meter billing informations.",
+    })}
+    <Input
+      bind:value={delete_confirm_value}
+      type="text"
+      placeholder={currentDate}
+      class="text-center"
+    />
+    {#snippet footer()}
+      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
         <Button
           variant="secondary"
           disabled={app_state === "processing"}
@@ -306,41 +299,31 @@
             Delete {currentDate}
           {/if}
         </Button>
-      </Dialog.Footer>
-    </Dialog.Content>
-  {/if}
-</Dialog.Root>
-
-<Sheet.Root bind:open={open_edit}>
-  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-    <Sheet.Header class="border-b">
-      <Sheet.Title>Edit billing info of {row.original.dateFormatted}</Sheet.Title>
-      <Sheet.Description>
-        Update the billing info details for billing info with id
-        <span class="font-mono text-primary">
-          #{row.original.id}
-        </span>
-      </Sheet.Description>
-    </Sheet.Header>
-    <ScrollArea maxHeight="none" class="min-h-0 flex-1">
-      <div class="space-y-4 p-4 pb-8">
-        <BillingInfoForm
-          action="update"
-          callback={(valid, _, metaData) => {
-            open_edit = false;
-            if (valid) {
-              billingStore.refresh();
-              consumptionStore.refresh();
-              showSuccess("Billing info updated successfully!");
-            } else {
-              showWarning("Failed to update billing info", metaData?.error);
-            }
-          }}
-          billingInfo={billingInfoToDto(row.original)}
-          {previousBillingInfo}
-          bind:open={open_edit}
-        />
       </div>
-    </ScrollArea>
-  </Sheet.Content>
-</Sheet.Root>
+    {/snippet}
+  </DynamicModal>
+{/if}
+
+<DynamicModal
+  bind:open={open_edit}
+  title="Edit billing info of {row.original.dateFormatted}"
+  description="Update the billing info details for billing info with id #{row.original.id}"
+  dialogClass="md:max-w-3xl"
+>
+  <BillingInfoForm
+    action="update"
+    callback={(valid, _, metaData) => {
+      open_edit = false;
+      if (valid) {
+        billingStore.refresh();
+        consumptionStore.refresh();
+        showSuccess("Billing info updated successfully!");
+      } else {
+        showWarning("Failed to update billing info", metaData?.error);
+      }
+    }}
+    billingInfo={billingInfoToDto(row.original)}
+    {previousBillingInfo}
+    bind:open={open_edit}
+  />
+</DynamicModal>
