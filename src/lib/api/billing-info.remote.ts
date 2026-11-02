@@ -1,10 +1,9 @@
 import { query, form, command } from "$app/server";
-import * as v from "valibot";
+import { EMPTY_SCHEMA } from "#lib/validators/shared.js";
 import {
   billFormSchema,
   updateBillingInfoSchema,
   getBillingInfosSchema,
-  getBillingInfoSchema,
   deleteBillingInfoSchema,
   deleteBillingInfoSchemaBatch,
   finalizeBillingSchema,
@@ -50,7 +49,7 @@ export const getTotalBillingInfoCount = query(() => {
 });
 
 // Query to get all billing infos for the authenticated user
-export const getBillingInfoBy = query(v.object({}), async (): Promise<HelperResult<unknown>> => {
+export const getBillingInfoBy = query(EMPTY_SCHEMA, async (): Promise<HelperResult<unknown>> => {
   const { user, session } = requireAuth();
   if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
   return await getBillingInfoByCrud({
@@ -61,26 +60,23 @@ export const getBillingInfoBy = query(v.object({}), async (): Promise<HelperResu
   });
 });
 
-export const getLatestBillingInfo = query(
-  v.object({}),
-  async (): Promise<HelperResult<unknown>> => {
-    const { user, session } = requireAuth();
-    if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
-    return await getBillingInfoByCrud({
-      query: { userId: session.userId },
-      options: {
-        fields: COMMON_FIELDS,
-        with_sub_meters: true,
-        order: "desc",
-        limit: 1,
-      },
-    });
-  }
-);
+export const getLatestBillingInfo = query(EMPTY_SCHEMA, async () => {
+  const { user, session } = requireAuth();
+  if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
+  return await getBillingInfoByCrud({
+    query: { userId: session.userId },
+    options: {
+      fields: COMMON_FIELDS,
+      with_sub_meters: true,
+      order: "desc",
+      limit: 1,
+    },
+  });
+});
 
 // Query to get extended billing infos with payments for the authenticated user
 export const getExtendedBillingInfos = query(
-  v.object({}),
+  EMPTY_SCHEMA,
   async (): Promise<HelperResult<unknown>> => {
     const { user, session } = requireAuth();
     if (user.ownerId) error(403, "Tenant accounts cannot access billing data");
@@ -95,16 +91,6 @@ export const getExtendedBillingInfos = query(
     });
   }
 );
-
-// Query to get a single billing info by id
-export const getBillingInfo = query(getBillingInfoSchema, async (id) => {
-  return await getBillingInfoByCrud({
-    query: { id },
-    options: {
-      fields: COMMON_FIELDS,
-    },
-  });
-});
 
 // Query to get billing summary for the authenticated user
 export const getBillingSummary = query(getBillingInfosSchema, async (): Promise<BillingSummary> => {
