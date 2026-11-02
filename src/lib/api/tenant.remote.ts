@@ -1,6 +1,6 @@
 import { query, form, command } from "$app/server";
-import * as v from "valibot";
 import { requireAuth } from "#lib/server/auth.js";
+import { EMPTY_SCHEMA } from "#lib/validators/shared.js";
 import { db } from "#lib/server/db/index.js";
 import { and, count, desc, eq, inArray, isNull, max, ne } from "drizzle-orm";
 import {
@@ -75,7 +75,7 @@ export const createTenant = form(createTenantSchema, async (data, issues): Promi
 });
 
 // Query to get all tenants of the authenticated owner with their meter info
-export const getTenants = query(v.object({}), async (): Promise<TenantWithMeters[]> => {
+export const getTenants = query(EMPTY_SCHEMA, async (): Promise<TenantWithMeters[]> => {
   const { user: authUser, session } = requireAuth();
   if (authUser.ownerId) error(403, "Only owners can view tenants");
 
@@ -135,7 +135,7 @@ export const getTenants = query(v.object({}), async (): Promise<TenantWithMeters
 });
 
 // Query to get the authenticated tenant's own sub-meter
-export const getMyMeter = query(v.object({}), async (): Promise<MyMeter> => {
+export const getMyMeter = query(EMPTY_SCHEMA, async (): Promise<MyMeter> => {
   const { user: authUser, session } = requireAuth();
   if (!authUser.ownerId) error(403, "Only tenants can view their meter");
   const ownerId = authUser.ownerId;
@@ -261,7 +261,7 @@ export const submitReading = form(
 );
 
 // Query to get billing periods awaiting this tenant's reading submission
-export const getPendingBillings = query(v.object({}), async (): Promise<PendingBilling[]> => {
+export const getPendingBillings = query(EMPTY_SCHEMA, async (): Promise<PendingBilling[]> => {
   const { user: authUser, session } = requireAuth();
   if (!authUser.ownerId) error(403, "Only tenants can view pending billings");
   const ownerId = authUser.ownerId;
@@ -290,7 +290,7 @@ export const getPendingBillings = query(v.object({}), async (): Promise<PendingB
 // Query to get the tenant's most recent computed bill (reading submitted and
 // payment materialized). Returns null when no billing period has been billed
 // for this tenant yet.
-export const getCurrentBilling = query(v.object({}), async (): Promise<ComputedBilling | null> => {
+export const getCurrentBilling = query(EMPTY_SCHEMA, async (): Promise<ComputedBilling | null> => {
   const { user: authUser, session } = requireAuth();
   if (!authUser.ownerId) error(403, "Only tenants can view their billing");
   const ownerId = authUser.ownerId;
