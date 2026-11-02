@@ -1,13 +1,7 @@
 import { query, form, getRequestEvent } from "$app/server";
-import * as v from "valibot";
+import { updateUserSchema, deleteUserSchema, GITHUB_ID_SCHEMA } from "#lib/validators/user.js";
+import { EMPTY_SCHEMA } from "#lib/validators/shared.js";
 import {
-  createUserSchema,
-  updateUserSchema,
-  getUserSchema,
-  deleteUserSchema,
-} from "#lib/validators/user.js";
-import {
-  addUser,
   deleteUserBy,
   getUserBy,
   getUserCountLogic,
@@ -30,22 +24,12 @@ export const getCurrentUser = query(() => {
 });
 
 // Query to get all users
-export const getUsers = query(v.object({}), async () => {
+export const getUsers = query(EMPTY_SCHEMA, async () => {
   return await getUserBy({ query: {} });
 });
 
-// Query to get a single user by id
-export const getUser = query(getUserSchema, async (id) => {
-  return await getUserBy({
-    query: {
-      id,
-    },
-    options: { limit: 1 },
-  });
-});
-
 // Query to get a single user by github id
-export const getUserFromGitHubId = query(v.number(), async (githubId) => {
+export const getUserFromGitHubId = query(GITHUB_ID_SCHEMA, async (githubId) => {
   return await getUserBy({
     query: {
       githubId,
@@ -54,18 +38,6 @@ export const getUserFromGitHubId = query(v.number(), async (githubId) => {
       limit: 1,
     },
   });
-});
-
-// Form to create a new user
-export const createUser = form(createUserSchema, async (user) => {
-  const {
-    valid,
-    value: [addedUser],
-  } = await addUser([user]);
-
-  if (valid) return error(400, "Failed to create user");
-
-  return addedUser;
 });
 
 // Form to update the authenticated user's own profile
@@ -129,5 +101,5 @@ export const deleteUser = form(deleteUserSchema, async ({ id, confirmEmail }, is
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
 
-  return redirect(303, "/");
+  redirect(303, "/");
 });

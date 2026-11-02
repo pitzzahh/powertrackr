@@ -1,16 +1,9 @@
-import { query, form, command } from "$app/server";
-import {
-  createPaymentSchema,
-  updatePaymentSchema,
-  getPaymentSchema,
-  deletePaymentSchema,
-} from "#lib/validators/payment.js";
+import { query, form } from "$app/server";
+import { createPaymentSchema, getPaymentSchema } from "#lib/validators/payment.js";
 import {
   addPayment,
-  deletePaymentBy,
   getPaymentBy,
   getTotalPaymentsAmountLogic,
-  updatePaymentBy,
 } from "#lib/server/crud/payment-crud.js";
 import { error } from "@sveltejs/kit";
 import type { HelperResult } from "#lib/server/types/helper.js";
@@ -52,36 +45,4 @@ export const createPayment = form(createPaymentSchema, async (data) => {
     error(400, `Failed to add payment: ${message || "Unknown reason"}`);
   }
   return addedPayment;
-});
-
-// Form to update an existing payment
-export const updatePayment = form(updatePaymentSchema, async (data) => {
-  const {
-    valid,
-    value: [updatedPayment],
-    message,
-  } = await updatePaymentBy(
-    { query: { id: data.id } },
-    {
-      ...data,
-      date: new Date(data.date),
-    }
-  );
-
-  if (!valid) {
-    error(400, `Failed to update payment: ${message || "Unknown reason"}`);
-  }
-
-  return updatedPayment;
-});
-
-// Command to delete a payment
-export const deletePayment = command(deletePaymentSchema, async ({ id }) => {
-  const { valid } = await deletePaymentBy({ query: { id } });
-
-  if (!valid) {
-    error(400, `Failed to delete payment with id ${id}`);
-  }
-
-  return valid;
 });
