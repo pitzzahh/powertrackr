@@ -1,16 +1,16 @@
 import { defineEnvVars } from "@sveltejs/kit/env";
-import * as v from "valibot";
+import { OPTIONAL_STRING } from "#lib/validators/shared.js";
 
 export const variables = defineEnvVars({
   // Optional (fall back to `undefined` when unset, matching the old
   // `$env/dynamic/*` semantics that call sites rely on with `??` fallbacks).
-  PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES: { public: true, schema: v.optional(v.string()) },
-  PUBLIC_RESEND_COOLDOWN_SECONDS: { public: true, schema: v.optional(v.string()) },
-  PLUNK_BASE_URL: { schema: v.optional(v.string()) },
-  PLUNK_SECRET_KEY: { schema: v.optional(v.string()) },
-  BASE_URL: { schema: v.optional(v.string()) },
-  PASSWORD_RESET_TIMEOUT_MINUTES: { schema: v.optional(v.string()) },
-  TURNSTILE_SECRET: { schema: v.optional(v.string()) },
+  EMAIL_VERIFICATION_TIMEOUT_MINUTES: { public: true, schema: OPTIONAL_STRING },
+  RESEND_COOLDOWN_SECONDS: { public: true, schema: OPTIONAL_STRING },
+  PLUNK_BASE_URL: { schema: OPTIONAL_STRING },
+  PLUNK_SECRET_KEY: { schema: OPTIONAL_STRING },
+  BASE_URL: { schema: OPTIONAL_STRING },
+  PASSWORD_RESET_TIMEOUT_MINUTES: { schema: OPTIONAL_STRING },
+  TURNSTILE_SECRET: { schema: OPTIONAL_STRING },
   // Inlined at build time (were `$env/static/private`); required in practice.
   ENCRYPTION_KEY: { static: true },
   GITHUB_CLIENT_ID: { static: true },

@@ -5,7 +5,7 @@
   import type { WithElementRef } from "#lib/index.js";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
     action: AuthAction;
-    /** Turnstile site key, resolved server-side (PUBLIC_TURNSTILE_SITE_KEY). */
+    /** Turnstile site key, resolved server-side from the wrangler var. */
     siteKey?: string;
   };
 
