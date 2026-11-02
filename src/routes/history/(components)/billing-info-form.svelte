@@ -78,8 +78,7 @@
   } from "#lib/types/billing-info.js";
   import { formatDate, formatEnergy } from "#lib/utils/format.js";
   import { convertToNormalText } from "#lib/utils/text.js";
-  import * as v from "valibot";
-  import { billFormSchema } from "#lib/validators/billing-info.js";
+  import { isBillFormValid } from "#lib/validators/billing-info.js";
   import { toast } from "svelte-sonner";
   import { watch } from "runed";
   import { showInspectorWarning, showLoading } from "#lib/components/toast/index.js";
@@ -269,7 +268,7 @@
       }),
     };
 
-    const { success } = v.safeParse(billFormSchema, payloadBase);
+    const success = isBillFormValid(payloadBase);
     return { FORM_VALID: success };
   });
 
