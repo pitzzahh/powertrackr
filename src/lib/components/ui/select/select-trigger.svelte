@@ -1,30 +1,44 @@
 <script lang="ts">
-  import { Select as SelectPrimitive } from "bits-ui";
-  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithoutChild } from "#lib/index.js";
+import { Select as SelectPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import {
+	type SelectTriggerSize,
+	type SelectTriggerVariant,
+	selectTrigger,
+} from "./variants";
+import { getSelectSize } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    size = "default",
-    ...restProps
-  }: WithoutChild<SelectPrimitive.TriggerProps> & {
-    size?: "sm" | "default";
-  } = $props();
+let {
+	class: classProp,
+	children,
+	variant = "default",
+	size: sizeProp,
+	...rest
+}: SelectPrimitive.TriggerProps & {
+	variant?: SelectTriggerVariant;
+	size?: SelectTriggerSize;
+} = $props();
+
+const rootSize = getSelectSize();
+const size = $derived(sizeProp ?? rootSize());
 </script>
 
 <SelectPrimitive.Trigger
-  bind:ref
-  data-slot="select-trigger"
-  data-size={size}
-  class={cn(
-    "flex w-fit items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none select-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
-    className
-  )}
-  {...restProps}
+	{...rest}
+	data-slot="select-trigger"
+	data-variant={variant}
+	data-size={size}
+	class={cn(selectTrigger({ variant, size }), "group/select-trigger", classProp)}
 >
-  {@render children?.()}
-  <ChevronDownIcon class="size-4 opacity-50" />
+	{@render children?.()}
+	<!-- Only the chevron turns; a leading icon passed as children stays put. -->
+	<svg
+		viewBox="0 0 16 16"
+		fill="none"
+		aria-hidden="true"
+		data-slot="select-icon"
+		class="ms-auto size-3.5 shrink-0 text-muted-foreground transition-[rotate] duration-(--duration-exit) ease-(--ease-ui-out) group-data-[state=open]/select-trigger:rotate-180 group-data-[state=open]/select-trigger:duration-(--duration-dropdown) motion-reduce:transition-none"
+	>
+		<path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+	</svg>
 </SelectPrimitive.Trigger>

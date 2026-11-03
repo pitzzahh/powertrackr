@@ -157,7 +157,7 @@
               <Points
                 seriesKey={key}
                 r={3}
-                fill="white"
+                fill={CHART_CONFIG[key as keyof typeof CHART_CONFIG].color}
                 strokeWidth={1}
                 motion={{
                   type: "tween",

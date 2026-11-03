@@ -1080,8 +1080,8 @@ export async function finalizeBillingInfoLogic(
 }
 
 export async function getTotalEnergyUsageLogic() {
-  // `event.url` is unavailable inside remote calls (stripped by the runtime);
-  // originCheck uses the request URL instead.
+  // `event.url` is banned inside remote queries — the shared helper reads the
+  // request URL instead (same origin, accessible everywhere).
   originCheck();
 
   return await getTotalEnergyUsage();

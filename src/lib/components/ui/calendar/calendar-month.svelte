@@ -1,16 +1,16 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { calendar } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLElement>> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	children,
+	...rest
+}: HTMLAttributes<HTMLElement> & { ref?: HTMLElement | null } = $props();
 </script>
 
-<div {...restProps} bind:this={ref} class={cn("flex flex-col", className)}>
-  {@render children?.()}
+<div bind:this={ref} class={cn(calendar().month(), classProp)} {...rest}>
+	{@render children?.()}
 </div>

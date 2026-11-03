@@ -47,10 +47,11 @@ import {
 import crypto from "node:crypto";
 import type { HelperResult } from "#lib/server/types/helper.js";
 import type { NewUser } from "#lib/types/user.js";
-import { form, getRequestEvent, query } from "$app/server";
+import { form, getRequestEvent } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
-import { requireAuth as requireAuthServer } from "#lib/server/auth.js";
 import { verifyTurnstileToken } from "#lib/server/turnstile.js";
+import { isRateLimited } from "#lib/server/rate-limit.js";
+import { env } from "cloudflare:workers";
 import { TURNSTILE_SECRET } from "$app/env/private";
 
 function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
@@ -63,19 +64,6 @@ function verifyTotpCode(secretBytes: Uint8Array, code: string): boolean {
     }).validate({ token: code, window: 0 }) !== null
   );
 }
-
-export const getAuthUser = query(() => {
-  try {
-    return getRequestEvent().locals;
-  } catch {
-    return {
-      user: null,
-      session: null,
-    };
-  }
-});
-
-export const requireAuth = query(() => requireAuthServer());
 
 export const signout = form(async () => {
   const event = getRequestEvent();
@@ -105,13 +93,12 @@ export const login = form(loginSchema, async (user, issues) => {
 
   // Verify the Turnstile token before rate limiting / scrypt / D1 work.
   if (!valid) {
-    return invalid(issues.turnstileToken("Security check failed. Please try again."));
+    invalid(issues.turnstileToken("Security check failed. Please try again."));
   }
 
   // Rate limit login attempts per email
-  const { success } = await event.platform!.env.LOGIN_RATE_LIMITER.limit({ key: email });
-  if (!success) {
-    return invalid(issues.email("Too many login attempts. Please try again later."));
+  if (await isRateLimited(env.LOGIN_RATE_LIMITER, email)) {
+    invalid(issues.email("Too many login attempts. Please try again later."));
   }
 
   const {
@@ -165,13 +152,12 @@ export const register = form(registerSchema, async (newUser, issues) => {
       event.getClientAddress()
     ))
   ) {
-    return invalid(issues.turnstileToken("Security check failed. Please try again."));
+    invalid(issues.turnstileToken("Security check failed. Please try again."));
   }
 
   // Rate limit registration attempts per email
-  const { success } = await event.platform!.env.REGISTRATION_RATE_LIMITER.limit({ key: email });
-  if (!success) {
-    return invalid(issues.email("Too many registration attempts. Please try again later."));
+  if (await isRateLimited(env.REGISTRATION_RATE_LIMITER, email)) {
+    invalid(issues.email("Too many registration attempts. Please try again later."));
   }
 
   if (password !== confirmPassword) {
@@ -297,24 +283,6 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
   throw redirect(302, "/dashboard");
 });
 
-export const setup2FA = form(disable2FASchema, async (data, _issues) => {
-  const event = getRequestEvent();
-  if (event.locals.session === null) {
-    error(401, "Not authenticated");
-  }
-  const { code: _code } = data;
-  // TODO: Implement TOTP verification
-  // For now, assume code is correct and set registeredTwoFactor
-  const updateResult = await updateUserBy(
-    { query: { id: event.locals.session.userId }, options: { with_session: false } },
-    { registeredTwoFactor: true }
-  );
-  if (!updateResult.valid) {
-    error(400, "Failed to set up 2FA");
-  }
-  throw redirect(302, "/dashboard");
-});
-
 export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   // This endpoint verifies a TOTP code and marks the current session as twoFactorVerified.
   const event = getRequestEvent();
@@ -333,10 +301,10 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   // Validate input here and return friendly issue messages
   if (!code || typeof code !== "string" || code.trim().length === 0) {
     // Provide a clear, user-friendly issue for an empty value
-    return invalid(issues.code("Please enter the 6-digit authentication code."));
+    invalid(issues.code("Please enter the 6-digit authentication code."));
   }
   if (code.length !== 6) {
-    return invalid(issues.code("The code must be 6 digits long."));
+    invalid(issues.code("The code must be 6 digits long."));
   }
 
   // Load the user's encrypted TOTP key
@@ -349,7 +317,7 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   })) as HelperResult<NewUser[]>;
 
   if (!valid || !userResult || !userResult.totpKey) {
-    return invalid(issues.code("Two-factor authentication is not configured for this account"));
+    invalid(issues.code("Two-factor authentication is not configured for this account"));
   }
 
   // Decrypt the TOTP key and verify the code
@@ -358,13 +326,13 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
     secretBytes = decrypt(decodeBase64url(userResult.totpKey));
   } catch (e) {
     console.error("Failed to decrypt TOTP key for user", event.locals.session.userId, e);
-    return invalid(issues.code("Unable to verify code at this time. Please try again later."));
+    invalid(issues.code("Unable to verify code at this time. Please try again later."));
   }
 
   const isValid = verifyTotpCode(secretBytes, code);
 
   if (!isValid) {
-    return invalid(issues.code("Invalid verification code"));
+    invalid(issues.code("Invalid verification code"));
   }
 
   // Mark the current session as twoFactorVerified
@@ -389,8 +357,7 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
   }
 
   // Rate limit password reset requests per email
-  const { success } = await event.platform!.env.EMAIL_RATE_LIMITER.limit({ key: email });
-  if (!success) {
+  if (await isRateLimited(env.EMAIL_RATE_LIMITER, email)) {
     // For security, don't reveal rate limit info
     return { success: true };
   }

@@ -1,6 +1,6 @@
 import { query, form, getRequestEvent } from "$app/server";
-import * as v from "valibot";
-import { updateUserSchema, deleteUserSchema } from "#lib/validators/user.js";
+import { updateUserSchema, deleteUserSchema, GITHUB_ID_SCHEMA } from "#lib/validators/user.js";
+import { EMPTY_SCHEMA } from "#lib/validators/shared.js";
 import {
   deleteUserBy,
   getUserBy,
@@ -26,8 +26,13 @@ export const getCurrentUser = query(() => {
   return { user: locals.user, session: locals.session };
 });
 
+// Query to get all users
+export const getUsers = query(EMPTY_SCHEMA, async () => {
+  return await getUserBy({ query: {} });
+});
+
 // Query to get a single user by github id (OAuth callback; same-origin only)
-export const getUserFromGitHubId = query(v.number(), async (githubId) => {
+export const getUserFromGitHubId = query(GITHUB_ID_SCHEMA, async (githubId) => {
   originCheck();
   return await getUserBy({
     query: {
@@ -100,5 +105,5 @@ export const deleteUser = form(deleteUserSchema, async ({ id, confirmEmail }, is
   invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
 
-  return redirect(303, "/");
+  redirect(303, "/");
 });

@@ -65,22 +65,19 @@
     {/if}
   </DropdownMenu.Trigger>
   <DropdownMenu.Content>
-    <DropdownMenu.Group>
-      <DropdownMenu.GroupHeading>Search filter base</DropdownMenu.GroupHeading>
-      <DropdownMenu.Separator />
-      <DropdownMenu.RadioGroup bind:value={where_to_search as string}>
-        {#each comp_state.all_columns as column (column.label)}
-          <DropdownMenu.RadioItem
-            value={column.label as string}
-            class={cn({
-              "cursor-not-allowed data-highlighted:bg-destructive":
-                column.selected && comp_state.all_columns.filter((c) => c.selected).length <= 1,
-            })}
-          >
-            {convertToNormalText(column.label.toString().replace("_id", ""), true, ["_"])}
-          </DropdownMenu.RadioItem>
-        {/each}
-      </DropdownMenu.RadioGroup>
-    </DropdownMenu.Group>
+    <DropdownMenu.Label>Search filter base</DropdownMenu.Label>
+    <DropdownMenu.Separator />
+    {#each comp_state.all_columns as column (column.label)}
+      <DropdownMenu.CheckboxItem
+        checked={where_to_search === column.label}
+        onclick={() => (where_to_search = column.label as keyof TData)}
+        class={cn({
+          "cursor-not-allowed data-highlighted:bg-destructive":
+            column.selected && comp_state.all_columns.filter((c) => c.selected).length <= 1,
+        })}
+      >
+        {convertToNormalText(column.label.toString().replace("_id", ""), true, ["_"])}
+      </DropdownMenu.CheckboxItem>
+    {/each}
   </DropdownMenu.Content>
 </DropdownMenu.Root>

@@ -14,14 +14,14 @@ export function requireAuth() {
   const { locals } = getRequestEvent();
 
   if (locals.user === null || locals.session === null) {
-    return redirect(307, "/auth?act=login");
+    redirect(307, "/auth?act=login");
   }
 
   if (!locals.user.isOauthUser && !locals.user.emailVerified) {
-    return redirect(303, "/auth?act=verify-email");
+    redirect(303, "/auth?act=verify-email");
   }
   if (locals.user.registeredTwoFactor && !locals.session.twoFactorVerified) {
-    return redirect(303, "/auth?act=2fa-checkpoint");
+    redirect(303, "/auth?act=2fa-checkpoint");
   }
 
   return {

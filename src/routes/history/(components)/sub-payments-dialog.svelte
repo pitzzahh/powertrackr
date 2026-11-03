@@ -2,12 +2,7 @@
   import { Separator } from "#lib/components/ui/separator/index.js";
   import { formatNumber } from "#lib/utils/format.js";
   import { convertToNormalText } from "#lib/utils/text.js";
-  import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-  } from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
@@ -72,23 +67,15 @@
   </div>
 {/snippet}
 
-<Dialog bind:open {onOpenChange}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Sub Payments for [{billingInfo.dateFormatted}]</DialogTitle>
-    </DialogHeader>
-    <ScrollArea class="max-h-96 pr-2.5">
-      {#each billingInfo.subMeters as subMeter, index (subMeter.id)}
-        <div
-          class="space-y-2"
-          in:scale={{ duration: 1000, delay: index * 100, easing: cubicInOut }}
-        >
-          {@render paymentCard(subMeter, index)}
-          {#if index < billingInfo.subMeters.length - 1}
-            <Separator class="my-6 w-full" />
-          {/if}
-        </div>
-      {/each}
-    </ScrollArea>
-  </DialogContent>
-</Dialog>
+<DynamicModal bind:open {onOpenChange} title="Sub Payments for [{billingInfo.dateFormatted}]">
+  <ScrollArea class="max-h-96 pr-2.5">
+    {#each billingInfo.subMeters as subMeter, index (subMeter.id)}
+      <div class="space-y-2" in:scale={{ duration: 1000, delay: index * 100, easing: cubicInOut }}>
+        {@render paymentCard(subMeter, index)}
+        {#if index < billingInfo.subMeters.length - 1}
+          <Separator class="my-6 w-full" />
+        {/if}
+      </div>
+    {/each}
+  </ScrollArea>
+</DynamicModal>

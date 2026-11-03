@@ -1,17 +1,12 @@
 <script lang="ts">
-  import { Dialog as SheetPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
+import { Dialog as SheetPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: SheetPrimitive.TitleProps = $props();
+let { class: classProp, ...rest }: SheetPrimitive.TitleProps = $props();
 </script>
 
 <SheetPrimitive.Title
-  bind:ref
-  data-slot="sheet-title"
-  class={cn("font-semibold text-foreground", className)}
-  {...restProps}
+	{...rest}
+	data-slot="sheet-title"
+	class={cn("font-semibold text-foreground text-sm", classProp)}
 />

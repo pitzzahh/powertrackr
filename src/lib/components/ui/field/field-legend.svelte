@@ -1,30 +1,26 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { type FieldLegendVariant, fieldLegend } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    variant = "legend",
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLLegendElement>> & {
-    variant?: "legend" | "label";
-  } = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	variant = "legend",
+	children,
+	...rest
+}: HTMLAttributes<HTMLLegendElement> & {
+	ref?: HTMLLegendElement | null;
+	variant?: FieldLegendVariant;
+} = $props();
 </script>
 
 <legend
-  bind:this={ref}
-  data-slot="field-legend"
-  data-variant={variant}
-  class={cn(
-    "mb-3 font-medium",
-    "data-[variant=legend]:text-base",
-    "data-[variant=label]:text-sm",
-    className
-  )}
-  {...restProps}
+	bind:this={ref}
+	data-slot="field-legend"
+	data-variant={variant}
+	class={cn(fieldLegend({ variant }), classProp)}
+	{...rest}
 >
-  {@render children?.()}
+	{@render children?.()}
 </legend>

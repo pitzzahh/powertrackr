@@ -35,7 +35,7 @@
           <div
             class="flex items-center gap-2.5 rounded-full border border-border/60 bg-background/70 px-5 py-2.5 text-sm font-medium text-foreground/80"
           >
-            <benefit.icon class="size-4 text-primary" />
+            <benefit.icon class="size-4 text-accent-foreground" />
             <span>{benefit.text}</span>
           </div>
         {/each}
@@ -45,7 +45,7 @@
           <div
             class="flex items-center gap-2.5 rounded-full border border-border/60 bg-background/70 px-5 py-2.5 text-sm font-medium text-foreground/80"
           >
-            <benefit.icon class="size-4 text-primary" />
+            <benefit.icon class="size-4 text-accent-foreground" />
             <span>{benefit.text}</span>
           </div>
         {/each}

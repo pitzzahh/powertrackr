@@ -102,13 +102,13 @@
             <p class="font-mono text-[10px] tracking-[0.25em] text-muted-foreground uppercase">
               {stat.label}
             </p>
-            <p class="mt-3 text-3xl font-semibold text-primary tabular-nums md:text-4xl">
+            <p class="mt-3 text-3xl font-semibold text-accent-foreground tabular-nums md:text-4xl">
               <NumberTicker
                 format={stat.format}
                 suffix={stat.suffix}
                 prefix={stat.prefix}
                 value={stat.value}
-                class="text-primary [&::part(suffix)]:ml-2"
+                class="text-accent-foreground [&::part(suffix)]:ml-2"
               />
             </p>
           </div>

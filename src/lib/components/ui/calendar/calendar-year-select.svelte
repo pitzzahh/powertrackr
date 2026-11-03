@@ -1,44 +1,39 @@
 <script lang="ts">
-  import { Calendar as CalendarPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
-  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-  import type { WithoutChildrenOrChild } from "#lib/index.js";
+import { Calendar as Primitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { calendar } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    value,
-    ...restProps
-  }: WithoutChildrenOrChild<CalendarPrimitive.YearSelectProps> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	value,
+	onchange,
+	...rest
+}: Omit<Primitive.YearSelectProps, "child" | "children"> = $props();
+
+const s = calendar();
 </script>
 
-<span
-  class={cn(
-    "relative flex rounded-md border border-input shadow-xs has-focus:border-ring has-focus:ring-[3px] has-focus:ring-ring/50",
-    className
-  )}
->
-  <CalendarPrimitive.YearSelect bind:ref class="absolute inset-0 opacity-0" {...restProps}>
-    {#snippet child({ props, yearItems, selectedYearItem })}
-      <select {...props} {value}>
-        {#each yearItems as yearItem (yearItem.value)}
-          <option
-            value={yearItem.value}
-            selected={value !== undefined
-              ? yearItem.value === value
-              : yearItem.value === selectedYearItem.value}
-          >
-            {yearItem.label}
-          </option>
-        {/each}
-      </select>
-      <span
-        class="flex h-8 items-center gap-1 rounded-md ps-2 pe-1 text-sm font-medium select-none [&>svg]:size-3.5 [&>svg]:text-muted-foreground"
-        aria-hidden="true"
-      >
-        {yearItems.find((item) => item.value === value)?.label || selectedYearItem.label}
-        <ChevronDownIcon class="size-4" />
-      </span>
-    {/snippet}
-  </CalendarPrimitive.YearSelect>
+<!-- A native select under a styled label: platform pickers on touch, full keyboard support. -->
+<span class={cn(s.dropdown(), classProp)}>
+	<Primitive.YearSelect bind:ref class="absolute inset-0 bg-popover opacity-0" {...rest}>
+		{#snippet child({ props, yearItems, selectedYearItem })}
+			<select {...props} {value} {onchange}>
+				{#each yearItems as item (item.value)}
+					<option
+						value={item.value}
+						selected={value !== undefined ? item.value === value : item.value === selectedYearItem.value}
+					>
+						{item.label}
+					</option>
+				{/each}
+			</select>
+			<span class={s.dropdownLabel()} aria-hidden="true">
+				{yearItems.find((item) => item.value === value)?.label || selectedYearItem.label}
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="m6 9 6 6 6-6" />
+				</svg>
+			</span>
+		{/snippet}
+	</Primitive.YearSelect>
 </span>

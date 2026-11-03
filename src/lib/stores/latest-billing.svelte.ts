@@ -19,8 +19,9 @@ class LatestBillingState {
 
   async fetchData() {
     try {
-      const { value } = await this.query;
-      this.latestBillingInfo = (value as BillingInfoDTOWithSubMeters[])[0] ?? null;
+      const result = await this.query;
+      const value = result?.value as BillingInfoDTOWithSubMeters[];
+      this.latestBillingInfo = value?.[0] ?? null;
       this.status = "success";
     } catch (error) {
       console.error(error);

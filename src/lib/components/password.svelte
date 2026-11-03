@@ -26,6 +26,35 @@
   }: PasswordComponentProps & { type?: string } = $props();
 
   const passwordStrength = $derived(usePasswordStrength({ id }));
+
+  // Known keys of a remote-form `.as()` spread plus plain input attrs.
+  // The runtime object keeps every caller prop; this contract names the
+  // typed surface so the checker never sees the full 400-key spread.
+  // `HTMLInputAttributes` resolves from the module script (the checker
+  // merges both scopes; `import type` leaves no runtime binding).
+  type ForwardedFieldProps = {
+    name?: string;
+    required?: boolean;
+    autofocus?: boolean;
+    autocomplete?: HTMLInputAttributes["autocomplete"];
+    placeholder?: string;
+    id?: string;
+    disabled?: boolean;
+    readonly?: boolean;
+    minlength?: number;
+    maxlength?: number;
+    pattern?: string;
+    min?: number | string;
+    max?: number | string;
+    step?: number | string;
+    "aria-invalid"?: boolean | "true" | "false";
+    "aria-describedby"?: string;
+    files?: undefined;
+  };
+  const forwardedProps = $derived<ForwardedFieldProps>({
+    ...restProps,
+    files: undefined,
+  } as ForwardedFieldProps);
 </script>
 
 <div class={cn("flex flex-col gap-2", className)}>
@@ -38,7 +67,7 @@
       type={passwordStrength.isVisible ? "text" : "password"}
       bind:value={passwordStrength.password}
       aria-describedby={passwordStrength.id}
-      {...{ ...restProps, files: undefined }}
+      {...forwardedProps}
     />
     <button
       class="absolute inset-y-0 inset-e-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"

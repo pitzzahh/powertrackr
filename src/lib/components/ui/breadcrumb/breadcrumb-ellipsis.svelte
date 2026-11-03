@@ -1,24 +1,26 @@
 <script lang="ts">
-  import EllipsisIcon from "@lucide/svelte/icons/ellipsis";
-  import type { HTMLAttributes } from "svelte/elements";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithElementRef, WithoutChildren } from "#lib/index.js";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { breadcrumbStyles } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: WithoutChildren<WithElementRef<HTMLAttributes<HTMLSpanElement>>> = $props();
+let { class: classProp, ...rest }: { class?: string } & HTMLAttributes<HTMLSpanElement> =
+	$props();
+
+const s = $derived(breadcrumbStyles());
 </script>
 
+<!-- Put it inside a DropdownMenuTrigger to open the hidden levels, as shadcn-svelte does. -->
 <span
-  bind:this={ref}
-  data-slot="breadcrumb-ellipsis"
-  role="presentation"
-  aria-hidden="true"
-  class={cn("flex size-9 items-center justify-center", className)}
-  {...restProps}
+	{...rest}
+	role="presentation"
+	aria-hidden="true"
+	data-slot="breadcrumb-ellipsis"
+	class={cn(s.ellipsis(), classProp)}
 >
-  <EllipsisIcon class="size-4" />
-  <span class="sr-only">More</span>
+	<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+		<circle cx="5" cy="12" r="1.75" />
+		<circle cx="12" cy="12" r="1.75" />
+		<circle cx="19" cy="12" r="1.75" />
+	</svg>
+	<span class="sr-only">More</span>
 </span>

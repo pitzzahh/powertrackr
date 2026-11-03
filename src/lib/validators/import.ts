@@ -24,3 +24,13 @@ export const importBillFormSchema = v.object({
   subMeters: v.fallback(v.array(importSubMeterSchema), []),
   status: v.fallback(v.picklist(STATUS_VALUES), "pending"),
 });
+
+export const IMPORT_BILLING_SCHEMA = v.object({ items: v.array(importBillFormSchema) });
+
+export const IMPORT_BILLING_FILE_SCHEMA = v.object({ file: v.file() });
+
+const importBillArray = v.array(importBillFormSchema);
+
+export function parseImportItems(items: unknown) {
+  return v.parse(importBillArray, items);
+}
