@@ -1,7 +1,7 @@
-import { Icon } from "@lucide/svelte";
+import type { PhosphorIcon } from "#lib/assets/icons.js";
 export type NavItem = {
   text: string;
   href: string;
-  icon: typeof Icon;
+  icon: PhosphorIcon;
   selected: boolean | false;
 };
