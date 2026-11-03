@@ -1,21 +1,24 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { table } from "./variants";
+import { getTableStyle } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLTableSectionElement>> = $props();
+let {
+	ref = $bindable(null),
+	children,
+	class: className,
+	...rest
+}: {
+	ref?: HTMLTableSectionElement | null;
+	children?: Snippet;
+} & HTMLAttributes<HTMLTableSectionElement> = $props();
+
+const style = getTableStyle();
+const classes = $derived(table(style()));
 </script>
 
-<thead
-  bind:this={ref}
-  data-slot="table-header"
-  class={cn("[&_tr]:border-b", className)}
-  {...restProps}
->
-  {@render children?.()}
+<thead bind:this={ref} data-slot="table-header" class={cn(classes.header(), className)} {...rest}>
+	{@render children?.()}
 </thead>

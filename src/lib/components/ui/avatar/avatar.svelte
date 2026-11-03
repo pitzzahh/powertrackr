@@ -1,19 +1,37 @@
 <script lang="ts">
-  import { Avatar as AvatarPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
+import { Avatar as AvatarPrimitive } from "bits-ui";
+import type { Snippet } from "svelte";
+import { cn } from "#lib/cn.js";
+import { type AvatarShape, type AvatarSize, avatar } from "./variants";
+import { setAvatar } from "./context";
 
-  let {
-    ref = $bindable(null),
-    loadingStatus = $bindable("loading"),
-    class: className,
-    ...restProps
-  }: AvatarPrimitive.RootProps = $props();
+let {
+	children,
+	size = "default",
+	shape = "circle",
+	class: classProp,
+	...rest
+}: Omit<AvatarPrimitive.RootProps, "loadingStatus"> & {
+	children?: Snippet;
+	size?: AvatarSize;
+	shape?: AvatarShape;
+} = $props();
+
+let status = $state<"loading" | "loaded" | "error">("loading");
+
+setAvatar({
+	get status() {
+		return status;
+	},
+});
 </script>
 
 <AvatarPrimitive.Root
-  bind:ref
-  bind:loadingStatus
-  data-slot="avatar"
-  class={cn("relative flex size-8 shrink-0 overflow-hidden rounded-full", className)}
-  {...restProps}
-/>
+	bind:loadingStatus={status}
+	data-slot="avatar"
+	data-size={size}
+	class={cn(avatar({ size, shape }), classProp)}
+	{...rest}
+>
+	{@render children?.()}
+</AvatarPrimitive.Root>

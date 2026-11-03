@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/d1";
-import { getRequestEvent } from "$app/server";
+import { env } from "cloudflare:workers";
 import { relations } from "./relations";
 
 // Use a factory that constructs the database so TypeScript can infer the full,
@@ -39,7 +39,7 @@ export function db(): Database {
     return _db;
   }
 
-  const d1 = getRequestEvent()?.platform?.env?.DB;
+  const d1 = env.DB;
 
   if (!d1) {
     throw new Error("D1 database binding 'DB' is not available on the current platform.");

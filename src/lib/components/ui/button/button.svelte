@@ -1,92 +1,116 @@
 <script lang="ts" module>
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
-  import { type VariantProps, tv } from "tailwind-variants";
+import type { Snippet } from "svelte";
+import type { HTMLAnchorAttributes, HTMLButtonAttributes } from "svelte/elements";
+import type { ButtonSize, ButtonVariant } from "./variants";
 
-  export const buttonVariants = tv({
-    base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs",
-        "hover-default":
-          "hover:bg-primary/90 focus-visible:ring-primary/20 dark:focus-visible:ring-primary/40",
-        destructive:
-          "bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 text-white shadow-xs",
-        "hover-destructive":
-          "hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
-        "hover-text-destructive":
-          "hover:text-destructive focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
-        outline:
-          "bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border shadow-xs",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs",
-        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "hover:text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        "xxs": "h-4 gap-1 rounded-sm px-1 has-[>svg]:px-1",
-        xs: "h-6 gap-1.5 rounded-sm px-2 has-[>svg]:px-2",
-        sm: "h-8 gap-1.5 rounded-md px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        xl: "h-12 rounded-md px-6 has-[>svg]:px-6",
-        icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  });
+export type { ButtonSize, ButtonVariant };
 
-  export type ButtonVariant = VariantProps<typeof buttonVariants>["variant"];
-  export type ButtonSize = VariantProps<typeof buttonVariants>["size"];
-
-  export type ButtonProps = WithElementRef<HTMLButtonAttributes> &
-    WithElementRef<HTMLAnchorAttributes> & {
-      variant?: ButtonVariant;
-      size?: ButtonSize;
-    };
+export type ButtonProps = {
+	variant?: ButtonVariant;
+	size?: ButtonSize;
+	href?: string;
+	loading?: boolean;
+	loadingLabel?: string;
+	children?: Snippet;
+	class?: string;
+	/** Bindable: the rendered `<button>` or `<a>`. */
+	ref?: HTMLElement | null;
+} & Omit<HTMLButtonAttributes & HTMLAnchorAttributes, "class" | "children">;
 </script>
 
 <script lang="ts">
-  let {
-    class: className,
-    variant = "default",
-    size = "default",
-    ref = $bindable(null),
-    href = undefined,
-    type = "button",
-    disabled,
-    children,
-    ...restProps
-  }: ButtonProps = $props();
+import { cn } from "#lib/cn.js";
+import { button, buttonFace, isIconSize } from "./variants";
+
+const faceStyles = buttonFace();
+
+let {
+	ref = $bindable(null),
+	variant,
+	size,
+	href,
+	loading = false,
+	loadingLabel = "Loading…",
+	children,
+	class: classProp,
+	onclick,
+	...rest
+}: ButtonProps = $props();
+
+const classes = $derived(cn(button({ variant, size }), classProp));
+const iconOnly = $derived(isIconSize(size));
+
+function activate(event: MouseEvent) {
+	if (loading) {
+		event.preventDefault();
+		return;
+	}
+	(onclick as ((e: MouseEvent) => void) | undefined)?.(event);
+}
 </script>
 
-{#if href}
-  <a
-    bind:this={ref}
-    data-slot="button"
-    class={cn(buttonVariants({ variant, size }), className)}
-    href={disabled ? undefined : href}
-    aria-disabled={disabled}
-    role={disabled ? "link" : undefined}
-    tabindex={disabled ? -1 : undefined}
-    {...restProps}
-  >
-    {@render children?.()}
-  </a>
+{#snippet faces()}
+	<span class={faceStyles.wrap()}>
+		<span class={faceStyles.face()} data-on={!loading} aria-hidden={loading}>
+			{@render children?.()}
+		</span>
+		<span class={faceStyles.face()} data-on={loading} aria-hidden={!loading}>
+			<svg
+				viewBox="0 0 12 12"
+				fill="none"
+				aria-hidden="true"
+				class="size-3.5 [animation:spin_850ms_linear_infinite] motion-reduce:animate-none"
+				style:animation-play-state={loading ? "running" : "paused"}
+			>
+				<circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5" opacity="0.22" />
+				<path
+					d="M10.5 6A4.5 4.5 0 0 0 6 1.5"
+					stroke="currentColor"
+					stroke-width="1.5"
+					stroke-linecap="round"
+				/>
+			</svg>
+			{#if iconOnly}<span class="sr-only">{loadingLabel}</span>{:else}{loadingLabel}{/if}
+		</span>
+	</span>
+{/snippet}
+
+{#if href !== undefined}
+	<a
+		bind:this={ref}
+		data-slot="button"
+		{...rest as HTMLAnchorAttributes}
+		href={loading ? undefined : href}
+		role={loading ? "link" : undefined}
+		class={classes}
+		aria-busy={loading || undefined}
+		aria-disabled={loading || undefined}
+		data-variant={variant}
+		data-size={size}
+		onclick={activate}
+		onkeydown={(e) => {
+			// Anchors don't activate on Space natively; the spec requires that they do.
+			if (e.key === " ") {
+				e.preventDefault();
+				e.currentTarget.click();
+			}
+		}}
+	>
+		{@render faces()}
+	</a>
 {:else}
-  <button
-    bind:this={ref}
-    data-slot="button"
-    class={cn(buttonVariants({ variant, size }), className)}
-    {type}
-    {disabled}
-    {...restProps}
-  >
-    {@render children?.()}
-  </button>
+	<button
+		bind:this={ref}
+		data-slot="button"
+		{...rest as HTMLButtonAttributes}
+		type={(rest as HTMLButtonAttributes).type ?? "button"}
+		class={classes}
+		aria-busy={loading || undefined}
+		aria-disabled={loading || undefined}
+		data-variant={variant}
+		data-size={size}
+		onclick={activate}
+	>
+		{@render faces()}
+	</button>
 {/if}

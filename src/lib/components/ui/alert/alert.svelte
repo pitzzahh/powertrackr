@@ -1,47 +1,66 @@
-<script lang="ts" module>
-  import { type VariantProps, tv } from "tailwind-variants";
-
-  export const alertVariants = tv({
-    base: "relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-4 py-3 text-sm has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] has-[>svg]:gap-x-3 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
-    variants: {
-      variant: {
-        default: "bg-card text-card-foreground",
-        warning:
-          "border-yellow-400 bg-yellow-50 text-yellow-900 dark:bg-card dark:text-yellow-400 *:data-[slot=alert-description]:text-yellow-900/90 dark:*:data-[slot=alert-description]:text-yellow-400/90 [&>svg]:text-yellow-900 dark:[&>svg]:text-yellow-400",
-        destructive:
-          "text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  });
-
-  export type AlertVariant = VariantProps<typeof alertVariants>["variant"];
-</script>
-
 <script lang="ts">
-  import type { HTMLAttributes } from "svelte/elements";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithElementRef } from "#lib/index.js";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { ALERT_ROLE, type AlertVariant, alert, alertCollapse } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    variant = "default",
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
-    variant?: AlertVariant;
-  } = $props();
+let {
+	children,
+	variant = "info",
+	dismissible = false,
+	open = $bindable(),
+	onOpenChange,
+	class: classProp,
+	...rest
+}: {
+	children?: Snippet;
+	variant?: AlertVariant;
+	dismissible?: boolean;
+	/** Shown or folded away; an alert that can close collapses its row instead of vanishing. Bindable. */
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	class?: string;
+} & HTMLAttributes<HTMLDivElement> = $props();
+
+let ownOpen = $state(true);
+const shown = $derived(open ?? ownOpen);
+const foldable = $derived(dismissible || open !== undefined);
+const c = alertCollapse();
+function close() {
+	if (open === undefined) ownOpen = false;
+	else open = false;
+	onOpenChange?.(false);
+}
 </script>
 
-<div
-  bind:this={ref}
-  data-slot="alert"
-  class={cn(alertVariants({ variant }), className)}
-  {...restProps}
-  role="alert"
->
-  {@render children?.()}
-</div>
+{#snippet body()}
+	<div
+		{...rest}
+		data-slot="alert"
+		role={ALERT_ROLE[variant]}
+		class={cn("alert-in", alert({ variant }), dismissible && "pr-10", classProp)}
+	>
+		{@render children?.()}
+		{#if dismissible}
+			<button
+				type="button"
+				aria-label="Dismiss"
+				onclick={close}
+				class="absolute top-2.5 right-2.5 rounded-md p-1 text-muted-foreground transition-colors hover:text-foreground"
+			>
+				<svg viewBox="0 0 16 16" fill="none" aria-hidden="true" class="size-3.5">
+					<path d="m4 4 8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+				</svg>
+			</button>
+		{/if}
+	</div>
+{/snippet}
+
+<!-- A plain alert keeps its bare markup; only one that can close gets the folding wrapper. -->
+{#if foldable}
+	<div data-slot="alert-collapse" data-open={shown} inert={!shown} class={c.root()}>
+		<div class={c.inner()}>{@render body()}</div>
+	</div>
+{:else}
+	{@render body()}
+{/if}

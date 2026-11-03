@@ -15,7 +15,7 @@
 <script lang="ts">
   import * as Breadcrumb from "#lib/components/ui/breadcrumb/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
-  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import * as Sidebar from "#lib/components/ui/sidebar/index.js";
   import * as Tooltip from "#lib/components/ui/tooltip/index.js";
   import { Settings2, Upload, Download, DatabaseBackupIcon, X, Loader } from "#lib/assets/icons.js";
@@ -33,8 +33,7 @@
   } from "#lib/components/toast/index.js";
   import { scale } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import * as v from "valibot";
-  import { importBillFormSchema } from "#lib/validators/import.js";
+  import { parseImportItems } from "#lib/validators/import.js";
   import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { toast } from "svelte-sonner";
@@ -131,7 +130,7 @@
       } else {
         try {
           // Strict client-side validation using the shared import schema
-          const validated = v.parse(v.array(importBillFormSchema), items);
+          const validated = parseImportItems(items);
 
           // Compute counts for preview
           const payments = validated.reduce(
@@ -372,116 +371,114 @@
   }
 </script>
 
-<Dialog.Root bind:open>
-  {#if collapsed}
-    <Tooltip.Provider>
-      <Tooltip.Root>
-        <Tooltip.Trigger>
-          {#snippet child({ props })}
-            <Dialog.Trigger {...props}>
-              {#snippet child({ props: triggerProps })}
-                <Button
-                  {...triggerProps}
-                  variant="ghost"
-                  class="flex w-full items-center justify-center transition-all duration-300 ease-in-out"
-                >
-                  <Settings2 class="size-6 shrink-0" />
-                </Button>
-              {/snippet}
-            </Dialog.Trigger>
-          {/snippet}
-        </Tooltip.Trigger>
-        <Tooltip.Content side="right">
-          <p>SETTINGS</p>
-        </Tooltip.Content>
-      </Tooltip.Root>
-    </Tooltip.Provider>
-  {:else}
-    <Dialog.Trigger>
-      {#snippet child({ props })}
-        <Button
-          {...props}
-          variant="ghost"
-          class="flex w-full cursor-pointer items-center justify-start gap-4 no-underline!"
-        >
-          <Settings2 class="size-6" />
-          <span class="text-sm font-medium tracking-wide">SETTINGS</span>
-        </Button>
-      {/snippet}
-    </Dialog.Trigger>
-  {/if}
-  <Dialog.Content
-    class="h-[70vh] overflow-hidden p-0 md:h-[75vh] md:max-w-175 lg:max-w-350"
-    trapFocus={false}
+{#if collapsed}
+  <Tooltip.Provider>
+    <Tooltip.Root>
+      <Tooltip.Trigger>
+        {#snippet child({ props })}
+          <Button
+            {...props}
+            onclick={() => (open = true)}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            variant="ghost"
+            aria-label="Open settings"
+            title="Settings"
+            class="flex w-full items-center justify-center transition-all duration-300 ease-in-out"
+          >
+            <Settings2 class="size-6 shrink-0" />
+          </Button>
+        {/snippet}
+      </Tooltip.Trigger>
+      <Tooltip.Content side="right">
+        <p>Settings</p>
+      </Tooltip.Content>
+    </Tooltip.Root>
+  </Tooltip.Provider>
+{:else}
+  <Button
+    onclick={() => (open = true)}
+    aria-haspopup="dialog"
+    aria-expanded={open}
+    variant="ghost"
+    aria-label="Open settings"
+    class="flex w-full cursor-pointer items-center justify-start gap-4 no-underline!"
   >
-    <Dialog.Title class="sr-only">Settings</Dialog.Title>
-    <Dialog.Description class="sr-only">Customize your settings here.</Dialog.Description>
-    <Sidebar.Provider class="h-full min-h-0 items-start">
-      <Sidebar.Root>
-        <Sidebar.Content>
-          <Sidebar.Group>
-            <Sidebar.GroupContent>
-              <Sidebar.Menu>
-                {#each NAV_DATA.nav as item (item.name)}
-                  <Sidebar.MenuItem>
-                    <Sidebar.MenuButton
-                      onclick={() => (active_setting = item.name)}
-                      isActive={item.name === active_setting}
-                    >
-                      {#snippet child({ props })}
-                        <a
-                          href="##"
-                          {...props}
-                          onclick={(e) => {
-                            e.preventDefault();
-                            active_setting = item.name;
-                          }}
-                        >
-                          <item.icon />
-                          <span>{item.name}</span>
-                        </a>
-                      {/snippet}
-                    </Sidebar.MenuButton>
-                  </Sidebar.MenuItem>
-                {/each}
-              </Sidebar.Menu>
-            </Sidebar.GroupContent>
-          </Sidebar.Group>
-        </Sidebar.Content>
-      </Sidebar.Root>
-      <main class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
-        <header
-          class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
-        >
-          <div class="flex items-center gap-2 px-4">
-            <Breadcrumb.Root>
-              <Breadcrumb.List>
-                <Breadcrumb.Item class="hidden md:block">
-                  <Breadcrumb.Link href="##">Settings</Breadcrumb.Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Separator class="hidden md:block" />
-                <Breadcrumb.Item>
-                  <Breadcrumb.Page>{active_setting}</Breadcrumb.Page>
-                </Breadcrumb.Item>
-              </Breadcrumb.List>
-            </Breadcrumb.Root>
+    <Settings2 class="size-6" />
+    <span class="text-sm font-medium tracking-wide">SETTINGS</span>
+  </Button>
+{/if}
+<DynamicModal
+  bind:open
+  title="Settings"
+  description="Customize your settings here."
+  dialogClass="md:max-w-175 lg:max-w-350"
+>
+  <Sidebar.Provider class="h-full min-h-0 items-start">
+    <Sidebar.Root>
+      <Sidebar.Content>
+        <Sidebar.Group>
+          <Sidebar.GroupContent>
+            <Sidebar.Menu>
+              {#each NAV_DATA.nav as item (item.name)}
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton
+                    onclick={() => (active_setting = item.name)}
+                    isActive={item.name === active_setting}
+                  >
+                    {#snippet child({ props })}
+                      <a
+                        href="##"
+                        {...props}
+                        onclick={(e) => {
+                          e.preventDefault();
+                          active_setting = item.name;
+                        }}
+                      >
+                        <item.icon />
+                        <span>{item.name}</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              {/each}
+            </Sidebar.Menu>
+          </Sidebar.GroupContent>
+        </Sidebar.Group>
+      </Sidebar.Content>
+    </Sidebar.Root>
+    <main class="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <header
+        class="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 bg-background transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+      >
+        <div class="flex items-center gap-2 px-4">
+          <Breadcrumb.Root>
+            <Breadcrumb.List>
+              <Breadcrumb.Item class="hidden md:block">
+                <Breadcrumb.Link href="##">Settings</Breadcrumb.Link>
+              </Breadcrumb.Item>
+              <Breadcrumb.Separator class="hidden md:block" />
+              <Breadcrumb.Item>
+                <Breadcrumb.Page>{active_setting}</Breadcrumb.Page>
+              </Breadcrumb.Item>
+            </Breadcrumb.List>
+          </Breadcrumb.Root>
+        </div>
+      </header>
+      <ScrollArea class="h-72 flex-1 rounded-md">
+        <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
+          <div class="flex flex-1 flex-col gap-4">
+            {#if active_setting === "Import Data"}
+              {@render Import()}
+            {:else if active_setting === "Export Data"}
+              {@render Export()}
+            {/if}
           </div>
-        </header>
-        <ScrollArea class="h-72 flex-1 rounded-md">
-          <div class="flex min-h-0 flex-1 flex-col gap-4 p-4 pt-0">
-            <div class="flex flex-1 flex-col gap-4">
-              {#if active_setting === "Import Data"}
-                {@render Import()}
-              {:else if active_setting === "Export Data"}
-                {@render Export()}
-              {/if}
-            </div>
-          </div>
-        </ScrollArea>
-      </main>
-    </Sidebar.Provider>
-  </Dialog.Content>
-</Dialog.Root>
+        </div>
+      </ScrollArea>
+    </main>
+  </Sidebar.Provider>
+</DynamicModal>
 
 {#snippet Import()}
   {@const file = importBillingFile.fields.file.value()}
@@ -568,7 +565,12 @@
             <span>{file.name}</span>
             <span class="text-xs text-muted-foreground">{FileDropZone.displaySize(file.size)}</span>
           </div>
-          <Button variant="hover-text-destructive" size="icon" onclick={() => clearImport()}>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="hover:text-destructive"
+            onclick={() => clearImport()}
+          >
             <X />
           </Button>
         {/if}
@@ -588,7 +590,7 @@
         <Alert.Root variant="destructive" class="mt-4">
           <Alert.Title>Validation errors</Alert.Title>
           <Alert.Description>
-            {#each importErrors as err}
+            {#each importErrors as err, i (i)}
               <div>{err}</div>
             {/each}
           </Alert.Description>
@@ -610,7 +612,7 @@
             </TableBody>
           </Table>
 
-          <ScrollArea class="h-72 rounded-md border bg-muted/10">
+          <ScrollArea maxHeight="none" class="h-72 rounded-md border bg-muted/10">
             <div class="p-4">
               <pre class="text-xs whitespace-pre-wrap">{JSON.stringify(
                   validatedItems,
@@ -674,7 +676,7 @@
       <Alert.Root variant="destructive" class="mt-4">
         <Alert.Title>Export errors</Alert.Title>
         <Alert.Description>
-          {#each exportErrors as err}
+          {#each exportErrors as err, i (i)}
             <div>{err}</div>
           {/each}
         </Alert.Description>
@@ -702,7 +704,7 @@
           </TableBody>
         </Table>
 
-        <ScrollArea class="h-72 rounded-md border bg-muted/10">
+        <ScrollArea maxHeight="none" class="h-72 rounded-md border bg-muted/10">
           <div class="p-4">
             <pre class="text-xs whitespace-pre-wrap">{exportJson}</pre>
           </div>

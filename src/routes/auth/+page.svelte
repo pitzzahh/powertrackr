@@ -10,14 +10,15 @@
   } from "#routes/auth/(components)/index.js";
   import Logo from "#lib/components/logo.svelte";
   import { Button } from "#lib/components/ui/button/index.js";
+  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { Moon, Sun } from "#lib/assets/icons.js";
   import { toggleMode } from "mode-watcher";
 
   let { data } = $props();
 </script>
 
-<div class="grid min-h-svh lg:grid-cols-2">
-  <div class="flex flex-col gap-4 p-6 md:p-10">
+<div class="grid h-svh lg:grid-cols-2">
+  <div class="flex min-h-0 flex-col gap-4 p-6 md:p-10">
     <div class="flex justify-center gap-2 md:justify-between">
       <Logo variant="ghost" class="px-0" />
       <Button onclick={toggleMode} variant="secondary" size="icon">
@@ -30,22 +31,26 @@
         <span class="sr-only">Toggle theme</span>
       </Button>
     </div>
-    <div class="flex flex-1 items-center justify-center">
-      <div class="w-full max-w-md">
-        {#if ["login", "register"].includes(data.action)}
-          <AuthForm action={data.action} siteKey={data.turnstileSiteKey} />
-        {:else if data.action === "verify-email"}
-          <VerifyEmailForm code={data.code || ""} />
-        {:else if data.action === "2fa-setup"}
-          <Setup2FAForm />
-        {:else if data.action === "2fa-checkpoint"}
-          <Checkpoint2FAForm />
-        {:else if data.action === "forgot-password"}
-          <ForgotPasswordForm />
-        {:else if data.action === "reset-password"}
-          <ResetPasswordForm code={data.code || ""} />
-        {/if}
-      </div>
+    <div class="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+      <ScrollArea class="h-full w-full">
+        <div class="flex min-h-full items-center justify-center">
+          <div class="w-full max-w-md">
+            {#if ["login", "register"].includes(data.action)}
+              <AuthForm action={data.action} siteKey={data.turnstileSiteKey} />
+            {:else if data.action === "verify-email"}
+              <VerifyEmailForm code={data.code || ""} />
+            {:else if data.action === "2fa-setup"}
+              <Setup2FAForm />
+            {:else if data.action === "2fa-checkpoint"}
+              <Checkpoint2FAForm />
+            {:else if data.action === "forgot-password"}
+              <ForgotPasswordForm />
+            {:else if data.action === "reset-password"}
+              <ResetPasswordForm code={data.code || ""} />
+            {/if}
+          </div>
+        </div>
+      </ScrollArea>
     </div>
   </div>
   <div class="relative hidden bg-muted lg:block">

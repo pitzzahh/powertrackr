@@ -1,21 +1,17 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { getCommand } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLSpanElement>> = $props();
+let {
+	children,
+	class: classProp,
+	...rest
+}: { children?: Snippet; class?: string } & HTMLAttributes<HTMLSpanElement> = $props();
+const command = getCommand();
 </script>
 
-<span
-  bind:this={ref}
-  data-slot="command-shortcut"
-  class={cn("ms-auto text-xs tracking-widest text-muted-foreground", className)}
-  {...restProps}
->
-  {@render children?.()}
+<span {...rest} data-slot="command-shortcut" class={cn(command.styles.shortcut(), classProp)}>
+	{@render children?.()}
 </span>

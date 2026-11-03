@@ -2,6 +2,7 @@
   import * as Field from "#lib/components/ui/field/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import * as Card from "#lib/components/ui/card/index.js";
   import { Loader, Zap, Pencil, InvoiceIcon } from "#lib/assets/icons.js";
   import {
@@ -121,7 +122,7 @@
             class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
           >
             <span class="font-medium">Amount due</span>
-            <span class="min-w-0 text-right font-semibold text-primary tabular-nums"
+            <span class="min-w-0 text-right font-semibold text-accent-foreground tabular-nums"
               >{formatNumber(billing.amount)}</span
             >
           </div>
@@ -194,8 +195,8 @@
                     step={1}
                     required
                     aria-describedby="tenant-reading-edit-help tenant-reading-edit-error"
-                    {...editSubmissionForm.fields.reading.as("number")}
-                    bind:value={editReading}
+                    {...fieldInputProps(editSubmissionForm.fields.reading.as("number"))}
+                    bind:value={() => String(editReading), (v) => (editReading = Number(v))}
                   />
                   <Field.Description id="tenant-reading-edit-help">
                     Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
@@ -287,8 +288,11 @@
                     step={1}
                     required
                     aria-describedby={`pending-reading-${pb.billingInfoId}-error`}
-                    {...pendingForm.fields.reading.as("number")}
-                    bind:value={readingByBilling[pb.billingInfoId]}
+                    {...fieldInputProps(pendingForm.fields.reading.as("number"))}
+                    bind:value={
+                      () => String(readingByBilling[pb.billingInfoId] ?? ""),
+                      (v) => (readingByBilling[pb.billingInfoId] = Number(v))
+                    }
                   />
                   <Field.Error
                     id={`pending-reading-${pb.billingInfoId}-error`}

@@ -1,20 +1,16 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { calendar } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLElement>> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	children,
+	...rest
+}: HTMLAttributes<HTMLElement> & { ref?: HTMLElement | null } = $props();
 </script>
 
-<nav
-  {...restProps}
-  bind:this={ref}
-  class={cn("absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1", className)}
->
-  {@render children?.()}
+<nav bind:this={ref} class={cn(calendar().nav(), classProp)} {...rest}>
+	{@render children?.()}
 </nav>

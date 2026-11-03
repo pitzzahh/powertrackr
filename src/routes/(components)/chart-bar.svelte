@@ -152,27 +152,25 @@
       {#each ["totalkWh", "mainKWh", "subkWh", "all"] as key (key)}
         {@const chart = key}
         {@const value =
-          key === "all"
-            ? totalkWh
-            : key === "totalkWh"
-              ? totalkWh
-              : key === "mainKWh"
-                ? mainKWh
-                : subkWh}
+          key === "all" || key === "totalkWh" ? totalkWh : key === "mainKWh" ? mainKWh : subkWh}
         {@const unit = getEnergyUnit(value)}
         {@const convertedValue = convertEnergy(value, unit)}
         {@const tickerFormat: Format = { style: "decimal", maximumFractionDigits: unit === "kWh" ? 0 : 2, trailingZeroDisplay: "stripIfInteger" }}
         <button
           data-active={activeChart === chart}
-          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start even:border-s data-[active=true]:bg-muted/50 sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
+          class="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t px-6 py-4 text-start sm:border-s sm:border-t-0 sm:px-8 sm:py-6"
           onclick={() => (activeChart = key as ChartBarState["activeChart"])}
         >
-          <span class="text-xs {activeChart === chart ? 'text-primary' : 'text-muted-foreground'}">
+          <span
+            class="text-xs {activeChart === chart
+              ? 'text-accent-foreground'
+              : 'text-muted-foreground'}"
+          >
             {key === "all" ? "All" : CHART_CONFIG[key as keyof typeof CHART_CONFIG].label}
           </span>
           <NumberTicker
             class={cn("text-lg leading-none font-bold transition-colors sm:text-3xl", {
-              "text-primary": activeChart === chart,
+              "text-accent-foreground": activeChart === chart,
             })}
             value={convertedValue}
             format={tickerFormat}

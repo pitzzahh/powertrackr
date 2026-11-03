@@ -1,26 +1,18 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { field } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLParagraphElement>> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	children,
+	...rest
+}: HTMLAttributes<HTMLParagraphElement> & {
+	ref?: HTMLParagraphElement | null;
+} = $props();
 </script>
 
-<p
-  bind:this={ref}
-  data-slot="field-description"
-  class={cn(
-    "text-sm leading-normal font-normal text-muted-foreground group-has-data-[orientation=horizontal]/field:text-balance",
-    "last:mt-0 nth-last-2:-mt-1 [[data-variant=legend]+&]:-mt-1.5",
-    "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
-    className
-  )}
-  {...restProps}
->
-  {@render children?.()}
+<p bind:this={ref} data-slot="field-description" class={cn(field().description(), classProp)} {...rest}>
+	{@render children?.()}
 </p>

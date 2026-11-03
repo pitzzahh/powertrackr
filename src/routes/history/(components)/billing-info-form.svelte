@@ -58,6 +58,7 @@
   import * as Field from "#lib/components/ui/field/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import * as Popover from "#lib/components/ui/popover/index.js";
   import * as Select from "#lib/components/ui/select/index.js";
   import { CalendarDate, today } from "@internationalized/date";
@@ -78,14 +79,11 @@
   } from "#lib/types/billing-info.js";
   import { formatDate, formatEnergy } from "#lib/utils/format.js";
   import { convertToNormalText } from "#lib/utils/text.js";
-  import * as v from "valibot";
-  import { billFormSchema } from "#lib/validators/billing-info.js";
+  import { isBillFormValid } from "#lib/validators/billing-info.js";
   import { toast } from "svelte-sonner";
   import { watch } from "runed";
   import { showInspectorWarning, showLoading } from "#lib/components/toast/index.js";
   import Separator from "#lib/components/ui/separator/separator.svelte";
-  import { sineInOut } from "svelte/easing";
-  import { scale } from "svelte/transition";
   import type { AsyncState } from "#lib/types/state.js";
 
   let {
@@ -269,7 +267,7 @@
       }),
     };
 
-    const { success } = v.safeParse(billFormSchema, payloadBase);
+    const success = isBillFormValid(payloadBase);
     return { FORM_VALID: success };
   });
 
@@ -510,52 +508,46 @@
             {/snippet}
           </Popover.Trigger>
           <Popover.Content class="w-auto overflow-hidden p-0" align="start">
-            <Card.Root class="max-w-75 py-4">
-              <Card.Content class="px-4">
-                <Calendar
-                  type="single"
-                  bind:value={dateValue}
-                  captionLayout="dropdown"
-                  onValueChange={() => {
-                    openDatePicker = false;
-                    // Keep the action fields in sync when the user picks a date (use UTC ISO string)
-                    currentAction?.fields?.date?.set?.(
-                      dateValue
-                        ? new Date(
-                            Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
-                          ).toISOString()
-                        : ""
-                    );
-                  }}
-                  class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
-                />
-              </Card.Content>
-              <Card.Footer class="flex flex-wrap gap-2 border-t px-4 pt-4!">
-                {#each [{ label: "Today", value: 0 }, { label: "Tomorrow", value: 1 }, { label: "In 3 days", value: 3 }, { label: "In a week", value: 7 }, { label: "In 2 weeks", value: 14 }] as preset (preset.value)}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    class="flex-1"
-                    onclick={() => {
-                      openDatePicker = false;
-                      const utcToday = today("UTC");
-                      dateValue = utcToday?.add({
-                        days: preset.value,
-                      });
-                      currentAction?.fields?.date?.set?.(
-                        dateValue
-                          ? new Date(
-                              Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
-                            ).toISOString()
-                          : ""
-                      );
-                    }}
-                  >
-                    {preset.label}
-                  </Button>
-                {/each}
-              </Card.Footer>
-            </Card.Root>
+            <Calendar
+              type="single"
+              bind:value={dateValue}
+              captionLayout="dropdown"
+              onValueChange={() => {
+                openDatePicker = false;
+                // Keep the action fields in sync when the user picks a date (use UTC ISO string)
+                currentAction?.fields?.date?.set?.(
+                  dateValue
+                    ? new Date(
+                        Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                      ).toISOString()
+                    : ""
+                );
+              }}
+              class="bg-transparent p-0 [--cell-size:--spacing(9.5)]"
+            />
+            {#each [{ label: "Today", value: 0 }, { label: "Tomorrow", value: 1 }, { label: "In 3 days", value: 3 }, { label: "In a week", value: 7 }, { label: "In 2 weeks", value: 14 }] as preset (preset.value)}
+              <Button
+                variant="outline"
+                size="sm"
+                class="flex-1"
+                onclick={() => {
+                  openDatePicker = false;
+                  const utcToday = today("UTC");
+                  dateValue = utcToday?.add({
+                    days: preset.value,
+                  });
+                  currentAction?.fields?.date?.set?.(
+                    dateValue
+                      ? new Date(
+                          Date.UTC(dateValue.year, dateValue.month - 1, dateValue.day)
+                        ).toISOString()
+                      : ""
+                  );
+                }}
+              >
+                {preset.label}
+              </Button>
+            {/each}
           </Popover.Content>
         </Popover.Root>
         <input
@@ -577,7 +569,7 @@
           required
           min={0}
           step={0.01}
-          {...currentAction.fields.balance.as("number")}
+          {...fieldInputProps(currentAction.fields.balance.as("number"))}
         />
         <Field.Description>Total billing amount</Field.Description>
       </Field.Field>
@@ -590,7 +582,7 @@
           required
           min={0}
           step={1}
-          {...currentAction.fields.totalkWh.as("number")}
+          {...fieldInputProps(currentAction.fields.totalkWh.as("number"))}
         />
         <Field.Description>Total electricity consumption</Field.Description>
       </Field.Field>
@@ -600,7 +592,10 @@
         <Select.Root
           type="single"
           disabled={action === "add"}
-          onValueChange={(v) => currentAction?.fields.status.set(v as Status)}
+          bind:value={
+            () => currentAction.fields.status.value() || "pending",
+            (v) => currentAction?.fields.status.set(v as Status)
+          }
         >
           <Select.Trigger id="{identity}-status" class="w-full">
             {convertToNormalText(currentAction.fields.status.value() || "pending")}
@@ -631,7 +626,7 @@
       <div class="flex items-center gap-3">
         {#if action === "add"}
           <label class="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-            <Checkbox checked={pending} onCheckedChange={(c) => setPending(!!c)} />
+            <Checkbox bind:checked={() => pending, (c) => setPending(c)} />
             Create as pending (tenants submit readings)
           </label>
         {/if}
@@ -681,7 +676,9 @@
                 <Field.Label for="{identity}-sub-meter-tenant">Tenant</Field.Label>
                 <Select.Root
                   type="single"
-                  onValueChange={(val) => selectTenant(subIndex, String(val ?? ""))}
+                  bind:value={
+                    () => tenant?.id ?? "", (val) => selectTenant(subIndex, String(val ?? ""))
+                  }
                 >
                   <Select.Trigger id="{identity}-sub-meter-tenant" class="w-full">
                     {tenant ? tenant.name : "Select a tenant…"}
@@ -715,7 +712,9 @@
                       : (entry.reading ?? 0)}
                     step={1}
                     required
-                    {...currentAction.fields.subMeters[subIndex]["reading"].as("number")}
+                    {...fieldInputProps(
+                      currentAction.fields.subMeters[subIndex]["reading"].as("number")
+                    )}
                   />
                   <Field.Description>
                     {#if action === "update"}
@@ -777,8 +776,10 @@
                 <Select.Root
                   type="single"
                   disabled={action === "add"}
-                  onValueChange={(v) =>
-                    currentAction.fields.subMeters[subIndex]["status"].set(v as Status)}
+                  bind:value={
+                    () => currentAction.fields.subMeters[subIndex]["status"].value() || "",
+                    (v) => currentAction.fields.subMeters[subIndex]["status"].set(v as Status)
+                  }
                 >
                   <Select.Trigger id="{identity}-sub-meter-status" class="w-full">
                     {#if action === "add"}
@@ -848,6 +849,10 @@
       {@render meterCard(entry)}
     {/each}
   </div>
+  {@render footer()}
+</form>
+
+{#snippet footer()}
   <!-- Submit Button -->
   <div class="mt-4 flex">
     <Button
@@ -871,4 +876,4 @@
       {/if}
     </Button>
   </div>
-</form>
+{/snippet}

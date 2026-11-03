@@ -58,26 +58,49 @@
     energyValue: convertEnergy(stats.energyUsed.total, stats.energyUsed.energyUnit),
     energyUnit: getEnergyUnit(stats.energyUsed.total),
   });
+  const ENERGY_VALUE = $derived(energyValue);
 
   // ─── Ambient gauge ────────────────────────────────────────────────────────
-  const domain: [number, number] = [0, 100];
   const angleRange: [number, number] = [-120, 120];
   const gaugeRadius = { outerRadius: 84, innerRadius: 66 };
 
-  const angleScale = scaleLinear().domain(domain).range(angleRange);
+  // Nice-number ceiling of the real figure so the needle lands between
+  // ~20% and 100% of the dial and the readout always matches the gauge.
+  const gaugeMax = $derived.by(() => {
+    const v = ENERGY_VALUE;
+    if (!Number.isFinite(v) || v <= 0) return 100;
+    const magnitude = 10 ** Math.floor(Math.log10(v));
+    const normalized = v / magnitude;
+    const nice = normalized <= 1 ? 1 : normalized <= 2 ? 2 : normalized <= 5 ? 5 : 10;
+    return nice * magnitude;
+  });
 
-  const gaugeTicks = [0, 25, 50, 75, 100];
-  const gaugeMinorTicks = Array.from({ length: 11 }, (_, i) => i * 10).filter(
-    (tick) => tick % 25 !== 0
+  const gaugeDomain = $derived<[number, number]>([0, gaugeMax]);
+  const angleScale = $derived(scaleLinear().domain(gaugeDomain).range(angleRange));
+
+  // Dial starts at rest and swings to the real figure once stats arrive.
+  // A pure projection: layerchart's spring/tween motion animates the
+  // 0 → value transition when the derived updates.
+  const gaugeValue = $derived(ENERGY_VALUE > 0 ? ENERGY_VALUE : 0);
+
+  const MAJOR_FRACTIONS = [0, 0.25, 0.5, 0.75, 1];
+  const MINOR_FRACTIONS = Array.from({ length: 9 }, (_, i) => (i + 1) / 10).filter(
+    (f) => ![0.25, 0.5, 0.75].includes(f)
   );
 
-  // Decorative resting position — set once, never mutated. The real figures
-  // come from the readout inside the gauge, not from this dial.
-  let dial = $state(62);
+  const gaugeTicks = $derived(MAJOR_FRACTIONS.map((f) => gaugeMax * f));
+  const gaugeMinorTicks = $derived(MINOR_FRACTIONS.map((f) => gaugeMax * f));
 
-  const needleAngle = $derived((angleScale(dial) * Math.PI) / 180);
-  const formattedEnergy = $derived(
-    new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(energyValue)
+  const formatTick = $derived((v: number) =>
+    new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 1,
+      notation: v >= 1000 ? "compact" : "standard",
+    }).format(v)
+  );
+
+  const NEEDLE_ANGLE = $derived((angleScale(gaugeValue) * Math.PI) / 180);
+  const FORMATTED_ENERGY = $derived(
+    new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(ENERGY_VALUE)
   );
 </script>
 
@@ -97,7 +120,7 @@
     <div class="grid items-center gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
       <div class="relative">
         <div
-          class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] text-primary uppercase"
+          class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 font-mono text-[11px] tracking-[0.2em] text-accent-foreground uppercase"
         >
           <Zap class="size-3.5" />
 
@@ -195,16 +218,17 @@
                         <ClipPath>
                           {#snippet clip()}
                             <Arc
-                              value={dial}
-                              {domain}
+                              value={gaugeValue}
+                              domain={gaugeDomain}
                               range={angleRange}
                               {...gaugeRadius}
                               cornerRadius={8}
+                              motion="spring"
                             />
                           {/snippet}
                           <Arc
-                            value={domain[1]}
-                            {domain}
+                            value={gaugeMax}
+                            domain={gaugeDomain}
                             range={angleRange}
                             {...gaugeRadius}
                             cornerRadius={8}
@@ -216,8 +240,8 @@
 
                     <!-- Track outline -->
                     <Arc
-                      value={domain[1]}
-                      {domain}
+                      value={gaugeMax}
+                      domain={gaugeDomain}
                       range={angleRange}
                       {...gaugeRadius}
                       cornerRadius={8}
@@ -241,42 +265,53 @@
                       />
                     {/each}
 
-                    <!-- Major tick marks -->
+                    <!-- Major tick marks + labels -->
                     {#each gaugeTicks as tick (tick)}
                       {@const angleDeg = angleScale(tick)}
                       {@const angleRad = (angleDeg * Math.PI) / 180}
                       {@const tickInner = 66 - 10}
                       {@const tickOuter = 66 - 3}
+                      {@const isMid = Math.abs(tick - gaugeMax / 2) < 1e-9}
+                      {@const labelRadius = 66 - 18}
                       <Line
                         x1={Math.sin(angleRad) * tickInner}
                         y1={-Math.cos(angleRad) * tickInner}
                         x2={Math.sin(angleRad) * tickOuter}
                         y2={-Math.cos(angleRad) * tickOuter}
-                        class={tick === 50 ? "stroke-foreground/60" : "stroke-foreground/25"}
-                        strokeWidth={tick === 50 ? 2 : 1.2}
+                        class={isMid ? "stroke-foreground/60" : "stroke-foreground/25"}
+                        strokeWidth={isMid ? 2 : 1.2}
+                      />
+                      <Text
+                        x={Math.sin(angleRad) * labelRadius}
+                        y={-Math.cos(angleRad) * labelRadius}
+                        value={formatTick(tick)}
+                        textAnchor="middle"
+                        verticalAnchor="middle"
+                        class="fill-muted-foreground font-mono text-[8px] tabular-nums"
                       />
                     {/each}
 
                     <!-- Needle -->
                     <Line
-                      x1={Math.sin(needleAngle) * -8}
-                      y1={-Math.cos(needleAngle) * -8}
-                      x2={Math.sin(needleAngle) * 52}
-                      y2={-Math.cos(needleAngle) * 52}
+                      x1={Math.sin(NEEDLE_ANGLE) * -8}
+                      y1={-Math.cos(NEEDLE_ANGLE) * -8}
+                      x2={Math.sin(NEEDLE_ANGLE) * 52}
+                      y2={-Math.cos(NEEDLE_ANGLE) * 52}
                       class="stroke-foreground"
                       stroke-width={2.5}
                       stroke-linecap="round"
+                      motion="spring"
                     />
                     <Circle r={5} class="fill-primary" />
                     <Circle r={1.8} class="fill-background" />
 
                     <!-- Value readout -->
                     <Text
-                      value={formattedEnergy}
+                      value={FORMATTED_ENERGY}
                       textAnchor="middle"
                       verticalAnchor="middle"
-                      dy={24}
-                      class="fill-foreground text-3xl font-bold tabular-nums"
+                      dy={20}
+                      class="fill-foreground text-2xl font-bold tabular-nums"
                     />
                     <Text
                       x={0}

@@ -3,13 +3,10 @@ import { getEmailVerificationRequestBy } from "#lib/server/crud/email-verificati
 import { createEmailVerification } from "#lib/server/email.js";
 import type { AuthAction } from "#routes/auth/(components)/index.js";
 import type { EmailVerificationRequest } from "#lib/types/email-verification-request.js";
-import { PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
+import { EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
+import { env } from "cloudflare:workers";
 
-export async function load({
-  url: { searchParams, origin, pathname },
-  locals: { user, session },
-  platform,
-}) {
+export async function load({ url: { searchParams, origin, pathname }, locals: { user, session } }) {
   const act = searchParams.get("act");
   const code = searchParams.get("code");
   // If trying to access 2FA setup or checkpoint, require authentication — otherwise send to login
@@ -58,13 +55,13 @@ export async function load({
         };
       console.log("Sending initial email verification");
       // Rate limit initial email verification send
-      const { success } = await platform!.env.EMAIL_RATE_LIMITER.limit({ key: user.email });
+      const { success } = await env.EMAIL_RATE_LIMITER.limit({ key: user.email });
       if (success) {
         await createEmailVerification(
           user.id,
           user.email,
           origin,
-          Number(PUBLIC_EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
+          Number(EMAIL_VERIFICATION_TIMEOUT_MINUTES || 1)
         );
       } else {
         console.warn("Email rate limit exceeded for initial verification:", user.email);
@@ -83,6 +80,6 @@ export async function load({
   return {
     action: act as AuthAction,
     code,
-    turnstileSiteKey: platform!.env.PUBLIC_TURNSTILE_SITE_KEY,
+    turnstileSiteKey: env.TURNSTILE_SITE_KEY,
   };
 }
