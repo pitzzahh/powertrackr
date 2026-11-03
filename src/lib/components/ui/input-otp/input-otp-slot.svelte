@@ -1,31 +1,26 @@
 <script lang="ts">
-	import { PinInput as InputOTPPrimitive } from "bits-ui";
-	import { cn } from "#lib/utils/style.js";
+import { PinInput as InputOTPPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { inputOtp } from "./variants";
+import { getInputOtpStyle } from "./context";
 
-	let {
-		ref = $bindable(null),
-		cell,
-		class: className,
-		...restProps
-	}: InputOTPPrimitive.CellProps = $props();
+let {
+	ref = $bindable(null),
+	cell,
+	class: classProp,
+	...rest
+}: InputOTPPrimitive.CellProps = $props();
+
+const s = $derived(inputOtp(getInputOtpStyle()));
 </script>
 
-<InputOTPPrimitive.Cell
-	{cell}
-	bind:ref
-	data-slot="input-otp-slot"
-	class={cn(
-		"border-input aria-invalid:border-destructive dark:bg-input/30 relative flex size-9 items-center justify-center border-y border-e text-sm transition-all outline-none first:rounded-s-md first:border-s last:rounded-e-md",
-		cell.isActive &&
-			"border-ring ring-ring/50 aria-invalid:border-destructive dark:aria-invalid:ring-destructive/40 aria-invalid:ring-destructive/20 ring-offset-background z-10 ring-[3px]",
-		className
-	)}
-	{...restProps}
->
-	{cell.char}
+<InputOTPPrimitive.Cell {cell} bind:ref data-slot="input-otp-slot" class={cn(s.slot(), classProp)} {...rest}>
+	{#if cell.char}
+		{#key cell.char}<span class={s.value()}>{cell.char}</span>{/key}
+	{/if}
 	{#if cell.hasFakeCaret}
-		<div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-			<div class="animate-caret-blink bg-foreground h-4 w-px duration-1000"></div>
+		<div class={s.caret()}>
+			<div class={s.caretLine()}></div>
 		</div>
 	{/if}
 </InputOTPPrimitive.Cell>

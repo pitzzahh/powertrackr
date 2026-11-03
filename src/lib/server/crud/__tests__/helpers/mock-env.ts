@@ -39,3 +39,4 @@ export const PLUNK_SECRET_KEY: string | undefined = undefined;
 export const BASE_URL: string | undefined = undefined;
 export const EMAIL_VERIFICATION_TIMEOUT_MINUTES: string | undefined = undefined;
 export const PASSWORD_RESET_TIMEOUT_MINUTES: string | undefined = undefined;
+export const TURNSTILE_SECRET: string | undefined = undefined;

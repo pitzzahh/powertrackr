@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import { Icon } from "@lucide/svelte";
+  import type { PhosphorIcon } from "#lib/assets/icons.js";
 
   export type HeaderProps = {
     user: App.Locals["user"];
@@ -9,7 +9,7 @@
     openMenu: boolean;
     quickActions: {
       visible: boolean;
-      icon: typeof Icon;
+      icon: PhosphorIcon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
       data: () => BillingInfoDTOWithSubMeters | null;
@@ -23,7 +23,8 @@
   import Logo from "#lib/components/logo.svelte";
   import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
   import * as Sheet from "#lib/components/ui/sheet/index.js";
-  import { Menu, PhilippinePeso, Moon, Sun, Loader } from "#lib/assets/icons.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
+  import { Menu, Banknote, Moon, Sun, Loader } from "#lib/assets/icons.js";
   import SidebarContent from "#routes/(components)/sidebar-content.svelte";
   import { cn } from "#lib/utils/style.js";
   import { toggleMode } from "mode-watcher";
@@ -32,7 +33,6 @@
   import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
-  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
   import { BillingInfoForm } from "#routes/history/(components)/index.js";
@@ -51,19 +51,19 @@
     quickActions: [
       {
         visible: true,
-        icon: PhilippinePeso,
+        icon: Banknote,
         label: "New Bill",
         open: false,
         data: () => latestBillingStore.latestBillingInfo,
         onclick: () => latestBillingStore.refresh(),
-        callback: (valid, _action, metaData) => {
+        callback: (valid, action, metaData) => {
           if (valid) {
             billingStore.refresh();
             latestBillingStore.refresh();
             consumptionStore.refresh();
-            showSuccess("Billing info created successfully!");
+            showSuccess(`Billing info ${action}ed successfully!`);
           } else {
-            showWarning("Failed to create billing info", metaData?.error);
+            showWarning(`Failed to ${action} billing info`, metaData?.error);
           }
         },
       },
@@ -104,59 +104,50 @@
           {#each quickActions as quickAction (quickAction.label)}
             {#if quickAction.visible}
               {@const Icon = quickAction.icon}
-              <Sheet.Root bind:open={quickAction.open}>
-                <Button
-                  class={buttonVariants()}
-                  aria-haspopup="dialog"
-                  aria-expanded={quickAction.open}
-                  onclick={async () => {
-                    // Refresh the prefill data first so the form initializes
-                    // from the latest record in a single pass (no stale flash).
-                    if (quickAction.onclick) {
-                      await quickAction.onclick(user?.id || "");
-                    }
-                    quickAction.open = true;
-                  }}
-                >
-                  <Icon class="size-4" />
-                  <span>{quickAction.label}</span>
-                  <span class="sr-only">
-                    {quickAction.label}
-                  </span>
-                </Button>
-                <Sheet.Portal>
-                  <Sheet.Content class="w-full gap-1 md:min-w-[60%]" side="left">
-                    <Sheet.Header class="flex flex-row items-center justify-between border-b pr-10">
-                      <div class="flex flex-col">
-                        <Sheet.Title>Add new Bill</Sheet.Title>
-                        <Sheet.Description>Enter billing info</Sheet.Description>
-                      </div>
-                      {#if latestBillingStore.status === "fetching"}
-                        <Badge
-                          variant="secondary"
-                          class="flex h-6 animate-pulse items-center text-sm font-medium"
-                        >
-                          <Loader class="mr-1 h-3.5 w-3.5 animate-spin" />
-                          Filling form with previous data...
-                        </Badge>
-                      {/if}
-                    </Sheet.Header>
-                    <ScrollArea class="min-h-0 flex-1">
-                      {@const latestBillingInfo = quickAction.data()}
-                      <div class="space-y-4 p-4 pb-8">
-                        {#if quickAction.label === "New Bill"}
-                          <BillingInfoForm
-                            action="add"
-                            callback={quickAction.callback}
-                            billingInfo={latestBillingInfo || undefined}
-                            bind:open={quickAction.open}
-                          />
-                        {/if}
-                      </div>
-                    </ScrollArea>
-                  </Sheet.Content>
-                </Sheet.Portal>
-              </Sheet.Root>
+              <Button
+                class={buttonVariants()}
+                aria-haspopup="dialog"
+                aria-expanded={quickAction.open}
+                onclick={async () => {
+                  // Refresh the prefill data first so the form initializes
+                  // from the latest record in a single pass (no stale flash).
+                  if (quickAction.onclick) {
+                    await quickAction.onclick(user?.id || "");
+                  }
+                  quickAction.open = true;
+                }}
+              >
+                <Icon class="size-4" />
+                <span>{quickAction.label}</span>
+                <span class="sr-only">
+                  {quickAction.label}
+                </span>
+              </Button>
+              <DynamicModal
+                bind:open={quickAction.open}
+                title="Add new Bill"
+                description="Enter billing info"
+                dialogClass="md:max-w-3xl"
+              >
+                {#if latestBillingStore.status === "fetching"}
+                  <Badge
+                    variant="secondary"
+                    class="flex h-6 animate-pulse items-center text-sm font-medium"
+                  >
+                    <Loader class="mr-1 h-3.5 w-3.5 animate-spin" />
+                    Filling form with previous data...
+                  </Badge>
+                {/if}
+                {@const latestBillingInfo = quickAction.data()}
+                {#if quickAction.label === "New Bill"}
+                  <BillingInfoForm
+                    action="add"
+                    callback={quickAction.callback}
+                    billingInfo={latestBillingInfo || undefined}
+                    bind:open={quickAction.open}
+                  />
+                {/if}
+              </DynamicModal>
             {/if}
           {/each}
         </div>

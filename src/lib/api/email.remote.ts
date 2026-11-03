@@ -10,6 +10,8 @@
 import { command, getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { createEmailVerification } from "#lib/server/email.js";
+import { isRateLimited } from "#lib/server/rate-limit.js";
+import { env } from "cloudflare:workers";
 
 export const resendVerification = command(async () => {
   const event = getRequestEvent();
@@ -32,8 +34,7 @@ export const resendVerification = command(async () => {
   }
 
   // Rate limit email resend attempts per email
-  const { success } = await event.platform!.env.EMAIL_RATE_LIMITER.limit({ key: email });
-  if (!success) {
+  if (await isRateLimited(env.EMAIL_RATE_LIMITER, email)) {
     // For security, don't reveal rate limit info
     return { success: false, sent: false };
   }

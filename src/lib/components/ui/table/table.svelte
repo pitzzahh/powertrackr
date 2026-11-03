@@ -1,34 +1,35 @@
 <script lang="ts">
-  import type { HTMLTableAttributes } from "svelte/elements";
-  import { cn } from "#lib/utils/style.js";
-  import type { WithElementRef } from "#lib/index.js";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { type TableDensity, type TableVariant, table } from "./variants";
+import { setTableStyle } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    noWrap = false,
-    ...restProps
-  }: WithElementRef<HTMLTableAttributes> & {
-    noWrap?: boolean;
-  } = $props();
+let {
+	ref = $bindable(null),
+	children,
+	class: className,
+	containerClass,
+	variant = "default",
+	density = "comfortable",
+	...rest
+}: {
+	/** Bindable: the `<table>` element. */
+	ref?: HTMLTableElement | null;
+	children?: Snippet;
+	class?: string;
+	containerClass?: string;
+	variant?: TableVariant;
+	density?: TableDensity;
+} & HTMLAttributes<HTMLTableElement> = $props();
+
+setTableStyle(() => ({ variant, density }));
+
+const classes = $derived(table({ variant, density }));
 </script>
 
-{#if noWrap}
-  {@render table()}
-{:else}
-  <div data-slot="table-container" class="relative w-full overflow-x-auto">
-    {@render table()}
-  </div>
-{/if}
-
-{#snippet table()}
-  <table
-    bind:this={ref}
-    data-slot="table"
-    class={cn("w-full caption-bottom text-sm", className)}
-    {...restProps}
-  >
-    {@render children?.()}
-  </table>
-{/snippet}
+<div data-slot="table-container" class={cn(classes.container(), containerClass)}>
+	<table bind:this={ref} data-slot="table" class={cn(classes.root(), className)} {...rest}>
+		{@render children?.()}
+	</table>
+</div>

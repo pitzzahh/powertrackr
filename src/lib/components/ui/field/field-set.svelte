@@ -1,25 +1,26 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import type { HTMLFieldsetAttributes } from "svelte/elements";
+import type { HTMLFieldsetAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { type FieldSize, field } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLFieldsetAttributes> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	size = "default",
+	children,
+	...rest
+}: HTMLFieldsetAttributes & {
+	ref?: HTMLFieldSetElement | null;
+	size?: FieldSize;
+} = $props();
 </script>
 
 <fieldset
-  bind:this={ref}
-  data-slot="field-set"
-  class={cn(
-    "flex flex-col gap-6",
-    "has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
-    className
-  )}
-  {...restProps}
+	bind:this={ref}
+	data-slot="field-set"
+	data-size={size}
+	class={cn(field({ size }).set(), classProp)}
+	{...rest}
 >
-  {@render children?.()}
+	{@render children?.()}
 </fieldset>

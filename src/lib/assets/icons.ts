@@ -25,7 +25,6 @@ export { default as ChevronsLeft } from "phosphor-svelte/lib/CaretDoubleLeftIcon
 export { default as Loader } from "phosphor-svelte/lib/SpinnerIcon";
 export { default as Loader2 } from "phosphor-svelte/lib/SpinnerIcon";
 export { default as RefreshCw } from "phosphor-svelte/lib/ArrowClockwiseIcon";
-export { default as PhilippinePeso } from "@lucide/svelte/icons/philippine-peso";
 export { default as Menu } from "phosphor-svelte/lib/ListIcon";
 export { default as Ellipsis } from "phosphor-svelte/lib/DotsThreeIcon";
 export { default as Search } from "phosphor-svelte/lib/MagnifyingGlassIcon";

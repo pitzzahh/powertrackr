@@ -2,8 +2,9 @@
   import * as Field from "#lib/components/ui/field/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { Input } from "#lib/components/ui/input/index.js";
+  import { fieldInputProps } from "#lib/utils/field.js";
   import * as Card from "#lib/components/ui/card/index.js";
-  import * as Dialog from "#lib/components/ui/dialog/index.js";
+  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { Loader, CirclePlus, Pencil, Trash2 } from "#lib/assets/icons.js";
   import { getTenants, createTenant, updateTenant, deleteTenant } from "#lib/api/tenant.remote.js";
   import type { TenantWithMeters } from "#lib/types/tenant.js";
@@ -50,6 +51,8 @@
       type="button"
       class="w-full justify-center sm:w-auto"
       onclick={() => (openAddTenant = true)}
+      aria-haspopup="dialog"
+      aria-expanded={openAddTenant}
     >
       <CirclePlus class="size-4" />
       Add Tenant
@@ -86,6 +89,8 @@
                   variant="outline"
                   size="sm"
                   onclick={() => openEditDialog(tenant)}
+                  aria-haspopup="dialog"
+                  aria-expanded={openEdit}
                 >
                   <Pencil class="size-3.5" />
                   Edit
@@ -98,6 +103,8 @@
                   aria-label={"Delete " + tenant.name}
                   title={"Delete " + tenant.name}
                   onclick={() => openDeleteDialog(tenant)}
+                  aria-haspopup="dialog"
+                  aria-expanded={openDelete}
                 >
                   <Trash2 class="size-4" />
                 </Button>
@@ -137,185 +144,183 @@
 </div>
 
 <!-- Add Tenant Dialog -->
-<Dialog.Root bind:open={openAddTenant}>
-  <Dialog.Content class="sm:max-w-md">
-    <Dialog.Header>
-      <Dialog.Title>Add Tenant</Dialog.Title>
-      <Dialog.Description>
-        The tenant will use these credentials to log in and submit meter readings.
-      </Dialog.Description>
-    </Dialog.Header>
+<DynamicModal
+  bind:open={openAddTenant}
+  title="Add Tenant"
+  description="The tenant will use these credentials to log in and submit meter readings."
+  dialogClass="sm:max-w-md"
+>
+  <form
+    id="add-tenant-form"
+    {...createTenant.enhance(async ({ submit }) => {
+      if (creating) return;
+      creating = true;
+      try {
+        await submit();
+        const issues = createTenant.fields.allIssues?.() || [];
+        if (issues.length > 0) {
+          showWarning(issues.map((i) => i.message).join(", "));
+        } else {
+          openAddTenant = false;
+          showSuccess("Tenant created");
+        }
+      } catch (e) {
+        const message = isHttpError(e) ? e.body.message : String(e);
+        showWarning(message || "Failed to create tenant");
+      } finally {
+        creating = false;
+      }
+    })}
+    class="space-y-4"
+  >
+    <Field.Field>
+      <Field.Label for="tenant-name" class="px-1">Name</Field.Label>
+      <Input
+        id="tenant-name"
+        placeholder="Tenant name"
+        required
+        aria-describedby="tenant-name-error"
+        {...createTenant.fields.name.as("text")}
+      />
+      <Field.Error id="tenant-name-error" errors={createTenant.fields.name.issues()} />
+    </Field.Field>
+    <Field.Field>
+      <Field.Label for="tenant-email" class="px-1">Email</Field.Label>
+      <Input
+        id="tenant-email"
+        placeholder="tenant@example.com"
+        required
+        aria-describedby="tenant-email-error"
+        {...fieldInputProps(createTenant.fields.email.as("email"))}
+      />
+      <Field.Error id="tenant-email-error" errors={createTenant.fields.email.issues()} />
+    </Field.Field>
+    <Field.Field>
+      <Field.Label for="tenant-password" class="px-1">Password</Field.Label>
+      <Input
+        id="tenant-password"
+        placeholder="At least 8 characters"
+        required
+        aria-describedby="tenant-password-error"
+        {...fieldInputProps(createTenant.fields.password.as("password"))}
+      />
+      <Field.Error id="tenant-password-error" errors={createTenant.fields.password.issues()} />
+    </Field.Field>
+  </form>
+  {#snippet footer()}
+    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+      <Button type="submit" form="add-tenant-form" disabled={creating}>
+        {#if creating}
+          <Loader class="size-4 animate-spin" />
+          Creating…
+        {:else}
+          Create Tenant
+        {/if}
+      </Button>
+    </div>
+  {/snippet}
+</DynamicModal>
+
+<!-- Edit Tenant Dialog -->
+<DynamicModal
+  bind:open={openEdit}
+  title="Edit Tenant"
+  description={editTarget
+    ? `Rename ${editTarget.name}. Their email and credentials stay the same.`
+    : ""}
+  dialogClass="sm:max-w-md"
+>
+  {#if editTarget}
     <form
-      {...createTenant.enhance(async ({ submit }) => {
-        if (creating) return;
-        creating = true;
+      id="edit-tenant-form"
+      {...updateTenant.enhance(async ({ submit }) => {
         try {
           await submit();
-          const issues = createTenant.fields.allIssues?.() || [];
+          const issues = updateTenant.fields.allIssues?.() || [];
           if (issues.length > 0) {
             showWarning(issues.map((i) => i.message).join(", "));
           } else {
-            openAddTenant = false;
-            showSuccess("Tenant created");
+            openEdit = false;
+            showSuccess("Tenant updated");
           }
         } catch (e) {
           const message = isHttpError(e) ? e.body.message : String(e);
-          showWarning(message || "Failed to create tenant");
-        } finally {
-          creating = false;
+          showWarning(message || "Failed to update tenant");
         }
       })}
       class="space-y-4"
     >
+      <input type="hidden" {...updateTenant.fields.tenantUserId.as("text")} value={editTarget.id} />
       <Field.Field>
-        <Field.Label for="tenant-name" class="px-1">Name</Field.Label>
+        <Field.Label for="edit-tenant-name" class="px-1">Name</Field.Label>
         <Input
-          id="tenant-name"
-          placeholder="Tenant name"
+          id="edit-tenant-name"
           required
-          aria-describedby="tenant-name-error"
-          {...createTenant.fields.name.as("text")}
+          minlength={2}
+          aria-describedby="edit-tenant-name-error"
+          {...updateTenant.fields.name.as("text")}
+          bind:value={editName}
         />
-        <Field.Error id="tenant-name-error" errors={createTenant.fields.name.issues()} />
+        <Field.Error id="edit-tenant-name-error" errors={updateTenant.fields.name.issues()} />
       </Field.Field>
-      <Field.Field>
-        <Field.Label for="tenant-email" class="px-1">Email</Field.Label>
-        <Input
-          id="tenant-email"
-          placeholder="tenant@example.com"
-          required
-          aria-describedby="tenant-email-error"
-          {...createTenant.fields.email.as("email")}
-        />
-        <Field.Error id="tenant-email-error" errors={createTenant.fields.email.issues()} />
-      </Field.Field>
-      <Field.Field>
-        <Field.Label for="tenant-password" class="px-1">Password</Field.Label>
-        <Input
-          id="tenant-password"
-          placeholder="At least 8 characters"
-          required
-          aria-describedby="tenant-password-error"
-          {...createTenant.fields.password.as("password")}
-        />
-        <Field.Error id="tenant-password-error" errors={createTenant.fields.password.issues()} />
-      </Field.Field>
-      <Dialog.Footer>
-        <Button type="submit" disabled={creating}>
-          {#if creating}
-            <Loader class="size-4 animate-spin" />
-            Creating…
-          {:else}
-            Create Tenant
-          {/if}
-        </Button>
-      </Dialog.Footer>
     </form>
-  </Dialog.Content>
-</Dialog.Root>
-
-<!-- Edit Tenant Dialog -->
-<Dialog.Root bind:open={openEdit}>
-  {#if editTarget}
-    <Dialog.Content class="sm:max-w-md">
-      <Dialog.Header>
-        <Dialog.Title>Edit Tenant</Dialog.Title>
-        <Dialog.Description>
-          Rename {editTarget.name}. Their email and credentials stay the same.
-        </Dialog.Description>
-      </Dialog.Header>
-      <form
-        {...updateTenant.enhance(async ({ submit }) => {
-          try {
-            await submit();
-            const issues = updateTenant.fields.allIssues?.() || [];
-            if (issues.length > 0) {
-              showWarning(issues.map((i) => i.message).join(", "));
-            } else {
-              openEdit = false;
-              showSuccess("Tenant updated");
-            }
-          } catch (e) {
-            const message = isHttpError(e) ? e.body.message : String(e);
-            showWarning(message || "Failed to update tenant");
-          }
-        })}
-        class="space-y-4"
-      >
-        <input
-          type="hidden"
-          {...updateTenant.fields.tenantUserId.as("text")}
-          value={editTarget.id}
-        />
-        <Field.Field>
-          <Field.Label for="edit-tenant-name" class="px-1">Name</Field.Label>
-          <Input
-            id="edit-tenant-name"
-            required
-            minlength={2}
-            aria-describedby="edit-tenant-name-error"
-            {...updateTenant.fields.name.as("text")}
-            bind:value={editName}
-          />
-          <Field.Error id="edit-tenant-name-error" errors={updateTenant.fields.name.issues()} />
-        </Field.Field>
-        <Dialog.Footer>
-          <Button type="submit">Save</Button>
-        </Dialog.Footer>
-      </form>
-    </Dialog.Content>
   {/if}
-</Dialog.Root>
+  {#snippet footer()}
+    {#if editTarget}
+      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button type="submit" form="edit-tenant-form">Save</Button>
+      </div>
+    {/if}
+  {/snippet}
+</DynamicModal>
 
 <!-- Delete Tenant Dialog -->
-<Dialog.Root bind:open={openDelete}>
-  {#if deleteTarget}
-    <Dialog.Content class="sm:max-w-md">
-      <Dialog.Header>
-        <Dialog.Title>Delete Tenant</Dialog.Title>
-        <Dialog.Description>
-          This permanently deletes {deleteTarget.name} and all of their readings and submissions. This
-          cannot be undone.
-        </Dialog.Description>
-      </Dialog.Header>
-      <div class="space-y-4">
-        <Dialog.Footer>
-          <Button
-            type="button"
-            variant="outline"
-            onclick={() => (openDelete = false)}
-            disabled={deleting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            disabled={deleting}
-            onclick={async () => {
-              if (deleting || !deleteTarget) return;
-              deleting = true;
-              try {
-                await deleteTenant({ tenantUserId: deleteTarget.id });
-                openDelete = false;
-                showSuccess("Tenant deleted");
-              } catch (e) {
-                const message = isHttpError(e) ? e.body.message : String(e);
-                showWarning(message || "Failed to delete tenant");
-              } finally {
-                deleting = false;
-              }
-            }}
-          >
-            {#if deleting}
-              <Loader class="size-4 animate-spin" />
-              Deleting…
-            {:else}
-              Delete Tenant
-            {/if}
-          </Button>
-        </Dialog.Footer>
+<DynamicModal
+  bind:open={openDelete}
+  title="Delete Tenant"
+  description={deleteTarget
+    ? `This permanently deletes ${deleteTarget.name} and all of their readings and submissions. This cannot be undone.`
+    : ""}
+  dialogClass="sm:max-w-md"
+>
+  {#snippet footer()}
+    {#if deleteTarget}
+      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          onclick={() => (openDelete = false)}
+          disabled={deleting}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="button"
+          variant="destructive"
+          disabled={deleting}
+          onclick={async () => {
+            if (deleting || !deleteTarget) return;
+            deleting = true;
+            try {
+              await deleteTenant({ tenantUserId: deleteTarget.id });
+              openDelete = false;
+              showSuccess("Tenant deleted");
+            } catch (e) {
+              const message = isHttpError(e) ? e.body.message : String(e);
+              showWarning(message || "Failed to delete tenant");
+            } finally {
+              deleting = false;
+            }
+          }}
+        >
+          {#if deleting}
+            <Loader class="size-4 animate-spin" />
+            Deleting…
+          {:else}
+            Delete Tenant
+          {/if}
+        </Button>
       </div>
-    </Dialog.Content>
-  {/if}
-</Dialog.Root>
+    {/if}
+  {/snippet}
+</DynamicModal>

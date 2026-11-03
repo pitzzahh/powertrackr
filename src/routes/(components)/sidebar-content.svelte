@@ -17,6 +17,7 @@
 
 <script lang="ts">
   import { Button, buttonVariants } from "#lib/components/ui/button/index.js";
+  import { cn } from "#lib/utils/style.js";
   import * as AlertDialog from "#lib/components/ui/alert-dialog/index.js";
   import SettingsDialog from "./settings-dialog.svelte";
   import { useSidebarStore } from "#lib/stores/sidebar.svelte.js";
@@ -88,12 +89,12 @@
       data-active={isActive}
       variant="link"
       size={collapsed ? "icon" : "default"}
-      class={[
+      class={cn([
         {
-          "flex w-full cursor-pointer items-center justify-center gap-4 no-underline! data-[active=false]:text-muted-foreground data-[active=false]:hover:text-foreground data-[active=true]:text-primary": true,
+          "relative flex w-full cursor-pointer items-center justify-center gap-4 rounded-lg no-underline! transition-colors before:absolute before:top-1/2 before:left-0 before:h-4 before:w-0.5 before:-translate-y-1/2 before:rounded-full before:bg-accent-foreground before:transition-opacity data-[active=false]:text-muted-foreground data-[active=false]:before:opacity-0 data-[active=false]:hover:bg-accent/60 data-[active=false]:hover:text-foreground data-[active=true]:bg-primary/10 data-[active=true]:text-accent-foreground data-[active=true]:before:opacity-100": true,
           "justify-start": !collapsed,
         },
-      ]}
+      ])}
       title={collapsed && !isMobileSheet ? item.label : undefined}
     >
       <Icon class="size-6" />
@@ -159,18 +160,16 @@
         </div>
       </DropdownMenu.Label>
       <DropdownMenu.Separator />
-      <DropdownMenu.Group>
-        <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
-          <BadgeCheck />
-          Account
-        </DropdownMenu.Item>
-        <DropdownMenu.Item>
-          <Bell />
-          Notifications
-        </DropdownMenu.Item>
-      </DropdownMenu.Group>
+      <DropdownMenu.Item onclick={() => (openAccountSettings = true)}>
+        <BadgeCheck />
+        Account
+      </DropdownMenu.Item>
+      <DropdownMenu.Item>
+        <Bell />
+        Notifications
+      </DropdownMenu.Item>
       <DropdownMenu.Separator />
-      <DropdownMenu.Item onclick={() => (logoutAttempt = true)} variant="destructive">
+      <DropdownMenu.Item onclick={() => (logoutAttempt = true)} destructive>
         <LogOut class="h-6 w-6" />
         <span class="text-sm font-medium tracking-wide">LOGOUT</span>
       </DropdownMenu.Item>
@@ -185,12 +184,12 @@
     size={collapsed ? "icon" : "default"}
     aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
     title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-    class={[
+    class={cn([
       "mt-4",
       {
         "w-full": !collapsed,
       },
-    ]}
+    ])}
   >
     <PanelLeftClose
       class={[

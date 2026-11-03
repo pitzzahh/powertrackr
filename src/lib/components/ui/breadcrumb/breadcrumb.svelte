@@ -1,21 +1,32 @@
 <script lang="ts">
-  import type { WithElementRef } from "#lib/index.js";
-  import type { HTMLAttributes } from "svelte/elements";
+import type { Snippet } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { type BreadcrumbSize, type BreadcrumbVariant, breadcrumb } from "./variants";
+import { setBreadcrumbStyle } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    children,
-    ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLElement>> = $props();
+let {
+	children,
+	variant = "default",
+	size = "default",
+	class: classProp,
+	...rest
+}: {
+	children?: Snippet;
+	variant?: BreadcrumbVariant;
+	size?: BreadcrumbSize;
+	class?: string;
+} & HTMLAttributes<HTMLElement> = $props();
+
+setBreadcrumbStyle(() => ({ variant, size }));
 </script>
 
 <nav
-  bind:this={ref}
-  data-slot="breadcrumb"
-  class={className}
-  aria-label="breadcrumb"
-  {...restProps}
+	{...rest}
+	data-slot="breadcrumb"
+	data-variant={variant}
+	aria-label="Breadcrumb"
+	class={cn(breadcrumb({ variant, size }).root(), classProp)}
 >
-  {@render children?.()}
+	{@render children?.()}
 </nav>

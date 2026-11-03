@@ -1,30 +1,33 @@
 <script lang="ts">
-  import type { WithoutChildrenOrChild } from "#lib/index.js";
-  import { cn } from "#lib/utils/style.js";
-  import DropdownMenuPortal from "./dropdown-menu-portal.svelte";
-  import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
-  import type { ComponentProps } from "svelte";
+import { DropdownMenu as DropdownMenuPrimitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { type MenuSize, menu } from "#lib/menu.js";
+import { ANCHORED, stagger } from "#lib/anchor.js";
+import { dropdownMenuTrigger } from "./context";
 
-  let {
-    ref = $bindable(null),
-    sideOffset = 4,
-    portalProps,
-    class: className,
-    ...restProps
-  }: DropdownMenuPrimitive.ContentProps & {
-    portalProps?: WithoutChildrenOrChild<ComponentProps<typeof DropdownMenuPortal>>;
-  } = $props();
+let {
+	class: classProp,
+	sideOffset = 4,
+	align = "start",
+	size = "default",
+	ref = $bindable(null),
+	...rest
+}: DropdownMenuPrimitive.ContentProps & { size?: MenuSize } = $props();
+
+$effect(() => {
+	if (ref) stagger(ref.querySelectorAll<HTMLElement>("[role='menuitem']"));
+});
 </script>
 
-<DropdownMenuPortal {...portalProps}>
-  <DropdownMenuPrimitive.Content
-    bind:ref
-    data-slot="dropdown-menu-content"
-    {sideOffset}
-    class={cn(
-      "z-50 max-h-(--bits-dropdown-menu-content-available-height) min-w-32 origin-(--bits-dropdown-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-end-2 data-[side=right]:slide-in-from-start-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-      className
-    )}
-    {...restProps}
-  />
-</DropdownMenuPortal>
+<DropdownMenuPrimitive.Portal>
+	<DropdownMenuPrimitive.Content
+		bind:ref
+		{sideOffset}
+		{align}
+		aria-labelledby={dropdownMenuTrigger()}
+		{...rest}
+		data-slot="dropdown-menu-content"
+		data-size={size}
+		class={cn(ANCHORED, "static", menu({ size }).surface(), classProp)}
+	/>
+</DropdownMenuPrimitive.Portal>

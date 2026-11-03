@@ -20,10 +20,9 @@
 
   import { Button } from "#lib/components/ui/button/index.js";
   import { Badge } from "#lib/components/ui/badge/index.js";
-  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
-  import type { Icon } from "@lucide/svelte";
+  import type { PhosphorIcon } from "#lib/assets/icons.js";
   import type { AsyncState } from "#lib/types/state.js";
   import { usePendingFetch } from "#lib/hooks/use-pending-fetch.svelte.js";
 
@@ -33,7 +32,7 @@
 </script>
 
 <div class="sticky bottom-0 z-10 w-full overflow-hidden rounded-b border bg-card backdrop-blur-sm">
-  <ScrollArea orientation="horizontal" class="w-full">
+  <div class="w-full overflow-x-auto">
     <div class="flex min-w-max items-center justify-between gap-6 px-4 py-2">
       <!-- Left section: Selection and loading info -->
       <div class="flex items-center gap-4">
@@ -71,12 +70,11 @@
           <div class="flex items-center gap-3">
             <span class="shrink-0 text-sm font-medium text-muted-foreground">Show</span>
             <Select.Root
-              allowDeselect={false}
               type="single"
-              value={String(table.atoms.pagination.get().pageSize)}
-              onValueChange={(value) => {
-                table.setPageSize(Number(value));
-              }}
+              bind:value={
+                () => String(table.atoms.pagination.get().pageSize),
+                (v) => table.setPageSize(Number(v))
+              }
             >
               <Select.Trigger
                 class="h-9 w-18.75 border-border/50 bg-background shadow-sm transition-colors hover:border-border"
@@ -113,7 +111,7 @@
         <div class="flex shrink-0 items-center gap-2">
           <div class="rounded-md bg-muted/50 px-3 py-1.5">
             <span class="text-sm font-medium">
-              Page <span class="font-semibold text-primary"
+              Page <span class="font-semibold text-accent-foreground"
                 >{table.atoms.pagination.get().pageIndex + 1}</span
               >
               of
@@ -161,7 +159,7 @@
         </div>
       </div>
     </div>
-  </ScrollArea>
+  </div>
 </div>
 
 {#snippet pagination_buttons({
@@ -173,7 +171,7 @@
   onclick: () => void;
   disabled: boolean;
   content: string;
-  BtnIcon: typeof Icon;
+  BtnIcon: PhosphorIcon;
 })}
   <Button
     variant="ghost"

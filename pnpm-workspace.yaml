@@ -5,11 +5,12 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - cookie@0.7.0
   - layerchart@2.1.1
-  - miniflare@5.20260804.1-alpha || 5.20260811.0-alpha
-  - wrangler@4.121.0 || 4.122.0
-  - svelte-check@4.7.6
+  - miniflare@5.20260804.1-alpha || 5.20260811.0-alpha || 5.20261101.0-beta
+  - wrangler@4.121.0 || 4.122.0 || 4.156.1
+  - svelte-check@4.7.6 || 4.7.8
   - svelte@5.56.9
   - "@sveltejs/kit@3.0.0-next.23"
+  - bits-ui@2.20.3
 overrides:
   cookie@<0.7.0: ^0.7.0
   # @sveltejs/enhanced-img still pins sharp@^0.34.1; force the patched line

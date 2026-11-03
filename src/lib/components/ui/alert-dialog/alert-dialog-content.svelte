@@ -1,30 +1,62 @@
 <script lang="ts">
-  import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
-  import AlertDialogPortal from "./alert-dialog-portal.svelte";
-  import AlertDialogOverlay from "./alert-dialog-overlay.svelte";
-  import { cn } from "#lib/utils/style.js";
-  import type { ComponentProps } from "svelte";
-  import type { WithoutChild, WithoutChildrenOrChild } from "#lib/index.js";
+import { AlertDialog as AlertDialogPrimitive } from "bits-ui";
+import type { Snippet } from "svelte";
+import { dialogFrame } from "#lib/components/ui/dialog/variants.js";
+import { cn } from "#lib/cn.js";
+import { getAlertDialog } from "./context";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    portalProps,
-    ...restProps
-  }: WithoutChild<AlertDialogPrimitive.ContentProps> & {
-    portalProps?: WithoutChildrenOrChild<ComponentProps<typeof AlertDialogPortal>>;
-  } = $props();
+let { children, class: classProp }: { children?: Snippet; class?: string } = $props();
+
+const dialog = getAlertDialog();
+const styles = $derived(dialogFrame({ variant: dialog.variant }));
+let contentEl = $state<HTMLElement | null>(null);
 </script>
 
-<AlertDialogPortal {...portalProps}>
-  <AlertDialogOverlay />
-  <AlertDialogPrimitive.Content
-    bind:ref
-    data-slot="alert-dialog-content"
-    class={cn(
-      "fixed inset-s-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
-      className
-    )}
-    {...restProps}
-  />
-</AlertDialogPortal>
+<AlertDialogPrimitive.Portal>
+	<AlertDialogPrimitive.Overlay
+		data-slot="alert-dialog-backdrop"
+		aria-hidden="true"
+		class={styles.backdrop()}
+	/>
+	<AlertDialogPrimitive.Content
+		bind:ref={contentEl}
+		data-slot="alert-dialog-content"
+		data-variant={dialog.variant}
+		onOpenAutoFocus={(event) => {
+			event.preventDefault();
+			contentEl
+				?.querySelector<HTMLElement>('[data-slot="alert-dialog-cancel"]')
+				?.focus();
+		}}
+		class={cn(
+			styles.popup(),
+			styles.panel(),
+			"w-[min(26rem,calc(100vw-2rem))]",
+			classProp,
+		)}
+	>
+		{#if dialog.variant === "framed"}
+			<div class={styles.body()}>
+				{@render children?.()}
+			</div>
+			{#if dialog.footer}
+				<div
+					data-slot="alert-dialog-footer"
+					class={cn(dialogFrame({ variant: dialog.variant }).footer(), dialog.footer.class)}
+				>
+					{@render dialog.footer.children?.()}
+				</div>
+			{/if}
+		{:else}
+			{@render children?.()}
+			{#if dialog.footer}
+				<div
+					data-slot="alert-dialog-footer"
+					class={cn(dialogFrame({ variant: dialog.variant }).footer(), dialog.footer.class)}
+				>
+					{@render dialog.footer.children?.()}
+				</div>
+			{/if}
+		{/if}
+	</AlertDialogPrimitive.Content>
+</AlertDialogPrimitive.Portal>

@@ -1,19 +1,28 @@
 <script lang="ts">
-	import type { HTMLAttributes } from "svelte/elements";
-	import MinusIcon from "@lucide/svelte/icons/minus";
-  import type { WithElementRef } from "#lib/index.js";
+import type { HTMLAttributes } from "svelte/elements";
+import { cn } from "#lib/cn.js";
+import { inputOtp } from "./variants";
 
-	let {
-		ref = $bindable(null),
-		children,
-		...restProps
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	children,
+	...rest
+}: HTMLAttributes<HTMLDivElement> & { ref?: HTMLDivElement | null } = $props();
 </script>
 
-<div bind:this={ref} data-slot="input-otp-separator" role="separator" {...restProps}>
+<div
+	bind:this={ref}
+	data-slot="input-otp-separator"
+	role="separator"
+	class={cn(inputOtp().separator(), classProp)}
+	{...rest}
+>
 	{#if children}
-		{@render children?.()}
+		{@render children()}
 	{:else}
-		<MinusIcon />
+		<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+			<path d="M5 12h14" />
+		</svg>
 	{/if}
 </div>

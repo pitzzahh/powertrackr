@@ -8,10 +8,23 @@ vi.mock("$app/server", () => ({
   getRequestEvent: () => mockGetRequestEvent(),
 }));
 
-// Simple redirect mock so requireAuth returns a plain value we can assert
+// Faithful redirect mock: the real one always throws, so the tests assert
+// on the thrown value instead of a return.
 vi.mock("@sveltejs/kit", () => ({
-  redirect: (status: number, location: string) => ({ status, location }),
+  redirect: (status: number, location: string) => {
+    throw { status, location };
+  },
 }));
+
+function expectRedirect(fn: () => unknown, status: number, location: string) {
+  try {
+    fn();
+  } catch (e) {
+    expect(e).toEqual({ status, location });
+    return;
+  }
+  expect.unreachable("expected redirect to throw");
+}
 
 import { db } from "#lib/server/db/index.js";
 import { user, session } from "#lib/server/db/schema/index.js";
@@ -38,8 +51,7 @@ describe("auth module", () => {
 
   it("requireAuth redirects to login when no user or session", () => {
     mockGetRequestEvent.mockImplementation(() => ({ locals: { user: null, session: null } }));
-    const res = requireAuth();
-    expect(res).toEqual({ status: 307, location: "/auth?act=login" });
+    expectRedirect(requireAuth, 307, "/auth?act=login");
   });
 
   it("requireAuth redirects to verify-email when email not verified", () => {
@@ -49,8 +61,7 @@ describe("auth module", () => {
         session: {},
       },
     }));
-    const res = requireAuth();
-    expect(res).toEqual({ status: 303, location: "/auth?act=verify-email" });
+    expectRedirect(requireAuth, 303, "/auth?act=verify-email");
   });
 
   it("requireAuth redirects to 2fa checkpoint when user has registered two factor", () => {
@@ -60,8 +71,7 @@ describe("auth module", () => {
         session: { twoFactorVerified: false },
       },
     }));
-    const res = requireAuth();
-    expect(res).toEqual({ status: 303, location: "/auth?act=2fa-checkpoint" });
+    expectRedirect(requireAuth, 303, "/auth?act=2fa-checkpoint");
   });
 
   it("requireAuth returns user and session on success", () => {

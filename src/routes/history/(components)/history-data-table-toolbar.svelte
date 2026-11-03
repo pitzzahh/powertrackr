@@ -25,7 +25,6 @@
   import { X } from "#lib/assets/icons.js";
   import { convertToNormalText } from "#lib/utils/text.js";
   import { onDestroy } from "svelte";
-  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
 
   let {
@@ -46,7 +45,7 @@
   onDestroy(() => clearTimeout(timeout));
 </script>
 
-<ScrollArea orientation="horizontal" class="rounded-none">
+<div class="overflow-x-auto rounded-none">
   <div class="m-1 flex items-center justify-between space-x-2">
     <div class="flex items-center space-x-2">
       <Input
@@ -84,4 +83,4 @@
     </div>
     <DataTableViewOptions {table} {default_hidden_columns} />
   </div>
-</ScrollArea>
+</div>

@@ -51,7 +51,7 @@ Environment variables
 
 Copy `.env.example` to `.env` and update the values for your environment (do not commit `.env`). At minimum, make sure `TEST_DATABASE_URL` and `ENCRYPTION_KEY` are set. See `.env.example` for a full sample.
 
-Registration and login are protected by Cloudflare Turnstile. `PUBLIC_TURNSTILE_SITE_KEY` is set in `[vars]` in `wrangler.toml`; `TURNSTILE_SECRET` is a worker secret (`wrangler secret put TURNSTILE_SECRET`).
+Registration and login are protected by Cloudflare Turnstile. `TURNSTILE_SITE_KEY` is set in `[vars]` in `wrangler.toml` (emulated from `[vars]` in local `vite dev`); `TURNSTILE_SECRET` is a worker secret (`wrangler secret put TURNSTILE_SECRET`).
 
 Install and run
 

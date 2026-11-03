@@ -1,19 +1,13 @@
 <script lang="ts">
-  import { Calendar as CalendarPrimitive } from "bits-ui";
-  import { cn } from "#lib/utils/style.js";
+import { Calendar as Primitive } from "bits-ui";
+import { cn } from "#lib/cn.js";
+import { calendar } from "./variants";
 
-  let {
-    ref = $bindable(null),
-    class: className,
-    ...restProps
-  }: CalendarPrimitive.HeadCellProps = $props();
+let {
+	ref = $bindable(null),
+	class: classProp,
+	...rest
+}: Primitive.HeadCellProps = $props();
 </script>
 
-<CalendarPrimitive.HeadCell
-  bind:ref
-  class={cn(
-    "w-(--cell-size) rounded-md text-[0.8rem] font-normal text-muted-foreground",
-    className
-  )}
-  {...restProps}
-/>
+<Primitive.HeadCell bind:ref class={cn(calendar().headCell(), classProp)} {...rest} />

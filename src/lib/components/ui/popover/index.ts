@@ -1,19 +1,7 @@
-import Root from "./popover.svelte";
-import Close from "./popover-close.svelte";
-import Content from "./popover-content.svelte";
-import Trigger from "./popover-trigger.svelte";
-import Portal from "./popover-portal.svelte";
-
-export {
-  Root,
-  Content,
-  Trigger,
-  Close,
-  Portal,
-  //
-  Root as Popover,
-  Content as PopoverContent,
-  Trigger as PopoverTrigger,
-  Close as PopoverClose,
-  Portal as PopoverPortal,
-};
+export { default as Popover } from "./popover.svelte";
+export { default as PopoverContent } from "./popover-content.svelte";
+export { default as PopoverTrigger } from "./popover-trigger.svelte";
+export { popover, type PopoverSize } from "./variants";
+export { default as Root } from "./popover.svelte";
+export { default as Content } from "./popover-content.svelte";
+export { default as Trigger } from "./popover-trigger.svelte";

@@ -1,15 +1,10 @@
-import Root from "./input-otp.svelte";
-import Group from "./input-otp-group.svelte";
-import Slot from "./input-otp-slot.svelte";
-import Separator from "./input-otp-separator.svelte";
-
-export {
-	Root,
-	Group,
-	Slot,
-	Separator,
-	Root as InputOTP,
-	Group as InputOTPGroup,
-	Slot as InputOTPSlot,
-	Separator as InputOTPSeparator,
-};
+export { default as InputOTP } from "./input-otp.svelte";
+export { default as InputOTPGroup } from "./input-otp-group.svelte";
+export { default as InputOTPSeparator } from "./input-otp-separator.svelte";
+export { default as InputOTPSlot } from "./input-otp-slot.svelte";
+export { type InputOtpStyle, setInputOtpStyle, getInputOtpStyle } from "./context";
+export { inputOtp, type InputOtpSize, type InputOtpInvalidMotion } from "./variants";
+export { default as Root } from "./input-otp.svelte";
+export { default as Group } from "./input-otp-group.svelte";
+export { default as Separator } from "./input-otp-separator.svelte";
+export { default as Slot } from "./input-otp-slot.svelte";

@@ -59,7 +59,7 @@
         {#each steps as step, i (step.number)}
           <article class="relative sm:pl-14">
             <div
-              class="absolute top-6 left-0 hidden h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-background font-mono text-xs font-semibold text-primary ring-8 ring-background before:absolute before:inset-1 before:rounded-full before:bg-primary/10 before:content-[''] sm:flex"
+              class="absolute top-6 left-0 hidden h-10 w-10 items-center justify-center rounded-full border border-primary/30 bg-background font-mono text-xs font-semibold text-accent-foreground ring-8 ring-background before:absolute before:inset-1 before:rounded-full before:bg-primary/10 before:content-[''] sm:flex"
             >
               {step.number}
             </div>
