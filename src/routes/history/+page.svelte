@@ -4,8 +4,6 @@
   import { onMount } from "svelte";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { formatNumber, formatEnergy } from "#lib/utils/format.js";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
   import { Loader, Banknote } from "#lib/assets/icons.js";
 
   let { data } = $props();
@@ -46,7 +44,7 @@
 <div class="space-y-6 pb-4">
   <div class="flex items-center justify-between">
     <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">History</h1>
+      <h1 class="text-3xl font-semibold tracking-tight">History</h1>
       <p class="text-muted-foreground">View your billing history</p>
     </div>
   </div>
@@ -61,87 +59,41 @@
 
 {#snippet Metrics()}
   <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
+    class="flex flex-col justify-between gap-6 rounded-lg border bg-card p-4 sm:p-6 xl:flex-row xl:items-center"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
         <Banknote class="h-5 w-5" />
-        <span class="text-lg">Total Billing Periods</span>
+        <span class="text-sm font-medium text-muted-foreground">Total Billing Periods</span>
       </div>
       {#if billingStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
-      {:else if billingStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
       {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
-          {totalBillingPeriods}
+        <div class="text-4xl font-semibold tracking-tight sm:text-5xl">
+          {billingStore.status === "error" ? 0 : totalBillingPeriods}
         </div>
       {/if}
     </div>
 
-    <!-- expanded grid to include Average Balance -->
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-5 xl:gap-16">
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Energy</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{formatEnergy(0)}</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatEnergy(totalEnergyConsumed)}</span
-          >
-        {/if}
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Payments</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(totalPaymentsMade)}</span
-          >
-        {/if}
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Average Balance</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{formatNumber(0)}</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">
-            {formatNumber(averageBalance)}
-          </span>
-        {/if}
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Paid Bills</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{paidBills}</span>
-        {/if}
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Pending Bills</span>
-        {#if billingStore.status === "fetching"}
-          <Loader class="h-4 w-4 animate-spin" />
-        {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
-        {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">{pendingBills}</span>
-        {/if}
-      </div>
+    <!-- Four tiles: a full 2x2 on phones, one row from md up. -->
+    <div class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4 xl:gap-x-16">
+      {@render Stat("Total Energy", formatEnergy(totalEnergyConsumed), formatEnergy(0))}
+      {@render Stat("Total Payments", formatNumber(totalPaymentsMade), formatNumber(0))}
+      {@render Stat("Average Balance", formatNumber(averageBalance), formatNumber(0))}
+      {@render Stat("Paid / Pending", `${paidBills} / ${pendingBills}`, "0 / 0")}
     </div>
   </section>
+{/snippet}
+
+{#snippet Stat(label: string, value: string, fallback: string)}
+  <div class="flex min-w-0 flex-col gap-1">
+    <span class="text-sm text-muted-foreground">{label}</span>
+    {#if billingStore.status === "fetching"}
+      <Loader class="h-4 w-4 animate-spin" />
+    {:else}
+      <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">
+        {billingStore.status === "error" ? fallback : value}
+      </span>
+    {/if}
+  </div>
 {/snippet}

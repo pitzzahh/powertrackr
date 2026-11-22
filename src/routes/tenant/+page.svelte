@@ -1,21 +1,10 @@
 <script lang="ts">
-  import * as Field from "#lib/components/ui/field/index.js";
-  import { Button } from "#lib/components/ui/button/index.js";
-  import { Input } from "#lib/components/ui/input/index.js";
-  import { fieldInputProps } from "#lib/utils/field.js";
   import * as Card from "#lib/components/ui/card/index.js";
-  import { Loader, Zap, Pencil, InvoiceIcon } from "#lib/assets/icons.js";
-  import {
-    getMyMeter,
-    submitReading,
-    updateSubmission,
-    getPendingBillings,
-    getCurrentBilling,
-  } from "#lib/api/tenant.remote.js";
-  import { formatDate, formatEnergy, formatNumber } from "#lib/utils/format.js";
-  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
-  import { isHttpError } from "@sveltejs/kit";
-  import { watch } from "runed";
+  import { InvoiceIcon } from "#lib/assets/icons.js";
+  import { getMyMeter, getPendingBillings, getCurrentBilling } from "#lib/api/tenant.remote.js";
+  import CurrentBillingCard from "./(components)/current-billing-card.svelte";
+  import MyMeterCard from "./(components)/my-meter-card.svelte";
+  import PendingReadingForm from "./(components)/pending-reading-form.svelte";
 
   // Queries drive the page reactively: `.loading`, `.error`, `.current`.
   // Submitting a reading refreshes them server-side (single-flight), so
@@ -23,216 +12,48 @@
   const myMeterQuery = getMyMeter({});
   const pendingBillingsQuery = getPendingBillings({});
   const currentBillingQuery = getCurrentBilling({});
-
-  // Isolated remote-form instances: without `for()`, every form sharing
-  // `submitReading` would attach to one `<form>` only (the second attach
-  // throws) and read/write a shared field/issue state.
-  const editSubmissionForm = updateSubmission.for("tenant-edit");
-
-  let readingByBilling = $state<Record<string, number>>({});
-  let submittingBilling = $state<Record<string, boolean>>({});
-  let editing = $state(false);
-  let editReading = $state(0);
-  let saving = $state(false);
-
-  // Add input defaults for newly-appeared pending billings (never clobber
-  // what the user typed after a refresh).
-  watch(
-    () => pendingBillingsQuery.current,
-    (pendings) => {
-      const merged = { ...readingByBilling };
-      let changed = false;
-      for (const p of pendings ?? []) {
-        if (merged[p.billingInfoId] === undefined) {
-          merged[p.billingInfoId] = p.lastBilledReading ?? 0;
-          changed = true;
-        }
-      }
-      if (changed) {
-        readingByBilling = merged;
-      }
-    }
-  );
-
-  function startEdit() {
-    editReading = myMeterQuery.current?.latestSubmission?.reading ?? 0;
-    editing = true;
-  }
 </script>
 
+{#snippet notice(text: string, dashed = false)}
+  <div
+    class={[
+      "flex items-center justify-center p-6 text-center text-sm text-muted-foreground",
+      dashed && "rounded-lg border border-dashed",
+    ]}
+  >
+    {text}
+  </div>
+{/snippet}
+
 <div class="space-y-6 pb-4">
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="space-y-2">
-      <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">My Meter</h1>
-      <p class="text-muted-foreground">
-        Submit your reading when the owner opens a billing period.
-      </p>
-    </div>
+  <div class="space-y-2">
+    <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">My Meter</h1>
+    <p class="text-muted-foreground">Submit your reading when the owner opens a billing period.</p>
   </div>
 
   {#if myMeterQuery.error}
-    <div class="flex items-center justify-center py-8 text-muted-foreground">
-      Failed to load your meter
-    </div>
-  {:else if myMeterQuery.current}
-    {@const meter = myMeterQuery.current}
+    {@render notice("Failed to load your meter")}
+  {:else if !myMeterQuery.current}
+    {@render notice("Loading your meter…")}
+  {:else}
     {@const pendings = pendingBillingsQuery.current}
-    {#if currentBillingQuery.error}
-      <div class="flex items-center justify-center py-8 text-muted-foreground">
-        Failed to load your billing
-      </div>
-    {:else if currentBillingQuery.current}
-      {@const billing = currentBillingQuery.current}
-      <Card.Root>
-        <Card.Header class="border-b">
-          <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
-            <InvoiceIcon class="h-4 w-4 text-muted-foreground" />
-            Current billing
-          </h2>
-          <Card.Description class="text-xs">
-            Your bill for the period of {formatDate(billing.date)}
-          </Card.Description>
-        </Card.Header>
-        <Card.Content class="space-y-2">
-          <div
-            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-          >
-            <span class="font-medium">Your reading</span>
-            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
-              >{billing.reading}</span
-            >
-          </div>
-          <div
-            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-          >
-            <span class="font-medium">Usage</span>
-            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
-              >{formatEnergy(billing.usageKwh)}</span
-            >
-          </div>
-          <div
-            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-          >
-            <span class="font-medium">Rate</span>
-            <span class="min-w-0 text-right text-muted-foreground tabular-nums"
-              >{formatNumber(billing.payPerkWh)}/kWh</span
-            >
-          </div>
-          <div
-            class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-          >
-            <span class="font-medium">Amount due</span>
-            <span class="min-w-0 text-right font-semibold text-accent-foreground tabular-nums"
-              >{formatNumber(billing.amount)}</span
-            >
-          </div>
-        </Card.Content>
-      </Card.Root>
-    {/if}
+    <div class="grid gap-6 lg:grid-cols-2">
+      <MyMeterCard meter={myMeterQuery.current} />
+      {#if currentBillingQuery.error}
+        {@render notice("Failed to load your billing")}
+      {:else if currentBillingQuery.current}
+        <CurrentBillingCard billing={currentBillingQuery.current} />
+      {/if}
+    </div>
 
-    <Card.Root>
-      <Card.Header class="border-b">
-        <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
-          <Zap class="h-4 w-4 text-muted-foreground" />
-          {meter.name}
-        </h2>
-      </Card.Header>
-      <Card.Content class="space-y-6">
-        <div
-          class="flex items-center justify-between gap-3 rounded-lg border p-4 text-sm transition-colors hover:bg-accent"
-        >
-          <span class="font-medium">Last billed reading</span>
-          <span class="min-w-0 text-right text-muted-foreground tabular-nums"
-            >{meter.lastBilledReading ?? "—"}</span
-          >
-        </div>
-
-        {#if meter.latestSubmission}
-          <div class="space-y-4">
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <h2 class="text-sm font-medium">Last submission</h2>
-                <p class="text-sm text-muted-foreground">
-                  {meter.latestSubmission.reading} ({formatDate(meter.latestSubmission.createdAt)})
-                </p>
-              </div>
-              {#if !editing}
-                <Button type="button" variant="outline" size="sm" onclick={startEdit}>
-                  <Pencil class="size-3.5" />
-                  Edit
-                </Button>
-              {/if}
-            </div>
-
-            {#if editing}
-              <form
-                {...editSubmissionForm.enhance(async ({ submit, fields }) => {
-                  if (saving) return;
-                  saving = true;
-                  try {
-                    await submit();
-                    const issues = fields.allIssues?.() || [];
-                    if (issues.length > 0) {
-                      showWarning(issues.map((i) => i.message).join(", "));
-                    } else {
-                      editing = false;
-                      showSuccess("Submission updated");
-                    }
-                  } catch (e) {
-                    const message = isHttpError(e) ? e.body.message : String(e);
-                    showWarning(message || "Failed to update submission");
-                  } finally {
-                    saving = false;
-                  }
-                })}
-                class="space-y-4"
-              >
-                <Field.Field>
-                  <Field.Label for="tenant-reading-edit" class="px-1">Correct Reading</Field.Label>
-                  <Input
-                    id="tenant-reading-edit"
-                    min={meter.lastBilledReading ?? 0}
-                    step={1}
-                    required
-                    aria-describedby="tenant-reading-edit-help tenant-reading-edit-error"
-                    {...fieldInputProps(editSubmissionForm.fields.reading.as("number"))}
-                    bind:value={() => String(editReading), (v) => (editReading = Number(v))}
-                  />
-                  <Field.Description id="tenant-reading-edit-help">
-                    Fix a typo or a reading you forgot. Cannot go below your last billed reading ({meter.lastBilledReading ??
-                      0}).
-                  </Field.Description>
-                  <Field.Error
-                    id="tenant-reading-edit-error"
-                    errors={editSubmissionForm.fields.reading.issues()}
-                  />
-                </Field.Field>
-                <div class="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onclick={() => (editing = false)}
-                    disabled={saving}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={saving}>
-                    {#if saving}
-                      <Loader class="size-4 animate-spin" />
-                      Saving…
-                    {:else}
-                      Save
-                    {/if}
-                  </Button>
-                </div>
-              </form>
-            {/if}
-          </div>
-        {/if}
-      </Card.Content>
-    </Card.Root>
-
-    {#if pendings?.length}
+    {#if pendings === undefined}
+      {@render notice("Loading billings…")}
+    {:else if pendings.length === 0}
+      {@render notice(
+        "No pending billing requests — you'll see submit options here when the owner opens a billing period for you.",
+        true
+      )}
+    {:else}
       <Card.Root>
         <Card.Header class="border-b">
           <h2 class="flex items-center gap-2 text-sm leading-none font-semibold tracking-tight">
@@ -244,95 +65,12 @@
             finalize the bill.
           </Card.Description>
         </Card.Header>
-        <Card.Content class="space-y-4">
-          {#each pendings as pb (pb.billingInfoId)}
-            {@const pendingForm = submitReading.for("tenant-pending-" + pb.billingInfoId)}
-            <div class="rounded-lg border p-4">
-              <p class="text-sm font-medium">Billing period: {formatDate(pb.date)}</p>
-              <p class="text-xs text-muted-foreground">
-                Last billed reading: {pb.lastBilledReading ?? "—"}
-              </p>
-              <form
-                {...pendingForm.enhance(async ({ submit, fields }) => {
-                  if (submittingBilling[pb.billingInfoId]) return;
-                  submittingBilling = { ...submittingBilling, [pb.billingInfoId]: true };
-                  try {
-                    await submit();
-                    const issues = fields.allIssues?.() || [];
-                    if (issues.length > 0) {
-                      showWarning(issues.map((i) => i.message).join(", "));
-                    } else {
-                      showSuccess("Reading submitted for this billing");
-                    }
-                  } catch (e) {
-                    const message = isHttpError(e) ? e.body.message : String(e);
-                    showWarning(message || "Failed to submit reading");
-                  } finally {
-                    submittingBilling = { ...submittingBilling, [pb.billingInfoId]: false };
-                  }
-                })}
-                class="mt-3 space-y-3"
-              >
-                <input
-                  type="hidden"
-                  {...pendingForm.fields.billingInfoId.as("text")}
-                  value={pb.billingInfoId}
-                />
-                <Field.Field>
-                  <Field.Label for={`pending-reading-${pb.billingInfoId}`} class="sr-only">
-                    Reading for billing period {formatDate(pb.date)}
-                  </Field.Label>
-                  <Input
-                    id={`pending-reading-${pb.billingInfoId}`}
-                    min={pb.lastBilledReading ?? 0}
-                    step={1}
-                    required
-                    aria-describedby={`pending-reading-${pb.billingInfoId}-error`}
-                    {...fieldInputProps(pendingForm.fields.reading.as("number"))}
-                    bind:value={
-                      () => String(readingByBilling[pb.billingInfoId] ?? ""),
-                      (v) => (readingByBilling[pb.billingInfoId] = Number(v))
-                    }
-                  />
-                  <Field.Error
-                    id={`pending-reading-${pb.billingInfoId}-error`}
-                    errors={pendingForm.fields.reading.issues()}
-                  />
-                </Field.Field>
-                <div class="flex justify-end">
-                  <Button
-                    type="submit"
-                    class="w-full justify-center sm:w-auto"
-                    disabled={submittingBilling[pb.billingInfoId]}
-                  >
-                    {#if submittingBilling[pb.billingInfoId]}
-                      <Loader class="size-4 animate-spin" />
-                      Submitting…
-                    {:else}
-                      Submit for this billing
-                    {/if}
-                  </Button>
-                </div>
-              </form>
-            </div>
+        <Card.Content class="grid gap-4 md:grid-cols-2">
+          {#each pendings as pending (pending.billingInfoId)}
+            <PendingReadingForm {pending} />
           {/each}
         </Card.Content>
       </Card.Root>
-    {:else if pendings === undefined}
-      <div class="flex items-center justify-center py-8 text-muted-foreground">
-        Loading billings…
-      </div>
-    {:else}
-      <div
-        class="flex items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground"
-      >
-        No pending billing requests — you'll see submit options here when the owner opens a billing
-        period for you.
-      </div>
     {/if}
-  {:else}
-    <div class="flex items-center justify-center py-8 text-muted-foreground">
-      Loading your meter…
-    </div>
   {/if}
 </div>

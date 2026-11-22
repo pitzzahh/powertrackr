@@ -25,7 +25,7 @@ export const table = tv({
 			// The header sits on a card rim around a rounded inset body, and
 			// hairlines split the columns. Separate borders, so cells can round the body corners.
 			framed: {
-				container: "rounded-2xl bg-card px-1 pb-1",
+				container: "rounded-lg bg-card px-1 pb-1",
 				root: "border-separate border-spacing-0",
 				head: "relative text-xs after:absolute after:end-0 after:top-1/2 after:h-4 after:w-px after:-translate-y-1/2 after:bg-border last:after:hidden",
 				body: [

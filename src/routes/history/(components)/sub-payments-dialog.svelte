@@ -7,8 +7,6 @@
   import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
   import type { TenantReadingDTO } from "#lib/types/billing-info.js";
-  import { cubicInOut } from "svelte/easing";
-  import { scale } from "svelte/transition";
 
   interface Props {
     open: boolean;
@@ -28,38 +26,42 @@
           <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
             <TableCell
               class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-              >Status</TableCell
             >
-            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
-              >{convertToNormalText(subMeter.status)}</TableCell
-            >
+              Status
+            </TableCell>
+            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
+              {convertToNormalText(subMeter.status)}
+            </TableCell>
           </TableRow>
           <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
             <TableCell
               class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-              >Reading</TableCell
             >
-            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
-              >{subMeter.reading}</TableCell
-            >
+              Reading
+            </TableCell>
+            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
+              {subMeter.reading}
+            </TableCell>
           </TableRow>
           <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
             <TableCell
               class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-              >Used kWh</TableCell
             >
-            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
-              >{subMeter.subkWh} kWh</TableCell
-            >
+              Used kWh
+            </TableCell>
+            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
+              {subMeter.subkWh} kWh
+            </TableCell>
           </TableRow>
           <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
             <TableCell
               class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-              >Payment Amount</TableCell
             >
-            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal"
-              >{formatNumber(subMeter.payment?.amount || 0)}</TableCell
-            >
+              Payment Amount
+            </TableCell>
+            <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
+              {formatNumber(subMeter.payment?.amount || 0)}
+            </TableCell>
           </TableRow>
         </TableBody>
       </Table>
@@ -70,7 +72,7 @@
 <DynamicModal bind:open {onOpenChange} title="Sub Payments for [{billingInfo.dateFormatted}]">
   <ScrollArea class="max-h-96 pr-2.5">
     {#each billingInfo.subMeters as subMeter, index (subMeter.id)}
-      <div class="space-y-2" in:scale={{ duration: 1000, delay: index * 100, easing: cubicInOut }}>
+      <div class="space-y-2">
         {@render paymentCard(subMeter, index)}
         {#if index < billingInfo.subMeters.length - 1}
           <Separator class="my-6 w-full" />

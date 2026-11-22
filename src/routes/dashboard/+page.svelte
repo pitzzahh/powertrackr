@@ -18,7 +18,7 @@
 
   function signClass(
     value?: number | null,
-    positiveClass = "text-green-600",
+    positiveClass = "text-success",
     negativeClass = "text-destructive"
   ): string {
     const v = value ?? 0;
@@ -39,17 +39,15 @@
     ChartBar,
     toAreaChartData,
     toBarChartData,
-  } from "#routes/(components)/index.js";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
+  } from "#routes/(components)/charts/index.js";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
-  import DynamicModal from "#lib/components/dynamic-modal.svelte";
   import { Loader, Banknote } from "#lib/assets/icons.js";
   import { goto } from "$app/navigation";
-  import { BillingInfoForm } from "../history/(components)/index.js";
+  import { BillingInfoForm } from "#routes/history/(components)/index.js";
   import { useLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
   import { Button } from "#lib/components/ui/button/index.js";
+  import type { TimeRangeOption } from "#lib/types/chart.js";
 
   let { data } = $props();
 
@@ -58,6 +56,8 @@
   const latestBillingStore = useLatestBillingStore();
 
   let openNewBill = $state(false);
+  // Shared by both charts: picking a range in either card filters both.
+  let timeRange = $state<TimeRangeOption["value"]>("1y");
 
   onMount(() => {
     if (!data.user) return;
@@ -73,7 +73,7 @@
 <div class="space-y-6 pb-4">
   <div class="flex items-center justify-between">
     <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <h1 class="text-3xl font-semibold tracking-tight">Dashboard</h1>
       <p class="text-muted-foreground">Overview of your energy billing and savings</p>
     </div>
   </div>
@@ -81,54 +81,54 @@
   <!-- Mobile-only compact New Bill card (inline with content, not fixed) -->
   <div class="md:hidden">
     <section class="mb-4">
-      <div
-        class="flex items-center justify-between gap-2 rounded-md border bg-card p-3 text-muted-foreground shadow-sm"
-      >
+      <div class="flex items-center justify-between gap-2 rounded-lg border bg-card p-3">
         <div class="flex items-center gap-3">
           <Banknote class="size-5" />
           <div class="text-sm font-medium">Add new bill</div>
         </div>
-        <DynamicModal bind:open={openNewBill} title="Add new Bill" description="Enter billing info">
+        <BillingInfoForm
+          action="add"
+          title="Add new Bill"
+          description="Enter billing info"
+          callback={(valid, _, metaData) => {
+            openNewBill = false;
+            if (valid) {
+              billingStore.refresh();
+              latestBillingStore.refresh();
+              consumptionStore.refresh();
+              showSuccess("Billing info created successfully!");
+            } else {
+              showWarning("Failed to create billing info", metaData?.error);
+            }
+          }}
+          billingInfo={latestBillingStore.latestBillingInfo || undefined}
+          bind:open={openNewBill}
+        >
           {#snippet trigger({ props })}
             <Button {...props} size="sm">
               New
               <span class="sr-only">Open new bill</span>
             </Button>
           {/snippet}
-          {@const latestBillingInfo = latestBillingStore.latestBillingInfo}
-          <BillingInfoForm
-            action="add"
-            callback={(valid, _, metaData) => {
-              openNewBill = false;
-              if (valid) {
-                billingStore.refresh();
-                latestBillingStore.refresh();
-                consumptionStore.refresh();
-                showSuccess("Billing info created successfully!");
-              } else {
-                showWarning("Failed to create billing info", metaData?.error);
-              }
-            }}
-            billingInfo={latestBillingInfo || undefined}
-            bind:open={openNewBill}
-          />
-        </DynamicModal>
+        </BillingInfoForm>
       </div>
     </section>
   </div>
 
   {@render Metrics()}
 
-  <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+  <section>
     <ChartArea
+      bind:timeRange
       status={billingStore.status}
       refetch={(cb) => billingStore.refresh().then(cb)}
       chartData={billingStore.extendedBillingInfos.map(toAreaChartData)}
     />
   </section>
 
-  <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
+  <section>
     <ChartBar
+      bind:timeRange
       status={billingStore.status}
       refetch={(cb) => billingStore.refresh().then(cb)}
       chartData={billingStore.extendedBillingInfos.map(toBarChartData)}
@@ -138,47 +138,50 @@
 
 {#snippet Metrics()}
   <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
+    class="flex flex-col justify-between gap-6 rounded-lg border bg-card p-4 sm:p-6 xl:flex-row xl:items-center"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
         <Banknote class="h-5 w-5" />
-        <span class="text-lg">Current</span>
+        <span class="text-sm font-medium text-muted-foreground">Current</span>
       </div>
       {#if billingStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
       {:else if billingStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0</div>
+        <div class="text-4xl font-semibold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
+          0
+        </div>
       {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
+        <div class="text-4xl font-semibold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
           {formatNumber(billingStore.summary?.current || 0)}
         </div>
       {/if}
     </div>
 
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-4 xl:gap-16">
+    <div class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4 xl:gap-16">
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Cost</span>
+        <span class="text-sm text-muted-foreground">Total Cost</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">0</span>
         {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatNumber(billingStore.summary?.invested || 0)}</span
-          >
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">
+            {formatNumber(billingStore.summary?.invested || 0)}
+          </span>
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Total Savings</span>
+        <span class="text-sm text-muted-foreground">Total Savings</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(0)}">
+            0
+          </span>
         {:else}
           <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+            class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(
               billingStore.summary?.totalReturns
             )}"
           >
@@ -187,14 +190,16 @@
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Net Savings</span>
+        <span class="text-sm text-muted-foreground">Net Savings</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0%</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(0)}">
+            0%
+          </span>
         {:else}
           <span
-            class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+            class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(
               billingStore.summary?.netReturns
             )}"
           >
@@ -203,18 +208,20 @@
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Period Change</span>
+        <span class="text-sm text-muted-foreground">Period Change</span>
         {#if billingStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if billingStore.status === "error"}
-          <div class="flex items-baseline gap-2">
-            <span class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(0)}">0</span>
+          <div class="flex flex-wrap items-baseline gap-x-2">
+            <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(0)}">
+              0
+            </span>
             <span class="text-xs text-muted-foreground">0%</span>
           </div>
         {:else}
-          <div class="flex items-baseline gap-2">
+          <div class="flex flex-wrap items-baseline gap-x-2">
             <span
-              class="text-2xl font-semibold md:text-xl lg:text-2xl {signClass(
+              class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl {signClass(
                 billingStore.summary?.periodPaymentChange
               )}"
             >

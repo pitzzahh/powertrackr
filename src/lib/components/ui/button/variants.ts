@@ -52,11 +52,11 @@ export const button = tv({
 		},
 		size: {
 			// The control ladder (DESIGN.md): radius rides the size, about a quarter of the height.
-			xs: "h-6 gap-1 rounded-sm px-2 text-xs active:scale-[var(--press-scale-sm)] [&_svg]:size-3",
-			sm: "h-8 gap-1.5 rounded-md px-3 text-xs active:scale-[var(--press-scale-sm)] [&_svg]:size-3.5",
-			default: "h-9 gap-2 rounded-lg px-4 [&_svg]:size-4",
-			lg: "h-10 gap-2 rounded-lg px-5 active:scale-[var(--press-scale-lg)] [&_svg]:size-4.5",
-			xl: "h-12 gap-2.5 rounded-xl px-6 text-base active:scale-[var(--press-scale-lg)] [&_svg]:size-5",
+			xs: "h-6 [height:var(--control-height-xs)] gap-1 rounded-sm px-2 text-xs active:scale-[var(--press-scale-sm)] [&_svg]:size-3",
+			sm: "h-8 [height:var(--control-height-sm)] gap-1.5 rounded-md px-3 text-xs active:scale-[var(--press-scale-sm)] [&_svg]:size-3.5",
+			default: "h-9 [height:var(--control-height-default)] gap-2 rounded-lg px-4 [&_svg]:size-4",
+			lg: "h-10 [height:var(--control-height-lg)] gap-2 rounded-lg px-5 active:scale-[var(--press-scale-lg)] [&_svg]:size-4.5",
+			xl: "h-12 [height:var(--control-height-xl)] gap-2.5 rounded-xl px-6 text-base active:scale-[var(--press-scale-lg)] [&_svg]:size-5",
 			"icon-xs":
 				"size-6 rounded-sm p-0 active:scale-[var(--press-scale-icon)] [&_svg]:size-3",
 			"icon-sm":
@@ -107,7 +107,9 @@ export const button = tv({
  * flow and is clipped across, so only what the button shows sizes it or adds scroll width. */
 export const buttonFace = tv({
 	slots: {
-		wrap: "relative grid w-full min-w-0 grid-cols-[minmax(0,1fr)] overflow-x-clip gap-[inherit] [align-items:inherit] [flex-direction:inherit] [justify-content:inherit]",
+		// minmax(min-content): the label sets the button's minimum width, so tables and
+		// wrapping rows never squeeze it below its text.
+		wrap: "relative grid w-full grid-cols-[minmax(min-content,1fr)] overflow-x-clip gap-[inherit] [align-items:inherit] [flex-direction:inherit] [justify-content:inherit]",
 		face: [
 			"col-start-1 row-start-1 flex gap-[inherit] whitespace-nowrap [align-items:inherit] [flex-direction:inherit] [justify-content:inherit]",
 			"transition-[opacity,transform,scale,translate,filter] duration-(--duration-base) ease-[var(--ease-ui-out)] motion-reduce:transition-none",

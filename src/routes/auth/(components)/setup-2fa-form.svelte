@@ -1,68 +1,41 @@
 <script lang="ts" module>
-  import type { AsyncState } from "#lib/types/state.js";
   import type { HTMLAttributes } from "svelte/elements";
   import type { WithElementRef } from "#lib/index.js";
 
   export type Setup2FAFormProps = WithElementRef<HTMLAttributes<HTMLDivElement>>;
 
-  type TwoFASetupState = {
-    asyncState: AsyncState;
-    step: "idle" | "setup" | "complete";
-    secret: string;
-    otpauthUrl: string;
-    recoveryCode: string;
-    copiedRecovery: boolean;
-  };
+  const SUBTITLE = {
+    idle: "Add an extra layer of security to your account using an authenticator app.",
+    setup: "Scan the QR code with your authenticator app and enter the verification code.",
+    complete: "Save your recovery code in a safe place.",
+  } as const;
 </script>
 
 <script lang="ts">
   import { FieldGroup } from "#lib/components/ui/field/index.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { cn } from "#lib/utils/style.js";
-  import { Loader, Shield, ShieldCheck, Copy, Check } from "#lib/assets/icons.js";
-  import { generate2FASecret, verify2FA, signout } from "#lib/api/auth.remote.js";
-  import { toast } from "svelte-sonner";
-  import { isHttpError } from "@sveltejs/kit";
-  import { showLoading, showSuccess, showWarning } from "#lib/components/toast/index.js";
-  import * as QRCode from "#lib/components/ui/qr-code/index.js";
-  import * as InputOTP from "#lib/components/ui/input-otp/index.js";
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
-  import { REGEXP_ONLY_DIGITS } from "bits-ui";
-  import Logo from "#lib/components/logo.svelte";
+  import { Loader, Shield } from "#lib/assets/icons.js";
+  import { generate2FASecret, signout } from "#lib/api/auth.remote.js";
+  import { notifyResult } from "#lib/utils/notify.js";
+  import { showWarning } from "#lib/components/toast/index.js";
+  import Setup2FAVerify from "./setup-2fa-verify.svelte";
+  import RecoveryCodePanel from "./recovery-code-panel.svelte";
 
   let { ref = $bindable(null), class: className, ...restProps }: Setup2FAFormProps = $props();
 
-  let { asyncState, step, secret, otpauthUrl, recoveryCode, copiedRecovery } =
-    $state<TwoFASetupState>({
-      asyncState: "idle",
-      step: "idle",
-      secret: "",
-      otpauthUrl: "",
-      recoveryCode: "",
-      copiedRecovery: false,
-    });
-
-  function copyRecoveryCode() {
-    navigator.clipboard.writeText(recoveryCode);
-    copiedRecovery = true;
-    setTimeout(() => (copiedRecovery = false), 2000);
-  }
+  let step: keyof typeof SUBTITLE = $state("idle");
+  let busy = $state(false);
+  let secret = $state("");
+  let otpauthUrl = $state("");
+  let recoveryCode = $state("");
 </script>
 
 <div class={cn("flex flex-col gap-6", className)} bind:this={ref} {...restProps}>
   <FieldGroup>
     <div class="flex flex-col items-center gap-1 text-center">
       <h1 class="text-2xl font-bold">Set up two-factor authentication</h1>
-      <p class="text-sm text-balance text-muted-foreground">
-        {#if step === "idle"}
-          Add an extra layer of security to your account using an authenticator app.
-        {:else if step === "setup"}
-          Scan the QR code with your authenticator app and enter the verification code.
-        {:else}
-          Save your recovery code in a safe place.
-        {/if}
-      </p>
+      <p class="text-sm text-balance text-muted-foreground">{SUBTITLE[step]}</p>
     </div>
 
     {#if step === "idle"}
@@ -76,36 +49,28 @@
         <form
           class="mt-4 inline-block"
           {...generate2FASecret.enhance(async ({ submit }) => {
-            if (asyncState === "processing") return;
-            asyncState = "processing";
-            const toastId = showLoading("Generating 2FA secret...");
-            try {
-              await submit();
-              if (generate2FASecret.result?.secret && generate2FASecret.result?.otpauthUrl) {
-                step = "setup";
-                secret = generate2FASecret.result.secret;
-                otpauthUrl = generate2FASecret.result.otpauthUrl;
-                toast.dismiss(toastId);
-              } else {
-                showWarning("Failed to generate 2FA secret", undefined, undefined, {
-                  id: toastId,
-                });
-              }
-            } catch (e) {
-              if (isHttpError(e)) {
-                showWarning(e.body.message, undefined, undefined, { id: toastId });
-              } else {
-                showWarning("Failed to generate 2FA secret", undefined, undefined, {
-                  id: toastId,
-                });
-              }
-            } finally {
-              asyncState = "idle";
+            if (busy) return;
+            busy = true;
+            const ok = await notifyResult({
+              loading: "Generating 2FA secret...",
+              success: "Scan the QR code to continue",
+              failure: "Failed to generate 2FA secret",
+              run: submit,
+            });
+            busy = false;
+            const result = generate2FASecret.result;
+            if (!ok) return;
+            if (!result?.secret || !result.otpauthUrl) {
+              showWarning("Failed to generate 2FA secret");
+              return;
             }
+            secret = result.secret;
+            otpauthUrl = result.otpauthUrl;
+            step = "setup";
           })}
         >
-          <Button type="submit" disabled={asyncState === "processing"}>
-            {#if asyncState === "processing"}
+          <Button type="submit" disabled={busy}>
+            {#if busy}
               <Loader class="size-4 animate-spin" />
               Generating...
             {:else}
@@ -116,137 +81,17 @@
         </form>
       </div>
     {:else if step === "setup"}
-      <div class="space-y-4" transition:fly={{ y: 10, duration: 300, easing: cubicOut }}>
-        <div class="rounded-lg border p-4">
-          <h5 class="font-medium">Step 1: Scan QR Code</h5>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Scan this QR code with your authenticator app.
-          </p>
-          <div class="mt-4 flex items-center justify-center">
-            <QRCode.Root value={otpauthUrl} size={250} logo="/logo/favicon.png" />
-          </div>
-          <div class="mt-4">
-            <p class="text-center text-xs text-muted-foreground">Or enter this code manually:</p>
-            <code class="mt-2 block rounded bg-muted p-2 text-center font-mono text-sm break-all">
-              {secret}
-            </code>
-          </div>
-        </div>
-
-        <div class="rounded-lg border p-4">
-          <h5 class="font-medium">Step 2: Enter Verification Code</h5>
-          <p class="mt-1 text-sm text-muted-foreground">
-            Enter the 6-digit code from your authenticator app.
-          </p>
-          <form
-            class="mt-4"
-            {...verify2FA.enhance(async ({ submit }) => {
-              if (asyncState === "processing") return;
-              asyncState = "processing";
-              const toastId = showLoading("Verifying code...");
-              try {
-                await submit();
-                const issues = verify2FA.fields.allIssues?.() || [];
-                if (issues.length > 0) {
-                  showWarning(issues.map((i) => i.message).join(", "), undefined, undefined, {
-                    id: toastId,
-                  });
-                } else if (verify2FA.result?.recoveryCode) {
-                  recoveryCode = verify2FA.result.recoveryCode;
-                  step = "complete";
-                  showSuccess("2FA enabled successfully!", undefined, undefined, {
-                    id: toastId,
-                  });
-                }
-              } catch (e) {
-                if (isHttpError(e)) {
-                  showWarning(e.body.message, undefined, undefined, { id: toastId });
-                } else {
-                  showWarning("Failed to verify code", undefined, undefined, {
-                    id: toastId,
-                  });
-                }
-              } finally {
-                asyncState = "idle";
-              }
-            })}
-          >
-            <input {...verify2FA.fields.secret.as("hidden", secret)} />
-            <div class="flex flex-col items-center gap-4">
-              <InputOTP.Root
-                maxlength={6}
-                name={verify2FA.fields.code.as("text").name}
-                onValueChange={(value) => verify2FA.fields.code.set(value)}
-                pattern={REGEXP_ONLY_DIGITS}
-              >
-                {#snippet children({ cells })}
-                  <InputOTP.Group>
-                    {#each cells.slice(0, 3) as cell, i (cell)}
-                      <InputOTP.Slot
-                        autofocus={i === 0}
-                        {cell}
-                        aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
-                      />
-                    {/each}
-                  </InputOTP.Group>
-                  <InputOTP.Separator />
-                  <InputOTP.Group>
-                    {#each cells.slice(3, 6) as cell (cell)}
-                      <InputOTP.Slot
-                        {cell}
-                        aria-invalid={verify2FA.fields.code.issues() ? "true" : "false"}
-                      />
-                    {/each}
-                  </InputOTP.Group>
-                {/snippet}
-              </InputOTP.Root>
-              <Button
-                type="submit"
-                class="w-full"
-                disabled={verify2FA.fields?.code?.value()?.length !== 6 ||
-                  asyncState === "processing"}
-              >
-                {#if asyncState === "processing"}
-                  <Loader class="size-4 animate-spin" />
-                  Verifying...
-                {:else}
-                  Verify & Enable
-                {/if}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    {:else if step === "complete"}
-      <div
-        class="rounded-lg border border-green-500/50 bg-green-50 p-4 dark:bg-green-900/20"
-        transition:fly={{ y: 10, duration: 300, easing: cubicOut }}
-      >
-        <div class="flex items-center gap-2">
-          <ShieldCheck class="size-5 text-green-500" />
-          <h5 class="font-medium text-green-700 dark:text-green-400">2FA Setup Complete!</h5>
-        </div>
-        <p class="mt-2 text-sm text-green-600 dark:text-green-300">
-          Save your recovery code in a safe place. You'll need it if you lose access to your
-          authenticator app.
-        </p>
-        <div class="mt-4 flex items-center gap-2">
-          <code class="flex-1 rounded bg-white p-3 text-center font-mono text-lg dark:bg-gray-800">
-            {recoveryCode}
-          </code>
-          <Button variant="outline" size="icon" onclick={copyRecoveryCode}>
-            {#if copiedRecovery}
-              <Check class="size-4 text-green-500" />
-            {:else}
-              <Copy class="size-4" />
-            {/if}
-          </Button>
-        </div>
-        <Button class="mt-4 w-full" href="/dashboard">
-          <ShieldCheck class="size-4" />
-          Done
-        </Button>
-      </div>
+      <Setup2FAVerify
+        {secret}
+        {otpauthUrl}
+        bind:busy
+        oncomplete={(code) => {
+          recoveryCode = code;
+          step = "complete";
+        }}
+      />
+    {:else}
+      <RecoveryCodePanel code={recoveryCode} />
     {/if}
   </FieldGroup>
 </div>
@@ -254,25 +99,15 @@
 <div class="mt-4 flex justify-center">
   <form
     {...signout.enhance(async ({ submit }) => {
-      const toastId = showLoading("Logging out...");
-      try {
-        await submit();
-        showSuccess("Logged out successfully");
-      } catch (e) {
-        showWarning("Failed to logout. Please try again.");
-      } finally {
-        toast.dismiss(toastId);
-      }
+      await notifyResult({
+        loading: "Logging out...",
+        success: "Logged out successfully",
+        failure: "Failed to logout. Please try again.",
+        run: submit,
+      });
     })}
     class="flex"
   >
-    <Button
-      type="submit"
-      variant="outline"
-      disabled={asyncState === "processing"}
-      aria-label="Login with another account"
-    >
-      Login with another account
-    </Button>
+    <Button type="submit" variant="outline" disabled={busy}>Login with another account</Button>
   </form>
 </div>

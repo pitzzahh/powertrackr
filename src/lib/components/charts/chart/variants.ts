@@ -50,7 +50,7 @@ export const chartAxis = tv({
 export const chartTooltip = tv({
   slots: {
     panel:
-      "pointer-events-none min-w-32 overflow-hidden rounded-lg border border-border bg-popover/95 px-3 py-2.5 text-popover-foreground shadow-lg backdrop-blur-md",
+      "pointer-events-none min-w-32 overflow-hidden rounded-lg border border-border bg-popover px-3 py-2.5 text-popover-foreground shadow-md",
     title: "mb-2 font-medium text-foreground text-xs",
     rows: "grid gap-1.5",
     row: "flex w-full items-center gap-2 text-xs",

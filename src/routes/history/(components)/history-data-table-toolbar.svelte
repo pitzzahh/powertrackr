@@ -45,42 +45,42 @@
   onDestroy(() => clearTimeout(timeout));
 </script>
 
-<div class="overflow-x-auto rounded-none">
-  <div class="m-1 flex items-center justify-between space-x-2">
-    <div class="flex items-center space-x-2">
-      <Input
-        placeholder="Filter BillingInfos by {convertToNormalText(where_to_search)}..."
-        bind:value={
-          () => search,
-          (v) => {
-            clearTimeout(timeout);
-            search = v;
-            timeout = window.setTimeout(() => {
-              table.getColumn(where_to_search)?.setFilterValue(v);
-            }, 500);
-          }
-        }
-        type="search"
-        class="h-8 w-50 min-w-75 lg:w-min"
-      />
-      <DataTableSearchFilter {table} bind:where_to_search />
-      {#if status_column}
-        <DataTableFacetedFilter column={status_column} title="Payment Status" options={statuses} />
-      {/if}
-      {#if is_filtered}
-        <Button
-          variant="ghost"
-          onclick={() => {
-            search = "";
-            table.resetColumnFilters();
-          }}
-          class="h-8 px-2 lg:px-3"
-        >
-          Reset
-          <X />
-        </Button>
-      {/if}
-    </div>
+<!-- One wrapping row: on phones the search fills the first line and the
+     filter + column controls share the second. -->
+<div class="flex flex-wrap items-center gap-2 p-2">
+  <Input
+    placeholder="Filter by {convertToNormalText(where_to_search).toLowerCase()}…"
+    bind:value={
+      () => search,
+      (v) => {
+        clearTimeout(timeout);
+        search = v;
+        timeout = window.setTimeout(() => {
+          table.getColumn(where_to_search)?.setFilterValue(v);
+        }, 500);
+      }
+    }
+    type="search"
+    class="h-8 w-full sm:w-75"
+  />
+  <DataTableSearchFilter {table} bind:where_to_search />
+  {#if status_column}
+    <DataTableFacetedFilter column={status_column} title="Payment Status" options={statuses} />
+  {/if}
+  {#if is_filtered}
+    <Button
+      variant="ghost"
+      onclick={() => {
+        search = "";
+        table.resetColumnFilters();
+      }}
+      class="h-8 px-2 lg:px-3"
+    >
+      Reset
+      <X />
+    </Button>
+  {/if}
+  <div class="ms-auto">
     <DataTableViewOptions {table} {default_hidden_columns} />
   </div>
 </div>

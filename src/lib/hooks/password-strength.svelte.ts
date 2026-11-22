@@ -1,8 +1,4 @@
-export type PasswordRequirement = {
-  regex: RegExp;
-  text: string;
-};
-
+import type { PasswordRequirement } from "#lib/types/auth.js";
 const DEFAULT_REQUIREMENTS: readonly PasswordRequirement[] = [
   { regex: /.{8,}/, text: "At least 8 characters" },
   { regex: /[0-9]/, text: "At least 1 number" },

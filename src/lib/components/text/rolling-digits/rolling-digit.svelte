@@ -41,13 +41,17 @@
       aria-hidden="true"
       class={cn(glyphClass, "rolling-digits-out")}
       style:--rd-to="{exit.to}px"
-      onanimationend={() => (exits = exits.filter((e) => e.id !== exit.id))}>{exit.char}</span
+      onanimationend={() => (exits = exits.filter((e) => e.id !== exit.id))}
     >
+      {exit.char}
+    </span>
   {/each}
   {#key shown.id}
     <span
       class={cn(glyphClass, shown.id > 0 && "rolling-digits-in")}
-      style:--rd-from="{shown.from}px">{shown.char}</span
+      style:--rd-from="{shown.from}px"
     >
+      {shown.char}
+    </span>
   {/key}
 </span>

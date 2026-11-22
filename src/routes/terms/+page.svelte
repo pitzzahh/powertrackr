@@ -9,13 +9,13 @@
 <section class="relative z-10 bg-background">
   <div class="container mx-auto px-4 py-16 lg:py-24">
     <div class="mx-auto max-w-3xl">
-      <p class="text-xs tracking-[0.3em] text-muted-foreground uppercase">Terms</p>
       <h1 class="mt-4 text-3xl font-semibold tracking-tight md:text-5xl">Terms & Conditions</h1>
       <a
         href={resolve("")}
         class="mt-3 inline-flex text-sm font-medium text-accent-foreground hover:underline"
-        >Back to Home</a
       >
+        Back to Home
+      </a>
 
       <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
         These Terms & Conditions govern your use of PowerTrackr, a platform for electricity billing,

@@ -31,7 +31,7 @@
   let { table, status = "idle", hide_show_row_count }: DataTablePaginationProps<TData> = $props();
 </script>
 
-<div class="sticky bottom-0 z-10 w-full overflow-hidden rounded-b border bg-card backdrop-blur-sm">
+<div class="sticky bottom-0 z-10 w-full overflow-hidden rounded-b border bg-card">
   <div class="w-full overflow-x-auto">
     <div class="flex min-w-max items-center justify-between gap-6 px-4 py-2">
       <!-- Left section: Selection and loading info -->
@@ -79,14 +79,14 @@
               <Select.Trigger
                 class="h-9 w-18.75 border-border/50 bg-background shadow-sm transition-colors hover:border-border"
               >
-                <span class="font-medium"
-                  >{String(
+                <span class="font-medium">
+                  {String(
                     table.atoms.pagination.get().pageSize ==
                       table.getPrePaginatedRowModel().rows.length
                       ? "All"
                       : table.atoms.pagination.get().pageSize
-                  )}</span
-                >
+                  )}
+                </span>
               </Select.Trigger>
               <Select.Content side="top" class="max-h-md">
                 {#each [5, 10, 25, Math.round(table.getRowCount() / 4), Math.round(table.getRowCount() / 2)]
@@ -111,9 +111,9 @@
         <div class="flex shrink-0 items-center gap-2">
           <div class="rounded-md bg-muted/50 px-3 py-1.5">
             <span class="text-sm font-medium">
-              Page <span class="font-semibold text-accent-foreground"
-                >{table.atoms.pagination.get().pageIndex + 1}</span
-              >
+              Page <span class="font-semibold text-accent-foreground">
+                {table.atoms.pagination.get().pageIndex + 1}
+              </span>
               of
               <span class="font-semibold">{table.getPageCount()}</span>
             </span>

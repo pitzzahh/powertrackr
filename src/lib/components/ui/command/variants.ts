@@ -62,7 +62,7 @@ export const commandFrame = tv({
 		 */
 		variant: {
 			default: {
-				panel: "rounded-xl border border-border bg-popover shadow-(--overlay-shadow)",
+				panel: "rounded-lg border border-border bg-popover shadow-(--overlay-shadow)",
 				body: "rounded-xl bg-popover p-1",
 				inputWrap: "mx-1 mt-1 h-8 rounded-lg bg-foreground/[0.04] px-2",
 				inputIcon: "opacity-50",
@@ -81,7 +81,7 @@ export const commandFrame = tv({
 			},
 			framed: {
 				panel:
-					"rounded-2xl border border-border bg-background p-1 shadow-(--overlay-shadow)",
+					"rounded-lg border border-border bg-background p-1 shadow-(--overlay-shadow)",
 				header: "pt-1.5 pb-2",
 				body: "rounded-[11px] border border-border bg-popover",
 				inputWrap: "border-border border-b px-3",
@@ -105,7 +105,7 @@ export const commandFrame = tv({
 			launcher: {
 				popup: "w-[min(42rem,calc(100vw-2rem))]",
 				// The card-toned shell separates the white input, tray and result islands in light mode.
-				panel: "rounded-3xl border border-border bg-card p-3 shadow-(--overlay-shadow)",
+				panel: "rounded-lg border border-border bg-card p-3 shadow-(--overlay-shadow)",
 				body: "gap-3",
 				bar: "flex-wrap sm:flex-nowrap",
 				inputWrap:
@@ -116,7 +116,7 @@ export const commandFrame = tv({
 				pill: "rounded-full bg-foreground/[0.06]",
 				filter:
 					"size-9 rounded-full data-[pressed]:text-foreground data-[state=on]:text-foreground",
-				list: "rounded-2xl border border-border bg-background p-1.5",
+				list: "rounded-lg border border-border bg-background p-1.5",
 				// Hints read as plain text on the frame; a held key still darkens.
 				kbd: "h-auto min-w-0 bg-transparent px-0",
 				group:
@@ -134,7 +134,7 @@ export const commandFrame = tv({
 			spotlight: {
 				popup: "w-[min(46rem,calc(100vw-2rem))]",
 				panel:
-					"rounded-2xl border border-border bg-popover p-2 shadow-(--overlay-shadow)",
+					"rounded-lg border border-border bg-popover p-2 shadow-(--overlay-shadow)",
 				filters: "gap-1 self-start px-1 pt-1",
 				pill: "rounded-full bg-foreground/[0.08]",
 				filter:
