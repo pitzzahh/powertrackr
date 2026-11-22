@@ -1,153 +1,63 @@
 <script module lang="ts">
+  import type { SvelteRow as Row } from "#lib/components/ui/data-table/index.js";
+  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
+
   export interface BillingInfoDataTableRowActionsProps {
     row: Row<ExtendedBillingInfoTableView>;
-  }
-  interface ComponentState {
-    app_state: "stale" | "processing";
-    active_dialog_content: "view" | "remove";
-    open_view: boolean;
-    open_edit: boolean;
-    delete_confirm_value: string;
   }
 </script>
 
 <script lang="ts">
-  import { Loader, Trash2, View, Pencil, Ticket, Check } from "#lib/assets/icons.js";
-  import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
-  import { BillingInfoForm, SubPaymentsButton } from ".";
-  import { formatDate, formatNumber } from "#lib/utils/format.js";
-  import type { SvelteRow as Row } from "#lib/components/ui/data-table/index.js";
+  import { Loader, Trash2, View, Pencil, Check } from "#lib/assets/icons.js";
+  import { BillingInfoForm } from ".";
   import Button from "#lib/components/ui/button/button.svelte";
-  import DynamicModal from "#lib/components/dynamic-modal.svelte";
-  import { showInspectorWarning, showSuccess, showWarning } from "#lib/components/toast/index.js";
-  import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
-  import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
-  import { LoadingDots, WarningBanner } from "#lib/components/snippets.svelte";
-  import { Input } from "#lib/components/ui/input/index.js";
-  import { deleteBillingInfo, finalizeBilling } from "#lib/api/billing-info.remote.js";
+  import { showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import { finalizeBilling } from "#lib/api/billing-info.remote.js";
   import { isHttpError } from "@sveltejs/kit";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
-  import { page } from "$app/state";
   import {
     billingInfoToDto,
     extendedBillingInfoToTableView,
   } from "#lib/utils/mapper/billing-info.js";
   import { findPreviousBillingInfo } from "#lib/utils/previous-reading.js";
-  import { convertToNormalText } from "#lib/utils/text.js";
+  import BillingDetailsDialog from "./billing-details-dialog.svelte";
+  import RemoveBillingDialog from "./remove-billing-dialog.svelte";
 
   let { row }: BillingInfoDataTableRowActionsProps = $props();
 
   const billingStore = useBillingStore();
   const consumptionStore = useConsumptionStore();
 
-  // The billing record immediately before the row's record (by date), used by the
-  // edit form to display the true previous reading for each sub meter.
-  const previousBillingInfo = $derived(
-    billingStore.extendedBillingInfos.length > 0
-      ? (() => {
-          const previous = findPreviousBillingInfo(
-            billingStore.extendedBillingInfos,
-            row.original.date
-          );
-          return previous ? billingInfoToDto(extendedBillingInfoToTableView(previous)) : undefined;
-        })()
-      : undefined
-  );
-
-  let { app_state, active_dialog_content, open_view, open_edit, delete_confirm_value } =
-    $state<ComponentState>({
-      app_state: "stale",
-      active_dialog_content: "view",
-      open_view: false,
-      open_edit: false,
-      delete_confirm_value: "",
-    });
-
-  const BILLING_DETAILS = $derived([
-    {
-      label: "ID",
-      value: row.original.id,
-      class: "font-mono text-accent-foreground",
-    },
-    {
-      label: "User ID",
-      value: row.original.userId,
-      class: "font-mono",
-    },
-    {
-      label: "Date",
-      value: row.original.dateFormatted,
-      class: "font-mono",
-    },
-    {
-      label: "Total kWh",
-      value: `${row.original.totalkWh} kWh`,
-      class: "font-semibold",
-    },
-    {
-      label: "Balance",
-      value: formatNumber(row.original.balance),
-      class: `font-semibold ${row.original.balance > 2000 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`,
-    },
-    {
-      label: "Status",
-      value: convertToNormalText(row.original.status),
-      class: `font-semibold ${row.original.status === "paid" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`,
-    },
-    {
-      label: "Pay Per kWh",
-      value: formatNumber(row.original.payPerkWh),
-      class: "font-semibold",
-    },
-    {
-      label: "Main Payment",
-      value: row.original.payment?.amount ? formatNumber(row.original.payment.amount) : "N/A",
-      class: "font-mono",
-    },
-  ]);
-
-  async function handle_remove_billing_info() {
-    if (delete_confirm_value !== formatDate(row.original.date)) {
-      return showInspectorWarning();
-    }
-    app_state = "processing";
-
-    const { valid, value, message } = await deleteBillingInfo({
-      id: row.original.id,
-      count: 1,
-    });
-
-    if (!valid || value != 1) {
-      app_state = "stale";
-      open_view = false;
-      return showWarning(
-        "Failed to remove billing info. It may not exist or already removed.",
-        `More info: ${message || "unknown reason"}`
-      );
-    }
-    app_state = "stale";
-    open_view = false;
-    billingStore.refresh();
-    return showSuccess(`Billing info${value > 1 ? "s" : ""} deleted successfully`, message);
-  }
-
+  let openView = $state(false);
+  let openEdit = $state(false);
+  let openRemove = $state(false);
   let finalizing = $state(false);
 
-  async function handle_finalize_billing() {
+  // The billing record immediately before the row's record (by date), used by the
+  // edit form to display the true previous reading for each sub meter.
+  const previousBillingInfo = $derived.by(() => {
+    const previous = findPreviousBillingInfo(billingStore.extendedBillingInfos, row.original.date);
+    return previous ? billingInfoToDto(extendedBillingInfoToTableView(previous)) : undefined;
+  });
+
+  async function finalize() {
     if (finalizing) return;
     finalizing = true;
     try {
       await finalizeBilling({ billingInfoId: row.original.id });
-      billingStore.refresh();
-      consumptionStore.refresh();
+      refresh();
       showSuccess("Billing finalized");
     } catch (e) {
-      const message = isHttpError(e) ? e.body.message : String(e);
-      showWarning(message || "Failed to finalize billing");
+      showWarning((isHttpError(e) && e.body.message) || "Failed to finalize billing");
     } finally {
       finalizing = false;
     }
+  }
+
+  function refresh() {
+    billingStore.refresh();
+    consumptionStore.refresh();
   }
 </script>
 
@@ -156,10 +66,8 @@
     size="icon"
     variant="outline"
     title="View Billing Info Details"
-    onclick={() => {
-      active_dialog_content = "view";
-      open_view = true;
-    }}
+    aria-label="View billing details"
+    onclick={() => (openView = true)}
   >
     <View />
   </Button>
@@ -168,8 +76,9 @@
       size="icon"
       variant="outline"
       title="Finalize pending billing (materialize tenant readings and payments)"
+      aria-label="Finalize pending billing"
       disabled={finalizing}
-      onclick={handle_finalize_billing}
+      onclick={finalize}
     >
       {#if finalizing}
         <Loader class="size-4 animate-spin" />
@@ -182,148 +91,39 @@
     size="icon"
     variant="outline"
     title="Edit Billing Info Details"
-    onclick={() => {
-      open_edit = true;
-    }}
+    aria-label="Edit billing"
+    onclick={() => (openEdit = true)}
   >
     <Pencil />
   </Button>
-
   <Button
     size="icon"
     variant="destructive"
     title="Remove Billing Info Record"
-    onclick={() => {
-      active_dialog_content = "remove";
-      open_view = true;
-    }}
+    aria-label="Remove billing"
+    onclick={() => (openRemove = true)}
   >
     <Trash2 />
   </Button>
 </div>
 
-{#if active_dialog_content === "view"}
-  <DynamicModal
-    bind:open={open_view}
-    onOpenChange={(open) => {
-      if (!open && app_state === "processing") {
-        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-        open_view = true;
-      }
-    }}
-    title="Billing Info Details"
-    description="Comprehensive billing information for {row.original.dateFormatted}"
-    dialogClass="md:max-w-237.5 lg:max-w-250"
-  >
-    <div class="flex items-center gap-2 pb-2">
-      <Ticket class="size-6" />
-    </div>
-    <ScrollArea class="max-h-[60vh] pr-2.5">
-      <div class="max-w-full overflow-x-auto rounded-md border bg-background">
-        <Table class="w-full">
-          <TableBody>
-            {#each BILLING_DETAILS as item (item.label)}
-              <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-                <TableCell
-                  class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-                  >{item.label}</TableCell
-                >
-                <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal {item.class}"
-                  >{item.value}</TableCell
-                >
-              </TableRow>
-            {/each}
-            <TableRow class="*:border-border hover:bg-transparent [&>:not(:last-child)]:border-r">
-              <TableCell
-                class="min-w-0 bg-muted/50 py-2 font-medium wrap-break-word whitespace-normal"
-                >Sub Payments</TableCell
-              >
-              <TableCell class="min-w-0 py-2 wrap-break-word whitespace-normal">
-                <SubPaymentsButton class="w-full" row={row.original} size="xs"
-                  >View Sub Payments</SubPaymentsButton
-                >
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
-    </ScrollArea>
-  </DynamicModal>
-{/if}
+<BillingDetailsDialog bind:open={openView} billing={row.original} />
+<RemoveBillingDialog bind:open={openRemove} billing={row.original} onremoved={refresh} />
 
-{#if active_dialog_content === "remove"}
-  {@const currentDate = formatDate(row.original.date)}
-  <DynamicModal
-    bind:open={open_view}
-    onOpenChange={(open) => {
-      if (!open && app_state === "processing") {
-        showWarning("Process Interrupted", "The operation is still processing. Please wait...");
-        open_view = true;
-      }
-    }}
-    title="Remove Billing Info Record"
-    description="Are you sure you want to remove this billing info record? This action cannot be undone."
-  >
-    {@render WarningBanner({
-      message: "Removing this will also remove the sub meter billing informations.",
-    })}
-    <Input
-      bind:value={delete_confirm_value}
-      type="text"
-      placeholder={currentDate}
-      class="text-center"
-    />
-    {#snippet footer()}
-      <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button
-          variant="secondary"
-          disabled={app_state === "processing"}
-          onclick={() => {
-            open_view = false;
-            delete_confirm_value = "";
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="destructive"
-          onclick={handle_remove_billing_info}
-          disabled={delete_confirm_value != currentDate || app_state === "processing"}
-          title="Confirm Delete Billing Info {currentDate}"
-        >
-          {#if app_state === "processing"}
-            <Loader class="size-4 animate-spin" />
-            Removing
-            {@render LoadingDots()}
-          {:else}
-            Delete {currentDate}
-          {/if}
-        </Button>
-      </div>
-    {/snippet}
-  </DynamicModal>
-{/if}
-
-<DynamicModal
-  bind:open={open_edit}
+<BillingInfoForm
+  action="update"
   title="Edit billing info of {row.original.dateFormatted}"
   description="Update the billing info details for billing info with id #{row.original.id}"
-  dialogClass="md:max-w-3xl"
->
-  <BillingInfoForm
-    action="update"
-    callback={(valid, _, metaData) => {
-      open_edit = false;
-      if (valid) {
-        billingStore.refresh();
-        consumptionStore.refresh();
-        showSuccess("Billing info updated successfully!");
-      } else {
-        showWarning("Failed to update billing info", metaData?.error);
-      }
-    }}
-    billingInfo={billingInfoToDto(row.original)}
-    {previousBillingInfo}
-    bind:open={open_edit}
-  />
-</DynamicModal>
+  callback={(valid, _, metaData) => {
+    openEdit = false;
+    if (valid) {
+      refresh();
+      showSuccess("Billing info updated successfully!");
+    } else {
+      showWarning("Failed to update billing info", metaData?.error);
+    }
+  }}
+  billingInfo={billingInfoToDto(row.original)}
+  {previousBillingInfo}
+  bind:open={openEdit}
+/>

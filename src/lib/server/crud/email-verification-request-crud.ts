@@ -1,17 +1,10 @@
 import { db } from "#lib/server/db/index.js";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
+import { and, eq, not, type SQL } from "drizzle-orm";
 import { emailVerificationRequest } from "#lib/server/db/schema/index.js";
-import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import type { HelperParam, HelperResult } from "#lib/types/helper.js";
 import { generateNotFoundMessage } from "#lib/utils/text.js";
 import { getChangedData } from "#lib/utils/mapper.js";
-import type {
-  NewEmailVerificationRequest,
-  EmailVerificationRequestDTO,
-  NewEmailVerificationRequestWithUser,
-  EmailVerificationRequest,
-} from "#lib/types/email-verification-request.js";
-import { mapNewUser_to_DTO } from "./user-crud";
-import type { UserDTO } from "#lib/types/user.js";
+import type { EmailVerificationRequest, NewEmailVerificationRequest } from "#lib/types/auth.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type EmailVerificationRequestQueryOptions = {
@@ -122,84 +115,6 @@ export async function getEmailVerificationRequestBy(
     valid: is_valid,
     message: `${queryDBResult.length} email verification request(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
     value: queryDBResult,
-  };
-}
-
-export async function getEmailVerificationRequests(
-  data: HelperParam<NewEmailVerificationRequest>
-): Promise<Partial<EmailVerificationRequestDTO>[]> {
-  const requestsResult = await getEmailVerificationRequestBy(data);
-  return !requestsResult.valid || !requestsResult.value
-    ? []
-    : mapNewEmailVerificationRequest_to_DTO(requestsResult.value);
-}
-
-export async function mapNewEmailVerificationRequest_to_DTO(
-  data: Partial<NewEmailVerificationRequestWithUser>[]
-): Promise<Partial<EmailVerificationRequestDTO>[]> {
-  return data.map((_request) => ({
-    id: _request.id,
-    userId: _request.userId,
-    email: _request.email,
-    code: _request.code,
-    expiresAt: _request.expiresAt,
-    ...(_request.user && {
-      user: mapNewUser_to_DTO([_request.user])[0] as UserDTO,
-    }),
-  }));
-}
-
-export async function getEmailVerificationRequestCountBy(
-  data: HelperParam<NewEmailVerificationRequest>
-): Promise<HelperResult<number>> {
-  const { query } = data;
-  const { id, email } = query;
-  const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
-  const request_query = db().select({ count: count() }).from(emailVerificationRequest);
-
-  if (id || email) {
-    request_query.limit(1);
-  }
-
-  const whereSQL = buildWhereSQL(conditions);
-  const [_data] = await request_query.where(whereSQL);
-
-  const _count = _data?.count;
-  const is_valid = _count > 0;
-  return {
-    valid: is_valid,
-    message: is_valid
-      ? `Email verification request(s) count is ${_count}`
-      : `Email verification request(s) count with ${generateNotFoundMessage(query)}`,
-    value: _count,
-  };
-}
-
-export async function deleteEmailVerificationRequestBy(
-  data: HelperParam<NewEmailVerificationRequest>
-): Promise<HelperResult<number>> {
-  const { query } = data;
-  const conditions = generateQueryConditions<NewEmailVerificationRequest>(data);
-  const whereSQL = buildWhereSQL(conditions);
-
-  if (!whereSQL) {
-    return {
-      valid: false,
-      message: "No conditions provided for deletion",
-      value: 0,
-    };
-  }
-
-  const deleteResult = await db().delete(emailVerificationRequest).where(whereSQL).returning({
-    deletedId: emailVerificationRequest.id,
-  });
-
-  const deletedCount = deleteResult.length ?? 0;
-  const is_valid = deletedCount > 0;
-  return {
-    valid: is_valid,
-    message: `${deletedCount} email verification request(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
-    value: deletedCount,
   };
 }
 

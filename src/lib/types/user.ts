@@ -1,34 +1,15 @@
-import type { user } from "#lib/server/db/schema/index.js";
-import type { NewSession, Session } from "./session";
+import type { Infer } from "#lib/validators/shared.js";
+import type { Session } from "#lib/types/session.js";
+import type { USER_INSERT_SCHEMA, USER_SELECT_SCHEMA } from "#lib/validators/entities.js";
+import type { UPDATE_USER_SCHEMA } from "#lib/validators/user.js";
 
-export type User = typeof user.$inferSelect;
-export type NewUser = typeof user.$inferInsert;
+export type User = Infer<typeof USER_SELECT_SCHEMA>;
 
-export type UserDTO = {
-  id: string;
-  githubId: number | null;
-  name: string;
-  email: string;
-  emailVerified: boolean;
-  registeredTwoFactor: boolean;
-  image: string | null;
-  ownerId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
+export type NewUser = Infer<typeof USER_INSERT_SCHEMA>;
 
-export type NewUserWitSessions = NewUser & {
-  sessions?: NewSession[];
-};
+export type UpdateUserInput = Infer<typeof UPDATE_USER_SCHEMA>;
 
-export type UserTableView = Omit<User, "createdAt" | "updatedAt"> & {
-  createdAt: string;
-  updatedAt: string;
-};
+// A user as safe to send to a client: no secrets.
+export type UserDTO = Omit<User, "passwordHash" | "totpKey" | "recoveryCode">;
 
-export type UserWithSessions = User & {
-  sessions: Session[];
-};
-export type UserDTOWithSessions = UserDTO & {
-  sessions?: NewSession[];
-};
+export type UserDTOWithSessions = Partial<UserDTO> & { sessions?: Session[] };

@@ -53,7 +53,7 @@
       </ScrollArea>
     </div>
   </div>
-  <div class="relative hidden bg-muted lg:block">
+  <div class="hidden lg:block">
     <AuthBackground />
   </div>
 </div>

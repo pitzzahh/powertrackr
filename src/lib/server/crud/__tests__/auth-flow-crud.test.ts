@@ -14,7 +14,7 @@ import {
   addEmailVerificationRequest,
   getEmailVerificationRequestBy,
 } from "../email-verification-request-crud";
-import type { EmailVerificationRequestDTO } from "#lib/types/email-verification-request.js";
+import type { EmailVerificationRequestDTO } from "#lib/types/auth.js";
 
 import { createUser, createEmailVerificationRequest, resetSequence } from "./helpers/factories";
 import type { UserDTO } from "#lib/types/user.js";
@@ -96,8 +96,7 @@ describe("Auth Flow CRUD Operations", () => {
     expect(thrown.location).toBe("/auth?act=verify-email");
   });
 
-  it("oauth signup should NOT require email verification", async () => {
-    // Create an OAuth user (githubId present) - OAuth flows shouldn't require email verification
+  it("an unverified OAuth user must verify their email", async () => {
     const {
       valid: validUser,
       value: [user],
@@ -123,18 +122,12 @@ describe("Auth Flow CRUD Operations", () => {
     // Since user has a githubId, validateSessionToken exposes isOauthUser=true
     const vUser = validated.user as UserDTO & { isOauthUser?: boolean };
     expect(vUser.isOauthUser).toBe(true);
-    // Email verification is irrelevant for oauth users in requireAuth
-    expect(validated.user!.emailVerified).toBe(false);
-
-    // Set locals and requireAuth should NOT redirect; instead return the session & user
+    // An OAuth user with an unverified address (e.g. after an email change)
+    // must verify it like anyone else.
     fakeLocals.user = validated.user;
     fakeLocals.session = validated.session;
-
-    const result = requireAuth();
-    expect(result).toBeDefined();
-    expect(result.user).toBeDefined();
-    expect(result.session).toBeDefined();
-    expect(result.user.id).toBe(user.id);
-    expect(result.session.id).toBe(session.id);
+    expect(() => requireAuth()).toThrow(
+      expect.objectContaining({ location: "/auth?act=verify-email" })
+    );
   });
 });

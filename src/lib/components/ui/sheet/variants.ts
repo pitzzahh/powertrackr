@@ -4,7 +4,7 @@ import { tv, type VariantProps } from "tailwind-variants";
 export const sheet = tv({
 	slots: {
 		backdrop: [
-			"fixed inset-0 z-50 bg-black/50 opacity-0 backdrop-blur-[2px]",
+			"fixed inset-0 z-50 bg-black/50 opacity-0",
 			"transition-opacity duration-[var(--duration-panel-exit)] ease-[var(--ease-drawer)]",
 			"data-[state=open]:opacity-100 data-[state=open]:duration-[var(--duration-backdrop)]",
 			"starting:data-[state=open]:opacity-0",

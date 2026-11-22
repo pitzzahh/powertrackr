@@ -1,36 +1,44 @@
-import type { billingInfo } from "#lib/server/db/schema/billing-info.js";
-import type { Payment } from "#lib/server/db/schema/payment.js";
-import type { TenantReadingDTO } from "#lib/types/tenant-reading.js";
+import type { User } from "#lib/types/user.js";
+import type { Infer } from "#lib/validators/shared.js";
+import type { Payment } from "#lib/types/payment.js";
+import type {
+  BILL_FORM_SCHEMA,
+  UPDATE_BILLING_INFO_SCHEMA,
+  UPDATE_SUB_METER_SCHEMA,
+} from "#lib/validators/billing-info.js";
+import type {
+  BILLING_INFO_INSERT_SCHEMA,
+  BILLING_INFO_SELECT_SCHEMA,
+  TENANT_READING_INSERT_SCHEMA,
+  TENANT_READING_SELECT_SCHEMA,
+} from "#lib/validators/entities.js";
+import type { STATUS_FIELD } from "#lib/validators/shared.js";
 
-export type BillingInfo = typeof billingInfo.$inferSelect;
-export type NewBillingInfo = Omit<typeof billingInfo.$inferInsert, "createdAt" | "updatedAt">;
+export type BillingSubMeterForm = Infer<typeof UPDATE_SUB_METER_SCHEMA>;
+
+export type BillingCreateForm = Infer<typeof BILL_FORM_SCHEMA>;
+
+export type BillingUpdateForm = Infer<typeof UPDATE_BILLING_INFO_SCHEMA>;
+
+// A tenant reading as returned with its billing: joined tenant name, typed
+// status and (once materialized) its payment.
+export type TenantReadingDTO = Omit<TenantReading, "status"> & {
+  tenantName: string;
+  status: Status;
+  payment?: Payment;
+};
+
+export type BillingInfoWithSubMeters = BillingInfo & { subMeters: TenantReadingDTO[] };
 
 export type BillingInfoWithPaymentAndSubMetersWithPayment = BillingInfo & {
   payment?: Payment;
   subMeters?: TenantReadingDTO[];
 };
 
-export type BillingInfoDTO = {
-  id: string;
-  userId: string;
-  date: Date;
-  totalkWh: number;
-  balance: number;
-  status: Status;
-  payPerkWh: number;
-  paymentId: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export type BillingInfoDTOWithSubMeters = BillingInfoDTO & {
+export type ExtendedBillingInfo = BillingInfo & {
+  // null until the billing is finalized (pending billings await tenant readings)
+  payment: Payment | null;
   subMeters: TenantReadingDTO[];
-};
-
-export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
-  date: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type ExtendedBillingInfoTableView = ExtendedBillingInfo & {
@@ -39,10 +47,11 @@ export type ExtendedBillingInfoTableView = ExtendedBillingInfo & {
   updatedAtFormatted: string;
 };
 
-export type ExtendedBillingInfo = BillingInfo & {
-  // null until the billing is finalized (pending billings await tenant readings)
-  payment: Payment | null;
-  subMeters: TenantReadingDTO[];
+// Dates pre-formatted for display in the history table.
+export type BillingInfoTableView = Omit<BillingInfo, "date" | "createdAt" | "updatedAt"> & {
+  date: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type BillingSummary = {
@@ -60,32 +69,35 @@ export type BillingSummary = {
   averageMonthlyReturn: number;
 };
 
-// A sub-meter entry in a billing form. Sub-meters ARE tenants: the entry
-// references the tenant user id directly (the tenant's name is its label).
-// A null reading marks a pending billing waiting for the tenant's submission.
-export type BillingSubMeterForm = {
-  id?: string; // tenant_reading id, update mode only
-  tenantUserId: string;
-  reading?: number | null; // null/absent = pending billing awaiting tenant submission
-  status: Status;
+export type BillingInfo = Infer<typeof BILLING_INFO_SELECT_SCHEMA>;
+
+export type NewBillingInfo = Omit<
+  Infer<typeof BILLING_INFO_INSERT_SCHEMA>,
+  "createdAt" | "updatedAt"
+>;
+
+export type TenantReading = Infer<typeof TENANT_READING_SELECT_SCHEMA>;
+
+export type NewTenantReading = Infer<typeof TENANT_READING_INSERT_SCHEMA>;
+
+export type Status = Infer<typeof STATUS_FIELD>;
+
+export type TenantReadingWithRelations = Partial<NewTenantReading> & {
+  payment?: Payment;
+  tenant?: User;
+  billingInfo?: BillingInfo;
 };
 
-export type BillingCreateForm = {
-  date: string;
-  totalkWh: number;
-  balance: number;
-  status: string;
-  subMeters: BillingSubMeterForm[];
+export type TenantReadingLike = Partial<Pick<TenantReading, "id" | "tenantUserId" | "reading">>;
+
+export type BillingInfoLike = {
+  // Dates arrive as strings once serialized to the client.
+  date: BillingInfo["date"] | string;
+  subMeters?: TenantReadingLike[];
 };
 
-export type BillingUpdateForm = {
-  id: string;
-  date: string;
-  totalkWh: number;
-  balance: number;
-  status: string;
-  subMeters?: BillingSubMeterForm[];
+/** Row key `id`: for `isNew` rows it is client-only and never sent as a tenant_reading id. */
+export type SubMeterForm = Pick<TenantReading, "id" | "tenantUserId" | "reading"> & {
+  isNew?: boolean;
+  status?: Status;
 };
-
-export const STATUS_VALUES = ["paid", "pending", "due"] as const;
-export type Status = (typeof STATUS_VALUES)[number];

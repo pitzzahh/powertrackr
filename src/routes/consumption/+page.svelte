@@ -1,12 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { formatNumber, formatEnergy } from "#lib/utils/format.js";
-  import { scale } from "svelte/transition";
-  import { cubicInOut } from "svelte/easing";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";
   import { Loader, Zap } from "#lib/assets/icons.js";
   import * as Card from "#lib/components/ui/card/index.js";
-  import { ChartConsumption } from "#routes/(components)/index.js";
+  import { ChartConsumption } from "#routes/(components)/charts/index.js";
 
   let { data } = $props();
 
@@ -25,14 +23,14 @@
 <div class="space-y-6 pb-4">
   <div class="flex items-center justify-between">
     <div class="space-y-2">
-      <h1 class="text-3xl font-bold tracking-tight">Consumption</h1>
+      <h1 class="text-3xl font-semibold tracking-tight">Consumption</h1>
       <p class="text-muted-foreground">Monitor your energy usage and sub-meter readings</p>
     </div>
   </div>
 
   {@render Metrics()}
 
-  <section in:scale={{ duration: 350, easing: cubicInOut, start: 0.8 }}>
+  <section>
     <ChartConsumption
       chartData={consumptionStore.extendedBillingInfos.map((info) => ({
         date: new Date(info.date),
@@ -43,7 +41,7 @@
     />
   </section>
 
-  <section in:scale={{ duration: 450, easing: cubicInOut, start: 0.8 }}>
+  <section>
     <Card.Root>
       <Card.Header>
         <Card.Title>Sub-Meter Readings</Card.Title>
@@ -60,12 +58,12 @@
           </div>
         {:else if consumptionStore.extendedBillingInfos.length > 0}
           <div class="space-y-4">
-            {#each consumptionStore.extendedBillingInfos[0].subMeters as subMeter}
-              <div class="flex items-center justify-between rounded-lg border p-4">
-                <div class="flex items-center gap-3">
+            {#each consumptionStore.extendedBillingInfos[0].subMeters as subMeter (subMeter.id)}
+              <div class="flex items-center justify-between gap-3 rounded-lg border p-3 sm:p-4">
+                <div class="flex min-w-0 items-center gap-3">
                   <Zap class="h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p class="font-medium">{subMeter.tenantName}</p>
+                    <p class="truncate font-medium">{subMeter.tenantName}</p>
                     <p class="text-sm text-muted-foreground">
                       Reading: {formatNumber(subMeter.reading ?? 0, { style: "decimal" })}
                     </p>
@@ -89,60 +87,62 @@
 
 {#snippet Metrics()}
   <section
-    in:scale={{ duration: 250, easing: cubicInOut, start: 0.8 }}
-    class="flex flex-col justify-between gap-8 rounded-md border bg-card p-6 text-muted-foreground shadow-sm xl:flex-row xl:items-center"
+    class="flex flex-col justify-between gap-6 rounded-lg border bg-card p-4 sm:p-6 xl:flex-row xl:items-center"
   >
     <div class="flex flex-col gap-2">
       <div class="flex items-center gap-2">
         <Zap class="h-5 w-5" />
-        <span class="text-lg">Total Consumption</span>
+        <span class="text-sm font-medium text-muted-foreground">Total Consumption</span>
       </div>
       {#if consumptionStore.status === "fetching"}
         <Loader class="h-5 w-5 animate-spin" />
       {:else if consumptionStore.status === "error"}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">0 kWh</div>
+        <div class="text-4xl font-semibold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
+          0 kWh
+        </div>
       {:else}
-        <div class="text-5xl font-bold md:text-4xl lg:text-5xl">
+        <div class="text-4xl font-semibold tracking-tight sm:text-5xl md:text-4xl lg:text-5xl">
           <span class="text-primary">{formatEnergy(consumptionStore.summary?.totalKWh || 0)}</span>
         </div>
       {/if}
     </div>
 
-    <div class="grid grid-cols-2 gap-8 md:grid-cols-3 xl:gap-16">
+    <div class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-3 xl:gap-16">
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Average Daily</span>
+        <span class="text-sm text-muted-foreground">Average Daily</span>
         {#if consumptionStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0 kWh</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">0 kWh</span>
         {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatEnergy(consumptionStore.summary?.averageDailyKWh || 0)} /day</span
-          >
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">
+            {formatEnergy(consumptionStore.summary?.averageDailyKWh || 0)} /day
+          </span>
         {/if}
       </div>
       <div class="flex flex-col gap-1">
-        <span class="text-sm">Sub-Meters</span>
+        <span class="text-sm text-muted-foreground">Sub-Meters</span>
         {#if consumptionStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">0</span>
         {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{consumptionStore.summary?.totalSubMeters || 0}</span
-          >
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">
+            {consumptionStore.summary?.totalSubMeters || 0}
+          </span>
         {/if}
       </div>
-      <div class="flex flex-col gap-1">
-        <span class="text-sm">Latest Consumption</span>
+      <!-- Third tile spans the 2-column phone grid instead of sitting alone. -->
+      <div class="col-span-2 flex flex-col gap-1 md:col-span-1">
+        <span class="text-sm text-muted-foreground">Latest Consumption</span>
         {#if consumptionStore.status === "fetching"}
           <Loader class="h-4 w-4 animate-spin" />
         {:else if consumptionStore.status === "error"}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl">0</span>
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">0</span>
         {:else}
-          <span class="text-2xl font-semibold md:text-xl lg:text-2xl"
-            >{formatEnergy(consumptionStore.summary?.latestReading || 0)}</span
-          >
+          <span class="text-xl font-semibold sm:text-2xl md:text-xl lg:text-2xl">
+            {formatEnergy(consumptionStore.summary?.latestReading || 0)}
+          </span>
         {/if}
       </div>
     </div>

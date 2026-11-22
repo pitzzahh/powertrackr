@@ -1,23 +1,25 @@
 import {
-  loginSchema,
-  registerSchema,
-  verifyEmailSchema,
-  twoFactorSchema as twoFactorCodeSchema,
-  generate2FASecretSchema,
-  verify2FASchema,
-  disable2FASchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  changePasswordSchema,
+  LOGIN_SCHEMA,
+  REGISTER_SCHEMA,
+  VERIFY_EMAIL_SCHEMA,
+  TWO_FACTOR_SCHEMA as twoFactorCodeSchema,
+  GENERATE_2FA_SECRET_SCHEMA,
+  VERIFY_2FA_SCHEMA,
+  DISABLE_2FA_SCHEMA,
+  FORGOT_PASSWORD_SCHEMA,
+  RECOVER_2FA_SCHEMA,
+  RESET_PASSWORD_SCHEMA,
+  CHANGE_PASSWORD_SCHEMA,
 } from "#lib/validators/auth.js";
 import {
   createSession,
   deleteSessionTokenCookie,
   invalidateSession,
+  requireAuth,
   setSessionTokenCookie,
 } from "#lib/server/auth.js";
 import { addUser, getUserBy, updateUserBy } from "#lib/server/crud/user-crud.js";
-import { updateSessionBy } from "#lib/server/crud/session-crud.js";
+import { deleteSessionBy, updateSessionBy } from "#lib/server/crud/session-crud.js";
 import {
   getEmailVerificationRequestBy,
   updateEmailVerificationRequestBy,
@@ -31,7 +33,9 @@ import { createPasswordReset } from "#lib/server/email.js";
 import {
   encrypt,
   decrypt,
+  decryptToString,
   encryptString,
+  isSameSecret,
   generateRandomRecoveryCode,
   generateSessionToken,
   hashPassword,
@@ -45,7 +49,7 @@ import {
   decodeBase64url,
 } from "@oslojs/encoding";
 import crypto from "node:crypto";
-import type { HelperResult } from "#lib/server/types/helper.js";
+import type { HelperResult } from "#lib/types/helper.js";
 import type { NewUser } from "#lib/types/user.js";
 import { form, getRequestEvent } from "$app/server";
 import { error, invalid, redirect } from "@sveltejs/kit";
@@ -70,12 +74,12 @@ export const signout = form(async () => {
   if (event.locals.session === null) {
     throw redirect(303, "/auth?act=login");
   }
-  invalidateSession(event.locals.session.id);
+  await invalidateSession(event.locals.session.id);
   deleteSessionTokenCookie(event);
   throw redirect(303, "/auth?act=login");
 });
 
-export const login = form(loginSchema, async (user, issues) => {
+export const login = form(LOGIN_SCHEMA, async (user, issues) => {
   const event = getRequestEvent();
   const { email, password } = user;
   if (typeof email !== "string" || typeof password !== "string") {
@@ -115,13 +119,10 @@ export const login = form(loginSchema, async (user, issues) => {
     invalid(issues.email("Account connected with GitHub, please login with GitHub"));
   }
 
-  if (userResult === undefined || userResult === null) {
-    invalid(issues.email("Account does not exist"));
-  }
-
-  const validPassword = await verifyPasswordHash(userResult.passwordHash!, password);
-  if (!validPassword) {
-    invalid(issues.password("Invalid password"));
+  // One message for unknown email and wrong password, so login does not reveal
+  // which emails have accounts.
+  if (!userResult?.passwordHash || !(await verifyPasswordHash(userResult.passwordHash, password))) {
+    invalid(issues.password("Invalid email or password"));
   }
 
   const sessionToken = generateSessionToken();
@@ -132,7 +133,7 @@ export const login = form(loginSchema, async (user, issues) => {
   });
   setSessionTokenCookie(event, sessionToken, new Date(session.expiresAt));
 
-  if (!userResult.githubId && !userResult.emailVerified) {
+  if (!userResult.emailVerified) {
     throw redirect(303, "/auth?act=verify-email");
   }
   if (userResult.registeredTwoFactor) {
@@ -140,7 +141,7 @@ export const login = form(loginSchema, async (user, issues) => {
   }
   throw redirect(301, "/dashboard");
 });
-export const register = form(registerSchema, async (newUser, issues) => {
+export const register = form(REGISTER_SCHEMA, async (newUser, issues) => {
   const event = getRequestEvent();
   const { email, name, password, confirmPassword } = newUser;
 
@@ -202,7 +203,7 @@ export const register = form(registerSchema, async (newUser, issues) => {
   throw redirect(302, "/auth?act=verify-email");
 });
 
-export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
+export const verifyEmail = form(VERIFY_EMAIL_SCHEMA, async (data, issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null) {
     error(401, "Not authenticated");
@@ -218,39 +219,13 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
     options: { limit: 1 },
   });
 
-  if (!valid || !request) {
+  // A code sent to a previous address must not verify the current one.
+  if (!valid || !request || request.email !== event.locals.user?.email) {
     invalid(issues.code("Invalid or expired verification code"));
   }
 
-  // Accept multiple stored formats (ISO string, seconds, milliseconds, or Date).
-  // Normalize to milliseconds for comparison with Date.now().
-  // The DB may store expiration as an ISO string (TEXT) or as a numeric
-  // timestamp (seconds or milliseconds). Normalize to milliseconds.
-  const rawExpiresAt = request.expiresAt;
-  let expiresAtMs = 0;
-  if (typeof rawExpiresAt === "string") {
-    expiresAtMs = Date.parse(rawExpiresAt);
-  } else if (typeof rawExpiresAt === "number") {
-    expiresAtMs = rawExpiresAt < 1_000_000_000_000 ? rawExpiresAt * 1000 : rawExpiresAt;
-  } else {
-    // Don't rely on `instanceof Date` (TS may not allow it here). If callers
-    // passed a Date-like value or another representation, try to coerce it
-    // gracefully to a numeric timestamp or parse a stringified form.
-    const asNumber = Number((rawExpiresAt as any) ?? NaN);
-    if (!Number.isNaN(asNumber)) {
-      expiresAtMs = asNumber < 1_000_000_000_000 ? asNumber * 1000 : asNumber;
-    } else {
-      const asString = rawExpiresAt ? String(rawExpiresAt as any) : "";
-      expiresAtMs = asString ? Date.parse(asString) : 0;
-    }
-  }
-
-  if (!expiresAtMs || expiresAtMs < Date.now()) {
-    console.warn("Email verification code expired", {
-      expiresAtRaw: request.expiresAt,
-      expiresAtMs,
-      now: Date.now(),
-    });
+  // `expires_at` is a timestamp_ms column, so drizzle always returns a Date.
+  if (!request.expiresAt || request.expiresAt.getTime() < Date.now()) {
     invalid(issues.code("Email verification code expired, please request a new code"));
   }
 
@@ -263,9 +238,10 @@ export const verifyEmail = form(verifyEmailSchema, async (data, issues) => {
     error(400, "Failed to verify email");
   }
 
-  // Expire the verification request to prevent reuse (best-effort)
+  // Expire the verification request to prevent reuse. Awaited: Workers may
+  // cancel un-awaited work once the response is sent.
   if (request.id) {
-    updateEmailVerificationRequestBy(
+    await updateEmailVerificationRequestBy(
       { query: { id: request.id }, options: {} },
       { expiresAt: new Date(Date.now() - 1) }
     ).catch(() => null);
@@ -297,6 +273,11 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   }
 
   const { code } = data;
+
+  // 1M possible codes: without a limit a script could brute-force the checkpoint.
+  if (await isRateLimited(env.LOGIN_RATE_LIMITER, `2fa:${event.locals.session.userId}`)) {
+    invalid(issues.code("Too many attempts. Please wait a minute and try again."));
+  }
 
   // Validate input here and return friendly issue messages
   if (!code || typeof code !== "string" || code.trim().length === 0) {
@@ -349,7 +330,49 @@ export const checkpoint2FA = form(twoFactorCodeSchema, async (data, issues) => {
   throw redirect(302, "/dashboard");
 });
 
-export const forgotPassword = form(forgotPasswordSchema, async (user) => {
+// Lost authenticator: the one-time recovery code shown at 2FA setup turns 2FA
+// off and verifies this session, so the user can set it up again.
+export const recover2FA = form(RECOVER_2FA_SCHEMA, async ({ recoveryCode }, issues) => {
+  const event = getRequestEvent();
+  if (event.locals.session === null || event.locals.user === null) {
+    error(401, "Not authenticated");
+  }
+  const { userId } = event.locals.session;
+
+  if (await isRateLimited(env.LOGIN_RATE_LIMITER, `2fa:${userId}`)) {
+    invalid(issues.recoveryCode("Too many attempts. Please wait a minute and try again."));
+  }
+
+  const {
+    value: [userResult],
+  } = await getUserBy({
+    query: { id: userId },
+    options: { limit: 1, fields: ["recoveryCode"] },
+  });
+
+  if (
+    !userResult?.recoveryCode ||
+    !isSameSecret(
+      decryptToString(decodeBase64url(userResult.recoveryCode)),
+      recoveryCode.trim().toUpperCase()
+    )
+  ) {
+    invalid(issues.recoveryCode("Invalid recovery code"));
+  }
+
+  await updateUserBy(
+    { query: { id: userId }, options: { with_session: false } },
+    { totpKey: null, recoveryCode: null, registeredTwoFactor: false }
+  );
+  await updateSessionBy(
+    { query: { id: event.locals.session.id }, options: { with_session: false } },
+    { twoFactorVerified: true }
+  );
+
+  throw redirect(303, "/auth?act=2fa-setup");
+});
+
+export const forgotPassword = form(FORGOT_PASSWORD_SCHEMA, async (user) => {
   const event = getRequestEvent();
   const { email } = user;
   if (typeof email !== "string") {
@@ -386,32 +409,35 @@ export const forgotPassword = form(forgotPasswordSchema, async (user) => {
   redirect(303, "/auth?act=reset-password");
 });
 
-export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
+export const resetPassword = form(RESET_PASSWORD_SCHEMA, async (data, issues) => {
+  const event = getRequestEvent();
   const { code, _password, _confirmPassword } = data;
 
   if (_password !== _confirmPassword) {
     invalid(issues._confirmPassword("Passwords do not match"));
   }
 
-  // Validate code against DB
+  // Codes are looked up by value alone, so cap guesses per client.
+  if (await isRateLimited(env.EMAIL_RATE_LIMITER, `reset:${event.getClientAddress()}`)) {
+    invalid(issues.code("Too many attempts. Please wait a minute and try again."));
+  }
+
   const {
-    valid,
-    value: [{ id, userId, expiresAt }],
+    value: [resetSession],
   } = await getPasswordResetSessionBy({
     query: { code },
     options: { limit: 1, fields: ["id", "userId", "expiresAt"] },
   });
 
-  if (!valid || (!userId && !expiresAt)) {
+  if (!resetSession?.id || !resetSession.userId) {
     invalid(issues.code("Invalid or expired reset code"));
   }
+  const { id, userId, expiresAt } = resetSession;
 
-  // Check expiration
   if (!expiresAt || expiresAt < new Date()) {
     invalid(issues.code("Reset code expired"));
   }
 
-  // Update password
   const passwordHash = await hashPassword(_password);
   const updateResult = await updateUserBy(
     { query: { id: userId }, options: { with_session: false } },
@@ -421,19 +447,18 @@ export const resetPassword = form(resetPasswordSchema, async (data, issues) => {
     error(400, "Failed to reset password");
   }
 
-  // Expire the reset session to prevent reuse
-  if (id) {
-    updatePasswordResetSessionBy({ query: { id } }, { expiresAt: new Date(Date.now() - 1) });
-  }
+  // Burn the code and sign out every device: whoever knew the old password
+  // must not keep a session.
+  await updatePasswordResetSessionBy({ query: { id } }, { expiresAt: new Date(Date.now() - 1) });
+  await deleteSessionBy({ query: { userId } });
 
   throw redirect(302, "/auth?act=login");
 });
 
-export const changePassword = form(changePasswordSchema, async (data, issues) => {
-  const event = getRequestEvent();
-  if (event.locals.session === null) {
-    error(401, "Not authenticated");
-  }
+export const changePassword = form(CHANGE_PASSWORD_SCHEMA, async (data, issues) => {
+  // requireAuth, not a bare session check: a session that has not passed the
+  // 2FA checkpoint must not change the password.
+  const { session } = requireAuth();
 
   const { currentPassword, newPassword, confirmPassword } = data;
 
@@ -446,7 +471,7 @@ export const changePassword = form(changePasswordSchema, async (data, issues) =>
     valid,
     value: [userResult],
   } = await getUserBy({
-    query: { id: event.locals.session.userId },
+    query: { id: session.userId },
     options: { limit: 1 },
   });
 
@@ -463,7 +488,7 @@ export const changePassword = form(changePasswordSchema, async (data, issues) =>
   // Hash new password and update
   const passwordHash = await hashPassword(newPassword);
   const updateResult = await updateUserBy(
-    { query: { id: event.locals.session.userId }, options: { with_session: false } },
+    { query: { id: session.userId }, options: { with_session: false } },
     { passwordHash }
   );
 
@@ -471,14 +496,15 @@ export const changePassword = form(changePasswordSchema, async (data, issues) =>
     error(400, "Failed to update password");
   }
 
+  // Sign out every other device: a password change is the usual answer to a
+  // suspected compromise.
+  await deleteSessionBy({ query: { userId: session.userId }, options: { exclude_id: session.id } });
+
   return true;
 });
 
-export const generate2FASecret = form(generate2FASecretSchema, async () => {
-  const event = getRequestEvent();
-  if (event.locals.session === null || event.locals.user === null) {
-    error(401, "Not authenticated");
-  }
+export const generate2FASecret = form(GENERATE_2FA_SECRET_SCHEMA, async () => {
+  const { user } = requireAuth();
 
   // Generate a random 20-byte secret for TOTP
   const secretBytes = crypto.randomBytes(20);
@@ -487,7 +513,7 @@ export const generate2FASecret = form(generate2FASecretSchema, async () => {
   // Create the otpauth URL for QR code
   const totp = new TOTP({
     issuer: "PowerTrackr",
-    label: event.locals.user.email,
+    label: user.email,
     secret,
     algorithm: "SHA1",
     digits: 6,
@@ -498,10 +524,12 @@ export const generate2FASecret = form(generate2FASecretSchema, async () => {
   return { secret, otpauthUrl };
 });
 
-export const verify2FA = form(verify2FASchema, async (data, issues) => {
-  const event = getRequestEvent();
-  if (event.locals.session === null || event.locals.user === null) {
-    error(401, "Not authenticated");
+export const verify2FA = form(VERIFY_2FA_SCHEMA, async (data, issues) => {
+  // requireAuth enforces the 2FA checkpoint; without it a password-only
+  // session could swap in its own TOTP secret and come out "2FA verified".
+  const { user, session } = requireAuth();
+  if (user.registeredTwoFactor) {
+    error(400, "Two-factor authentication is already enabled. Disable it first.");
   }
 
   const { code, secret } = data;
@@ -523,7 +551,7 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
 
   const updateResult = await updateUserBy(
     {
-      query: { id: event.locals.session.userId },
+      query: { id: session.userId },
       options: { with_session: false },
     },
     {
@@ -539,38 +567,31 @@ export const verify2FA = form(verify2FASchema, async (data, issues) => {
 
   // Also mark the current session as twoFactorVerified so the user is not
   // immediately prompted to re-verify 2FA after just setting it up.
-  try {
-    if (event.locals.session) {
-      const sessionUpdate = await updateSessionBy(
-        { query: { id: event.locals.session.id }, options: { with_session: false } },
-        { twoFactorVerified: true }
-      );
-
-      if (sessionUpdate.valid) {
-        // Update in-memory session so subsequent logic in this request sees it.
-        event.locals.session.twoFactorVerified = true;
-      } else {
-        // Best-effort: don't block enabling 2FA if session update fails, but log it.
-        console.warn("Failed to mark session as two-factor verified after enabling 2FA", {
-          userId: event.locals.session.userId,
-          sessionId: event.locals.session.id,
-        });
-      }
-    }
-  } catch (e) {
-    console.warn("Error updating session twoFactorVerified flag", e);
+  const sessionUpdate = await updateSessionBy(
+    { query: { id: session.id }, options: { with_session: false } },
+    { twoFactorVerified: true }
+  );
+  if (!sessionUpdate.valid) {
+    console.warn("Failed to mark session as two-factor verified after enabling 2FA", {
+      userId: session.userId,
+      sessionId: session.id,
+    });
   }
 
   return { success: true, recoveryCode };
 });
 
-export const disable2FA = form(disable2FASchema, async (data, issues) => {
+export const disable2FA = form(DISABLE_2FA_SCHEMA, async (data, issues) => {
   const event = getRequestEvent();
   if (event.locals.session === null || event.locals.user === null) {
     error(401, "Not authenticated");
   }
 
   const { code } = data;
+
+  if (await isRateLimited(env.LOGIN_RATE_LIMITER, `2fa:${event.locals.session.userId}`)) {
+    invalid(issues.code("Too many attempts. Please wait a minute and try again."));
+  }
 
   // Get user's TOTP key
   const {

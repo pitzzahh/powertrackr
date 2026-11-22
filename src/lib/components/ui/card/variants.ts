@@ -4,7 +4,7 @@ import { tv, type VariantProps } from "tailwind-variants";
  * rim; `well` is a grey rim around a raised page-colour body, with CardFooter in the rim. */
 export const cardFrame = tv({
 	slots: {
-		root: "rounded-2xl border border-border",
+		root: "rounded-lg border border-border",
 		body: "flex flex-col gap-6 py-6 text-card-foreground",
 	},
 	variants: {
@@ -13,11 +13,11 @@ export const cardFrame = tv({
 			default: { root: "bg-background", body: "" },
 			secondary: { root: "border-transparent bg-card", body: "" },
 			ghost: { root: "border-transparent bg-transparent", body: "" },
-			framed: { root: "bg-background p-1", body: "rounded-[11px] bg-card" },
+			framed: { root: "bg-background p-1", body: "rounded-sm bg-card" },
 			// A child selector restyles the rim footer, so CardFooter needs no context (RSC-safe).
 			well: {
 				root: "border-transparent bg-card p-1 [&>[data-slot=card-footer]]:px-3 [&>[data-slot=card-footer]]:pt-2 [&>[data-slot=card-footer]]:pb-1 [&>[data-slot=card-footer]]:text-muted-foreground [&>[data-slot=card-footer]]:text-xs",
-				body: "rounded-[11px] bg-background shadow-surface dark:bg-popover",
+				body: "rounded-sm bg-background shadow-surface dark:bg-popover",
 			},
 		},
 	},

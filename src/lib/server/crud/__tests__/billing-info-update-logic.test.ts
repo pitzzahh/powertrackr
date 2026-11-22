@@ -1,12 +1,11 @@
+import { payment } from "#lib/server/db/schema/index.js";
+import { db } from "#lib/server/db/index.js";
 import { describe, it, expect } from "vitest";
-import {
-  createBillingInfoLogic,
-  getBillingInfoBy,
-  updateBillingInfoLogic,
-} from "../billing-info-crud";
+import { createBillingInfoLogic, updateBillingInfoLogic } from "../billing-logic";
+import { getBillingInfoBy } from "../billing-info-crud";
 import { createUser, createTenantUser } from "./helpers/factories";
 import { addUser } from "../user-crud";
-import { getPaymentBy, getPaymentCountBy } from "../payment-crud";
+import { getPaymentBy } from "../payment-crud";
 import { getTenantReadingBy } from "../tenant-reading-crud";
 
 async function seedTenant(ownerId: string, name: string) {
@@ -221,7 +220,7 @@ describe("updateBillingInfoLogic", () => {
     const {
       value: [subB],
     } = await getTenantReadingBy({ query: { billingInfoId: billingB.id }, options: {} });
-    const paymentCountBefore = (await getPaymentCountBy({ query: {} })).value;
+    const paymentCountBefore = (await db().select({ id: payment.id }).from(payment)).length;
 
     await updateBillingInfoLogic(
       {
@@ -246,7 +245,7 @@ describe("updateBillingInfoLogic", () => {
     expect(updatedBilling.subMeters?.[0]?.subkWh).toBe(150);
     expect(updatedBilling.subMeters?.[0]?.payment?.amount).toBeCloseTo(150, 2);
     expect(updatedBilling.payment?.amount).toBeCloseTo(1200 - 150, 2);
-    expect((await getPaymentCountBy({ query: {} })).value).toBe(paymentCountBefore);
+    expect((await db().select({ id: payment.id }).from(payment)).length).toBe(paymentCountBefore);
   });
 
   it("deletes the linked payment row when a sub meter is removed (no orphans)", async () => {
@@ -395,5 +394,44 @@ describe("updateBillingInfoLogic", () => {
     expect(garageReading?.subkWh).toBe(0);
     expect(garageReading?.payment?.amount ?? 0).toBe(0);
     expect(updatedBilling.payment?.amount).toBeCloseTo(1200 - 200, 2);
+  });
+  it("refuses to move a billing's date past another billing of the same tenant", async () => {
+    const {
+      value: [addedUser],
+    } = await addUser([createUser()]);
+    const userId = addedUser.id;
+    const kitchen = await seedTenant(userId, "Kitchen");
+    const bill = (date: string, reading: number) =>
+      createBillingInfoLogic(
+        {
+          date,
+          totalkWh: 1000,
+          balance: 1000,
+          status: "pending",
+          subMeters: [{ tenantUserId: kitchen.id, reading, status: "pending" }],
+        },
+        userId
+      );
+    const billingA = await bill("2024-01-01", 100);
+    await bill("2024-02-01", 250);
+    const {
+      value: [subA],
+    } = await getTenantReadingBy({ query: { billingInfoId: billingA.id }, options: {} });
+    const moveA = (date: string) =>
+      updateBillingInfoLogic(
+        {
+          id: billingA.id,
+          date,
+          totalkWh: 1000,
+          balance: 1000,
+          status: "pending",
+          subMeters: [{ id: subA.id!, tenantUserId: kitchen.id, reading: 100, status: "pending" }],
+        },
+        userId
+      );
+
+    await expect(moveA("2024-03-01")).rejects.toMatchObject({ status: 400 });
+    // Moving within the gap (no billing crossed) is fine.
+    await expect(moveA("2024-01-15")).resolves.toBeDefined();
   });
 });

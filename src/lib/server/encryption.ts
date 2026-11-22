@@ -143,6 +143,11 @@ export async function verifyPasswordHash(hash: string, password: string): Promis
   return timingSafeEqualBytes(parsed.derived, derivedKey);
 }
 
+/** Constant-time string comparison for user-supplied secrets (recovery codes). */
+export function isSameSecret(a: string, b: string): boolean {
+  return timingSafeEqualBytes(utf8ToBytes(a), utf8ToBytes(b));
+}
+
 export function generateSessionToken() {
   return encodeBase64url(crypto.randomBytes(18));
 }

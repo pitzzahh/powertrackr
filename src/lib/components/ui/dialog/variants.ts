@@ -8,7 +8,7 @@ export const dialogFrame = tv({
 	slots: {
 		// Fades in step with the panel; the primitive owns the top layer and inertness.
 		backdrop: [
-			"fixed inset-0 z-50 bg-black/50 opacity-0 backdrop-blur-[2px]",
+			"fixed inset-0 z-50 bg-black/50 opacity-0",
 			"transition-opacity duration-[var(--duration-exit)] ease-[var(--ease-ui-out)]",
 			"data-[open]:opacity-100 data-[open]:duration-[var(--duration-dropdown)]",
 			"data-[state=open]:opacity-100 data-[state=open]:duration-[var(--duration-dropdown)]",
@@ -21,7 +21,7 @@ export const dialogFrame = tv({
 			"[transform:translate(-50%,-50%)_translate(var(--dialog-x,0),var(--dialog-y,0))_scale(var(--dialog-scale,1))]",
 			"motion-reduce:transition-none",
 		],
-		panel: "rounded-2xl shadow-(--overlay-shadow)",
+		panel: "rounded-lg shadow-(--overlay-shadow)",
 		// The icon-only close in the corner; a close with children styles itself.
 		close:
 			"absolute top-3 right-3 grid size-8 place-items-center rounded-md text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",

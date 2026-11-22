@@ -1,18 +1,11 @@
+import { eq } from "drizzle-orm";
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  addUser,
-  updateUserBy,
-  getUserBy,
-  getUsers,
-  getUserCountBy,
-  deleteUserBy,
-  mapNewUser_to_DTO,
-} from "../user-crud";
+import { addUser, updateUserBy, getUserBy, deleteUserBy, mapNewUser_to_DTO } from "../user-crud";
 import { db } from "#lib/server/db/index.js";
 import { user } from "#lib/server/db/schema/index.js";
 import { createUser, createUsers, resetSequence } from "./helpers/factories";
 import type { NewUser } from "#lib/types/user.js";
-import type { HelperParam } from "#lib/server/types/helper.js";
+import type { HelperParam } from "#lib/types/helper.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("User CRUD Operations", () => {
@@ -356,107 +349,6 @@ describe("User CRUD Operations", () => {
     });
   });
 
-  describe("getUserCountBy", () => {
-    it("should return correct count for existing users", async () => {
-      const { valid: validUsers } = await addUser(
-        createUsers(5).map((user) => {
-          const { id: _, ...userWithoutId } = user;
-          return userWithoutId;
-        })
-      );
-
-      expect(validUsers).toBe(true);
-
-      const result = await getUserCountBy({
-        query: {},
-      });
-
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe(5);
-      expect(result.message).toBe("User(s) count is 5");
-    });
-
-    it("should return zero count when no users match", async () => {
-      const countParam: HelperParam<NewUser> = {
-        query: { email: "nonexistent@example.com" },
-      };
-
-      const result = await getUserCountBy(countParam);
-
-      expect(result.valid).toBe(false);
-      expect(result.value).toBe(0);
-      expect(result.message).toContain("email: nonexistent@example.com not found");
-    });
-
-    it("should count users with specific criteria", async () => {
-      const usersData = [
-        createUser({ emailVerified: true }),
-        createUser({ emailVerified: true }),
-        createUser({ emailVerified: false }),
-      ].map((user) => {
-        const { id: _, ...userWithoutId } = user;
-        return userWithoutId;
-      });
-      const { valid: validUsers } = await addUser(usersData);
-
-      expect(validUsers).toBe(true);
-
-      const countParam: HelperParam<NewUser> = {
-        query: { emailVerified: true },
-      };
-
-      const result = await getUserCountBy(countParam);
-
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe(2);
-    });
-  });
-
-  describe("getUsers", () => {
-    it("should return DTO format users", async () => {
-      const {
-        valid: validUser,
-        value: [addedUser],
-      } = await addUser([
-        createUser({
-          email: "dto@example.com",
-          name: "DTO User",
-        }),
-      ]);
-
-      expect(validUser).toBe(true);
-      expect(addedUser).toBeDefined();
-
-      const searchParam: HelperParam<NewUser> = {
-        query: { email: "dto@example.com" },
-      };
-
-      const result = await getUsers(searchParam);
-
-      expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty("id");
-      expect(result[0]).toHaveProperty("githubId");
-      expect(result[0]).toHaveProperty("name");
-      expect(result[0]).toHaveProperty("email");
-      expect(result[0]).toHaveProperty("emailVerified");
-      expect(result[0]).toHaveProperty("registeredTwoFactor");
-      expect(result[0]).toHaveProperty("image");
-      expect(result[0]).toHaveProperty("createdAt");
-      expect(result[0]).toHaveProperty("updatedAt");
-      expect(result[0].email).toBe("dto@example.com");
-    });
-
-    it("should return empty array when no users found", async () => {
-      const searchParam: HelperParam<NewUser> = {
-        query: { email: "nonexistent@example.com" },
-      };
-
-      const result = await getUsers(searchParam);
-
-      expect(result).toHaveLength(0);
-    });
-  });
-
   describe("mapNewUser_to_DTO", () => {
     it("should correctly map user data to DTO format", async () => {
       const userData = createUser({
@@ -578,7 +470,7 @@ describe("User CRUD Operations", () => {
 
   describe("Batch Operations", () => {
     it("should insert multiple users using db.batch", async () => {
-      const initialCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      const initialCount = (await db().select({ id: user.id }).from(user)).length;
 
       const userDataOne = createUser({
         email: "batch-1@example.com",
@@ -600,7 +492,7 @@ describe("User CRUD Operations", () => {
       expect(insertedOne[0]?.id).toBeDefined();
       expect(insertedTwo[0]?.id).toBeDefined();
 
-      const finalCount = (await getUserCountBy({ query: {}, options: {} })).value;
+      const finalCount = (await db().select({ id: user.id }).from(user)).length;
       expect(finalCount).toBe(initialCount + 2);
     });
   });
@@ -709,10 +601,11 @@ describe("User CRUD Operations", () => {
       expect(result.message).toContain("2 user(s) deleted");
 
       // Verify deletion
-      const countResult = await getUserCountBy({
-        query: { emailVerified: true },
-      });
-      expect(countResult.value).toBe(0);
+      const left = await db()
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.emailVerified, true));
+      expect(left).toHaveLength(0);
     });
 
     it("should handle nonexistent user deletion", async () => {

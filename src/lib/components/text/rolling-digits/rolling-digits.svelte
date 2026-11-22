@@ -197,9 +197,9 @@
     class={cn(styles.root(), classProp)}
     style:--rd-duration="{duration}ms"
   >
-    <span aria-live="polite" class={styles.srOnly()}
-      >{variant === "count" ? render(armed ? value : 0) : target}</span
-    >
+    <span aria-live="polite" class={styles.srOnly()}>
+      {variant === "count" ? render(armed ? value : 0) : target}
+    </span>
     {#if variant === "count"}
       <span aria-hidden="true" class={digitClass}>{render(counted)}</span>
     {:else}

@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { HelperResult } from "#lib/server/types/helper.js";
+  import type { HelperResult } from "#lib/types/helper.js";
   import type { RowData } from "@tanstack/table-core";
 
   export interface DataTableFloatingBarProps<TData extends RowData> {
@@ -129,8 +129,8 @@
               class: "size-5 hover:border",
             })}
           >
-            <X class="size-3.5 shrink-0" aria-hidden="true" /></Tooltip.Trigger
-          >
+            <X class="size-3.5 shrink-0" aria-hidden="true" />
+          </Tooltip.Trigger>
           <Tooltip.Content
             class="font-mediun flex items-center border bg-accent px-2 py-1 text-foreground dark:bg-zinc-900"
           >
@@ -165,6 +165,7 @@
     }
   }}
   title="Are you sure?"
+  size="sm"
   description={dialogDescription || default_dialog_description}
 >
   <div class="flex flex-col gap-4">

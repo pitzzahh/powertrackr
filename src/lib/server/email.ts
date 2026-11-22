@@ -16,13 +16,7 @@ import { EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 import { addEmailVerificationRequest } from "#lib/server/crud/email-verification-request-crud.js";
 import { addPasswordResetSession } from "#lib/server/crud/password-reset-session-crud.js";
 import { generateRandomOTP } from "./encryption";
-import type {
-  PlunkTemplate,
-  PlunkContact,
-  PlunkAPIResponse,
-  PlunkListData,
-  PlunkSendResponseData,
-} from "#lib/types/plunk.js";
+import { parsePlunkResult, parsePlunkTemplates } from "#lib/validators/plunk.js";
 
 /** Whether the Plunk client is configured (secret key present) */
 const PLUNK_BASE = PLUNK_BASE_URL ?? "https://api.plunk.com";
@@ -38,257 +32,123 @@ function getAuthHeaders(): Record<string, string> {
   };
 }
 
-/** Generic fetch wrapper for Plunk API */
-async function plunkRequest<T>(
-  path: string,
-  options: RequestInit = {}
-): Promise<PlunkAPIResponse<T> | null> {
-  const url = `${PLUNK_BASE}${path}`;
-  const req = new Request(url, options);
+/** Fetch a Plunk endpoint; the raw JSON body (or null) goes to a validator parser. */
+async function plunkRequest(path: string, options: RequestInit = {}): Promise<unknown> {
+  const req = new Request(`${PLUNK_BASE}${path}`, options);
 
   // Only set the headers YOU control — never forward event.request.headers
   for (const [key, value] of Object.entries(getAuthHeaders())) {
     req.headers.set(key, value);
   }
   const res = await fetch(req);
-  return (await res.json().catch(() => null)) as PlunkAPIResponse<T> | null;
+  return res.json().catch(() => null);
 }
 
-/**
- * Create or update a contact in Plunk (best-effort).
- * Returns the created/updated contact data or null when skipped/failed.
- */
-async function createContact(
-  email: string,
-  data?: Record<string, unknown>
-): Promise<PlunkContact | null> {
+/** Send a JSON body to Plunk and parse the success/error envelope. */
+async function plunkPost(path: string, body: unknown) {
+  return parsePlunkResult(await plunkRequest(path, { method: "POST", body: JSON.stringify(body) }));
+}
+
+/** Create or update a contact in Plunk (best-effort, never throws). */
+async function createContact(email: string): Promise<void> {
   if (!PLUNK_KEY) {
     console.warn("PLUNK_SECRET_KEY not set. Skipping createContact.");
-    return null;
+    return;
   }
 
   try {
-    const json = await plunkRequest<PlunkContact>("/contacts", {
-      method: "POST",
-      body: JSON.stringify({ email, subscribed: true, data: data ?? {} }),
-    });
-    if (!json || json.success === false) {
-      console.warn("Plunk create contact failed:", json?.error ?? json);
-      return null;
-    }
-    return json.data;
+    const result = await plunkPost("/contacts", { email, subscribed: true, data: {} });
+    if (!result?.success) console.warn("Plunk create contact failed:", result);
   } catch (e) {
     console.warn("Failed to create Plunk contact:", e);
-    return null;
   }
 }
 
+type CodeEmail = {
+  /** Plunk template name, matched case-insensitively. */
+  template: string;
+  /** Subject of the inline fallback email. */
+  subject: string;
+  /** Lead text of the inline fallback email, e.g. "Your verification code". */
+  intro: string;
+  /** `act` query value of the link in the email. */
+  act: "verify-email" | "reset-password";
+};
+
 /**
- * Send a verification email to the recipient.
+ * Send an email carrying a one-time code and a link to the matching auth page.
  *
- * Strategy:
- * 1) Attempt to find a template named exactly "Email Verification" (case-insensitive).
- *    - If found, try to populate it with variables and send a simple inline email using
- *      the resolved subject/body (this is safe and does not depend on unknown template API fields).
- * 2) If template not found or an error occurs, fall back to sending a basic inline HTML email.
- *
- * This function is resilient: missing configuration or remote failures will log warnings but not throw.
+ * Prefers the Plunk template named `template` (code, timeout and link passed
+ * as variables); if the template is missing or sending fails, falls back to a
+ * plain inline email. Missing configuration or remote failures log warnings
+ * and never throw.
  */
-async function sendVerificationEmail(
+async function sendCodeEmail(
+  kind: CodeEmail,
   email: string,
   code: string,
   origin: string,
   timeoutMinutes: number
 ) {
   if (!PLUNK_KEY) {
-    console.warn("PLUNK_SECRET_KEY not set. Skipping sending verification email.");
+    console.warn(`PLUNK_SECRET_KEY not set. Skipping "${kind.template}" email.`);
     return null;
   }
-  const verifyLink = `${BASE_URL ?? origin ?? "http://localhost:5173"}/auth?act=verify-email&code=${code}`;
+  const link = `${BASE_URL ?? origin}/auth?act=${kind.act}&code=${code}`;
+  const timeout = `${timeoutMinutes} ${timeoutMinutes === 1 ? "minute" : "minutes"}`;
 
   try {
-    // Ensure the contact exists (best-effort)
-    void createContact(email);
-    // Try to fetch templates and find the one we want
-    const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
-      method: "GET",
-    });
-    // Normalize different possible response shapes:
-    // - { data: { items: [...] } }
-    // - { data: [...] }
-    // - direct array
-    const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
-    const items: PlunkTemplate[] = Array.isArray(rawData?.data)
-      ? rawData.data
-      : Array.isArray(rawData?.items)
-        ? rawData.items
-        : Array.isArray(rawData)
-          ? (rawData as PlunkTemplate[])
-          : [];
+    const templates = parsePlunkTemplates(
+      await plunkRequest("/templates?limit=100", { method: "GET" })
+    );
+    const tpl = templates.find((t) => t.name.toLowerCase() === kind.template.toLowerCase());
+    if (tpl) {
+      const payload = { to: email, template: tpl.id, data: { code, timeout, link } };
+      const sent = await plunkPost("/v1/send", payload);
+      if (sent?.success) return sent;
 
-    const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "email verification");
-    if (tpl && tpl.id) {
-      // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
-      const payload: Record<string, unknown> = {
-        to: email,
-        template: tpl.id,
-        data: {
-          code,
-          timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}`,
-          link: verifyLink,
-        },
-      };
-
-      try {
-        const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-
-        // If Plunk complains about a missing sender ('from') retry with the default sender
-        if (
-          sendJson &&
-          sendJson.success === false &&
-          sendJson.error?.code === "VALIDATION_ERROR" &&
-          Array.isArray(sendJson.error?.errors) &&
-          (sendJson.error.errors as any[]).some((e) => e.field === "from")
-        ) {
-          const sendJson2 = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-            method: "POST",
-            body: JSON.stringify({ ...payload, from: tpl.from }),
-          });
-          if (sendJson2 && sendJson2.success) return sendJson2;
-          console.warn("Plunk send (template + from retry) failed:", sendJson2?.error ?? sendJson2);
-        }
-
-        if (sendJson && sendJson.success) return sendJson;
-        console.warn("Plunk send (template id) failed:", sendJson?.error ?? sendJson);
-      } catch (e) {
-        console.warn("Error sending with Plunk template id:", e);
+      // Plunk rejects templates without a sender: retry with the template's.
+      const missingFrom =
+        sent?.success === false &&
+        sent.error?.code === "VALIDATION_ERROR" &&
+        (sent.error.errors ?? []).some((e) => e.field === "from");
+      if (missingFrom) {
+        const retry = await plunkPost("/v1/send", { ...payload, from: tpl.from });
+        if (retry?.success) return retry;
+        console.warn("Plunk send (template + from retry) failed:", retry);
+      } else {
+        console.warn("Plunk send (template id) failed:", sent);
       }
     }
   } catch (e) {
-    console.warn("Error while fetching templates from Plunk:", e);
+    console.warn(`Error sending "${kind.template}" with a Plunk template:`, e);
   }
 
-  // Fallback: send a simple inline message
+  // Fallback: a simple inline message
   try {
-    const subject = "Verify your email";
-    const body = `<p>Your verification code is <strong>${code}</strong>, or use this link ${verifyLink} It expires in ${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}.</p>`;
-    const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-      method: "POST",
-      body: JSON.stringify({ to: email, subject, body }),
-    });
-    if (!sendJson || sendJson.success === false) {
-      console.warn("Plunk send (fallback) failed:", sendJson?.error ?? sendJson);
-    }
-    return sendJson;
+    const body = `<p>${kind.intro} is <strong>${code}</strong>. It expires in ${timeout}.</p><p><a href="${link}">${kind.subject}</a></p>`;
+    const sent = await plunkPost("/v1/send", { to: email, subject: kind.subject, body });
+    if (!sent?.success) console.warn("Plunk send (fallback) failed:", sent);
+    return sent;
   } catch (e) {
-    console.warn("Failed to send verification email via Plunk:", e);
+    console.warn(`Failed to send "${kind.template}" email via Plunk:`, e);
     return null;
   }
 }
 
-/**
- * Send a password reset email to the recipient.
- *
- * Strategy:
- * 1) Attempt to find a template named exactly "Password Reset" (case-insensitive).
- *    - If found, try to populate it with variables and send a simple inline email using
- *      the resolved subject/body (this is safe and does not depend on unknown template API fields).
- * 2) If template not found or an error occurs, fall back to sending a basic inline HTML email.
- *
- * This function is resilient: missing configuration or remote failures will log warnings but not throw.
- */
-async function sendPasswordResetEmail(
-  email: string,
-  code: string,
-  baseUrl: string,
-  timeoutMinutes: number
-) {
-  if (!PLUNK_KEY) {
-    console.warn("PLUNK_SECRET_KEY not set. Skipping sending password reset email.");
-    return null;
-  }
+const VERIFICATION_EMAIL: CodeEmail = {
+  template: "Email Verification",
+  subject: "Verify your email",
+  intro: "Your verification code",
+  act: "verify-email",
+};
 
-  const resetLink = `${BASE_URL ?? baseUrl ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}`;
-  // Try to fetch templates and find the one we want
-  try {
-    const tplJson = await plunkRequest<PlunkListData<PlunkTemplate>>("/templates?limit=100", {
-      method: "GET",
-    });
-
-    const rawData: any = (tplJson && tplJson.success ? tplJson.data : null) ?? tplJson;
-    const items: PlunkTemplate[] = Array.isArray(rawData?.data)
-      ? rawData.data
-      : Array.isArray(rawData?.items)
-        ? rawData.items
-        : Array.isArray(rawData)
-          ? (rawData as PlunkTemplate[])
-          : [];
-
-    const tpl = items.find((t) => (t?.name ?? "").toLowerCase() === "password reset");
-    if (tpl && tpl.id) {
-      // Preferred: send by template ID and pass variables in `data` (e.g. code, timeout).
-      const payload: Record<string, unknown> = {
-        to: email,
-        template: tpl.id,
-        data: {
-          code,
-          timeout: `${timeoutMinutes} ${timeoutMinutes > 1 ? "minutes" : "minute"}`,
-          link: resetLink,
-        },
-      };
-
-      try {
-        const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
-
-        // If Plunk complains about a missing sender ('from') retry with the default sender
-        if (
-          sendJson &&
-          sendJson.success === false &&
-          sendJson.error?.code === "VALIDATION_ERROR" &&
-          Array.isArray(sendJson.error?.errors) &&
-          (sendJson.error.errors as any[]).some((e) => e.field === "from")
-        ) {
-          const sendJson2 = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-            method: "POST",
-            body: JSON.stringify({ ...payload, from: tpl.from }),
-          });
-          if (sendJson2 && sendJson2.success) return sendJson2;
-          console.warn("Plunk send (template + from retry) failed:", sendJson2?.error ?? sendJson2);
-        }
-
-        if (sendJson && sendJson.success) return sendJson;
-        console.warn("Plunk send (template id) failed:", sendJson?.error ?? sendJson);
-      } catch (e) {
-        console.warn("Error sending with Plunk template id:", e);
-      }
-    }
-  } catch (e) {
-    console.warn("Error while fetching templates from Plunk:", e);
-  }
-
-  // Fallback: send a simple inline message
-  try {
-    const subject = "Reset your password";
-    const body = `<p>Your password reset code is <strong>${code}</strong>, or use this link ${resetLink}. It expires in ${timeoutMinutes} minutes.</p><p>Or click here: <a href="${BASE_URL ?? "http://localhost:5173"}/auth?act=reset-password&code=${code}">Reset Password</a></p>`;
-    const sendJson = await plunkRequest<PlunkSendResponseData>("/v1/send", {
-      method: "POST",
-      body: JSON.stringify({ to: email, subject, body }),
-    });
-    if (!sendJson || sendJson.success === false) {
-      console.warn("Plunk send (fallback) failed:", sendJson?.error ?? sendJson);
-    }
-    return sendJson;
-  } catch (e) {
-    console.warn("Failed to send password reset email via Plunk:", e);
-    return null;
-  }
-}
+const PASSWORD_RESET_EMAIL: CodeEmail = {
+  template: "Password Reset",
+  subject: "Reset your password",
+  intro: "Your password reset code",
+  act: "reset-password",
+};
 
 /**
  * Create a DB email verification request.
@@ -314,9 +174,9 @@ export async function createEmailVerification(
   const [verification] = added.value;
 
   if (verification) {
-    await sendVerificationEmail(email, verification.code, origin, timeoutMinutes).catch((e) =>
-      console.error("Failed to send verification email:", e)
-    );
+    // Contact sync is best-effort, but awaited: Workers cancel stray promises.
+    await createContact(email);
+    await sendCodeEmail(VERIFICATION_EMAIL, email, verification.code, origin, timeoutMinutes);
   }
 
   return verification;
@@ -346,11 +206,7 @@ export async function createPasswordReset(
     return null;
   }
 
-  if (resetSession) {
-    await sendPasswordResetEmail(email, resetSession.code, baseUrl, timeoutMinutes).catch((e) =>
-      console.error("Failed to send password reset email:", e)
-    );
-  }
+  await sendCodeEmail(PASSWORD_RESET_EMAIL, email, resetSession.code, baseUrl, timeoutMinutes);
 
   return resetSession;
 }

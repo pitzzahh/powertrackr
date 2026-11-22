@@ -1,10 +1,10 @@
 import { db } from "#lib/server/db/index.js";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
+import { and, eq, not, type SQL } from "drizzle-orm";
 import { session } from "#lib/server/db/schema/index.js";
-import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import type { HelperParam, HelperResult } from "#lib/types/helper.js";
 import { generateNotFoundMessage } from "#lib/utils/text.js";
 import { getChangedData } from "#lib/utils/mapper.js";
-import type { NewSession, Session, SessionDTO } from "#lib/types/session.js";
+import type { NewSession, Session } from "#lib/types/session.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type SessionQueryOptions = {
@@ -99,50 +99,6 @@ export async function getSessionBy(
     valid: is_valid,
     message: `${queryDBResult.length} session(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
     value: queryDBResult,
-  };
-}
-
-export async function getSessions(data: HelperParam<NewSession>): Promise<Partial<SessionDTO>[]> {
-  const sessionsResult = await getSessionBy(data);
-  return mapNewSession_to_DTO(sessionsResult.value);
-}
-
-export async function mapNewSession_to_DTO(
-  data: Partial<NewSession>[]
-): Promise<Partial<SessionDTO>[]> {
-  return data.map((_session) => ({
-    id: _session.id,
-    expiresAt: _session.expiresAt,
-    ipAddress: _session.ipAddress,
-    userAgent: _session.userAgent,
-    userId: _session.userId,
-    twoFactorVerified: _session.twoFactorVerified,
-  }));
-}
-
-export async function getSessionCountBy(
-  data: HelperParam<NewSession>
-): Promise<HelperResult<number>> {
-  const { query } = data;
-  const { id, userId } = query;
-  const conditions = generateQueryConditions<NewSession>(data);
-  const request_query = db().select({ count: count() }).from(session);
-
-  if (id || userId) {
-    request_query.limit(1);
-  }
-
-  const whereSQL = buildWhereSQL(conditions);
-  const [_data] = await request_query.where(whereSQL);
-
-  const _count = _data?.count;
-  const is_valid = _count > 0;
-  return {
-    valid: is_valid,
-    message: is_valid
-      ? `Session(s) count is ${_count}`
-      : `Session(s) count with ${generateNotFoundMessage(query)}`,
-    value: _count,
   };
 }
 

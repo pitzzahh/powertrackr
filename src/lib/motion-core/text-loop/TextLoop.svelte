@@ -75,8 +75,10 @@
   <span
     class="font-inherit invisible inline-block text-inherit"
     style={`${boxWidth ? `width: ${boxWidth}px;` : ""} transition: width 0.3s ease;`}
-    aria-hidden="true">{widest || texts[0]}</span
+    aria-hidden="true"
   >
+    {widest || texts[0]}
+  </span>
   {#key currentIndex}
     <span
       class={cn(

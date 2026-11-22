@@ -1,6 +1,5 @@
 <script lang="ts" module>
-  import type { AuthAction } from ".";
-  import type { AsyncState } from "#lib/types/state.js";
+  import type { AuthAction } from "#lib/types/auth.js";
   import type { HTMLFormAttributes } from "svelte/elements";
   import type { WithElementRef } from "#lib/index.js";
   export type AuthFormProps = WithElementRef<HTMLFormAttributes> & {
@@ -8,17 +7,9 @@
     /** Turnstile site key, resolved server-side from the wrangler var. */
     siteKey?: string;
   };
-
-  type AuthFormState = {
-    statuses: {
-      email: AsyncState;
-      github: AsyncState;
-    };
-  };
 </script>
 
 <script lang="ts">
-  import { onMount } from "svelte";
   import {
     FieldGroup,
     Field,
@@ -31,14 +22,12 @@
   import { fieldInputProps } from "#lib/utils/field.js";
   import { Button } from "#lib/components/ui/button/index.js";
   import { cn } from "#lib/utils/style.js";
-  import { loadTurnstileScript } from "#lib/utils/turnstile.js";
   import Password from "#lib/components/password.svelte";
-  import { Github, Loader } from "#lib/assets/icons.js";
+  import { Loader } from "#lib/assets/icons.js";
   import { login, register } from "#lib/api/auth.remote.js";
-  import { toast } from "svelte-sonner";
-  import { isHttpError } from "@sveltejs/kit";
-  import { loginWithGithub } from "#lib/api/github.remote.js";
-  import { showError, showLoading, showSuccess, showWarning } from "#lib/components/toast/index.js";
+  import { notifyResult } from "#lib/utils/notify.js";
+  import TurnstileWidget from "./turnstile-widget.svelte";
+  import GithubButton from "./github-button.svelte";
 
   let {
     action,
@@ -48,129 +37,55 @@
     ...restProps
   }: AuthFormProps = $props();
 
-  const { currentAction } = $derived({
-    currentAction: action === "login" ? login : register,
-  });
-
-  let { statuses }: AuthFormState = $state({
-    statuses: {
-      email: "idle",
-      github: "idle",
-    },
-  });
-
   const id = $props.id();
+  const isLogin = $derived(action === "login");
+  const currentAction = $derived(isLogin ? login : register);
 
-  // Site key comes from the auth page load (server-side env); the secret never
-  // leaves the server.
+  let emailBusy = $state(false);
+  let githubBusy = $state(false);
   let token = $state("");
-  let widgetId = $state<string | null>(null);
-  let widgetContainer = $state<HTMLDivElement | null>(null);
-
-  function renderWidget() {
-    if (widgetId !== null || widgetContainer === null || !siteKey || !window.turnstile) return;
-    widgetId = window.turnstile.render(widgetContainer, {
-      sitekey: siteKey,
-      action: "turnstile-spin-v2",
-      theme: "auto",
-      // Expand the widget to the full form width instead of the default
-      // centered 300px box.
-      size: "flexible",
-      // The widget would otherwise inject its own `<input name="cf-turnstile-response">`
-      // into the form — dashed keys crash SvelteKit remote-form preflight
-      // ("Invalid path ..."). The token flows via the callback into our own
-      // `turnstileToken` hidden input instead.
-      "response-field": false,
-      callback: (value) => {
-        token = value;
-      },
-      "expired-callback": () => resetWidget(),
-      "error-callback": () => {
-        token = "";
-      },
-    });
-  }
-
-  // Tokens are single-use: after any failed submit the widget must mint a
-  // fresh challenge, otherwise the retry is rejected as `timeout-or-duplicate`.
-  function resetWidget() {
-    token = "";
-    if (widgetId !== null) window.turnstile?.reset(widgetId);
-  }
-
-  onMount(() => {
-    if (!siteKey) return;
-    void loadTurnstileScript().then(() => {
-      renderWidget();
-    });
-    return () => {
-      if (widgetId !== null) window.turnstile?.remove(widgetId);
-    };
-  });
+  let turnstile = $state<ReturnType<typeof TurnstileWidget>>();
 </script>
 
 <form
   {...currentAction.enhance(async ({ submit, element }) => {
-    if (statuses.email === "processing") return;
-    statuses.email = "processing";
-    const toastId = showLoading(
-      action === "login" ? "Logging you in..." : "Creating your account..."
-    );
-    try {
-      await submit();
-      const issues = currentAction.fields.allIssues?.() || [];
-      if (issues.length > 0) {
-        showWarning(issues.map((i) => i.message).join(", "));
-        // Any failed submit consumed the single-use token — even one rejected
-        // for a different reason (wrong password, rate limit) leaves the widget
-        // holding a spent token. Mint a fresh challenge or the retry is
-        // rejected by siteverify as `timeout-or-duplicate`.
-        resetWidget();
-      } else {
-        element.reset();
-        showSuccess(action === "login" ? "Logged in successfully" : "Account created successfully");
-      }
-    } catch (e) {
-      const message = isHttpError(e) ? e.body.message : String(e);
-      console.log({ e });
-      showError(
-        message ||
-          (action === "login"
-            ? "Failed to log you in. Please try again."
-            : "Failed to create your account. Please try again.")
-      );
-      resetWidget();
-    } finally {
-      toast.dismiss(toastId);
-      statuses.email = "idle";
-    }
+    if (emailBusy) return;
+    emailBusy = true;
+    const ok = await notifyResult({
+      loading: isLogin ? "Logging you in..." : "Creating your account...",
+      success: isLogin ? "Logged in successfully" : "Account created successfully",
+      failure: isLogin
+        ? "Failed to log you in. Please try again."
+        : "Failed to create your account. Please try again.",
+      run: submit,
+      issues: () => currentAction.fields.allIssues(),
+    });
+    // Any failed submit spent the single-use Turnstile token, whatever the
+    // reason (wrong password, rate limit): mint a fresh one for the retry
+    if (ok) element.reset();
+    else turnstile?.reset();
+    emailBusy = false;
   })}
   class={cn("flex flex-col gap-6", className)}
   bind:this={ref}
   {...restProps}
 >
   <FieldGroup>
-    <div class="flex flex-col items-center gap-1 text-center">
-      <h1 class="text-2xl font-bold">
-        {#if action === "login"}
-          Welcome back, you've been missed!
-        {:else}
-          Create an account to get started!
-        {/if}
+    <div class="flex flex-col gap-1">
+      <h1 class="text-2xl font-semibold tracking-tight">
+        {isLogin ? "Sign in" : "Create your account"}
       </h1>
       <p class="text-sm text-balance text-muted-foreground">
-        {#if action === "login"}
-          Enter your email and password to access your account.
-        {:else}
-          Fill in the details below to create your account.
-        {/if}
+        {isLogin
+          ? "Use the email and password you registered with."
+          : "You'll add your first bill right after this."}
       </p>
     </div>
-    {#if action === "register"}
+    {#if !isLogin}
       <Field>
         <FieldLabel for="name-{id}">Name</FieldLabel>
         <Input
-          autofocus={action === "register"}
+          autofocus
           id="name-{id}"
           autocomplete="name"
           required
@@ -182,7 +97,7 @@
     <Field>
       <FieldLabel for="email-{id}">Email</FieldLabel>
       <Input
-        autofocus={action === "login"}
+        autofocus={isLogin}
         id="email-{id}"
         placeholder="m@example.com"
         required
@@ -194,30 +109,25 @@
     <Field>
       <div class="flex items-center">
         <FieldLabel for="password-{id}">Password</FieldLabel>
-        {#if action === "login" && (currentAction.fields.password.issues() || [])
-            .map((issue) => issue.message)
-            .some((message) => message.includes("Invalid password"))}
+        {#if isLogin}
           <a href="?act=forgot-password" class="ms-auto text-sm underline-offset-4 hover:underline">
             Forgot your password?
           </a>
         {/if}
       </div>
-
       <Password
         id="password-{id}"
         required
-        autocomplete="current-password"
-        showProgress={action === "register"}
-        showRequirements={action === "register"}
+        autocomplete={isLogin ? "current-password" : "new-password"}
+        showProgress={!isLogin}
+        showRequirements={!isLogin}
         {...currentAction.fields.password.as("password")}
       />
       <FieldError errors={currentAction.fields.password.issues()} />
     </Field>
-    {#if action === "register"}
+    {#if !isLogin}
       <Field>
-        <div class="flex items-center">
-          <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
-        </div>
+        <FieldLabel for="confirm-password-{id}">Confirm Password</FieldLabel>
         <Password
           id="confirm-password-{id}"
           autocomplete="new-password"
@@ -231,78 +141,38 @@
     {/if}
     <input {...currentAction.fields.turnstileToken.as("hidden", token)} />
     <Field>
-      <div
-        class="cf-turnstile"
-        data-sitekey={siteKey}
-        data-action="turnstile-spin-v2"
-        bind:this={widgetContainer}
-      ></div>
+      <TurnstileWidget {siteKey} bind:token bind:this={turnstile} />
       <FieldError errors={currentAction.fields.turnstileToken.issues()} />
     </Field>
     <Field>
       <Button
         type="submit"
-        disabled={statuses.github === "processing"}
-        aria-label={action === "login" ? "Login to your account" : "Create your account"}
+        disabled={emailBusy || githubBusy}
+        aria-label={isLogin ? "Login to your account" : "Create your account"}
       >
-        {#if statuses.email === "processing"}
+        {#if emailBusy}
           <Loader class="size-5 animate-spin" />
         {:else}
-          {action === "login" ? "Login to your account" : "Create your account"}
+          {isLogin ? "Login to your account" : "Create your account"}
         {/if}
       </Button>
     </Field>
     <FieldSeparator>Or continue with</FieldSeparator>
     <Field>
-      <Button
-        variant="outline"
-        disabled={statuses.email === "processing"}
-        aria-label={action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
-        onclick={async () => {
-          statuses.github = "processing";
-          const toastId = showLoading(
-            action === "login" ? "Logging in with GitHub" : "Creating Account with GitHub"
-          );
-          try {
-            const { redirect } = await loginWithGithub();
-            if (redirect) {
-              toast.dismiss(toastId);
-              window.location.href = redirect;
-            }
-          } catch (error) {
-            const message = isHttpError(error) ? error.body.message : String(error);
-            showError(
-              message ||
-                (action === "login"
-                  ? "Failed to log you in. Please try again."
-                  : "Failed to create your account. Please try again.")
-            );
-          } finally {
-            statuses.github = "idle";
-            toast.dismiss(toastId);
-          }
-        }}
-      >
-        {#if statuses.github === "processing"}
-          <Loader class="size-5 animate-spin" />
-        {:else}
-          <Github />
-          {action === "login" ? "Login with GitHub" : "Sign up with GitHub"}
-        {/if}
-      </Button>
+      <GithubButton
+        label={isLogin ? "Login with GitHub" : "Sign up with GitHub"}
+        disabled={emailBusy}
+        bind:busy={githubBusy}
+      />
       <FieldDescription class="text-center">
-        {action === "login" ? "Don't have an account? " : "Already have an account? "}
+        {isLogin ? "Don't have an account? " : "Already have an account? "}
         <a
-          href="/auth?act={action === 'login' ? 'register' : 'login'}"
+          href="/auth?act={isLogin ? 'register' : 'login'}"
           class="underline underline-offset-4"
-          aria-disabled={statuses.email === "processing" || statuses.github === "processing"}
-          onclick={() => {
-            statuses.email = "idle";
-            statuses.github = "idle";
-            (ref as HTMLFormElement)?.reset();
-          }}
+          aria-disabled={emailBusy || githubBusy}
+          onclick={() => (ref as HTMLFormElement | null)?.reset()}
         >
-          {action === "login" ? "Sign up" : "Login"}
+          {isLogin ? "Sign up" : "Login"}
         </a>
       </FieldDescription>
     </Field>

@@ -10,33 +10,31 @@ import {
   user,
   payment,
 } from "#lib/server/db/schema/index.js";
-import { getUserBy } from "#lib/server/crud/user-crud.js";
+import { deleteUserBy, getUserBy } from "#lib/server/crud/user-crud.js";
 import { addUser } from "#lib/server/crud/user-crud.js";
-import {
-  getLastTenantReading,
-  finalizeBillingInfoLogic,
-} from "#lib/server/crud/billing-info-crud.js";
+import { getLastTenantReading } from "#lib/server/crud/billing-usage.js";
+import { finalizeBillingInfoLogic } from "#lib/server/crud/billing-logic.js";
 import { hashPassword } from "#lib/server/encryption.js";
 import { calculatePayPerKwh } from "#lib";
 import { refreshBillingData } from "./billing-refresh";
 import { error, invalid } from "@sveltejs/kit";
 import {
-  createTenantSchema,
-  updateTenantSchema,
-  deleteTenantSchema,
-  submitReadingSchema,
-  updateSubmissionSchema,
+  CREATE_TENANT_SCHEMA,
+  UPDATE_TENANT_SCHEMA,
+  DELETE_TENANT_SCHEMA,
+  SUBMIT_READING_SCHEMA,
+  UPDATE_SUBMISSION_SCHEMA,
 } from "#lib/validators/tenant.js";
 import type {
-  TenantWithMeters,
+  ComputedBilling,
   MyMeter,
   PendingBilling,
-  ComputedBilling,
+  TenantWithMeters,
 } from "#lib/types/tenant.js";
 import type { NewUser } from "#lib/types/user.js";
 
 // Form to create a tenant account (owner vouches for the credentials)
-export const createTenant = form(createTenantSchema, async (data, issues): Promise<NewUser> => {
+export const createTenant = form(CREATE_TENANT_SCHEMA, async (data, issues): Promise<NewUser> => {
   const { user: authUser, session } = requireAuth();
   if (authUser.ownerId) error(403, "Only owners can create tenants");
 
@@ -173,7 +171,7 @@ export const getMyMeter = query(EMPTY_SCHEMA, async (): Promise<MyMeter> => {
 // Form for a tenant to submit their current meter reading, optionally for a
 // specific pending billing period
 export const submitReading = form(
-  submitReadingSchema,
+  SUBMIT_READING_SCHEMA,
   async ({ billingInfoId, reading }, issues) => {
     const { user: authUser, session } = requireAuth();
     if (!authUser.ownerId) error(403, "Only tenants can submit readings");
@@ -192,64 +190,76 @@ export const submitReading = form(
       invalid(issues.reading("Reading must not be lower than the last recorded reading"));
     }
 
-    const [created] = await db()
-      .insert(readingSubmission)
-      .values({
-        id: crypto.randomUUID(),
-        tenantUserId: session.userId,
-        reading,
-      })
-      .returning();
+    const submission = {
+      id: crypto.randomUUID(),
+      tenantUserId: session.userId,
+      reading,
+    };
 
-    // When submitting for a pending billing, fill the tenant's pending reading
-    // row and materialize their usage + payment immediately (the rate is known
-    // from the billing). Once every tenant has submitted, finalize the billing
-    // so the main payment lands too.
-    if (billingInfoId) {
-      const ownerId = authUser.ownerId;
-      const billing = await db().query.billingInfo.findFirst({
-        where: { id: billingInfoId, ...(ownerId ? { userId: ownerId } : {}) },
-      });
-      if (!billing) {
-        error(400, "Unknown billing");
-      }
+    if (!billingInfoId) {
+      const [created] = await db().insert(readingSubmission).values(submission).returning();
+      void getMyMeter({}).refresh();
+      return created;
+    }
 
-      const prev = await getLastTenantReading(billing.userId, session.userId, billing.date);
-      const payPerKwh = calculatePayPerKwh(billing.balance, billing.totalkWh);
-      const usage = prev === null ? 0 : reading - prev;
-      const amount = Number((usage * payPerKwh).toFixed(2));
-      const subPaymentId = crypto.randomUUID();
+    // Submitting for a pending billing: check everything before writing, so a
+    // repeat submit or a foreign billing id leaves no stray rows behind.
+    const ownerId = authUser.ownerId;
+    const billing = await db().query.billingInfo.findFirst({
+      where: { id: billingInfoId, userId: ownerId },
+    });
+    if (!billing) {
+      error(400, "Unknown billing");
+    }
+    // Finalize already billed this row's usage to the owner's main payment.
+    if (billing.paymentId) {
+      error(409, "This billing is already finalized");
+    }
+    const pendingRow = await db().query.tenantReading.findFirst({
+      where: { billingInfoId, tenantUserId: session.userId, reading: { isNull: true } },
+    });
+    if (!pendingRow) {
+      error(400, "This billing has no pending reading for you");
+    }
 
+    // Fill the tenant's pending row and materialize their usage + payment now
+    // (the rate is known from the billing).
+    const prev = await getLastTenantReading(billing.userId, session.userId, billing.date);
+    const payPerKwh = calculatePayPerKwh(billing.balance, billing.totalkWh);
+    const usage = prev === null ? 0 : reading - prev;
+    const amount = Number((usage * payPerKwh).toFixed(2));
+    const subPaymentId = crypto.randomUUID();
+
+    const [[created], , filled] = await db().batch([
+      db().insert(readingSubmission).values(submission).returning(),
+      db().insert(payment).values({ id: subPaymentId, amount, date: new Date() }),
+      db()
+        .update(tenantReading)
+        .set({ reading, subkWh: usage, paymentId: subPaymentId, status: "paid" })
+        .where(and(eq(tenantReading.id, pendingRow.id), isNull(tenantReading.reading)))
+        .returning({ id: tenantReading.id }),
+    ]);
+    if (filled.length === 0) {
+      // A concurrent submit filled the row first; drop the rows we created.
       await db().batch([
-        db().insert(payment).values({
-          id: subPaymentId,
-          amount,
-          date: new Date(),
-        }),
-        db()
-          .update(tenantReading)
-          .set({ reading, subkWh: usage, paymentId: subPaymentId, status: "paid" })
-          .where(
-            and(
-              eq(tenantReading.billingInfoId, billingInfoId),
-              eq(tenantReading.tenantUserId, session.userId),
-              isNull(tenantReading.reading)
-            )
-          ),
+        db().delete(payment).where(eq(payment.id, subPaymentId)),
+        db().delete(readingSubmission).where(eq(readingSubmission.id, submission.id)),
       ]);
+      error(409, "This reading was already submitted");
+    }
 
-      const [{ pendingCount }] = await db()
-        .select({ pendingCount: count() })
-        .from(tenantReading)
-        .where(and(eq(tenantReading.billingInfoId, billingInfoId), isNull(tenantReading.reading)));
-      if ((pendingCount ?? 0) === 0) {
-        try {
-          await finalizeBillingInfoLogic(billingInfoId, billing.userId);
-        } catch (err) {
-          // The reading is recorded; a finalize failure (e.g. implausible
-          // balance) stays visible to the owner to fix and finalize manually.
-          console.error("Auto-finalize failed for billing", billingInfoId, err);
-        }
+    // Once every tenant has submitted, finalize so the main payment lands too.
+    const [{ pendingCount }] = await db()
+      .select({ pendingCount: count() })
+      .from(tenantReading)
+      .where(and(eq(tenantReading.billingInfoId, billingInfoId), isNull(tenantReading.reading)));
+    if ((pendingCount ?? 0) === 0) {
+      try {
+        await finalizeBillingInfoLogic(billingInfoId, billing.userId);
+      } catch (err) {
+        // The reading is recorded; a finalize failure (e.g. implausible
+        // balance) stays visible to the owner to fix and finalize manually.
+        console.error("Auto-finalize failed for billing", billingInfoId, err);
       }
     }
 
@@ -328,7 +338,7 @@ export const getCurrentBilling = query(EMPTY_SCHEMA, async (): Promise<ComputedB
 });
 
 // Form to rename a tenant (owner vouches for the tenant)
-export const updateTenant = form(updateTenantSchema, async ({ tenantUserId, name }) => {
+export const updateTenant = form(UPDATE_TENANT_SCHEMA, async ({ tenantUserId, name }) => {
   const { user: authUser, session } = requireAuth();
   if (authUser.ownerId) error(403, "Only owners can update tenants");
 
@@ -350,7 +360,7 @@ export const updateTenant = form(updateTenantSchema, async ({ tenantUserId, name
 });
 
 // Command to delete a tenant (removes their readings and submissions via cascade)
-export const deleteTenant = command(deleteTenantSchema, async ({ tenantUserId }) => {
+export const deleteTenant = command(DELETE_TENANT_SCHEMA, async ({ tenantUserId }) => {
   const { user: authUser, session } = requireAuth();
   if (authUser.ownerId) error(403, "Only owners can delete tenants");
 
@@ -359,16 +369,17 @@ export const deleteTenant = command(deleteTenantSchema, async ({ tenantUserId })
     error(400, "Unknown tenant");
   }
 
-  await db().delete(user).where(eq(user.id, tenantUserId));
+  // deleteUserBy also removes the tenant's payment rows, which the cascade misses.
+  await deleteUserBy({ query: { id: tenantUserId } });
 
-  // Deleting cascades into readings, submissions and payments — refresh every
+  // Deleting cascades into readings and submissions — refresh every
   // query that reads tenant/billing/stats data.
   refreshBillingData();
   return { ok: true };
 });
 
 // Form for a tenant to correct their most recent submission (e.g. forgot or typo)
-export const updateSubmission = form(updateSubmissionSchema, async ({ reading }, issues) => {
+export const updateSubmission = form(UPDATE_SUBMISSION_SCHEMA, async ({ reading }, issues) => {
   const { user: authUser, session } = requireAuth();
   if (!authUser.ownerId) error(403, "Only tenants can update submissions");
 

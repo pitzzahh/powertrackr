@@ -1,0 +1,165 @@
+<!doctype html>
+<!-- Fallback SvelteKit serves when the app itself can't render (e.g. the root layout throws),
+     so it must stand alone: no app CSS or JS, colours copied from src/routes/layout.css. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>%sveltekit.status% · PowerTrackr</title>
+    <script>
+      // Honour a theme picked in the app (mode-watcher), else the system setting.
+      try {
+        const mode = (localStorage.getItem("mode-watcher-mode") || "").replaceAll('"', "");
+        if (mode === "dark" || mode === "light") document.documentElement.dataset.theme = mode;
+      } catch {}
+    </script>
+    <style>
+      :root {
+        --bg: oklch(0.985 0.004 90);
+        --fg: oklch(0.2 0.025 262);
+        --muted: oklch(0.46 0.02 262);
+        --border: oklch(0.89 0.01 262);
+        --primary: oklch(0.33 0.1 262);
+        --primary-fg: oklch(0.99 0 0);
+        --highlight: oklch(0.89 0.17 98);
+        --ink: oklch(0.2 0.025 262);
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: oklch(0.165 0.018 262);
+          --fg: oklch(0.95 0.006 90);
+          --muted: oklch(0.72 0.015 262);
+          --border: oklch(0.31 0.022 262);
+          --primary: oklch(0.89 0.17 98);
+          --primary-fg: oklch(0.2 0.025 262);
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: oklch(0.165 0.018 262);
+        --fg: oklch(0.95 0.006 90);
+        --muted: oklch(0.72 0.015 262);
+        --border: oklch(0.31 0.022 262);
+        --primary: oklch(0.89 0.17 98);
+        --primary-fg: oklch(0.2 0.025 262);
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          16px/1.5 "IBM Plex Sans",
+          system-ui,
+          sans-serif;
+      }
+      .logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--fg);
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .logo span {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 2px;
+        background: var(--highlight);
+        color: var(--ink);
+      }
+      main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .box {
+        width: 100%;
+        max-width: 24rem;
+      }
+      .status {
+        margin: 0;
+        font-size: 14px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-size: 24px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+      }
+      p.hint {
+        margin: 8px 0 0;
+        color: var(--muted);
+      }
+      .actions {
+        margin-top: 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        height: 36px;
+        padding: 0 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--fg);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .btn.primary {
+        border-color: transparent;
+        background: var(--primary);
+        color: var(--primary-fg);
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--primary);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="logo" href="/" aria-label="PowerTrackr home">
+      <span aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor">
+          <path
+            d="M215.79 118.17a8 8 0 0 0-5-5.66L153.18 90.9l14.66-73.33a8 8 0 0 0-13.69-7l-112 120a8 8 0 0 0 3 13l57.63 21.61-14.62 73.25a8 8 0 0 0 13.69 7l112-120a8 8 0 0 0 1.94-7.26Z"
+          />
+        </svg>
+      </span>
+      PowerTrackr
+    </a>
+    <main>
+      <div class="box">
+        <p class="status">Error %sveltekit.status%</p>
+        <h1>%sveltekit.error.message%</h1>
+        <p class="hint">Something on our side failed. Reloading usually fixes it.</p>
+        <div class="actions">
+          <button class="btn primary" type="button" onclick="location.reload()">Reload</button>
+          <a class="btn" href="/">Back to home</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

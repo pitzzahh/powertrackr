@@ -1,5 +1,6 @@
+import type { TestDatabase } from "#lib/types/db.js";
 import { createClient, type Client } from "@libsql/client";
-import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/libsql";
 import { TEST_DATABASE_URL } from "$app/env/private";
 import { relations } from "./relations";
 
@@ -24,9 +25,6 @@ export function createTestDb(): TestDatabase {
 
   return testDb;
 }
-
-export type TestDatabase = LibSQLDatabase<typeof relations>;
-
 export function getTestDb(): TestDatabase {
   if (!testDb) {
     testDb = createTestDb();

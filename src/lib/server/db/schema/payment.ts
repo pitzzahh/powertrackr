@@ -10,7 +10,3 @@ export const payment = sqliteTable("payment", {
     .notNull(),
   ...timestamps,
 });
-
-export type Payment = typeof payment.$inferSelect;
-
-export type NewPayment = typeof payment.$inferInsert;

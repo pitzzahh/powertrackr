@@ -1,8 +1,8 @@
 import { redirect } from "@sveltejs/kit";
 import { getEmailVerificationRequestBy } from "#lib/server/crud/email-verification-request-crud.js";
 import { createEmailVerification } from "#lib/server/email.js";
-import type { AuthAction } from "#routes/auth/(components)/index.js";
-import type { EmailVerificationRequest } from "#lib/types/email-verification-request.js";
+import type { AuthAction } from "#lib/types/auth.js";
+import { isRateLimited } from "#lib/server/rate-limit.js";
 import { EMAIL_VERIFICATION_TIMEOUT_MINUTES } from "$app/env/public";
 import { env } from "cloudflare:workers";
 
@@ -23,7 +23,7 @@ export async function load({ url: { searchParams, origin, pathname }, locals: { 
     act !== "2fa-checkpoint" &&
     session &&
     user &&
-    (user.isOauthUser || user.emailVerified) &&
+    user.emailVerified &&
     (!user.registeredTwoFactor || session.twoFactorVerified)
   ) {
     redirect(302, "/dashboard");
@@ -41,22 +41,24 @@ export async function load({ url: { searchParams, origin, pathname }, locals: { 
 
   // Send email verification on first visit to verify-email page
   if (act === "verify-email" && user && !user.emailVerified) {
-    const { valid, value } = await getEmailVerificationRequestBy({
+    const {
+      value: [latest],
+    } = await getEmailVerificationRequestBy({
       query: { userId: user.id },
       options: { limit: 1, order: "desc" },
     });
     try {
-      const data = value as unknown as EmailVerificationRequest;
-      const isExpired = value && data?.expiresAt?.getTime() < Date.now();
-      if (valid && !isExpired)
+      // Only skip sending while the newest code is still usable for the current address.
+      if (
+        latest?.email === user.email &&
+        latest.expiresAt &&
+        latest.expiresAt.getTime() >= Date.now()
+      )
         return {
           action: act as AuthAction,
           code,
         };
-      console.log("Sending initial email verification");
-      // Rate limit initial email verification send
-      const { success } = await env.EMAIL_RATE_LIMITER.limit({ key: user.email });
-      if (success) {
+      if (!(await isRateLimited(env.EMAIL_RATE_LIMITER, user.email))) {
         await createEmailVerification(
           user.id,
           user.email,

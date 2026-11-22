@@ -1,4 +1,14 @@
 import * as v from "valibot";
+import {
+  EMAIL_CODE_FIELD,
+  EMAIL_FIELD,
+  NAME_FIELD,
+  OTP_CODE_FIELD,
+  PASSWORD_FIELD,
+  TURNSTILE_TOKEN_FIELD,
+} from "./shared.js";
+
+const UUID_FIELD = v.pipe(v.string(), v.uuid());
 
 // Spam keywords
 const spamKeywords = /spam|bot|fake|temp|dummy|test|noreply|no-reply|admin|support|info|marketing/i;
@@ -27,13 +37,13 @@ function isSpamEmail(email: string): boolean {
   if (userNumberRegex.test(localPart)) return true;
   if (nameNumberRegex.test(localPart)) return true;
   if (numberNameRegex.test(localPart)) return true;
-  const localPartSchema = v.pipe(v.string(), v.uuid());
+
   const uuidMatches = localPart.match(
     /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi
   );
   if (uuidMatches) {
     for (const match of uuidMatches) {
-      const result = v.safeParse(localPartSchema, match);
+      const result = v.safeParse(UUID_FIELD, match);
       if (result.success) {
         return true; // Found a valid UUID inside the local part
       }
@@ -46,61 +56,52 @@ function isSpamEmail(email: string): boolean {
   return false;
 }
 
-// Turnstile token submitted by the widget's hidden input. Optional at the schema
-// level so a missing/blocked widget produces a friendly field error in the
-// handler instead of a generic "invalid type" message. Must be a plain
-// identifier: SvelteKit remote-form issue paths reject dashes.
-const turnstileTokenField = v.optional(v.string());
-
-export const registerSchema = v.object({
+export const REGISTER_SCHEMA = v.object({
   email: v.pipe(
-    v.string(),
-    v.email(),
+    EMAIL_FIELD,
     v.check((email) => !isSpamEmail(email), "Invalid email address")
   ),
-  name: v.pipe(v.string(), v.minLength(2)),
-  password: v.pipe(v.string(), v.minLength(8)),
-  confirmPassword: v.pipe(v.string(), v.minLength(8)),
-  turnstileToken: turnstileTokenField,
+  name: NAME_FIELD,
+  password: PASSWORD_FIELD,
+  confirmPassword: PASSWORD_FIELD,
+  turnstileToken: TURNSTILE_TOKEN_FIELD,
 });
 
-export const loginSchema = v.object({
-  email: v.pipe(v.string(), v.email()),
-  password: v.pipe(v.string(), v.minLength(8)),
-  turnstileToken: turnstileTokenField,
+export const LOGIN_SCHEMA = v.object({
+  email: EMAIL_FIELD,
+  password: PASSWORD_FIELD,
+  turnstileToken: TURNSTILE_TOKEN_FIELD,
 });
 
-export const verifyEmailSchema = v.object({
-  code: v.pipe(v.string(), v.minLength(1)),
+export const VERIFY_EMAIL_SCHEMA = v.object({ code: EMAIL_CODE_FIELD });
+
+export const TWO_FACTOR_SCHEMA = v.object({ code: OTP_CODE_FIELD });
+
+// generateRandomRecoveryCode(): 10 random bytes, base32 = 16 characters.
+export const RECOVER_2FA_SCHEMA = v.object({
+  recoveryCode: v.pipe(v.string(), v.trim(), v.length(16, "Recovery codes are 16 characters")),
 });
 
-export const twoFactorSchema = v.object({
-  code: v.pipe(v.string(), v.maxLength(6)),
-});
+export const GENERATE_2FA_SECRET_SCHEMA = v.object({});
 
-export const generate2FASecretSchema = v.object({});
-
-export const verify2FASchema = v.object({
-  code: v.pipe(v.string(), v.maxLength(6)),
+export const VERIFY_2FA_SCHEMA = v.object({
+  code: OTP_CODE_FIELD,
   secret: v.pipe(v.string(), v.minLength(1)),
 });
 
-export const disable2FASchema = v.object({
-  code: v.pipe(v.string(), v.maxLength(6)),
+export const DISABLE_2FA_SCHEMA = TWO_FACTOR_SCHEMA;
+
+export const FORGOT_PASSWORD_SCHEMA = v.object({ email: EMAIL_FIELD });
+
+// `_password` fields: SvelteKit never echoes underscore-prefixed fields back to the client.
+export const RESET_PASSWORD_SCHEMA = v.object({
+  code: EMAIL_CODE_FIELD,
+  _password: PASSWORD_FIELD,
+  _confirmPassword: PASSWORD_FIELD,
 });
 
-export const forgotPasswordSchema = v.object({
-  email: v.pipe(v.string(), v.email()),
-});
-
-export const resetPasswordSchema = v.object({
-  code: v.pipe(v.string(), v.minLength(1)),
-  _password: v.pipe(v.string(), v.minLength(8)),
-  _confirmPassword: v.pipe(v.string(), v.minLength(8)),
-});
-
-export const changePasswordSchema = v.object({
-  currentPassword: v.pipe(v.string(), v.minLength(8)),
-  newPassword: v.pipe(v.string(), v.minLength(8)),
-  confirmPassword: v.pipe(v.string(), v.minLength(8)),
+export const CHANGE_PASSWORD_SCHEMA = v.object({
+  currentPassword: PASSWORD_FIELD,
+  newPassword: PASSWORD_FIELD,
+  confirmPassword: PASSWORD_FIELD,
 });

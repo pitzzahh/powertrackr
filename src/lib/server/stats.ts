@@ -2,7 +2,7 @@ import { count, eq, sum } from "drizzle-orm";
 import { billingInfo, payment, user } from "#lib/server/db/schema/index.js";
 import { formatEnergy, formatNumber } from "#lib/utils/format.js";
 import { getEnergyUnit } from "#lib/utils/converter/energy.js";
-import type { Database } from "#lib/server/db/index.js";
+import type { Database } from "#lib/types/db.js";
 import type { Stats } from "#lib/types/stats.js";
 
 export const FALLBACK_STATS: Stats = {

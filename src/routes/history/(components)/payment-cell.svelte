@@ -46,8 +46,10 @@
     <Button
       variant="ghost"
       title="Retry fetching payment"
-      onclick={() => (payment = getPayment(paymentId))}>Retry</Button
+      onclick={() => (payment = getPayment(paymentId))}
     >
+      Retry
+    </Button>
   {:else}
     {@const value = payment.current?.value[0]}
     <Badge variant="secondary" title={formatNumber(value?.amount || 0)}>

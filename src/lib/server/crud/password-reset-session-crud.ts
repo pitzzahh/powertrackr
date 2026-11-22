@@ -1,13 +1,10 @@
 import { db } from "#lib/server/db/index.js";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
+import { and, eq, not, type SQL } from "drizzle-orm";
 import { passwordResetSession } from "#lib/server/db/schema/index.js";
-import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import type { HelperParam, HelperResult } from "#lib/types/helper.js";
 import { generateNotFoundMessage } from "#lib/utils/text.js";
 import { getChangedData } from "#lib/utils/mapper.js";
-import type {
-  NewPasswordResetSession,
-  PasswordResetSessionDTO,
-} from "#lib/types/password-reset-session.js";
+import type { NewPasswordResetSession } from "#lib/types/auth.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type PasswordResetSessionQueryOptions = {
@@ -115,83 +112,6 @@ export async function getPasswordResetSessionBy(
     valid: is_valid,
     message: `${queryDBResult.length} password reset session(s) ${is_valid ? "found" : `with ${generateNotFoundMessage(data.query)}`}`,
     value: queryDBResult,
-  };
-}
-
-export async function getPasswordResetSessions(
-  data: HelperParam<NewPasswordResetSession>
-): Promise<PasswordResetSessionDTO[]> {
-  const sessionsResult = await getPasswordResetSessionBy(data);
-  return !sessionsResult.valid || !sessionsResult.value
-    ? []
-    : mapNewPasswordResetSession_to_DTO(sessionsResult.value);
-}
-
-export async function mapNewPasswordResetSession_to_DTO(
-  data: Partial<NewPasswordResetSession>[]
-): Promise<PasswordResetSessionDTO[]> {
-  return data.map((_session) => ({
-    id: _session.id ?? "",
-    userId: _session.userId ?? "",
-    email: _session.email ?? "",
-    code: _session.code ?? "",
-    expiresAt: _session.expiresAt ? new Date(_session.expiresAt) : new Date(),
-    emailVerified: _session.emailVerified ?? false,
-    twoFactorVerified: _session.twoFactorVerified ?? false,
-  }));
-}
-
-export async function getPasswordResetSessionCountBy(
-  data: HelperParam<NewPasswordResetSession>
-): Promise<HelperResult<number>> {
-  const { query } = data;
-  const { id, email } = query;
-  const conditions = generateQueryConditions<NewPasswordResetSession>(data);
-  const request_query = db().select({ count: count() }).from(passwordResetSession);
-
-  if (id || email) {
-    request_query.limit(1);
-  }
-
-  const whereSQL = buildWhereSQL(conditions);
-  const [_data] = await request_query.where(whereSQL);
-
-  const _count = _data?.count;
-  const is_valid = _count > 0;
-  return {
-    valid: is_valid,
-    message: is_valid
-      ? `Password reset session(s) count is ${_count}`
-      : `Password reset session(s) count with ${generateNotFoundMessage(query)}`,
-    value: _count,
-  };
-}
-
-export async function deletePasswordResetSessionBy(
-  data: HelperParam<NewPasswordResetSession>
-): Promise<HelperResult<number>> {
-  const { query } = data;
-  const conditions = generateQueryConditions<NewPasswordResetSession>(data);
-  const whereSQL = buildWhereSQL(conditions);
-
-  if (!whereSQL) {
-    return {
-      valid: false,
-      message: "No conditions provided for deletion",
-      value: 0,
-    };
-  }
-
-  const deleteResult = await db().delete(passwordResetSession).where(whereSQL).returning({
-    deletedId: passwordResetSession.id,
-  });
-
-  const deletedCount = deleteResult.length ?? 0;
-  const is_valid = deletedCount > 0;
-  return {
-    valid: is_valid,
-    message: `${deletedCount} password reset session(s) ${is_valid ? "deleted" : `not deleted with ${generateNotFoundMessage(query)}`}`,
-    value: deletedCount,
   };
 }
 

@@ -1,12 +1,7 @@
 import { query, form, getRequestEvent } from "$app/server";
-import { updateUserSchema, deleteUserSchema, GITHUB_ID_SCHEMA } from "#lib/validators/user.js";
-import { EMPTY_SCHEMA } from "#lib/validators/shared.js";
-import {
-  deleteUserBy,
-  getUserBy,
-  getUserCountLogic,
-  updateUserBy,
-} from "#lib/server/crud/user-crud.js";
+import { UPDATE_USER_SCHEMA, DELETE_USER_SCHEMA } from "#lib/validators/user.js";
+import { deleteUserBy, getUserBy, updateUserBy } from "#lib/server/crud/user-crud.js";
+import { getTenantReadingBy } from "#lib/server/crud/tenant-reading-crud.js";
 import { error, invalid, redirect } from "@sveltejs/kit";
 import {
   invalidateSession,
@@ -15,48 +10,32 @@ import {
   originCheck,
 } from "#lib/server/auth.js";
 
-export const getTotalUserCount = query(() => {
-  requireAuth();
-  return getUserCountLogic();
-});
-
 export const getCurrentUser = query(() => {
   originCheck();
   const { locals } = getRequestEvent();
   return { user: locals.user, session: locals.session };
 });
 
-// Query to get all users
-export const getUsers = query(EMPTY_SCHEMA, async () => {
-  return await getUserBy({ query: {} });
-});
-
-// Query to get a single user by github id (OAuth callback; same-origin only)
-export const getUserFromGitHubId = query(GITHUB_ID_SCHEMA, async (githubId) => {
-  originCheck();
-  return await getUserBy({
-    query: {
-      githubId,
-    },
-    options: {
-      limit: 1,
-    },
-  });
-});
-
 // Form to update the authenticated user's own profile
-export const updateUser = form(updateUserSchema, async (data) => {
+export const updateUser = form(UPDATE_USER_SCHEMA, async (data, issues) => {
   const { user } = requireAuth();
-  const { id: _ignored, ...updateData } = data;
+  const emailChanged = data.email !== undefined && data.email !== user.email;
+
+  if (emailChanged) {
+    const {
+      value: [taken],
+    } = await getUserBy({ query: { email: data.email }, options: { limit: 1, fields: ["id"] } });
+    if (taken) invalid(issues.email("Email is already used"));
+  }
+
   const {
     valid,
     value: [updatedUser],
     message,
   } = await updateUserBy(
-    {
-      query: { id: user.id },
-    },
-    updateData
+    { query: { id: user.id } },
+    // A new address must be verified again before it counts as verified.
+    emailChanged ? { ...data, emailVerified: false } : data
   );
 
   if (!valid) {
@@ -66,43 +45,44 @@ export const updateUser = form(updateUserSchema, async (data) => {
 });
 
 // Form to delete a user
-export const deleteUser = form(deleteUserSchema, async ({ id, confirmEmail }, issues) => {
+export const deleteUser = form(DELETE_USER_SCHEMA, async ({ id, confirmEmail }, issues) => {
   const event = getRequestEvent();
-  if (event.locals.session === null) {
-    error(401, "Not authenticated");
-  }
+  const { user, session } = requireAuth();
 
   // Verify user owns the account
-  if (id !== event.locals.session.userId) {
+  if (id !== user.id) {
     error(403, "Unauthorized to delete this account");
   }
 
-  // Get user's email to verify confirmation
-  const {
-    valid: userValid,
-    value: [user],
-  } = await getUserBy({
-    query: { id },
-    options: { limit: 1 },
-  });
-
-  if (!userValid || !user) {
-    error(404, "User not found");
-  }
-
-  // Verify email matches
   if (user.email !== confirmEmail) {
     invalid(issues.confirmEmail("Email does not match your account email"));
   }
 
-  // Delete the user
+  // A tenant's readings are part of the owner's bills; deleting them would
+  // leave those bills not adding up, so only the owner may remove the tenant.
+  if (user.ownerId) {
+    const {
+      value: [reading],
+    } = await getTenantReadingBy({
+      query: { tenantUserId: id },
+      options: { limit: 1, fields: ["id"] },
+    });
+    if (reading) {
+      invalid(
+        issues.confirmEmail(
+          "Your readings are part of your owner's bills. Ask your owner to remove your account."
+        )
+      );
+    }
+  }
+
   const { valid, message } = await deleteUserBy({ query: { id } });
   if (!valid) {
     error(400, message || "Failed to delete user");
   }
 
-  // Invalidate session and redirect
-  invalidateSession(event.locals.session.id);
+  // The user row cascade-deletes its sessions; this also covers the cookie.
+  await invalidateSession(session.id);
   deleteSessionTokenCookie(event);
 
   redirect(303, "/");

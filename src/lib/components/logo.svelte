@@ -40,10 +40,10 @@
   {onclick}
   {...restProps}
 >
-  <Zap class="size-6 text-primary-foreground dark:text-primary" />
-  <span class="mr-1 text-3xl leading-none font-bold">
-    <span class="text-foreground">{site.name.substring(0, 5)}</span><span
-      class="text-primary-foreground dark:text-primary">{site.name.substring(5)}</span
-    >
+  <span class="grid size-7 place-items-center rounded-sm bg-highlight text-highlight-foreground">
+    <Zap class="size-4" weight="fill" />
+  </span>
+  <span class="mr-1 text-xl leading-none font-semibold tracking-tight text-foreground">
+    {site.name}
   </span>
 </Button>

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   billingInfoToDto,
-  billingInfoToTableView,
   extendedBillingInfoToTableView,
 } from "#lib/utils/mapper/billing-info.js";
 import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
@@ -84,28 +83,6 @@ describe("billingInfoToDto", () => {
     expect(dto.subMeters[0].reading).toBeNull();
     expect(dto.subMeters[0].subkWh).toBeNull();
     expect(dto.subMeters[0].paymentId).toBeNull();
-  });
-});
-
-describe("billingInfoToTableView", () => {
-  it("formats dates as strings", () => {
-    const view = billingInfoToTableView({
-      id: "b1",
-      userId: "u1",
-      date: new Date("2024-01-01T00:00:00.000Z"),
-      totalkWh: 100,
-      balance: 500,
-      status: "paid",
-      payPerkWh: 5,
-      paymentId: "p1",
-      createdAt: new Date("2024-01-01T00:00:00.000Z"),
-      updatedAt: new Date("2024-01-02T00:00:00.000Z"),
-    });
-
-    expect(typeof view.date).toBe("string");
-    expect(typeof view.createdAt).toBe("string");
-    expect(typeof view.updatedAt).toBe("string");
-    expect(view.paymentId).toBe("p1");
   });
 });
 

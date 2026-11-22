@@ -1,31 +1,15 @@
 import * as v from "valibot";
+import { EMAIL_FIELD, ID_FIELD, NAME_FIELD } from "./shared.js";
 
-const baseUserSchema = v.object({
-  name: v.string(),
-  email: v.pipe(v.string(), v.email()),
-  githubId: v.optional(v.number()),
+// Self-service profile edit. Only fields a user may set on their own account:
+// never githubId / passwordHash (those have dedicated, checked flows).
+export const UPDATE_USER_SCHEMA = v.object({
+  name: v.optional(NAME_FIELD),
+  email: v.optional(EMAIL_FIELD),
   image: v.optional(v.string()),
-  passwordHash: v.optional(v.string()),
 });
 
-export const createUserSchema = baseUserSchema;
-
-export const updateUserSchema = v.object({
-  id: v.string(),
-  name: v.optional(v.string()),
-  email: v.optional(v.pipe(v.string(), v.email())),
-  githubId: v.optional(v.number()),
-  image: v.optional(v.string()),
-  passwordHash: v.optional(v.string()),
-});
-
-export const userSchema = updateUserSchema;
-
-export const getUserSchema = v.string();
-
-export const GITHUB_ID_SCHEMA = v.number();
-
-export const deleteUserSchema = v.object({
-  id: v.string(),
-  confirmEmail: v.pipe(v.string(), v.email()),
+export const DELETE_USER_SCHEMA = v.object({
+  id: ID_FIELD,
+  confirmEmail: EMAIL_FIELD,
 });

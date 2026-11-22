@@ -1,36 +1,38 @@
-import { STATUS_VALUES } from "#lib/types/billing-info.js";
 import * as v from "valibot";
+import type { ImportBillingItem } from "#lib/types/import.js";
+import {
+  DATE_STRING_FIELD,
+  POSITIVE_NUMBER_FIELD,
+  READING_FIELD,
+  STATUS_WITH_DEFAULT_FIELD,
+} from "./shared.js";
 
 /**
- * Schema for a billing item in an import payload. Sub-meters are referenced
- * by label (the tenant's name), not by id — the server resolves them.
+ * A billing item in an import payload. Sub-meters are referenced by label
+ * (the tenant's name), not by id — the server resolves them.
  */
-export const importSubMeterSchema = v.object({
+export const IMPORT_SUB_METER_SCHEMA = v.object({
   label: v.pipe(
     v.string(),
     v.check((val) => !!val, "is required")
   ),
-  status: v.fallback(v.picklist(STATUS_VALUES), "pending"),
-  reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
+  status: STATUS_WITH_DEFAULT_FIELD,
+  // Absent = pending sub-meter; the billing imports as pending.
+  reading: v.optional(READING_FIELD),
 });
 
-export const importBillFormSchema = v.object({
-  date: v.pipe(
-    v.string(),
-    v.check((val) => !!val, "is required")
-  ),
-  balance: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
-  totalkWh: v.pipe(v.number("must be a number"), v.minValue(1, "must be greater than 0")),
-  subMeters: v.fallback(v.array(importSubMeterSchema), []),
-  status: v.fallback(v.picklist(STATUS_VALUES), "pending"),
+export const IMPORT_BILL_FORM_SCHEMA = v.object({
+  date: DATE_STRING_FIELD,
+  balance: POSITIVE_NUMBER_FIELD,
+  totalkWh: POSITIVE_NUMBER_FIELD,
+  subMeters: v.fallback(v.array(IMPORT_SUB_METER_SCHEMA), []),
+  status: STATUS_WITH_DEFAULT_FIELD,
 });
-
-export const IMPORT_BILLING_SCHEMA = v.object({ items: v.array(importBillFormSchema) });
 
 export const IMPORT_BILLING_FILE_SCHEMA = v.object({ file: v.file() });
 
-const importBillArray = v.array(importBillFormSchema);
+const IMPORT_BILL_ARRAY_SCHEMA = v.array(IMPORT_BILL_FORM_SCHEMA);
 
-export function parseImportItems(items: unknown) {
-  return v.parse(importBillArray, items);
+export function parseImportItems(items: unknown): ImportBillingItem[] {
+  return v.parse(IMPORT_BILL_ARRAY_SCHEMA, items);
 }

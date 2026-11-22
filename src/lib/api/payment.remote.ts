@@ -1,22 +1,14 @@
-import { query, form } from "$app/server";
-import { createPaymentSchema, getPaymentSchema } from "#lib/validators/payment.js";
-import {
-  addPayment,
-  getPaymentBy,
-  getTotalPaymentsAmountLogic,
-} from "#lib/server/crud/payment-crud.js";
+import { query } from "$app/server";
+import { GET_PAYMENT_SCHEMA } from "#lib/validators/payment.js";
+import { getPaymentBy } from "#lib/server/crud/payment-crud.js";
 import { getBillingInfoBy } from "#lib/server/crud/billing-info-crud.js";
 import { requireAuth } from "#lib/server/auth.js";
 import { error } from "@sveltejs/kit";
-import type { HelperResult } from "#lib/server/types/helper.js";
+import type { HelperResult } from "#lib/types/helper.js";
 import type { Payment } from "#lib/types/payment.js";
 
-// Query to get total payments amount
-// Public endpoint with origin check - only allows requests from same origin
-export const getTotalPaymentsAmount = query(getTotalPaymentsAmountLogic);
-
 // Query to get a single payment by id (authenticated owner only)
-export const getPayment = query(getPaymentSchema, async (id) => {
+export const getPayment = query(GET_PAYMENT_SCHEMA, async (id) => {
   const { session } = requireAuth();
 
   // Payments have no direct owner column; they belong to a user through the
@@ -43,23 +35,4 @@ export const getPayment = query(getPaymentSchema, async (id) => {
   }
 
   return paymentResult as HelperResult<Payment[]>;
-});
-
-// Form to create a new payment
-export const createPayment = form(createPaymentSchema, async (data) => {
-  const {
-    valid,
-    value: [addedPayment],
-    message,
-  } = await addPayment([
-    {
-      ...data,
-      date: new Date(data.date),
-    },
-  ]);
-
-  if (!valid) {
-    error(400, `Failed to add payment: ${message || "Unknown reason"}`);
-  }
-  return addedPayment;
 });

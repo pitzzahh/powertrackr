@@ -3,10 +3,9 @@
   import { mode, ModeWatcher, toggleMode } from "mode-watcher";
   import favicon from "#lib/assets/favicon.svg";
   import FocusRing from "#lib/components/focus-ring.svelte";
-  import Header from "#routes/(components)/header.svelte";
+  import Header from "#routes/(components)/shell/header.svelte";
   import { site } from "#lib/site.js";
-  import SidebarContent from "#routes/(components)/sidebar-content.svelte";
-  import { scale } from "svelte/transition";
+  import SidebarContent from "#routes/(components)/shell/sidebar-content.svelte";
   import { setSidebarStore } from "#lib/stores/sidebar.svelte.js";
   import { setBillingStore } from "#lib/stores/billing.svelte.js";
   import { setLatestBillingStore } from "#lib/stores/latest-billing.svelte.js";
@@ -32,7 +31,7 @@
   const isFullyAuthenticated = $derived(
     !!data.session &&
       !!data.user &&
-      (data.user.isOauthUser || data.user.emailVerified) &&
+      data.user.emailVerified &&
       (!data.user.registeredTwoFactor || data.session.twoFactorVerified)
   );
 
@@ -123,10 +122,9 @@
       <div class="no-scrollbar h-full overflow-y-auto">
         <div class="flex min-h-full justify-between gap-4 px-4 pt-16">
           <aside
-            in:scale={{ duration: 150 }}
             class={[
               {
-                "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-md border bg-card p-4 shadow-sm transition-all duration-300 ease-in-out lg:flex": true,
+                "sticky top-17 hidden h-[calc(100vh-5.5rem)] flex-col overflow-visible rounded-lg border bg-card p-3 transition-all duration-300 ease-in-out lg:flex": true,
                 "w-16": sidebar.collapsed,
                 "md:w-48 lg:w-54": !sidebar.collapsed,
               },

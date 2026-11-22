@@ -20,7 +20,7 @@ let {
 } & HTMLAttributes<HTMLDivElement> = $props();
 
 const LIFT =
-	"transition-[transform,scale,translate,border-color] duration-(--duration-base) ease-[var(--ease-ui-out)] hover:-translate-y-0.5 hover:border-border-strong motion-reduce:hover:translate-y-0";
+	"transition-[border-color] duration-(--duration-base) ease-[var(--ease-ui-out)] hover:border-border-strong";
 const frame = $derived(cardFrame({ variant }));
 
 let footer = $state<CardWellFooter>();

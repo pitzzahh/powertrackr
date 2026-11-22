@@ -6,7 +6,7 @@ import { tv, type VariantProps } from "tailwind-variants";
  * flat vaul baseline on a single popover surface. */
 export const drawerFrame = tv({
 	slots: {
-		overlay: "fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px]",
+		overlay: "fixed inset-0 z-50 bg-black/40",
 		// vaul eases with cubic-bezier(0.32, 0.72, 0, 1), our `--ease-drawer`; only the surface is ours.
 		panel: [
 			"group/drawer fixed z-50 flex flex-col text-foreground shadow-(--overlay-shadow) outline-none",
