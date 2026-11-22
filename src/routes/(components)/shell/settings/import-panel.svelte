@@ -117,7 +117,9 @@
       </FileDropZone.Root>
     </div>
 
-    <div class="flex place-items-center justify-between gap-2">
+    <div
+      class="flex place-items-center justify-between gap-2"
+    >
       {#if file}
         <div class="flex flex-col">
           <span>{file.name}</span>

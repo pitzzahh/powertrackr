@@ -40,7 +40,11 @@
       </p>
     </div>
     <Badge
-      class={cn(enabled ? "bg-success/12 text-success-strong" : "bg-muted text-muted-foreground")}
+      class={cn(
+        enabled
+          ? "bg-success/12 text-success-strong"
+          : "bg-muted text-muted-foreground"
+      )}
     >
       {enabled ? "Enabled" : "Disabled"}
     </Badge>
