@@ -11,9 +11,7 @@ export default defineConfig({
     enhancedImages(),
     sveltekit({
       preprocess: vitePreprocess(),
-      adapter: adapter({
-        fallback: "plaintext",
-      }),
+      adapter: adapter(),
       experimental: {
         remoteFunctions: true,
       },

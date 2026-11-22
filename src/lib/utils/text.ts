@@ -103,7 +103,7 @@ export const extractMainRoute = (path: string): string => {
 // TODO: Test generateNotFoundMessage function
 export function generateNotFoundMessage<T extends object>(query: T): string {
   const fields = Object.entries(query)
-    .filter(([_, value]) => value !== undefined && value !== null)
+    .filter(([, value]) => value !== undefined && value !== null)
     .map(([key, value]) => {
       if (value instanceof Date) {
         return `${key}: ${value.toISOString().split("T")[0]}`;
