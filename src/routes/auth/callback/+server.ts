@@ -1,5 +1,4 @@
 import { ObjectParser } from "@pilcrowjs/object-parser";
-import { getUserFromGitHubId } from "#lib/api/user.remote.js";
 import { createSession, setSessionTokenCookie } from "#lib/server/auth.js";
 
 import type { OAuth2Tokens } from "#lib/server/oauth.js";
@@ -7,6 +6,7 @@ import type { RequestEvent } from "./$types";
 import { generateSessionToken } from "#lib/server/encryption.js";
 import { createGitHub } from "#lib/server/oauth.js";
 import { addUser, updateUserBy, getUserBy } from "#lib/server/crud/user-crud.js";
+import { deleteSessionBy } from "#lib/server/crud/session-crud.js";
 import type { NewUser } from "#lib/types/user.js";
 
 async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
@@ -51,7 +51,7 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   const {
     valid,
     value: [existingUser],
-  } = await getUserFromGitHubId(githubUserId);
+  } = await getUserBy({ query: { githubId: githubUserId }, options: { limit: 1 } });
   if (valid && existingUser) {
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, existingUser["id"] as string, {
@@ -100,7 +100,19 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
   });
   if (existingUserByEmailResult.valid && existingUserByEmailResult.value.length > 0) {
     const existingUser = existingUserByEmailResult.value[0] as NewUser;
-    await updateUserBy({ query: { id: existingUser.id } }, { githubId: githubUserId });
+    // GitHub proved this address. If the account never did, whoever registered
+    // it may not own it: drop their password, 2FA and sessions so they cannot
+    // share the account with its real owner.
+    const claimed = existingUser.emailVerified
+      ? {}
+      : { passwordHash: null, totpKey: null, recoveryCode: null, registeredTwoFactor: false };
+    if (!existingUser.emailVerified) {
+      await deleteSessionBy({ query: { userId: existingUser.id } });
+    }
+    await updateUserBy(
+      { query: { id: existingUser.id } },
+      { githubId: githubUserId, emailVerified: true, ...claimed }
+    );
     const sessionToken = generateSessionToken();
     const session = await createSession(sessionToken, existingUser.id, {
       twoFactorVerified: false,
@@ -121,6 +133,8 @@ async function handleGitHubCallback(event: RequestEvent): Promise<Response> {
     {
       githubId: githubUserId,
       email,
+      // GitHub's primary email is verified (checked above).
+      emailVerified: true,
       name: name || username,
       image: userParser.getString("avatar_url") || null,
     },

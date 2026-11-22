@@ -1,25 +1,10 @@
+import type { ImportBillingResult } from "#lib/types/import.js";
+import { isHttpError } from "@sveltejs/kit";
 import { db } from "#lib/server/db/index.js";
-import { createBillingInfoLogic } from "#lib/server/crud/billing-info-crud.js";
-import type { BillingInfo, BillingSubMeterForm } from "#lib/types/billing-info.js";
-
-/**
- * A billing item as accepted by imports: sub-meters are identified by label
- * (the tenant's name), which is resolved against the owner's tenants.
- */
-export type ImportBillingItem = {
-  date: string;
-  totalkWh: number;
-  balance: number;
-  status: string;
-  subMeters: { label: string; reading: number; status?: string }[];
-};
-
-export type ImportBillingResult = {
-  created: BillingInfo[];
-  /** Sub-meter labels that matched no tenant and were skipped. */
-  skipped: { label: string }[];
-};
-
+import { createBillingInfoLogic } from "#lib/server/crud/billing-logic.js";
+import type { BillingInfo } from "#lib/types/billing-info.js";
+import type { BillingSubMeterForm } from "#lib/types/billing-info.js";
+import type { ImportBillingItem } from "#lib/types/import.js";
 /**
  * Handler that imports an array of billing form items for a user.
  * - Sub-meters ARE tenants: each `label` is matched to a tenant account by
@@ -60,20 +45,35 @@ export async function importBillingHandler(
       subMeters.push({
         tenantUserId: tenant.id,
         reading: sub.reading,
-        status: (sub.status ?? "pending") as BillingSubMeterForm["status"],
+        status: sub.status,
       });
     }
-    const ci = await createBillingInfoLogic(
-      {
-        date: item.date,
-        totalkWh: item.totalkWh,
-        balance: item.balance,
-        status: item.status,
-        subMeters,
-      },
-      userId
-    );
-    created.push(ci);
+    // Each item is its own D1 batch (it needs the previous item's readings as
+    // its baseline), so the import is not all-or-nothing: say what was saved.
+    try {
+      created.push(
+        await createBillingInfoLogic(
+          {
+            date: item.date,
+            totalkWh: item.totalkWh,
+            balance: item.balance,
+            status: item.status,
+            subMeters,
+          },
+          userId
+        )
+      );
+    } catch (err) {
+      const reason = isHttpError(err)
+        ? err.body.message
+        : err instanceof Error
+          ? err.message
+          : String(err);
+      throw new Error(
+        `Billing dated ${item.date} failed: ${reason}. ${created.length} earlier billing(s) were already saved; remove them from the file before importing again.`,
+        { cause: err }
+      );
+    }
   }
 
   return { created, skipped };

@@ -1,20 +1,13 @@
+import type { BatchQuery, Database, NonEmptyArray } from "#lib/types/db.js";
 import { drizzle } from "drizzle-orm/d1";
 import { env } from "cloudflare:workers";
 import { relations } from "./relations";
 
 // Use a factory that constructs the database so TypeScript can infer the full,
 // correct return type from the concrete `schema` and `relations` we provide.
-function createDb(d1: App.Platform["env"]["DB"]) {
+export function createDb(d1: App.Platform["env"]["DB"]) {
   return drizzle(d1, { relations });
 }
-
-// Export a Database type consumers can reference if needed.
-export type Database = ReturnType<typeof createDb>;
-// Batch helper types for D1 batch API.
-export type BatchQuery = Parameters<Database["batch"]>[0][number];
-export type BatchResult = Awaited<ReturnType<Database["batch"]>>[number];
-export type NonEmptyArray<T> = [T, ...T[]];
-
 export function asNonEmptyBatch<T extends BatchQuery>(queries: T[]): NonEmptyArray<T> | null {
   return queries.length > 0 ? (queries as NonEmptyArray<T>) : null;
 }

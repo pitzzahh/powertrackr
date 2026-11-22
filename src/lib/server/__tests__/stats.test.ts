@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getGlobalStats, FALLBACK_STATS } from "#lib/server/stats.js";
 import { db } from "#lib/server/db/index.js";
 import { addUser } from "#lib/server/crud/user-crud.js";
-import { addPayment } from "#lib/server/crud/payment-crud.js";
-import { addBillingInfo } from "#lib/server/crud/billing-info-crud.js";
+import { addPayment } from "#lib/server/crud/__tests__/helpers/seed.js";
+import { addBillingInfo } from "#lib/server/crud/__tests__/helpers/seed.js";
 import {
   createUser,
   createPayments,

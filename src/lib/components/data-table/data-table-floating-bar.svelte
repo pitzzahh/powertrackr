@@ -1,5 +1,5 @@
 <script module lang="ts">
-  import type { HelperResult } from "#lib/server/types/helper.js";
+  import type { HelperResult } from "#lib/types/helper.js";
   import type { RowData } from "@tanstack/table-core";
 
   export interface DataTableFloatingBarProps<TData extends RowData> {

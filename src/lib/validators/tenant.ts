@@ -1,29 +1,26 @@
 import * as v from "valibot";
+import { EMAIL_FIELD, ID_FIELD, NAME_FIELD, PASSWORD_FIELD, READING_FIELD } from "./shared.js";
 
-export const createTenantSchema = v.object({
-  name: v.pipe(v.string(), v.minLength(2)),
-  email: v.pipe(v.string(), v.email()),
-  password: v.pipe(v.string(), v.minLength(8)),
+export const CREATE_TENANT_SCHEMA = v.object({
+  name: NAME_FIELD,
+  email: EMAIL_FIELD,
+  password: PASSWORD_FIELD,
 });
 
-export const updateTenantSchema = v.object({
-  tenantUserId: v.string(),
-  name: v.pipe(v.string(), v.minLength(2)),
+export const UPDATE_TENANT_SCHEMA = v.object({
+  tenantUserId: ID_FIELD,
+  name: NAME_FIELD,
 });
 
-export const deleteTenantSchema = v.object({
-  tenantUserId: v.string(),
-});
+export const DELETE_TENANT_SCHEMA = v.object({ tenantUserId: ID_FIELD });
 
 // A tenant submits a reading for their own sub-meter, so the tenant is
 // implicit from the session. `billingInfoId` links the submission to a pending
 // billing period when the tenant is submitting for one.
-export const submitReadingSchema = v.object({
-  billingInfoId: v.optional(v.string()),
-  reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
+export const SUBMIT_READING_SCHEMA = v.object({
+  billingInfoId: v.optional(ID_FIELD),
+  reading: READING_FIELD,
 });
 
 // Tenant corrects their most recent submission (e.g. forgot, typo).
-export const updateSubmissionSchema = v.object({
-  reading: v.pipe(v.number("must be a number"), v.minValue(0, "must be 0 or greater")),
-});
+export const UPDATE_SUBMISSION_SCHEMA = v.object({ reading: READING_FIELD });

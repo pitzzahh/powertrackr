@@ -3,14 +3,14 @@ import {
   createBillingInfoLogic,
   updateBillingInfoLogic,
   finalizeBillingInfoLogic,
-  getLastTenantReading,
-  getBillingInfoBy,
-} from "#lib/server/crud/billing-info-crud.js";
+} from "../billing-logic";
+import { getLastTenantReading } from "../billing-usage";
+import { getBillingInfoBy } from "../billing-info-crud";
 import { db } from "#lib/server/db/index.js";
 import { tenantReading, payment } from "#lib/server/db/schema/index.js";
 import { eq } from "drizzle-orm";
-import { getPaymentBy } from "#lib/server/crud/payment-crud.js";
-import { addUser } from "#lib/server/crud/user-crud.js";
+import { getPaymentBy } from "../payment-crud";
+import { addUser } from "../user-crud";
 import { createUser, createTenantUser } from "#lib/server/crud/__tests__/helpers/factories.js";
 
 async function seedOwnerWithTenant() {
@@ -33,7 +33,7 @@ describe("pending billings", () => {
         totalkWh: 200,
         balance: 2000,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );
@@ -67,7 +67,7 @@ describe("pending billings", () => {
           status: "pending",
           subMeters: [
             { tenantUserId: tenant.id, reading: 100, status: "pending" },
-            { tenantUserId: tenant2.id, reading: null, status: "pending" },
+            { tenantUserId: tenant2.id, status: "pending" },
           ],
         },
         owner.id
@@ -101,7 +101,7 @@ describe("pending billings", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );
@@ -143,7 +143,7 @@ describe("pending billings", () => {
         totalkWh: 200,
         balance: 2000,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );
@@ -183,8 +183,8 @@ describe("pending billings", () => {
         balance: 2000,
         status: "pending",
         subMeters: [
-          { tenantUserId: tenant.id, reading: null, status: "pending" },
-          { tenantUserId: tenant2.id, reading: null, status: "pending" },
+          { tenantUserId: tenant.id, status: "pending" },
+          { tenantUserId: tenant2.id, status: "pending" },
         ],
       },
       owner.id
@@ -254,7 +254,7 @@ describe("pending billings", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );
@@ -320,8 +320,8 @@ describe("pending billings", () => {
         balance: 2000,
         status: "pending",
         subMeters: [
-          { tenantUserId: tenant.id, reading: null, status: "pending" },
-          { tenantUserId: tenant2.id, reading: null, status: "pending" },
+          { tenantUserId: tenant.id, status: "pending" },
+          { tenantUserId: tenant2.id, status: "pending" },
         ],
       },
       owner.id
@@ -361,7 +361,7 @@ describe("pending billings", () => {
         totalkWh: 1200,
         balance: 1200,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );
@@ -375,5 +375,20 @@ describe("pending billings", () => {
     await expect(finalizeBillingInfoLogic(billing.id, owner.id)).rejects.toMatchObject({
       body: { message: expect.stringContaining("Billing info is already finalized") as unknown },
     });
+  });
+});
+
+describe("billings without sub meters", () => {
+  it("get a main payment for the full balance", async () => {
+    const { owner } = await seedOwnerWithTenant();
+    const created = await createBillingInfoLogic(
+      { date: "2026-10-01", totalkWh: 100, balance: 1234.5, status: "paid", subMeters: [] },
+      owner.id
+    );
+    expect(created.paymentId).not.toBeNull();
+    const {
+      value: [p],
+    } = await getPaymentBy({ query: { id: created.paymentId! } });
+    expect(p.amount).toBe(1234.5);
   });
 });

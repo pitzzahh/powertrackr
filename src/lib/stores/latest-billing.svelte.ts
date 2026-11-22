@@ -1,10 +1,10 @@
-import type { BillingInfoDTOWithSubMeters } from "#lib/types/billing-info.js";
+import type { BillingInfoWithSubMeters } from "#lib/types/billing-info.js";
 import type { AsyncState } from "#lib/types/state.js";
 import { getLatestBillingInfo } from "#lib/api/billing-info.remote.js";
 import { getContext, setContext } from "svelte";
 
 class LatestBillingState {
-  latestBillingInfo = $state<BillingInfoDTOWithSubMeters | null>(null);
+  latestBillingInfo = $state<BillingInfoWithSubMeters | null>(null);
   status = $state<AsyncState>("idle");
   query = $derived(getLatestBillingInfo({}));
 
@@ -20,7 +20,7 @@ class LatestBillingState {
   async fetchData() {
     try {
       const result = await this.query;
-      const value = result?.value as BillingInfoDTOWithSubMeters[];
+      const value = result?.value as BillingInfoWithSubMeters[];
       this.latestBillingInfo = value?.[0] ?? null;
       this.status = "success";
     } catch (error) {

@@ -1,4 +1,5 @@
-import { convertEnergy, getEnergyUnit, type EnergyUnit } from "./converter/energy";
+import { convertEnergy, getEnergyUnit } from "./converter/energy";
+import type { EnergyUnit } from "#lib/types/chart.js";
 
 // Constructing `Intl.NumberFormat`/`Intl.DateTimeFormat` is expensive (ICU
 // setup on every construction). These are immutable and safe to reuse, so cache

@@ -1,4 +1,4 @@
-import type { Database } from "#lib/server/db/index.js";
+import type { Database } from "#lib/types/db.js";
 import { afterEach, afterAll } from "vitest";
 import { exec } from "child_process";
 import { promisify } from "util";

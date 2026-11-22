@@ -2,14 +2,15 @@ import { form } from "$app/server";
 import { IMPORT_BILLING_FILE_SCHEMA, parseImportItems } from "#lib/validators/import.js";
 import { requireAuth } from "#lib/server/auth.js";
 import { invalid } from "@sveltejs/kit";
-import { importBillingHandler, type ImportBillingItem } from "#lib/server/data-import.js";
+import { importBillingHandler } from "#lib/server/data-import.js";
 import { refreshBillingData } from "./billing-refresh";
 
 /**
  * Remote form that accepts a single file upload (multipart/form-data).
  * The uploaded file must be JSON containing an array of billing items (or an
- * object with an `items` array). The file is parsed and validated strictly
- * before being imported atomically via `importBillingHandler`.
+ * object with an `items` array). The whole file is validated before anything
+ * is written; items are then saved oldest-first, one batch each (see
+ * `importBillingHandler`), so a failure reports how many were already saved.
  */
 export const importBillingFile = form(IMPORT_BILLING_FILE_SCHEMA, async (payload, issues) => {
   const {
@@ -55,7 +56,7 @@ export const importBillingFile = form(IMPORT_BILLING_FILE_SCHEMA, async (payload
 
   try {
     const validated = parseImportItems(items);
-    const result = await importBillingHandler(validated as ImportBillingItem[], userId);
+    const result = await importBillingHandler(validated, userId);
     refreshBillingData();
     return result;
   } catch (err) {

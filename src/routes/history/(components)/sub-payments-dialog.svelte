@@ -6,7 +6,7 @@
   import { ScrollArea } from "#lib/components/ui/scroll-area/index.js";
   import { Table, TableBody, TableCell, TableRow } from "#lib/components/ui/table/index.js";
   import type { ExtendedBillingInfoTableView } from "#lib/types/billing-info.js";
-  import type { TenantReadingDTO } from "#lib/types/tenant-reading.js";
+  import type { TenantReadingDTO } from "#lib/types/billing-info.js";
   import { cubicInOut } from "svelte/easing";
   import { scale } from "svelte/transition";
 

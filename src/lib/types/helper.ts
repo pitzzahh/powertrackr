@@ -1,4 +1,4 @@
-import type { TimeRangeOption } from "#routes/(components)/types.js";
+import type { TimeRangeOption } from "#lib/types/chart.js";
 
 export type HelperResult<T = unknown> = {
   valid: boolean;

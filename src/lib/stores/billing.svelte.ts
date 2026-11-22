@@ -20,7 +20,7 @@ export function computeSummary(infos: ExtendedBillingInfo[]): BillingSummary {
   const latest = infos[0];
   const current = latest?.balance ?? 0;
   // Use actual payments as the authoritative amounts to compute investments and
-  // returns. This matches the server-side `getBillingSummary` semantics and
+  // returns. This matches the server-side billing semantics and
   // avoids small rounding artefacts caused by rounding `payPerkWh` to cents.
   const invested = infos.reduce(
     (sum, info) =>

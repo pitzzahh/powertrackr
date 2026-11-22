@@ -1,6 +1,6 @@
 /// <reference types="../worker-configuration.d.ts" />
 
-import type { TurnstileApi } from "#lib/utils/turnstile.js";
+import type { TurnstileApi } from "#lib/types/turnstile.js";
 
 declare global {
   interface Window {

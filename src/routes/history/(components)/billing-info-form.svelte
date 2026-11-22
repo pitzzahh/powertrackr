@@ -2,12 +2,12 @@
   type Action = "add" | "update";
   export type BillingInfoWithSubMetersFormProps = {
     action: Action;
-    billingInfo?: BillingInfoDTOWithSubMeters;
+    billingInfo?: BillingInfoWithSubMeters;
     /**
      * For update mode: the billing record immediately before the one being
      * edited, used to display the true previous reading per sub meter.
      */
-    previousBillingInfo?: BillingInfoDTOWithSubMeters;
+    previousBillingInfo?: BillingInfoWithSubMeters;
     open?: boolean;
     /**
      * Callback to be called when the form is submitted.
@@ -72,11 +72,8 @@
   import { ChevronDown, CirclePlus, Loader, Trash2 } from "#lib/assets/icons.js";
   import { Calendar } from "#lib/components/ui/calendar/index.js";
   import * as Card from "#lib/components/ui/card/index.js";
-  import {
-    STATUS_VALUES,
-    type BillingInfoDTOWithSubMeters,
-    type Status,
-  } from "#lib/types/billing-info.js";
+  import type { BillingInfoWithSubMeters, Status } from "#lib/types/billing-info.js";
+  import { STATUS_VALUES, toStatus } from "#lib/validators/shared.js";
   import { formatDate, formatEnergy } from "#lib/utils/format.js";
   import { convertToNormalText } from "#lib/utils/text.js";
   import { isBillFormValid } from "#lib/validators/billing-info.js";
@@ -166,7 +163,7 @@
       } else if (key === "totalkWh" && typeof billingInfo.totalkWh === "number") {
         out.totalkWh = billingInfo.totalkWh;
       } else if (key === "status" && billingInfo.status) {
-        out.status = billingInfo.status;
+        out.status = toStatus(billingInfo.status);
       }
     }
     return { BILLING_NORMALIZED: out };
@@ -384,7 +381,7 @@
       currentAction.fields.id.set(billingInfo.id);
       currentAction.fields.balance.set(billingInfo.balance);
       currentAction.fields.totalkWh.set(billingInfo.totalkWh);
-      currentAction.fields.status.set(billingInfo.status);
+      currentAction.fields.status.set(toStatus(billingInfo.status));
     } else {
       // Add mode - initialize with defaults
       pending = false;

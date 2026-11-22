@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
-import {
-  computeTenantUsages,
-  getLastTenantReading,
-  createBillingInfoLogic,
-} from "../billing-info-crud";
+import { computeTenantUsages, getLastTenantReading } from "../billing-usage";
+import { createBillingInfoLogic } from "../billing-logic";
 import { calculatePayPerKwh } from "#lib";
 import { addUser } from "../user-crud";
 import { createUser, createTenantUser } from "./helpers/factories";
@@ -143,7 +140,7 @@ describe("getLastTenantReading", () => {
         totalkWh: 1000,
         balance: 1000,
         status: "pending",
-        subMeters: [{ tenantUserId: tenant.id, reading: null, status: "pending" }],
+        subMeters: [{ tenantUserId: tenant.id, status: "pending" }],
       },
       owner.id
     );

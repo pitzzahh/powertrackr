@@ -1,13 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  getChangedData,
-  generateOptions,
-  getIcon,
-  omit,
-  imageFileToDataUrl,
-  dataUrlToImageFile,
-  mapToType,
-} from "#lib/utils/mapper.js";
+import { getChangedData, generateOptions, getIcon, omit } from "#lib/utils/mapper.js";
 
 describe("mapper utilities", () => {
   const realFile = (globalThis as any).File;
@@ -125,43 +117,5 @@ describe("mapper utilities", () => {
     expect((result as any).a).toBe(1);
     expect((result as any)[sym]).toBe(3);
     expect((result as any).b).toBeUndefined();
-  });
-
-  it("imageFileToDataUrl converts a File to a data URL", async () => {
-    const buf = Buffer.from("hello");
-    const file = new (globalThis as any).File([buf], "test.txt", { type: "text/plain" });
-    const dataUrl = await imageFileToDataUrl(file as unknown as File);
-    expect(dataUrl.startsWith("data:text/plain;base64,")).toBeTruthy();
-    expect(dataUrl).toContain(buf.toString("base64"));
-  });
-
-  it("imageFileToDataUrl throws when no file provided", async () => {
-    // @ts-ignore
-    await expect(imageFileToDataUrl(null)).rejects.toThrow("No file provided");
-  });
-
-  it("dataUrlToImageFile converts a data URL into a File-like object", () => {
-    const raw = "Hello!";
-    const b64 = Buffer.from(raw).toString("base64");
-    const dataUrl = `data:text/plain;base64,${b64}`;
-    const file = dataUrlToImageFile(dataUrl, "out.txt");
-    expect(file.name).toBe("out.txt");
-    expect((file as any).type).toBe("text/plain");
-    // The underlying data should match the original length
-    const part = (file as any).parts?.[0];
-    expect(part instanceof Uint8Array || Buffer.isBuffer(part)).toBeTruthy();
-    const asBuf = Buffer.from(part);
-    expect(asBuf.toString()).toBe(raw);
-  });
-
-  it("dataUrlToImageFile throws on invalid inputs", () => {
-    expect(() => dataUrlToImageFile("not-a-data-url")).toThrow("Invalid data URL");
-    expect(() => dataUrlToImageFile("data:;base64,")).toThrow("Invalid data URL format");
-  });
-
-  it("mapToType returns allowed value or throws", () => {
-    const allowed = ["a", "b"] as const;
-    expect(mapToType("a", allowed as any)).toBe("a");
-    expect(() => mapToType("c" as any, allowed as any)).toThrowError("Invalid value: c");
   });
 });

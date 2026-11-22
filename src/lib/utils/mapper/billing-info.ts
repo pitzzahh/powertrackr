@@ -1,17 +1,13 @@
 import type {
-  BillingInfo,
-  BillingInfoDTOWithSubMeters,
-  BillingInfoTableView,
+  BillingInfoWithSubMeters,
   ExtendedBillingInfo,
   ExtendedBillingInfoTableView,
-  Status,
 } from "#lib/types/billing-info.js";
+import type { Status } from "#lib/types/billing-info.js";
 import { formatDate, DateFormat } from "#lib/utils/format.js";
 import { omit } from "#lib/utils/mapper.js";
 
-export function billingInfoToDto(
-  original: ExtendedBillingInfoTableView
-): BillingInfoDTOWithSubMeters {
+export function billingInfoToDto(original: ExtendedBillingInfoTableView): BillingInfoWithSubMeters {
   return {
     id: original.id,
     userId: original.userId,
@@ -29,19 +25,6 @@ export function billingInfoToDto(
       tenantUserId: s.tenantUserId,
       tenantName: s.tenantName,
     })),
-  };
-}
-
-export function billingInfoToTableView(original: BillingInfo): BillingInfoTableView {
-  return {
-    ...original,
-    date: formatDate(new Date(original.date)),
-    createdAt: formatDate(new Date(original.createdAt), {
-      format: DateFormat.DateTime,
-    }),
-    updatedAt: formatDate(new Date(original.updatedAt), {
-      format: DateFormat.DateTime,
-    }),
   };
 }
 

@@ -12,7 +12,7 @@
       icon: PhosphorIcon;
       label: "New Bill" | "Generate Random Bills";
       open: boolean;
-      data: () => BillingInfoDTOWithSubMeters | null;
+      data: () => BillingInfoWithSubMeters | null;
       onclick?: (userId: string) => void | Promise<void>;
       callback: BillingInfoWithSubMetersFormProps["callback"];
     }[];
@@ -29,7 +29,7 @@
   import { cn } from "#lib/utils/style.js";
   import { toggleMode } from "mode-watcher";
   import { type BillingInfoWithSubMetersFormProps } from "#routes/history/(components)/billing-info-form.svelte";
-  import type { BillingInfoDTOWithSubMeters } from "#lib/types/billing-info.js";
+  import type { BillingInfoWithSubMeters } from "#lib/types/billing-info.js";
   import { showSuccess, showWarning } from "#lib/components/toast/index.js";
   import { useBillingStore } from "#lib/stores/billing.svelte.js";
   import { useConsumptionStore } from "#lib/stores/consumption.svelte.js";

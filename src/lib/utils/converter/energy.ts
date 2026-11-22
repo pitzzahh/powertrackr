@@ -1,5 +1,4 @@
-export type EnergyUnit = "kWh" | "MWh" | "GWh" | "TWh";
-
+import type { EnergyUnit } from "#lib/types/chart.js";
 /**
  * Converts an energy value in kWh to the specified unit.
  * @param kwh The energy value in kilowatt-hours.

@@ -1,17 +1,12 @@
+import { eq } from "drizzle-orm";
+import { session } from "#lib/server/db/schema/index.js";
+import { db } from "#lib/server/db/index.js";
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  addSession,
-  updateSessionBy,
-  getSessionBy,
-  getSessions,
-  getSessionCountBy,
-  deleteSessionBy,
-  mapNewSession_to_DTO,
-} from "../session-crud";
+import { addSession, updateSessionBy, getSessionBy, deleteSessionBy } from "../session-crud";
 import { createSession, createSessions, createUser, resetSequence } from "./helpers/factories";
 import { addUser } from "../user-crud";
 import type { NewSession } from "#lib/types/session.js";
-import type { HelperParam } from "#lib/server/types/helper.js";
+import type { HelperParam } from "#lib/types/helper.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 describe("Session CRUD Operations", () => {
@@ -483,138 +478,6 @@ describe("Session CRUD Operations", () => {
     });
   });
 
-  describe("getSessionCountBy", () => {
-    it("should return correct count for existing sessions", async () => {
-      const {
-        valid: validUser,
-        value: [addedUser],
-      } = await addUser([createUser()]);
-
-      expect(validUser).toBe(true);
-      expect(addedUser).toBeDefined();
-
-      const sessionsData = createSessions(5, { userId: addedUser.id });
-      const { valid: validSessions } = await addSession(sessionsData);
-
-      expect(validSessions).toBe(true);
-
-      const countParam: HelperParam<NewSession> = {
-        query: {},
-      };
-
-      const result = await getSessionCountBy(countParam);
-
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe(5);
-      expect(result.message).toBe("Session(s) count is 5");
-    });
-
-    it("should return zero count when no sessions match", async () => {
-      const countParam: HelperParam<NewSession> = {
-        query: { userId: "not-found" },
-      };
-
-      const result = await getSessionCountBy(countParam);
-
-      expect(result.valid).toBe(false);
-      expect(result.value).toBe(0);
-      expect(result.message).toContain("userId: not-found not found");
-    });
-
-    it("should count sessions with specific criteria", async () => {
-      const {
-        valid: validUser,
-        value: [addedUser],
-      } = await addUser([createUser()]);
-
-      expect(validUser).toBe(true);
-      expect(addedUser).toBeDefined();
-
-      const sessionsData = [
-        createSession({ userId: addedUser.id, twoFactorVerified: true }),
-        createSession({ userId: addedUser.id, twoFactorVerified: true }),
-        createSession({ userId: addedUser.id, twoFactorVerified: false }),
-      ];
-
-      const { valid: validSessions } = await addSession(sessionsData);
-
-      expect(validSessions).toBe(true);
-
-      const countParam: HelperParam<NewSession> = {
-        query: { twoFactorVerified: true } as unknown as NewSession,
-      };
-
-      const result = await getSessionCountBy(countParam);
-
-      expect(result.valid).toBe(true);
-      expect(result.value).toBe(2);
-    });
-  });
-
-  describe("getSessions & mapNewSession_to_DTO", () => {
-    it("should return DTO format sessions", async () => {
-      const {
-        valid: validUser,
-        value: [addedUser],
-      } = await addUser([createUser()]);
-
-      expect(validUser).toBe(true);
-      expect(addedUser).toBeDefined();
-
-      const {
-        valid: validSession,
-        value: [addedSession],
-      } = await addSession([
-        createSession({
-          userId: addedUser.id,
-          ipAddress: "8.8.8.8",
-          userAgent: "Agent/4.0",
-        }),
-      ]);
-
-      expect(validSession).toBe(true);
-      expect(addedSession).toBeDefined();
-
-      const result = await getSessions({ query: {}, options: {} });
-
-      expect(result).toHaveLength(1);
-      expect(result[0].id).toBeDefined();
-      expect(result[0].ipAddress).toBe("8.8.8.8");
-      expect(result[0].userAgent).toBe("Agent/4.0");
-      expect(result[0].expiresAt).toBeInstanceOf(Date);
-      expect(typeof result[0].twoFactorVerified === "boolean").toBe(true);
-    });
-
-    it("should return empty array when no sessions found", async () => {
-      const result = await getSessions({ query: { userId: "no-user" }, options: {} });
-      expect(result).toHaveLength(0);
-    });
-
-    it("mapNewSession_to_DTO should handle null/undefined values", async () => {
-      const input: Partial<NewSession>[] = [
-        {
-          id: undefined as unknown as string,
-          // DB types use string for expiresAt; provide undefined as a
-          // string-typed value so the mapper can normalize it to a Date.
-          expiresAt: undefined as unknown as Date,
-          ipAddress: undefined,
-          userAgent: undefined,
-          userId: undefined,
-          twoFactorVerified: undefined,
-        },
-      ];
-
-      const dto = await mapNewSession_to_DTO(input);
-
-      expect(dto).toHaveLength(1);
-      expect(dto[0].id).toBeUndefined();
-      expect(dto[0].ipAddress).toBeUndefined();
-      expect(dto[0].userAgent).toBeUndefined();
-      expect(dto[0].twoFactorVerified).toBeUndefined();
-      expect(dto[0].expiresAt).toBeUndefined();
-    });
-  });
-
   describe("deleteSessionBy", () => {
     it("should successfully delete session by ID", async () => {
       const {
@@ -677,10 +540,11 @@ describe("Session CRUD Operations", () => {
       expect(result.message).toContain("3 session(s) deleted");
 
       // Verify deletion
-      const countResult = await getSessionCountBy({
-        query: { userId: addedUser.id },
-      });
-      expect(countResult.value).toBe(0);
+      const left = await db()
+        .select({ id: session.id })
+        .from(session)
+        .where(eq(session.userId, addedUser.id));
+      expect(left).toHaveLength(0);
     });
 
     it("should handle nonexistent session deletion", async () => {

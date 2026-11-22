@@ -1,11 +1,12 @@
 import { db } from "#lib/server/db/index.js";
-import { and, count, eq, not, type SQL } from "drizzle-orm";
-import { user } from "#lib/server/db/schema/index.js";
-import type { HelperParam, HelperResult } from "#lib/server/types/helper.js";
+import { and, eq, inArray, not, or, type SQL } from "drizzle-orm";
+import { billingInfo, payment, tenantReading, user } from "#lib/server/db/schema/index.js";
+import type { HelperParam, HelperResult } from "#lib/types/helper.js";
 import { generateNotFoundMessage } from "#lib/utils/text.js";
 import { getChangedData } from "#lib/utils/mapper.js";
-import type { NewUser, NewUserWitSessions, UserDTOWithSessions } from "#lib/types/user.js";
-import { originCheck } from "#lib/server/auth.js";
+import type { NewUser } from "#lib/types/user.js";
+import type { Session } from "#lib/types/session.js";
+import type { UserDTOWithSessions } from "#lib/types/user.js";
 import { generateQueryConditions } from "#lib/server/mapper.js";
 
 type UserQueryOptions = {
@@ -115,13 +116,8 @@ export async function getUserBy(
   };
 }
 
-export async function getUsers(data: HelperParam<NewUser>): Promise<Partial<NewUser>[]> {
-  const usersResult = await getUserBy(data);
-  return !usersResult.valid || !usersResult.value ? [] : mapNewUser_to_DTO(usersResult.value);
-}
-
 export function mapNewUser_to_DTO(
-  data: Partial<NewUserWitSessions>[]
+  data: Partial<NewUser & { sessions?: Session[] }>[]
 ): Partial<UserDTOWithSessions>[] {
   return data.map((_user) => ({
     id: _user.id,
@@ -137,30 +133,6 @@ export function mapNewUser_to_DTO(
   }));
 }
 
-export async function getUserCountBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
-  const { query } = data;
-  const { id, email } = query;
-  const conditions = generateQueryConditions<NewUser>(data);
-  const request_query = db().select({ count: count() }).from(user);
-
-  if (id || email) {
-    request_query.limit(1);
-  }
-
-  const whereSQL = buildWhereSQL(conditions);
-  const [_data] = await request_query.where(whereSQL);
-
-  const _count = _data?.count;
-  const is_valid = _count > 0;
-  return {
-    valid: is_valid,
-    message: is_valid
-      ? `User(s) count is ${_count}`
-      : `User(s) count with ${generateNotFoundMessage(query)}`,
-    value: _count,
-  };
-}
-
 export async function deleteUserBy(data: HelperParam<NewUser>): Promise<HelperResult<number>> {
   const { query } = data;
   const conditions = generateQueryConditions<NewUser>(data);
@@ -174,9 +146,40 @@ export async function deleteUserBy(data: HelperParam<NewUser>): Promise<HelperRe
     };
   }
 
-  const deleteResult = await db().delete(user).where(whereSQL).returning({
-    deletedId: user.id,
-  });
+  const database = db();
+  // Payments are referenced by billing_info/tenant_reading, not the other way
+  // round, so the user cascade leaves them behind. Collect them (the user's
+  // bills, every reading on those bills, the user's own tenant readings) and
+  // delete them in the same batch.
+  const userIds = (await database.select({ id: user.id }).from(user).where(whereSQL)).map(
+    (u) => u.id
+  );
+  const paymentIds =
+    userIds.length > 0
+      ? [
+          ...(await database
+            .select({ paymentId: billingInfo.paymentId })
+            .from(billingInfo)
+            .where(inArray(billingInfo.userId, userIds))),
+          ...(await database
+            .select({ paymentId: tenantReading.paymentId })
+            .from(tenantReading)
+            .leftJoin(billingInfo, eq(billingInfo.id, tenantReading.billingInfoId))
+            .where(
+              or(inArray(tenantReading.tenantUserId, userIds), inArray(billingInfo.userId, userIds))
+            )),
+        ]
+          .map((row) => row.paymentId)
+          .filter((id): id is string => !!id)
+      : [];
+
+  const deleteUsers = database.delete(user).where(whereSQL).returning({ deletedId: user.id });
+  const results = await database.batch(
+    paymentIds.length > 0
+      ? [deleteUsers, database.delete(payment).where(inArray(payment.id, paymentIds))]
+      : [deleteUsers]
+  );
+  const deleteResult = results[0] as { deletedId: string }[];
 
   const deletedCount = deleteResult.length ?? 0;
   const is_valid = deletedCount > 0;
@@ -209,11 +212,4 @@ function buildWhereSQL(where: Record<string, unknown>): SQL | undefined {
     }
   }
   return conditions.length > 0 ? and(...conditions) : undefined;
-}
-
-export async function getUserCountLogic() {
-  originCheck();
-
-  const result = await getUserCountBy({ query: {} });
-  return result.value ?? 0;
 }

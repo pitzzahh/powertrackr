@@ -5,7 +5,8 @@ import { user, session } from "#lib/server/db/schema/index.js";
 import { db } from "#lib/server/db/index.js";
 import { getRequestEvent } from "$app/server";
 import { error, redirect, type RequestEvent } from "@sveltejs/kit";
-import type { Session, SessionFlags } from "#lib/types/session.js";
+import type { Session } from "#lib/types/session.js";
+import type { SessionFlags } from "#lib/types/session.js";
 import { omit } from "#lib/utils/mapper.js";
 import { addSession, deleteSessionBy, updateSessionBy } from "./crud/session-crud";
 import { dev } from "$app/env";
@@ -17,7 +18,7 @@ export function requireAuth() {
     redirect(307, "/auth?act=login");
   }
 
-  if (!locals.user.isOauthUser && !locals.user.emailVerified) {
+  if (!locals.user.emailVerified) {
     redirect(303, "/auth?act=verify-email");
   }
   if (locals.user.registeredTwoFactor && !locals.session.twoFactorVerified) {
@@ -106,9 +107,6 @@ export async function validateSessionToken(token: string) {
     ),
   };
 }
-
-export type SessionValidationResult = Awaited<ReturnType<typeof validateSessionToken>>;
-
 export async function invalidateSession(sessionId: string) {
   await deleteSessionBy({ query: { id: sessionId } });
 }

@@ -31,8 +31,16 @@ SvelteKit 3 + Svelte 5 (runes) + Cloudflare adapter + Drizzle + Valibot. Package
   import { EMAIL_FIELD, PASSWORD_FIELD } from "./shared.js";
   export const LOGIN_SCHEMA = v.object({ email: EMAIL_FIELD, password: PASSWORD_FIELD });
   ```
-- Re-export every domain file from `src/lib/validators/index.ts`. Import from the domain file (`#lib/validators/auth.js`), not the barrel, in server code.
-- Types come from schemas: `export type LoginInput = v.InferOutput<typeof LOGIN_SCHEMA>;` — never hand-duplicate a schema shape as an interface.
+- Re-export every domain file from `src/lib/validators/index.ts` — except `entities.ts`, which imports the server DB schema and must stay out of the client-reachable barrel. Import from the domain file (`#lib/validators/auth.js`), not the barrel, in server code.
+- Validators hold schemas and parse helpers only — no type declarations. ALL types live in `src/lib/types/<domain>.ts`.
+- Types come from schemas via the `Infer` bridge (the only valibot type that leaves `validators/`), never a hand-duplicated shape:
+  ```ts
+  // src/lib/types/auth.ts
+  import type { Infer } from "#lib/validators/shared.js";
+  import type { LOGIN_SCHEMA } from "#lib/validators/auth.js";
+  export type LoginInput = Infer<typeof LOGIN_SCHEMA>;
+  ```
+- DB row types derive from `src/lib/validators/entities.ts` (`createSelectSchema`/`createInsertSchema` from `drizzle-orm/valibot`). DTO/view types are `Pick`/`Omit`/`&` of those, never re-typed. `entities.ts` imports the server schema, so client code only ever `import type`s from it.
 
 ## Svelte 5 conventions
 

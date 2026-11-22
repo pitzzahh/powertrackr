@@ -8,4 +8,3 @@ export const site = {
     "Record, organize, and reconcile electricity usage and payments across an account and its sub-meters.",
   keywords: `svelte, monitoring-tool, energy-monitoring, sveltekit, bill-monitoring, payment-reconciliation`,
 };
-export type SiteConfig = typeof site;

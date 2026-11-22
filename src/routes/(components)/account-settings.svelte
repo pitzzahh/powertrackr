@@ -156,7 +156,6 @@
               </h4>
 
               <Field.Group>
-                <input type="hidden" {...updateUser.fields.id.as("text")} value={user?.id ?? ""} />
 
                 <Field.Field>
                   <Field.Label for="account-name" class="px-1">Name</Field.Label>

@@ -1,11 +1,11 @@
 import type { NewUser } from "#lib/types/user.js";
 import type { NewPayment } from "#lib/types/payment.js";
 import type { NewBillingInfo } from "#lib/types/billing-info.js";
-import type { NewTenantReading } from "#lib/types/tenant-reading.js";
-import type { NewReadingSubmission } from "#lib/types/reading-submission.js";
+import type { NewTenantReading } from "#lib/types/billing-info.js";
+import type { NewReadingSubmission } from "#lib/types/tenant.js";
 import type { NewSession } from "#lib/types/session.js";
-import type { NewEmailVerificationRequest } from "#lib/types/email-verification-request.js";
-import type { NewPasswordResetSession } from "#lib/types/password-reset-session.js";
+import type { NewEmailVerificationRequest } from "#lib/types/auth.js";
+import type { NewPasswordResetSession } from "#lib/types/auth.js";
 
 export type FactoryOverrides<T> = Partial<T>;
 

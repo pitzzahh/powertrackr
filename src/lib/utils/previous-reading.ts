@@ -1,14 +1,4 @@
-export type TenantReadingLike = {
-  id?: string;
-  tenantUserId?: string;
-  reading?: number | null;
-};
-
-export type BillingInfoLike = {
-  date: Date | string;
-  subMeters?: TenantReadingLike[];
-};
-
+import type { BillingInfoLike, TenantReadingLike } from "#lib/types/billing-info.js";
 /**
  * Finds the billing record immediately before `currentDate` (strictly earlier,
  * greatest date) in `infos`. Returns `undefined` when no earlier record exists.
