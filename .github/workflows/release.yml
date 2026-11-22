@@ -24,4 +24,4 @@ jobs:
         with:
           node-version: 24.x
           cache: "pnpm"
-      - run: pnpm dlx semantic-release
+      - run: pnpm dlx semantic-release@25
